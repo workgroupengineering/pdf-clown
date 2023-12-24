@@ -39,6 +39,7 @@ using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Util.Math;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -336,12 +337,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             return endStylesObject;
         }
 
-        protected override void RefreshAppearance()
+        protected override FormXObject RefreshAppearance()
         {
             var appearence = ResetAppearance(out var matrix);
             var composer = new PrimitiveComposer(appearence);
             composer.SetStrokeColor(Color ?? DeviceRGBColor.Default);
-            composer.SetFillColor(Color ?? DeviceRGBColor.Default);
+            composer.SetFillColor(InteriorColor ?? DeviceRGBColor.Default);
 
 
             var startPoint = matrix.MapPoint(StartPoint);
@@ -382,6 +383,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     theta -= 2 * Math.PI;
 
                 composer.BeginLocalState();
+                composer.SetFillColor(DeviceRGBColor.Default);
                 composer.SetFont(fontName, DefaultFontSize);
                 composer.ShowText(Contents, textLocation, XAlignmentEnum.Left,
                     CaptionPosition == LineCaptionPosition.Inline ? YAlignmentEnum.Middle : YAlignmentEnum.Top,
@@ -426,15 +428,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                 composer.FillStroke();
             }
 
-
             composer.Flush();
-
+            return appearence;
         }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        public override SKRect DrawSpecial(SKCanvas canvas)
         {
             RefreshAppearance();
-            DrawAppearance(canvas, Appearance.Normal[null]);
+            return DrawAppearance(canvas, Appearance.Normal[null]);
         }
 
         public override void RefreshBox()

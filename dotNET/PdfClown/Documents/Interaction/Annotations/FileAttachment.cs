@@ -122,11 +122,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        public override SKRect DrawSpecial(SKCanvas canvas)
         {
             var bounds = Box;
             var color = SKColor;
             SvgImage.DrawImage(canvas, AttachmentName.ToString(), color, bounds, 1);
+            return base.DrawSpecial(canvas);
         }
 
     }

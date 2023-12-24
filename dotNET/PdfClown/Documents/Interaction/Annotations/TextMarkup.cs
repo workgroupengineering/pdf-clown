@@ -124,19 +124,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public TextMarkup(PdfDirectObject baseObject) : base(baseObject)
-        { }
-
-        public override DeviceColor Color
-        {
-            set
-            {
-                base.Color = value;
-                if (PageMarkupBoxes.Count > 0)
-                {
-                    RefreshAppearance();
-                }
-            }
-        }
+        { }        
 
         public override Page Page
         {
@@ -146,7 +134,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 base.Page = value;
                 if (PageMarkupBoxes.Count > 0)
                 {
-                    RefreshAppearance();
+                    ResetAppearance(out _);
                 }
             }
         }
@@ -163,7 +151,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     markupBoxes = null;
                     pageMarkupBoxes = null;
                     OnPropertyChanged(oldValue, value);
-                    RefreshAppearance();
+                    ResetAppearance(out _);
                 }
             }
         }
@@ -244,24 +232,25 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        public override SKRect DrawSpecial(SKCanvas canvas)
         {
-            RefreshAppearance();
+            var appearance = RefreshAppearance();
+            return base.DrawAppearance(canvas, appearance);
         }
 
         /*
           TODO: refresh should happen for every Annotation with overwrite\remove check 
         */
-        protected override void RefreshAppearance()
+        protected override FormXObject RefreshAppearance()
         {
             if (Page == null)
             {
-                return;
+                return null;
             }
             if (Rect == null)
             {
                 PageMarkupBoxes = PageMarkupBoxes;
-                return;
+                return null;
             }
             SKRect box = Box;
             var normalAppearance = ResetAppearance(box, out var matrix);
@@ -395,6 +384,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
             composer.Flush();
+            return normalAppearance;
         }
 
         private static SKPoint GetMarginPoint(SKPoint pointA, SKPoint pointB, float margin)

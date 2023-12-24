@@ -44,7 +44,7 @@ namespace PdfClown.Viewer
                 case OperationType.AnnotationDrag:
                 case OperationType.AnnotationSize:
                     result =
-                        NewValue = Annotation.GetBounds();
+                        NewValue = Annotation.GetViewBounds();
                     break;
                 case OperationType.AnnotationAdd:
                     result =

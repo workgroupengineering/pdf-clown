@@ -311,6 +311,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (oldValue != value)
                 {
                     BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value);
+                    ResetAppearance(out _);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -318,7 +319,9 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public virtual SKColor SKColor
         {
-            get => color ??= (Color == null ? SKColors.Transparent : DeviceColorSpace.CalcSKColor(Color, Alpha));
+            get => color ??= (Color == null
+                ? DeviceRGBColorSpace.CalcSKColor(DeviceRGBColor.Black, Alpha)
+                : DeviceColorSpace.CalcSKColor(Color, Alpha));
             set
             {
                 var oldValue = SKColor;
@@ -376,7 +379,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public virtual string Name
         {
-            get => name ??= BaseDataObject.GetString(PdfName.NM) ?? string.Empty;
+            get => name ??= BaseDataObject.GetString(PdfName.NM) ?? GenerateExistingName();
             set
             {
                 var oldValue = Name;
@@ -636,40 +639,28 @@ namespace PdfClown.Documents.Interaction.Annotations
             return Page?.Rotation ?? RotationEnum.Downward;
         }
 
-        public void Draw(SKCanvas canvas)
+        public SKRect Draw(SKCanvas canvas)
         {
             var appearance = Appearance.Normal[null];
             if (appearance != null)
             {
-                DrawAppearance(canvas, appearance);
+                return DrawAppearance(canvas, appearance);
             }
             else
             {
-                DrawSpecial(canvas);
+                return DrawSpecial(canvas);
             }
         }
 
-        public virtual void DrawSpecial(SKCanvas canvas)
+        public virtual SKRect DrawSpecial(SKCanvas canvas)
         {
-
+            return Box;
         }
 
-        protected virtual void DrawAppearance(SKCanvas canvas, FormXObject appearance)
+        protected virtual SKRect DrawAppearance(SKCanvas canvas, FormXObject appearance)
         {
-            var bounds = Rect.ToRect();
-            var appearanceBounds = appearance.Box;
             var picture = appearance.Render(null);
-
-            var matrix = appearance.Matrix;
-
-            var quad = new Quad(appearanceBounds);
-            quad.Transform(ref matrix);
-
-            var a = SKMatrix.CreateScale(bounds.Width / quad.HorizontalLength, bounds.Height / quad.VerticalLenght);
-            var quadA = Quad.Transform(quad, ref a);
-            a = a.PostConcat(SKMatrix.CreateTranslation(bounds.Left - quadA.Left, bounds.Top - quadA.Top));
-
-            matrix = matrix.PostConcat(a);
+            SKMatrix matrix = GenerateDrawMatrix(appearance, out var bounds);
 
             if (Alpha < 1)
             {
@@ -683,21 +674,46 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 canvas.DrawPicture(picture, ref matrix);
             }
+            return bounds;
         }
 
-        public virtual SKRect GetBounds() => PageMatrix.MapRect(Box);
-
-        public virtual SKRect GetBounds(SKMatrix matrix)
+        protected virtual SKMatrix GenerateDrawMatrix(FormXObject appearance, out SKRect bound)
         {
-            var box = PageMatrix.MapRect(Box);
-            return matrix.MapRect(box);
+            bound = GetDrawBox();
+            var appearanceBounds = appearance.Box;
+
+            var matrix = appearance.Matrix;
+            var quad = new Quad(appearanceBounds);
+            quad.Transform(ref matrix);
+
+            var a = SKMatrix.CreateScale(bound.Width / quad.HorizontalLength, bound.Height / quad.VerticalLenght);
+            var quadA = Quad.Transform(quad, ref a);
+            a = a.PostConcat(SKMatrix.CreateTranslation(bound.Left - quadA.Left, bound.Top - quadA.Top));
+
+            return matrix = matrix.PostConcat(a);
+        }
+
+        protected virtual SKRect GetDrawBox()
+        {
+            return Box;
+        }
+
+        public virtual SKRect GetViewBounds() => PageMatrix.MapRect(Box);
+
+        public virtual SKRect GetViewBounds(SKMatrix viewMatrix)
+        {
+            if ((Flags & AnnotationFlagsEnum.NoZoom) == AnnotationFlagsEnum.NoZoom)
+            {
+
+            }
+            return viewMatrix.PreConcat(PageMatrix).MapRect(Box);
         }
 
         public virtual void SetBounds(SKRect value) => MoveTo(InvertPageMatrix.MapRect(value));
 
-        protected void OnPropertyChanged(object oldValue, object newValue, [CallerMemberName] string propertyName = "")
+        protected void OnPropertyChanged<T>(T oldValue, T newValue, [CallerMemberName] string propertyName = "")
         {
-            PropertyChanged?.Invoke(this, new DetailedPropertyChangedEventArgs(oldValue, newValue, propertyName));
+            PropertyChanged?.Invoke(this, new DetailedPropertyChangedEventArgs<T>(oldValue, newValue, propertyName));
             if (!string.Equals(propertyName, nameof(ModificationDate), StringComparison.Ordinal))
             {
                 ModificationDate = DateTime.UtcNow;
@@ -715,14 +731,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             return cloned;
         }
 
-        public void GenerateName()
+        public string GenerateName()
         {
-            Name = Guid.NewGuid().ToString();
+            return Name = Guid.NewGuid().ToString();
         }
 
-        public void GenerateExistingName()
+        public string GenerateExistingName()
         {
-            Name = $"Annot{Dictionary[PdfName.Subtype]}{Page?.Index}{BaseObject.Reference?.ObjectNumber}{BaseObject.Reference?.GenerationNumber}{Author}";
+            return Name = $"Annot{Dictionary[PdfName.Subtype]}{Page?.Index}{BaseObject.Reference?.ObjectNumber}{BaseObject.Reference?.GenerationNumber}{Author}";
         }
 
 

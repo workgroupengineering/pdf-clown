@@ -1,18 +1,12 @@
 ﻿using PdfClown.Documents;
 using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Interaction.Annotations;
+using PdfClown.Tools;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using PdfClown.Tools;
-using PdfClown.Documents.Contents.Entities;
-using System.Threading;
-using System.Linq;
-using Org.BouncyCastle.Crypto.Engines;
-using System.ComponentModel;
 
 namespace PdfClown.Viewer
 {
@@ -30,7 +24,7 @@ namespace PdfClown.Viewer
         {
         }
 
-        public PdfDocumentView Document
+        public PdfDocumentView DocumentView
         {
             get;
             set;
@@ -76,16 +70,16 @@ namespace PdfClown.Viewer
         {
             if (pageAnnotations == null)
             {
-                Document.LockObject.Wait();
+                DocumentView.LockObject.Wait();
                 try
                 {
-                    Document.LockObject.Reset();
+                    DocumentView.LockObject.Reset();
                     Page.Annotations.RefreshCache();
                     pageAnnotations = Page.Annotations;
                 }
                 finally
                 {
-                    Document.LockObject.Set();
+                    DocumentView.LockObject.Set();
                 }
             }
             foreach (var annotation in pageAnnotations)
@@ -102,9 +96,9 @@ namespace PdfClown.Viewer
 
         public SKPicture GetPicture(SKCanvasView canvasView)
         {
-            if (picture == null && Document.LockObject.IsSet)
+            if (picture == null && DocumentView.LockObject.IsSet)
             {
-                Document.LockObject.Reset();
+                DocumentView.LockObject.Reset();
                 var task = new Task(() => Paint(canvasView));
                 task.Start();
             }
@@ -168,7 +162,7 @@ namespace PdfClown.Viewer
             }
             finally
             {
-                Document.LockObject.Set();
+                DocumentView.LockObject.Set();
             }
         }
 

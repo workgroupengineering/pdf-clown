@@ -24,21 +24,35 @@
 */
 
 using System.ComponentModel;
-//using System.Diagnostics;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    public class DetailedPropertyChangedEventArgs : PropertyChangedEventArgs
+    public abstract class DetailedPropertyChangedEventArgs : PropertyChangedEventArgs
     {
-        public DetailedPropertyChangedEventArgs(object oldValue, object newValue, string propertyName)
+        protected DetailedPropertyChangedEventArgs(string propertyName) : base(propertyName)
+        {
+        }
+
+        public abstract object Old { get; }
+        public abstract object New { get; }
+    }
+
+    public class DetailedPropertyChangedEventArgs<T> : DetailedPropertyChangedEventArgs
+    {
+        public DetailedPropertyChangedEventArgs(T oldValue, T newValue, string propertyName)
             : base(propertyName)
         {
             OldValue = oldValue;
             NewValue = newValue;
         }
 
-        public object OldValue { get; }
-        public object NewValue { get; }
+        public override object Old => OldValue;
+
+        public override object New => NewValue;
+
+        public T OldValue { get; }
+
+        public T NewValue { get; }
     }
 
 }

@@ -45,13 +45,14 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Ellipse(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        public override SKRect DrawSpecial(SKCanvas canvas)
         {
             using (var path = new SKPath())
             {
                 path.AddOval(Box);
                 DrawPath(canvas, path);
             }
+            return base.DrawSpecial(canvas);
         }
     }
 }

@@ -335,16 +335,11 @@ namespace PdfClown.Documents.Contents.Composition
                         DrawLine(points[0]);
                         break;
                     case SKPathVerb.Quad:
-                        var qp0 = points[0];
-                        var qp1 = points[1];
-                        var qp2 = points[2];
-                        var controlPoint1 = qp0 + (qp1 - qp0).Multiply(QuadToQubicKoefficent);
-                        var controlPoint2 = qp2 + (qp1 - qp2).Multiply(QuadToQubicKoefficent);
-                        DrawCurve(qp2, controlPoint1, controlPoint2);
+                        DrawQuad(points[0], points[1], points[2]);
                         break;
                     case SKPathVerb.Conic:
-                        //TODO
-                        DrawLine(points[0]);
+                        var quadPoints = SKPath.ConvertConicToQuads(points[0], points[1], points[2], iterator.ConicWeight(), 0);
+                        DrawQuad(quadPoints[0], quadPoints[1], quadPoints[2]);
                         break;
                     case SKPathVerb.Cubic:
                         DrawCurve(points[3], points[1], points[2]);
@@ -356,6 +351,13 @@ namespace PdfClown.Documents.Contents.Composition
                         break;
                 }
             }
+        }
+
+        public void DrawQuad(SKPoint qp0, SKPoint qp1, SKPoint qp2)
+        {
+            var controlPoint1 = qp0 + (qp1 - qp0).Multiply(QuadToQubicKoefficent);
+            var controlPoint2 = qp2 + (qp1 - qp2).Multiply(QuadToQubicKoefficent);
+            DrawCurve(qp2, controlPoint1, controlPoint2);
         }
 
         /**

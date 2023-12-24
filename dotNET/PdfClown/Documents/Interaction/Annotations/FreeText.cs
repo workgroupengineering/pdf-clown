@@ -36,6 +36,7 @@ using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
 using System.Xml.Linq;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -364,15 +365,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override bool ShowToolTip => false;
 
-        public override void DrawSpecial(SKCanvas canvas)
+        public override SKRect DrawSpecial(SKCanvas canvas)
         {
-            //    Border?.Apply(paint, BorderEffect);
-
-            RefreshAppearance();
-            DrawAppearance(canvas, Appearance.Normal[null]);
+            var appearence = RefreshAppearance();
+            return DrawAppearance(canvas, appearence);
         }
 
-        protected override void RefreshAppearance()
+        protected override FormXObject RefreshAppearance()
         {
             var textBounds = TextBox;
             SKRect box = Box;
@@ -381,11 +380,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             var fontSize = DAOperation?.Size ?? 10;
             var composer = new PrimitiveComposer(normalAppearance);
             {
-
                 textBounds = matrix.MapRect(textBounds);
+                composer.SetLineWidth(1);
                 composer.SetStrokeColor(DeviceRGBColor.Default);
+                Border?.Apply(composer, BorderEffect);
                 composer.SetFillColor(Color ?? DeviceRGBColor.White);
-                composer.DrawRectangle(textBounds, 5);
+                composer.DrawRectangle(textBounds);
                 composer.FillStroke();
 
                 if (Intent == MarkupIntent.FreeTextCallout && Line != null)
@@ -426,7 +426,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
 
                 var block = new BlockComposer(composer);
-                block.Begin(SKRect.Inflate(textBounds, -1, -1), XAlignmentEnum.Left, YAlignmentEnum.Top);
+                block.Begin(SKRect.Inflate(textBounds, -0.5F, -0.5F), XAlignmentEnum.Left, YAlignmentEnum.Top);
                 composer.SetFillColor(DeviceRGBColor.Default);
                 composer.SetFont(font, fontSize);
                 block.ShowText(Contents);
@@ -434,6 +434,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
                 composer.Flush();
             }
+            return normalAppearance;
         }
 
         public override void MoveTo(SKRect newBox)

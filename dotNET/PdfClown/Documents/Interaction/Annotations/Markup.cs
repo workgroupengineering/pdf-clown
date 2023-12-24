@@ -250,9 +250,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        protected virtual void RefreshAppearance()
+        protected virtual FormXObject RefreshAppearance()
         {
-
+            return null;
         }
         
        

@@ -439,7 +439,7 @@ namespace PdfClown.Documents.Contents
                 //    0, 0, 0, 1, 0
                 //});
                 paint.Shader = SKShader.CreatePicture(softMaskPicture);
-                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.DstOver;
+                paint.BlendMode = knockout ? SKBlendMode.SrcOver : isolated ? SKBlendMode.SrcATop : SKBlendMode.Multiply;
 
             }
         }

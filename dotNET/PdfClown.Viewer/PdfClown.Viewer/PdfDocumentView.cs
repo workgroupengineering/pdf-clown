@@ -23,7 +23,7 @@ namespace PdfClown.Viewer
             return document;
         }
 
-        public static PdfDocumentView LoadFrom(System.IO.Stream fileStream)
+        public static PdfDocumentView LoadFrom(Stream fileStream)
         {
             var document = new PdfDocumentView();
             document.Load(fileStream);
@@ -82,7 +82,7 @@ namespace PdfClown.Viewer
                 var imageSize = new SKSize(box.Width * dpi, box.Height * dpi);
                 var pageView = new PdfPageView
                 {
-                    Document = this,
+                    DocumentView = this,
                     Order = order++,
                     Index = page.Index,
                     Page = page,
@@ -207,17 +207,16 @@ namespace PdfClown.Viewer
             SaveTo(stream, GetMode());
         }
 
-        private SerializationModeEnum GetMode()
-        {
-            return ((IEnumerable<Field>)Fields).Any(x => x is SignatureField signature
-                        && !signature.SignatureDictionary.Contents.IsEmpty)
-                            ? SerializationModeEnum.Incremental
-                            : SerializationModeEnum.Standard;
-        }
-
         public void SaveTo(Stream stream, SerializationModeEnum mode)
         {
             File.Save(stream, mode);
+        }
+
+        private SerializationModeEnum GetMode()
+        {
+            return ((IEnumerable<Field>)Fields).Any(x => x is SignatureField signature)
+                            ? SerializationModeEnum.Incremental
+                            : SerializationModeEnum.Standard;
         }
 
         public void OnEndOperation(object result)

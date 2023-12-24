@@ -26,6 +26,7 @@
 using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -178,6 +179,17 @@ namespace PdfClown.Documents.Interaction.Annotations
             paint.Style = SKPaintStyle.Stroke;
             paint.StrokeWidth = (float)Width;
             paint.IsAntialias = true;
+            if (Style == BorderStyleType.Dashed)
+            {
+                Pattern?.Apply(paint);
+            }
+            borderEffect?.Apply(paint);
+        }
+
+        public void Apply(PrimitiveComposer paint, BorderEffect borderEffect)
+        {
+            paint.SetLineWidth((float)Width);
+
             if (Style == BorderStyleType.Dashed)
             {
                 Pattern?.Apply(paint);

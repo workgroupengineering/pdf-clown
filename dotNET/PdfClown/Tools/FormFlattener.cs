@@ -70,7 +70,7 @@ namespace PdfClown.Tools
                             if (!pageStampers.TryGetValue(widgetPage, out widgetStamper))
                             { pageStampers[widgetPage] = widgetStamper = new PageStamper(widgetPage); }
 
-                            SKRect widgetBox = widget.GetBounds();
+                            SKRect widgetBox = widget.GetViewBounds();
                             widgetStamper.Foreground.ShowXObject(widgetCurrentAppearance, widgetBox.Location, widgetBox.Size);
                         }
                     }

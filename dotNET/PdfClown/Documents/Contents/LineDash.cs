@@ -25,6 +25,7 @@
 
 using System;
 using System.Linq;
+using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
 using PdfClown.Util;
 using SkiaSharp;
@@ -73,7 +74,7 @@ namespace PdfClown.Documents.Contents
 
         public float DashPhase => dashPhase;
 
-        public void Apply(SKPaint stroke)
+        public void Apply(SKPaint paint)
         {
             var dashArray = DashArray;
             if (dashArray.Length > 0)
@@ -85,7 +86,16 @@ namespace PdfClown.Documents.Contents
                     list[dashArray.Length] = dashArray[dashArray.Length - 1];
                     dashArray = list;
                 }
-                stroke.PathEffect = SKPathEffect.CreateDash(dashArray, DashPhase);
+                paint.PathEffect = SKPathEffect.CreateDash(dashArray, DashPhase);
+            }
+        }
+
+        public void Apply(PrimitiveComposer paint)
+        {
+            var dashArray = DashArray;
+            if (dashArray.Length > 0)
+            {
+                paint.SetLineDash(new LineDash(dashArray));
             }
         }
 

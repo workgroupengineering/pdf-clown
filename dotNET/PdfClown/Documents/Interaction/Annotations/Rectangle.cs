@@ -47,12 +47,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(baseObject)
         { }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        public override SKRect DrawSpecial(SKCanvas canvas)
         {
             using (var path = new SKPath())
             {
                 path.AddRect(Box);
                 DrawPath(canvas, path);
+                return Box;
             }
         }
     }

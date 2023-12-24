@@ -26,6 +26,7 @@
 using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -165,6 +166,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
             return targetPath;
+        }
+
+        public void Apply(PrimitiveComposer paint)
+        {
+            if (Type == BorderEffectType.Cloudy)
+            {
+                
+            }
         }
 
         public bool Equals(BorderEffect other)
