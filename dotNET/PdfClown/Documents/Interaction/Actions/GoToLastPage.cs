@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToLastPage(Document context)
+        public GoToLastPage(PdfDocument context)
             : base(context, PdfName.LastPage)
         { }
 

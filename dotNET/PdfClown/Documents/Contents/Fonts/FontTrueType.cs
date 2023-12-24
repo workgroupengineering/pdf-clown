@@ -122,7 +122,7 @@ namespace PdfClown.Documents.Contents.Fonts
         /**
          * Creates a new TrueType font for embedding.
          */
-        private FontTrueType(Document document, TrueTypeFont ttf, Encoding encoding, bool closeTTF)
+        private FontTrueType(PdfDocument document, TrueTypeFont ttf, Encoding encoding, bool closeTTF)
             : base(document)
         {
             var embedder = new FontTrueTypeEmbedder(document, Dictionary, ttf, encoding);
@@ -151,7 +151,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return a PdfTrueTypeFont instance.
          * @throws IOException If there is an error loading the data.
          */
-        public static FontTrueType Load(Document doc, string file, Encoding encoding)
+        public static FontTrueType Load(PdfDocument doc, string file, Encoding encoding)
         {
             return new FontTrueType(doc, new TTFParser().Parse(file), encoding, true);
         }
@@ -168,7 +168,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return a PdfTrueTypeFont instance.
          * @throws IOException If there is an error loading the data.
          */
-        public static FontTrueType Load(Document doc, IInputStream input, Encoding encoding)
+        public static FontTrueType Load(PdfDocument doc, IInputStream input, Encoding encoding)
 
         {
             return new FontTrueType(doc, new TTFParser().Parse(input), encoding, true);
@@ -188,7 +188,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return a PdfTrueTypeFont instance.
          * @throws IOException If there is an error loading the data.
          */
-        public static FontTrueType Load(Document doc, TrueTypeFont ttf, Encoding encoding)
+        public static FontTrueType Load(PdfDocument doc, TrueTypeFont ttf, Encoding encoding)
         {
             return new FontTrueType(doc, ttf, encoding, false);
         }

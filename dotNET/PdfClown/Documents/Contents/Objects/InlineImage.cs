@@ -138,7 +138,7 @@ namespace PdfClown.Documents.Contents.Objects
             return image = BitmapLoader.Load(this, state);
         }
 
-        public override void WriteTo(IOutputStream stream, Document context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             stream.Write(BeginOperatorKeyword); stream.Write("\n");
             Header.WriteTo(stream, context);

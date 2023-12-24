@@ -36,17 +36,18 @@ using System.Reflection;
 using System.Text;
 using System.IO;
 using PdfClown.Documents.Encryption;
+using PdfClown.Files;
 
-namespace PdfClown.Files
+namespace PdfClown
 {
     /**
       <summary>PDF file representation.</summary>
     */
-    public sealed class File : IDisposable
+    public sealed class PdfFile : IDisposable
     {
         private sealed class ImplicitContainer : PdfIndirectObject
         {
-            public ImplicitContainer(File file, PdfDataObject dataObject)
+            public ImplicitContainer(PdfFile file, PdfDataObject dataObject)
                 : base(file, dataObject, new XRefEntry(int.MinValue, int.MinValue))
             { }
         }
@@ -54,38 +55,38 @@ namespace PdfClown.Files
         private static Random hashCodeGenerator = new Random();
 
         private FileConfiguration configuration;
-        private readonly Document document;
+        private readonly PdfDocument document;
         private readonly int hashCode = hashCodeGenerator.Next();
         private readonly IndirectObjects indirectObjects;
         private string path;
         private Reader reader;
         private readonly PdfDictionary trailer;
-        private readonly Version version;
+        private readonly PdfVersion version;
         private Cloner cloner;
 
-        public File()
+        public PdfFile()
         {
             Initialize();
 
             version = VersionEnum.PDF14.GetVersion();
             trailer = PrepareTrailer(new PdfDictionary());
             indirectObjects = new IndirectObjects(this, null);
-            document = new Document(this);
+            document = new PdfDocument(this);
         }
 
-        public File(string path)
+        public PdfFile(string path)
             : this((IInputStream)new StreamContainer(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
         {
             this.path = path;
         }
 
-        public File(byte[] data) : this((IInputStream)new ByteStream(data))
+        public PdfFile(byte[] data) : this((IInputStream)new ByteStream(data))
         { }
 
-        public File(Stream stream) : this((IInputStream)new StreamContainer(stream))
+        public PdfFile(Stream stream) : this((IInputStream)new StreamContainer(stream))
         { }
 
-        public File(IInputStream stream)
+        public PdfFile(IInputStream stream)
         {
             Initialize();
 
@@ -102,7 +103,7 @@ namespace PdfClown.Files
                 var documentReference = trailer[PdfName.Root];
                 if (documentReference.Resolve() is PdfDictionary)
                 {
-                    document = new Document(documentReference);
+                    document = new PdfDocument(documentReference);
                 }
                 else
                 {
@@ -112,13 +113,13 @@ namespace PdfClown.Files
                         if (entry is PdfDictionary entryDictionary
                             && entryDictionary[PdfName.Pages] != null)
                         {
-                            document = new Document(entry.Reference);
+                            document = new PdfDocument(entry.Reference);
                         }
                     }
                 }
-                Configuration.XRefMode = (PdfName.XRef.Equals(trailer[PdfName.Type])
+                Configuration.XRefMode = PdfName.XRef.Equals(trailer[PdfName.Type])
                   ? XRefModeEnum.Compressed
-                  : XRefModeEnum.Plain);
+                  : XRefModeEnum.Plain;
             }
             catch (Exception)
             {
@@ -127,7 +128,7 @@ namespace PdfClown.Files
             }
         }
 
-        ~File()
+        ~PdfFile()
         {
             Dispose(false);
         }
@@ -140,7 +141,7 @@ namespace PdfClown.Files
         /**
           <summary>Gets the high-level representation of the file content.</summary>
         */
-        public Document Document => document;
+        public PdfDocument Document => document;
 
         public PdfEncryption Encryption
         {
@@ -191,10 +192,10 @@ namespace PdfClown.Files
         /**
           <summary>Gets the file header version [PDF:1.6:3.4.1].</summary>
           <remarks>This property represents just the original file version; to get the actual version,
-          use the <see cref="Document.Version">Document.Version</see> method.
+          use the <see cref="PdfDocument.Version">Document.Version</see> method.
           </remarks>
         */
-        public Version Version => version;
+        public PdfVersion Version => version;
 
         /**
           <summary>Registers an <b>internal data object</b>.</summary>
@@ -219,7 +220,7 @@ namespace PdfClown.Files
         */
         public void Save(SerializationModeEnum mode)
         {
-            if (!System.IO.File.Exists(path))
+            if (!File.Exists(path))
                 throw new FileNotFoundException("No valid source path available.");
 
             /*
@@ -242,7 +243,7 @@ namespace PdfClown.Files
             {
                 Save((IOutputStream)new StreamContainer(outputStream), mode);
             }
-            System.IO.File.SetLastWriteTimeUtc(path, DateTime.UtcNow);
+            File.SetLastWriteTimeUtc(path, DateTime.UtcNow);
         }
 
         /**
@@ -327,10 +328,10 @@ namespace PdfClown.Files
         private void CompleatSave()
         {
             //NOTE: If the temporary file exists (see Save() method), it must overwrite the document file.
-            if (System.IO.File.Exists(TempPath))
+            if (File.Exists(TempPath))
             {
-                System.IO.File.Delete(path);
-                System.IO.File.Move(TempPath, path);
+                File.Delete(path);
+                File.Move(TempPath, path);
             }
         }
 
@@ -344,7 +345,7 @@ namespace PdfClown.Files
             return (PdfDictionary)new ImplicitContainer(this, trailer).DataObject;
         }
 
-        private string TempPath => (path == null ? null : path + ".tmp");
+        private string TempPath => path == null ? null : $"{path}.tmp";
 
     }
 }

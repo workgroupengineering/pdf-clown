@@ -93,22 +93,22 @@ namespace PdfClown.Documents.Interaction.Actions
                 return OperationEnum.Open;
             }
 
-            public WinTarget(Document context, string fileName)
+            public WinTarget(PdfDocument context, string fileName)
                 : base(context, new PdfDictionary())
             { FileName = fileName; }
 
-            public WinTarget(Document context, string fileName, OperationEnum operation)
+            public WinTarget(PdfDocument context, string fileName, OperationEnum operation)
                 : this(context, fileName)
             { Operation = operation; }
 
-            public WinTarget(Document context, string fileName, string parameterString)
+            public WinTarget(PdfDocument context, string fileName, string parameterString)
                 : this(context, fileName)
             { ParameterString = parameterString; }
 
             public WinTarget(PdfDirectObject baseObject) : base(baseObject)
             { }
 
-            public override object Clone(Document context)
+            public override object Clone(PdfDocument context)
             { throw new NotImplementedException(); }
 
             /**
@@ -163,7 +163,7 @@ namespace PdfClown.Documents.Interaction.Actions
           <param name="target">Either a <see cref="FileSpecification"/> or a <see cref="WinTarget"/>
           representing either an application or a document.</param>
         */
-        public Launch(Document context, PdfObjectWrapper target) : base(context, PdfName.Launch)
+        public Launch(PdfDocument context, PdfObjectWrapper target) : base(context, PdfName.Launch)
         { Target = target; }
 
         internal Launch(PdfDirectObject baseObject) : base(baseObject)

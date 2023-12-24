@@ -48,7 +48,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         private IList<SKPath> paths;
         private IList<SKPath> pagePaths;
-        public Scribble(Page page, IList<SKPath> paths, string text, DeviceColor color)
+        public Scribble(PdfPage page, IList<SKPath> paths, string text, DeviceColor color)
             : base(page, PdfName.Ink, new SKRect(), text)
         {
             Paths = paths;
@@ -139,6 +139,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             var paint = new PrimitiveComposer(appearence);
             paint.SetStrokeColor(Color);
             paint.SetLineWidth(1);
+            paint.SetLineJoin(Documents.Contents.LineJoinEnum.Round);
             Border?.Apply(paint, null);
             foreach (var pathData in PagePaths)
             {
@@ -205,7 +206,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         path.LineTo(point);
                     }
                 }
-                path.Close();
+                //path.Close();
                 list.Add(path);
             }
             return list;

@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF10)]
     public sealed class Bookmarks : PdfObjectWrapper<PdfDictionary>, IList<Bookmark>
     {
-        public Bookmarks(Document context)
+        public Bookmarks(PdfDocument context)
             : base(context, new PdfDictionary
             {
                 { PdfName.Type, PdfName.Outlines },

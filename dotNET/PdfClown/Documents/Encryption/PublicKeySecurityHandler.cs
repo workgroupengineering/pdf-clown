@@ -287,7 +287,7 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error while encrypting.
 		 */
-        public override void PrepareDocumentForEncryption(Document doc)
+        public override void PrepareDocumentForEncryption(PdfDocument doc)
         {
             try
             {

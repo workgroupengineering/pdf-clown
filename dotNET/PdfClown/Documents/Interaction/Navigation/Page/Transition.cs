@@ -294,19 +294,19 @@ namespace PdfClown.Documents.Interaction.Navigation
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public Transition(Document context)
+        public Transition(PdfDocument context)
             : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Trans } })
         { }
 
-        public Transition(Document context, StyleEnum style)
+        public Transition(PdfDocument context, StyleEnum style)
             : this(context, style, DefaultDuration, DefaultOrientation, DefaultPageDirection, DefaultDirection, DefaultScale)
         { }
 
-        public Transition(Document context, StyleEnum style, double duration)
+        public Transition(PdfDocument context, StyleEnum style, double duration)
             : this(context, style, duration, DefaultOrientation, DefaultPageDirection, DefaultDirection, DefaultScale)
         { }
 
-        public Transition(Document context, StyleEnum style, double duration, OrientationEnum orientation, PageDirectionEnum pageDirection, DirectionEnum direction, double scale)
+        public Transition(PdfDocument context, StyleEnum style, double duration, OrientationEnum orientation, PageDirectionEnum pageDirection, DirectionEnum direction, double scale)
             : this(context)
         {
             Style = style;

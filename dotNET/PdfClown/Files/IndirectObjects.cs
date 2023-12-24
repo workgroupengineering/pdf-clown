@@ -61,7 +61,7 @@ namespace PdfClown.Files
         /**
           <summary>Associated file.</summary>
         */
-        private File file;
+        private PdfFile file;
 
         /**
           <summary>Map of matching references of imported indirect objects.</summary>
@@ -95,7 +95,7 @@ namespace PdfClown.Files
         */
         private SortedDictionary<int, XRefEntry> xrefEntries;
 
-        internal IndirectObjects(File file, SortedDictionary<int, XRefEntry> xrefEntries)
+        internal IndirectObjects(PdfFile file, SortedDictionary<int, XRefEntry> xrefEntries)
         {
             this.file = file;
             this.xrefEntries = xrefEntries;
@@ -182,7 +182,7 @@ namespace PdfClown.Files
         /**
           <summary>Gets the file associated to this collection.</summary>
         */
-        public File File => file;
+        public PdfFile File => file;
 
         public bool IsEmpty()
         {

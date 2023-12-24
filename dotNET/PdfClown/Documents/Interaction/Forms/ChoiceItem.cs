@@ -52,7 +52,7 @@ namespace PdfClown.Documents.Interaction.Forms
             : base(new PdfTextString(value))
         { }
 
-        public ChoiceItem(Document context, string value, string text)
+        public ChoiceItem(PdfDocument context, string value, string text)
             : base(context, new PdfArray(2) { new PdfTextString(value), new PdfTextString(text) })
         { }
 
@@ -60,7 +60,7 @@ namespace PdfClown.Documents.Interaction.Forms
             : base(baseObject)
         { Items = items; }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); }
 
         //TODO:make the class immutable (to avoid needing wiring it up to its collection...)!!!

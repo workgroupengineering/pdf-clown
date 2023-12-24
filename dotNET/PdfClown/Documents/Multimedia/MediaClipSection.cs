@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Multimedia
     {
         #region dynamic
         #region constructors
-        public MediaClipSection(Document context) : base(context, PdfName.MCS)
+        public MediaClipSection(PdfDocument context) : base(context, PdfName.MCS)
         { }
 
         internal MediaClipSection(PdfDirectObject baseObject) : base(baseObject)

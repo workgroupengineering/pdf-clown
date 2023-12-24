@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Tokens;
 using System;
 using System.Runtime.CompilerServices;
@@ -56,7 +55,7 @@ namespace PdfClown.Objects
 
         public override int GetHashCode() => PdfNumber.GetHashCode(this);
 
-        public override void WriteTo(IOutputStream stream, File context) => stream.WriteAsString(RawValue);
+        public override void WriteTo(IOutputStream stream, PdfFile context) => stream.WriteAsString(RawValue);
 
         public T GetValue<T>() where T : struct
         {

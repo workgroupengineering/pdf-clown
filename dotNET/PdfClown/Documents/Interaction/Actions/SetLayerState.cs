@@ -387,13 +387,13 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public SetLayerState(Document context) : this(context, (LayerState)null)
+        public SetLayerState(PdfDocument context) : this(context, (LayerState)null)
         { }
 
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public SetLayerState(Document context, params LayerState[] states) : base(context, PdfName.SetOCGState)
+        public SetLayerState(PdfDocument context, params LayerState[] states) : base(context, PdfName.SetOCGState)
         {
             States = new LayerStates();
             if (states != null && states.Length > 0)

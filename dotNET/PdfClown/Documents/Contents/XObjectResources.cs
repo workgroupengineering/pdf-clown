@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF10)]
     public sealed class XObjectResources : ResourceItems<XObject>
     {
-        public XObjectResources(Document context) : base(context)
+        public XObjectResources(PdfDocument context) : base(context)
         { }
 
         public XObjectResources(PdfDirectObject baseObject) : base(baseObject)

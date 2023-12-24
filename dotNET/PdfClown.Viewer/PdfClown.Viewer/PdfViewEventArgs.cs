@@ -40,7 +40,7 @@ namespace PdfClown.Viewer
             }
         }
 
-        public Page Page => PageView.Page;
+        public PdfPage Page => PageView.Page;
 
         //Touch
         public SKTouchEventArgs TouchEvent;

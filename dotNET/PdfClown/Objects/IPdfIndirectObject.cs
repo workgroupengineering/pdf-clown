@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Files;
-
 namespace PdfClown.Objects
 {
     /**
@@ -32,7 +30,7 @@ namespace PdfClown.Objects
     */
     public interface IPdfIndirectObject
     {
-        PdfObject Clone(File context);
+        PdfObject Clone(PdfFile context);
 
         /**
           <summary>Gets/Sets the actual data associated to the indirect reference.</summary>

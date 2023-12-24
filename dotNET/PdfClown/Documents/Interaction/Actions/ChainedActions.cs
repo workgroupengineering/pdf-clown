@@ -53,7 +53,7 @@ namespace PdfClown.Documents.Interaction.Actions
         public ChainedActions(PdfDirectObject baseObject, Action parent) : base(baseObject)
         { this.parent = parent; }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); } // TODO:verify
 
         /**

@@ -76,7 +76,7 @@ namespace PdfClown.Documents.Multimedia
             { return VersionUtils.ToString(this); }
         }
 
-        public SoftwareIdentifier(Document context) : base(context, new PdfDictionary())
+        public SoftwareIdentifier(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public SoftwareIdentifier(PdfDirectObject baseObject) : base(baseObject)

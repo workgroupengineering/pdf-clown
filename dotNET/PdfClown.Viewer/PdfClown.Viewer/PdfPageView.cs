@@ -14,7 +14,7 @@ namespace PdfClown.Viewer
     {
         private SKPicture picture;
         private SKMatrix matrix = SKMatrix.Identity;
-        private Page page;
+        private PdfPage page;
         private SKImage image;
         private float imageScale;
         private PageAnnotations pageAnnotations;
@@ -30,7 +30,7 @@ namespace PdfClown.Viewer
             set;
         }
 
-        public Page Page
+        public PdfPage Page
         {
             get => page;
             set => page = value;
@@ -70,17 +70,8 @@ namespace PdfClown.Viewer
         {
             if (pageAnnotations == null)
             {
-                DocumentView.LockObject.Wait();
-                try
-                {
-                    DocumentView.LockObject.Reset();
-                    Page.Annotations.RefreshCache();
-                    pageAnnotations = Page.Annotations;
-                }
-                finally
-                {
-                    DocumentView.LockObject.Set();
-                }
+                Page.Annotations.RefreshCache(DocumentView.LockObject);
+                pageAnnotations = Page.Annotations;
             }
             foreach (var annotation in pageAnnotations)
             {

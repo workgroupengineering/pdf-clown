@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public DoTransition(Document context, Transition transition)
+        public DoTransition(PdfDocument context, Transition transition)
             : base(context, PdfName.Trans)
         { Transition = transition; }
 

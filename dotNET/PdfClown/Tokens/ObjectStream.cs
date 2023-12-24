@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -108,7 +107,7 @@ namespace PdfClown.Tokens
             set => Header[PdfName.Extends] = value.Reference;
         }
 
-        public override void WriteTo(IOutputStream stream, File context)
+        public override void WriteTo(IOutputStream stream, PdfFile context)
         {
             if (entries != null)
             { Flush(stream); }
@@ -230,15 +229,15 @@ namespace PdfClown.Tokens
                 // Serializing the entries into the stream buffer...
                 IByteStream indexBuffer = new ByteStream();
                 IByteStream dataBuffer = new ByteStream();
-                IndirectObjects indirectObjects = File.IndirectObjects;
+                var indirectObjects = File.IndirectObjects;
                 int objectIndex = -1;
-                File context = File;
+                var context = File;
                 foreach (KeyValuePair<int, ObjectEntry> entry in Entries)
                 {
                     int objectNumber = entry.Key;
 
                     // Update the xref entry!
-                    XRefEntry xrefEntry = indirectObjects[objectNumber].XrefEntry;
+                    var xrefEntry = indirectObjects[objectNumber].XrefEntry;
                     xrefEntry.Offset = ++objectIndex;
 
                     /*
@@ -272,9 +271,9 @@ namespace PdfClown.Tokens
 
             // 2. Header.
             {
-                PdfDictionary header = Header;
-                header[PdfName.N] = PdfInteger.Get(Entries.Count);
-                header[PdfName.First] = PdfInteger.Get(dataByteOffset);
+                var header = Header;
+                header.SetInt(PdfName.N, Entries.Count);
+                header.SetInt(PdfName.First, dataByteOffset);
             }
         }
     }

@@ -62,7 +62,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
         { }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         {
             throw new NotImplementedException();
         }

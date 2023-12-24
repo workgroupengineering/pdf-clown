@@ -23,9 +23,9 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                PdfDocument document = file.Document;
 
                 // 2. Stamp the document!
                 Stamp(document);
@@ -35,7 +35,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private void Stamp(Document document)
+        private void Stamp(PdfDocument document)
         {
             // 1. Instantiate the stamper!
             /* NOTE: The PageStamper is optimized for dealing with pages. */
@@ -45,7 +45,7 @@ namespace PdfClown.Samples.CLI
             var font = FontType1.Load(document, FontName.CourierBold);
             var redColor = DeviceRGBColor.Get(SKColors.Red);
             int margin = 32;
-            foreach (Page page in document.Pages)
+            foreach (var page in document.Pages)
             {
                 // 2.1. Associate the page to the stamper!
                 stamper.Page = page;

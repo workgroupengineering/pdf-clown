@@ -48,7 +48,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private SKRect? fontBBox;
         private int[] cid2gid = null;
 
-        public FontCIDType0(Document document, PdfDictionary fontObject) : base(document, fontObject)
+        public FontCIDType0(PdfDocument document, PdfDictionary fontObject) : base(document, fontObject)
         {
         }
 

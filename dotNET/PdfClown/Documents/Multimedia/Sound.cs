@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Multimedia
         /**
           <summary>Creates a new sound within the given document context.</summary>
         */
-        public Sound(Document context, IInputStream stream)
+        public Sound(PdfDocument context, IInputStream stream)
             : base(context, new PdfStream(new PdfDictionary { { PdfName.Type, PdfName.Sound } }))
         { throw new NotImplementedException("Process the sound stream!"); }
 

@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Functions
         public Functions(PdfDirectObject baseObject, Type3Function parent) : base(baseObject)
         { this.parent = parent; }
 
-        public override Object Clone(Document context)
+        public override Object Clone(PdfDocument context)
         { return new NotImplementedException(); }
 
         /**

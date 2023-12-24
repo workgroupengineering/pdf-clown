@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public abstract class Shape : Markup
     {
-        protected Shape(Page page, SKRect box, string text, PdfName subtype)
+        protected Shape(PdfPage page, SKRect box, string text, PdfName subtype)
             : base(page, subtype, box, text)
         { }
 

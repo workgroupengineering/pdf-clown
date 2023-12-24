@@ -22,18 +22,18 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Instantiate the source PDF file!
             string filePath = PromptFileChoice("Please select a PDF file to use as source");
-            using (var sourceFile = new File(filePath))
+            using (var sourceFile = new PdfFile(filePath))
             {
                 // 2. Instantiate a new PDF file!
-                File file = new File();
+                var file = new PdfFile();
 
                 // 3. Source page combination into target file.
-                Document document = file.Document;
-                Pages pages = document.Pages;
+                var document = file.Document;
+                var pages = document.Pages;
                 int pageIndex = -1;
                 PrimitiveComposer composer = null;
                 SKSize targetPageSize = PageFormat.GetSize(PageFormat.SizeEnum.A4);
-                foreach (Page sourcePage in sourceFile.Document.Pages)
+                foreach (var sourcePage in sourceFile.Document.Pages)
                 {
                     pageIndex++;
                     int pageMod = pageIndex % 2;
@@ -43,7 +43,7 @@ namespace PdfClown.Samples.CLI
                         { composer.Flush(); }
 
                         // Add a page to the target document!
-                        Page page = new Page(document, PageFormat.GetSize(PageFormat.SizeEnum.A3, PageFormat.OrientationEnum.Landscape));
+                        var page = new PdfPage(document, PageFormat.GetSize(PageFormat.SizeEnum.A3, PageFormat.OrientationEnum.Landscape));
                         // Instantiates the page inside the document context.
                         pages.Add(page); // Puts the page in the pages collection.
                                          // Create a composer for the target content stream!

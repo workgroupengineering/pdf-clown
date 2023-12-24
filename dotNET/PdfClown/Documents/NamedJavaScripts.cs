@@ -37,7 +37,7 @@ namespace PdfClown.Documents
     public sealed class NamedJavaScripts : NameTree<JavaScript>
     {
 
-        public NamedJavaScripts(Document context) : base(context)
+        public NamedJavaScripts(PdfDocument context) : base(context)
         { }
 
         public NamedJavaScripts(PdfDirectObject baseObject) : base(baseObject)

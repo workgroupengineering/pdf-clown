@@ -1,5 +1,4 @@
 using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Tools;
 
@@ -16,8 +15,7 @@ namespace PdfClown.Samples.CLI
       a PDF document, to perform page data size calculations, additions, movements,
       removals, extractions and splits of groups of pages.</summary>
     */
-    public class PageManagementSample
-      : Sample
+    public class PageManagementSample : Sample
     {
         internal enum ActionEnum
         {
@@ -33,17 +31,16 @@ namespace PdfClown.Samples.CLI
             DocumentSplitOnMaximumFileSize
         }
 
-        public override void Run(
-          )
+        public override void Run()
         {
             ActionEnum action = PromptAction();
 
             // Opening the PDF file...
             string mainFilePath = PromptFileChoice("Please select a PDF file");
-            using (var mainFile = new File(mainFilePath))
+            using (var mainFile = new PdfFile(mainFilePath))
             {
-                Document mainDocument = mainFile.Document;
-                Pages mainPages = mainDocument.Pages;
+                var mainDocument = mainFile.Document;
+                var mainPages = mainDocument.Pages;
                 int mainPagesCount = mainPages.Count;
 
                 switch (action)
@@ -59,7 +56,7 @@ namespace PdfClown.Samples.CLI
                             // Calculating the page data sizes...
                             HashSet<PdfReference> visitedReferences = new HashSet<PdfReference>();
                             long incrementalDataSize = 0;
-                            foreach (Page page in mainPages)
+                            foreach (var page in mainPages)
                             {
                                 long pageFullDataSize = PageManager.GetSize(page);
                                 long pageDifferentialDataSize = PageManager.GetSize(page, visitedReferences);
@@ -86,7 +83,7 @@ namespace PdfClown.Samples.CLI
                               + "\ntypographic attributes in relation to the other contents existing in the same page"
                               + "\nor document.\n");
                             int blankPageCount = 0;
-                            foreach (Page page in mainPages)
+                            foreach (var page in mainPages)
                             {
                                 SKRect pageBox = page.Box;
                                 SKSize margin = new SKSize(pageBox.Width * .15f, pageBox.Height * .15f);
@@ -104,7 +101,7 @@ namespace PdfClown.Samples.CLI
                         {
                             // Opening the source file...
                             string sourceFilePath = PromptFileChoice("Select the source PDF file");
-                            using (var sourceFile = new File(sourceFilePath))
+                            using (var sourceFile = new PdfFile(sourceFilePath))
                             {
                                 // Source page collection.
                                 Pages sourcePages = sourceFile.Document.Pages;
@@ -176,7 +173,7 @@ namespace PdfClown.Samples.CLI
                             int toPageIndex = PromptPageChoice("Select the end page", fromPageIndex, mainPagesCount) + 1;
 
                             // Extract the chosen page range!
-                            Document targetDocument = new PageManager(mainDocument).Extract(
+                            PdfDocument targetDocument = new PageManager(mainDocument).Extract(
                               fromPageIndex,
                               toPageIndex
                               );
@@ -189,7 +186,7 @@ namespace PdfClown.Samples.CLI
                         {
                             // Opening the source file...
                             string sourceFilePath = PromptFileChoice("Select the source PDF file");
-                            using (var sourceFile = new File(sourceFilePath))
+                            using (var sourceFile = new PdfFile(sourceFilePath))
                             {
                                 // Append the chosen source document to the main document!
                                 new PageManager(mainDocument).Add(sourceFile.Document);
@@ -201,11 +198,11 @@ namespace PdfClown.Samples.CLI
                     case ActionEnum.DocumentBurst:
                         {
                             // Split the document into single-page documents!
-                            IList<Document> splitDocuments = new PageManager(mainDocument).Split();
+                            IList<PdfDocument> splitDocuments = new PageManager(mainDocument).Split();
 
                             // Serialize the split files!
                             int index = 0;
-                            foreach (Document splitDocument in splitDocuments)
+                            foreach (PdfDocument splitDocument in splitDocuments)
                             { Serialize(splitDocument.File, action, ++index); }
                         }
                         break;
@@ -231,12 +228,12 @@ namespace PdfClown.Samples.CLI
                             }
 
                             // Split the document at the chosen positions!
-                            IList<Document> splitDocuments = new PageManager(mainDocument).Split(splitIndexes);
+                            IList<PdfDocument> splitDocuments = new PageManager(mainDocument).Split(splitIndexes);
 
                             // Serialize the split files!
                             {
                                 int index = 0;
-                                foreach (Document splitDocument in splitDocuments)
+                                foreach (PdfDocument splitDocument in splitDocuments)
                                 { Serialize(splitDocument.File, action, ++index); }
                             }
                         }
@@ -261,12 +258,12 @@ namespace PdfClown.Samples.CLI
                             }
 
                             // Split the document on maximum file size!
-                            IList<Document> splitDocuments = new PageManager(mainDocument).Split(maxDataSize);
+                            IList<PdfDocument> splitDocuments = new PageManager(mainDocument).Split(maxDataSize);
 
                             // Serialize the split files!
                             {
                                 int index = 0;
-                                foreach (Document splitDocument in splitDocuments)
+                                foreach (PdfDocument splitDocument in splitDocuments)
                                 { Serialize(splitDocument.File, action, ++index); }
                             }
                         }
@@ -293,10 +290,7 @@ namespace PdfClown.Samples.CLI
           <param name="file">File to serialize.</param>
           <param name="action">Generator.</param>
         */
-        private void Serialize(
-          File file,
-          ActionEnum action
-          )
+        private void Serialize(PdfFile file, ActionEnum action)
         { Serialize(file, action, null); }
 
         /**
@@ -305,11 +299,7 @@ namespace PdfClown.Samples.CLI
           <param name="action">Generator.</param>
           <param name="index">File index.</param>
         */
-        private void Serialize(
-          File file,
-          ActionEnum action,
-          int? index
-          )
+        private void Serialize(PdfFile file, ActionEnum action, int? index)
         {
             Serialize(
               file,

@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Contents
     public abstract class ResourceItems<TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, TValue>, IDictionary
         where TValue : PdfObjectWrapper
     {
-        protected ResourceItems(Document context) : base(context, new PdfDictionary())
+        protected ResourceItems(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public ResourceItems(PdfDirectObject baseObject) : base(baseObject)

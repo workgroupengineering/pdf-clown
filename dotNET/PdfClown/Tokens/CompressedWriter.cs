@@ -45,7 +45,7 @@ namespace PdfClown.Tokens
         */
         private static int ObjectStreamMaxEntryCount = 100;
 
-        internal CompressedWriter(Files.File file, IOutputStream stream) : base(file, stream)
+        internal CompressedWriter(PdfFile file, IOutputStream stream) : base(file, stream)
         { }
 
         protected override void WriteIncremental()

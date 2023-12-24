@@ -61,7 +61,7 @@ namespace PdfClown.Documents.Interaction.Annotations
           + "var " + PlayerPlaceholder + "=app.media.openPlayer({settings:settings,events:events});"
           + "}";
 
-        public Screen(Page page, SKRect box, String text, String mediaPath, String mimeType)
+        public Screen(PdfPage page, SKRect box, String text, String mediaPath, String mimeType)
             : this(page, box, text, new MediaRendition(
               new MediaClipData(
                 FileSpecification.Get(
@@ -74,7 +74,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             )
         { }
 
-        public Screen(Page page, SKRect box, String text, Rendition rendition)
+        public Screen(PdfPage page, SKRect box, String text, Rendition rendition)
             : base(page, PdfName.Screen, box, text)
         {
             Render render = new Render(this, Render.OperationEnum.PlayResume, rendition);

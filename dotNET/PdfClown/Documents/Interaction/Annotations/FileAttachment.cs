@@ -81,7 +81,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultIconType;
         }
 
-        public FileAttachment(Page page, SKRect box, string text, FileSpecification dataFile)
+        public FileAttachment(PdfPage page, SKRect box, string text, FileSpecification dataFile)
             : base(page, PdfName.FileAttachment, box, text)
         {
             DataFile = dataFile;

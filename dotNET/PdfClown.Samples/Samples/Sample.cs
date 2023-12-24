@@ -1,9 +1,9 @@
-using bytes = PdfClown.Bytes;
+using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Interaction;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Documents.Interaction.Viewer;
-using files = PdfClown.Files;
+using PdfClown.Files;
 
 using System;
 using System.Collections.Generic;
@@ -16,16 +16,11 @@ namespace PdfClown.Samples.CLI
     */
     public abstract class Sample
     {
-        #region dynamic
-        #region fields
         private string inputPath;
         private string outputPath;
 
         private bool quit;
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets whether the sample was exited before its completion.</summary>
         */
@@ -37,9 +32,7 @@ namespace PdfClown.Samples.CLI
           <returns>Whether the sample has been completed.</returns>
         */
         public abstract void Run();
-        #endregion
 
-        #region protected
         protected string GetIndentation(int level)
         {
             return new String(' ', level);
@@ -142,7 +135,7 @@ namespace PdfClown.Samples.CLI
           <param name="skip">Whether the prompt has to be skipped.</param>
           <returns>Whether to advance.</returns>
         */
-        protected bool PromptNextPage(Page page, bool skip)
+        protected bool PromptNextPage(PdfPage page, bool skip)
         {
             int pageIndex = page.Index;
             if (pageIndex > 0 && !skip)
@@ -204,7 +197,7 @@ namespace PdfClown.Samples.CLI
           <param name="file">PDF file to serialize.</param>
           <returns>Serialization path.</returns>
         */
-        protected string Serialize(files::File file)
+        protected string Serialize(PdfFile file)
         {
             return Serialize(file, null, null, null);
         }
@@ -215,7 +208,7 @@ namespace PdfClown.Samples.CLI
           <param name="serializationMode">Serialization mode.</param>
           <returns>Serialization path.</returns>
         */
-        protected string Serialize(files::File file, files::SerializationModeEnum? serializationMode)
+        protected string Serialize(PdfFile file, SerializationModeEnum? serializationMode)
         {
             return Serialize(file, serializationMode, null, null, null);
         }
@@ -226,7 +219,7 @@ namespace PdfClown.Samples.CLI
           <param name="fileName">Output file name.</param>
           <returns>Serialization path.</returns>
         */
-        protected string Serialize(files::File file, string fileName)
+        protected string Serialize(PdfFile file, string fileName)
         {
             return Serialize(file, fileName, null, null);
         }
@@ -238,7 +231,7 @@ namespace PdfClown.Samples.CLI
           <param name="serializationMode">Serialization mode.</param>
           <returns>Serialization path.</returns>
         */
-        protected string Serialize(files::File file, string fileName, files::SerializationModeEnum? serializationMode)
+        protected string Serialize(PdfFile file, string fileName, SerializationModeEnum? serializationMode)
         {
             return Serialize(file, fileName, serializationMode, null, null, null);
         }
@@ -251,7 +244,7 @@ namespace PdfClown.Samples.CLI
           <param name="keywords">Document keywords.</param>
           <returns>Serialization path.</returns>
         */
-        protected string Serialize(files::File file, string title, string subject, string keywords)
+        protected string Serialize(PdfFile file, string title, string subject, string keywords)
         {
             return Serialize(file, null, title, subject, keywords);
         }
@@ -265,7 +258,7 @@ namespace PdfClown.Samples.CLI
           <param name="keywords">Document keywords.</param>
           <returns>Serialization path.</returns>
         */
-        protected string Serialize(files::File file, files::SerializationModeEnum? serializationMode, string title, string subject, string keywords)
+        protected string Serialize(PdfFile file, SerializationModeEnum? serializationMode, string title, string subject, string keywords)
         {
             return Serialize(file, GetType().Name, serializationMode, title, subject, keywords);
         }
@@ -280,7 +273,7 @@ namespace PdfClown.Samples.CLI
           <param name="keywords">Document keywords.</param>
           <returns>Serialization path.</returns>
         */
-        protected string Serialize(files::File file, string fileName, files::SerializationModeEnum? serializationMode, string title, string subject, string keywords)
+        protected string Serialize(PdfFile file, string fileName, SerializationModeEnum? serializationMode, string title, string subject, string keywords)
         {
             ApplyDocumentSettings(file.Document, title, subject, keywords);
 
@@ -289,16 +282,16 @@ namespace PdfClown.Samples.CLI
             if (!serializationMode.HasValue)
             {
                 if (file.Reader == null) // New file.
-                { serializationMode = files::SerializationModeEnum.Standard; }
+                { serializationMode = SerializationModeEnum.Standard; }
                 else // Existing file.
                 {
                     Console.WriteLine("[0] Standard serialization");
                     Console.WriteLine("[1] Incremental update");
                     Console.Write("Please select a serialization mode: ");
                     try
-                    { serializationMode = (files::SerializationModeEnum)Int32.Parse(Console.ReadLine()); }
+                    { serializationMode = (SerializationModeEnum)Int32.Parse(Console.ReadLine()); }
                     catch
-                    { serializationMode = files::SerializationModeEnum.Standard; }
+                    { serializationMode = SerializationModeEnum.Standard; }
                 }
             }
 
@@ -319,18 +312,14 @@ namespace PdfClown.Samples.CLI
 
             return outputFilePath;
         }
-        #endregion
 
-        #region internal
         internal void Initialize(string inputPath, string outputPath)
         {
             this.inputPath = inputPath;
             this.outputPath = outputPath;
         }
-        #endregion
 
-        #region private
-        private void ApplyDocumentSettings(Document document, string title, string subject, string keywords)
+        private void ApplyDocumentSettings(PdfDocument document, string title, string subject, string keywords)
         {
             if (title == null)
                 return;
@@ -348,8 +337,5 @@ namespace PdfClown.Samples.CLI
             info.Subject = "Sample about " + subject + " using PDF Clown";
             info.Keywords = keywords;
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

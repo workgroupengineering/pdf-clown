@@ -42,10 +42,10 @@ namespace PdfClown.Documents.Contents.Fonts
         protected GlyphMapping glyphList;
         private bool? isSymbolic;
 
-        protected FontSimple(Document context) : base(context)
+        protected FontSimple(PdfDocument context) : base(context)
         { }
 
-        public FontSimple(Document context, FontName baseFont)
+        public FontSimple(PdfDocument context, FontName baseFont)
             : base(context, Standard14Fonts.FontNames[baseFont])
         {
             AssignGlyphList(baseFont);

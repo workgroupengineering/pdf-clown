@@ -155,7 +155,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         private static readonly int DefaultPrintCount = 1;
         private static readonly PdfName DefaultPrintScaledObject = PdfName.AppDefault;
 
-        public ViewerPreferences(Document context) : base(context, new PdfDictionary())
+        public ViewerPreferences(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public ViewerPreferences(PdfDirectObject baseObject) : base(baseObject)

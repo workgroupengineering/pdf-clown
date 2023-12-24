@@ -61,7 +61,7 @@ namespace PdfClown.Files
         /**
           <summary>Creates a new indirect file identifier.</summary>
         */
-        public FileIdentifier(File context) : base(context, CreateBaseDataObject())
+        public FileIdentifier(PdfFile context) : base(context, CreateBaseDataObject())
         { }
 
         /**
@@ -106,7 +106,7 @@ namespace PdfClown.Files
             {
                 using (BinaryWriter buffer = new BinaryWriter(new MemoryStream(), Charset.ISO88591, false))
                 {
-                    File file = writer.File;
+                    var file = writer.File;
                     try
                     {
                         // File identifier computation is fulfilled with this information:

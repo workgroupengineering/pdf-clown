@@ -57,7 +57,7 @@ namespace PdfClown.Documents.Files
             URL
         }
 
-        internal FullFileSpecification(Document context, string path) : base(
+        internal FullFileSpecification(PdfDocument context, string path) : base(
             context,
             new PdfDictionary(1) { { PdfName.Type, PdfName.Filespec } })
         {
@@ -69,7 +69,7 @@ namespace PdfClown.Documents.Files
             EmbeddedFile = embeddedFile;
         }
 
-        internal FullFileSpecification(Document context, Uri url) : this(context, url.ToString())
+        internal FullFileSpecification(PdfDocument context, Uri url) : this(context, url.ToString())
         {
             FileSystem = StandardFileSystemEnum.URL;
         }

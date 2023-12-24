@@ -27,7 +27,6 @@ using Org.BouncyCastle.Pkcs;
 using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Encryption;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util;
 using PdfClown.Util.Parsers;
@@ -57,9 +56,9 @@ namespace PdfClown.Tokens
             }
         }
 
-       // private static readonly int EOFMarkerChunkSize = 1024; // [PDF:1.6:H.3.18].
+        // private static readonly int EOFMarkerChunkSize = 1024; // [PDF:1.6:H.3.18].
 
-        private Files.File file;
+        private PdfFile file;
         private PdfEncryption encryption;
         private Stream keyStoreInputStream;
         private string password;
@@ -69,7 +68,7 @@ namespace PdfClown.Tokens
 
         public string KeyAlias { get => keyAlias; set => keyAlias = value; }
 
-        internal FileParser(IInputStream stream, Files.File file, string password = null, Stream keyStoreInputStream = null)
+        internal FileParser(IInputStream stream, PdfFile file, string password = null, Stream keyStoreInputStream = null)
             : base(stream)
         {
             this.file = file;

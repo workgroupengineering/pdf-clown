@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class FieldActions : PdfObjectWrapper<PdfDictionary>
     {
-        public FieldActions(Document context) : base(context, new PdfDictionary())
+        public FieldActions(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public FieldActions(PdfDirectObject baseObject) : base(baseObject)

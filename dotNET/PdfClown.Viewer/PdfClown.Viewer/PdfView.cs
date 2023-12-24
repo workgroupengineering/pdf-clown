@@ -155,7 +155,7 @@ namespace PdfClown.Viewer
             set => SetValue(ShowCharBoundProperty, value);
         }
 
-        public Document Document => DocumentView?.Document;
+        public PdfDocument Document => DocumentView?.Document;
 
         public PdfDocumentView DocumentView
         {
@@ -903,7 +903,7 @@ namespace PdfClown.Viewer
             if (selectedAnnotation != null && selectedAnnotation.Page == state.PageView.Page)
             {
                 var bounds = selectedAnnotation.GetViewBounds(state.PageViewMatrix);
-                bounds.Inflate(1, 1);
+                bounds.Inflate(2, 2);
                 if (bounds.Contains(state.PointerLocation))
                 {
                     state.Annotation = selectedAnnotation;
@@ -918,7 +918,7 @@ namespace PdfClown.Viewer
                 if (annotation == null || !annotation.Visible)
                     continue;
                 var bounds = annotation.GetViewBounds(state.PageViewMatrix);
-                bounds.Inflate(1, 1);
+                bounds.Inflate(2, 2);
                 if (bounds.Contains(state.PointerLocation))
                 {
                     state.Annotation = annotation;
@@ -1302,7 +1302,7 @@ namespace PdfClown.Viewer
                         if (link.Target is GoToLocal goToLocal)
                         {
                             if (goToLocal.Destination is LocalDestination localDestination
-                                && localDestination.Page is Documents.Page goToPage)
+                                && localDestination.Page is PdfPage goToPage)
                             {
                                 CurrentPage = DocumentView.GetPageView(goToPage);
                                 ScrollTo(CurrentPage);
@@ -1314,7 +1314,7 @@ namespace PdfClown.Viewer
                             Process.Start(new ProcessStartInfo(uri.ToString()) { UseShellExecute = true });
                         }
                         else if (link.Target is LocalDestination localDestination
-                            && localDestination.Page is Documents.Page goToPage)
+                            && localDestination.Page is PdfPage goToPage)
                         {
                             {
                                 CurrentPage = DocumentView.GetPageView(goToPage);

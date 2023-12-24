@@ -92,13 +92,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public BorderEffect(Document context, BorderEffectType type) : this(context, type, DefaultIntensity)
+        public BorderEffect(PdfDocument context, BorderEffectType type) : this(context, type, DefaultIntensity)
         { }
 
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public BorderEffect(Document context, BorderEffectType type, double intensity) : base(context, new PdfDictionary())
+        public BorderEffect(PdfDocument context, BorderEffectType type, double intensity) : base(context, new PdfDictionary())
         {
             Type = type;
             Intensity = intensity;

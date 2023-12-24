@@ -102,7 +102,7 @@ namespace PdfClown.Documents.Interaction.Annotations
           <param name="text">Annotation text.</param>
           <param name="markupType">Markup type.</param>
         */
-        public TextMarkup(Page page, Quad markupBox, string text, TextMarkupType markupType)
+        public TextMarkup(PdfPage page, Quad markupBox, string text, TextMarkupType markupType)
             : this(page, new List<Quad>() { markupBox }, text, markupType)
         { }
 
@@ -115,7 +115,7 @@ namespace PdfClown.Documents.Interaction.Annotations
           <param name="text">Annotation text.</param>
           <param name="markupType">Markup type.</param>
         */
-        public TextMarkup(Page page, IList<Quad> markupBoxes, string text, TextMarkupType markupType)
+        public TextMarkup(PdfPage page, IList<Quad> markupBoxes, string text, TextMarkupType markupType)
             : base(page, ToCode(markupType), markupBoxes[0].GetBounds(), text)
         {
             MarkupType = markupType;
@@ -126,7 +126,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public TextMarkup(PdfDirectObject baseObject) : base(baseObject)
         { }        
 
-        public override Page Page
+        public override PdfPage Page
         {
             get => base.Page;
             set

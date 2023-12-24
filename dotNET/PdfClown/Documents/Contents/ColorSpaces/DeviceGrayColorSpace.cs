@@ -44,13 +44,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public static readonly DeviceGrayColorSpace Default = new DeviceGrayColorSpace(PdfName.DeviceGray);
 
-        public DeviceGrayColorSpace(Document context) : base(context, PdfName.DeviceGray)
+        public DeviceGrayColorSpace(PdfDocument context) : base(context, PdfName.DeviceGray)
         { }
 
         internal DeviceGrayColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); }
 
         public override int ComponentCount => 1;

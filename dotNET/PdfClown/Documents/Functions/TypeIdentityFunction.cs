@@ -36,7 +36,7 @@ namespace PdfClown.Documents.Functions
         public TypeIdentityFunction() : base(null)
         { }
 
-        public TypeIdentityFunction(Document context, PdfDataObject baseDataObject) : base(context, baseDataObject)
+        public TypeIdentityFunction(PdfDocument context, PdfDataObject baseDataObject) : base(context, baseDataObject)
         {
         }
 

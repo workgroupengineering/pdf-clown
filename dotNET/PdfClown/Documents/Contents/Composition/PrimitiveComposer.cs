@@ -900,7 +900,7 @@ namespace PdfClown.Documents.Contents.Composition
         public Link ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation, actions::Action action)
         {
             IContentContext contentContext = Scanner.ContentContext;
-            if (contentContext is not Page page)
+            if (contentContext is not PdfPage page)
                 throw new Exception("Links can be shown only on page contexts.");
 
             SKRect linkBox = ShowText(value, location, xAlignment, yAlignment, rotation).GetBounds();

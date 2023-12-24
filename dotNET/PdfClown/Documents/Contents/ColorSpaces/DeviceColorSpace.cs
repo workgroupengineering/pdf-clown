@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return SKColors.Black;
         }
 
-        protected DeviceColorSpace(Document context, PdfName baseDataObject)
+        protected DeviceColorSpace(PdfDocument context, PdfName baseDataObject)
             : base(context, baseDataObject)
         { }
 

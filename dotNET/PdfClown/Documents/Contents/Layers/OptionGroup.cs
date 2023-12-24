@@ -35,7 +35,7 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public sealed class OptionGroup : Array<Layer>
     {
-        public OptionGroup(Document context) : base(context)
+        public OptionGroup(PdfDocument context) : base(context)
         { }
 
         public OptionGroup(PdfDirectObject baseObject) : base(baseObject)

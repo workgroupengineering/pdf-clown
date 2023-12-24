@@ -43,7 +43,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToRemote(Document context, FileSpecification destinationFile, RemoteDestination destination)
+        public GoToRemote(PdfDocument context, FileSpecification destinationFile, RemoteDestination destination)
             : base(context, PdfName.GoToR, destinationFile, destination)
         { }
 

@@ -39,7 +39,7 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF14)]
     public sealed class DocumentActions : PdfObjectWrapper<PdfDictionary>
     {
-        public DocumentActions(Document context) : base(context, new PdfDictionary())
+        public DocumentActions(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public DocumentActions(PdfDirectObject baseObject) : base(baseObject)

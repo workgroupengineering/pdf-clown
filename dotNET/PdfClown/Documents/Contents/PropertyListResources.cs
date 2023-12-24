@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF12)]
     public sealed class PropertyListResources : ResourceItems<PropertyList>
     {
-        public PropertyListResources(Document context) : base(context)
+        public PropertyListResources(PdfDocument context) : base(context)
         { }
 
         public PropertyListResources(PdfDirectObject baseObject) : base(baseObject)

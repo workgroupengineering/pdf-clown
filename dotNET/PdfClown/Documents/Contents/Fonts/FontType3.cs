@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private SKMatrix? fontMatrix;
         private SKRect? fontBBox;
 
-        internal FontType3(Document context) : base(context)
+        internal FontType3(PdfDocument context) : base(context)
         { }
 
         internal FontType3(PdfDirectObject baseObject) : base(baseObject)

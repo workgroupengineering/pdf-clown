@@ -16,16 +16,14 @@ namespace PdfClown.Samples.CLI
     /**
       <summary>This sample demonstrates how to fill AcroForm fields of a PDF document.</summary>
     */
-    public class AcroFormFillingSample
-      : Sample
+    public class AcroFormFillingSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            File file = new File(filePath);
-            Document document = file.Document;
+            var file = new PdfFile(filePath);
+            PdfDocument document = file.Document;
 
             // 2. Get the acroform!
             Form form = document.Form;

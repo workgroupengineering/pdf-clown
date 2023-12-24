@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF11)]
     public abstract class Markup : Annotation
     {
-        protected Markup(Page page, PdfName subtype, SKRect box, string text)
+        protected Markup(PdfPage page, PdfName subtype, SKRect box, string text)
             : base(page, subtype, box, text)
         {
             CreationDate = DateTime.Now;

@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public PlaySound(Document context, Sound sound)
+        public PlaySound(PdfDocument context, Sound sound)
             : base(context, PdfName.Sound)
         { Sound = sound; }
 

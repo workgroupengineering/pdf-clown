@@ -24,12 +24,12 @@ namespace PdfClown.Samples.CLI
           )
         {
             // 1. Instantiate a new PDF file!
-            File file = new File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            var document = file.Document;
 
             // 2.1. Page-level private application data.
             {
-                Page page = new Page(document);
+                var page = new PdfPage(document);
                 document.Pages.Add(page);
 
                 AppData myAppData = page.GetAppData(MyAppName);
@@ -38,7 +38,7 @@ namespace PdfClown.Samples.CLI
                   this example, we chose a PdfDictionary populating it with arbitrary entries, including a
                   byte stream.
                 */
-                PdfStream myStream = new PdfStream(new ByteStream("This is just some random characters to feed the stream..."));
+                var myStream = new PdfStream(new ByteStream("This is just some random characters to feed the stream..."));
                 myAppData.Data = new PdfDictionary(2)
                 {
                     { new PdfName("MyPrivateEntry"), PdfBoolean.True },

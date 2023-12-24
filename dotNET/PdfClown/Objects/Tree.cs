@@ -342,7 +342,7 @@ namespace PdfClown.Objects
 
         private PdfName pairsKey;
 
-        public Tree(Document context) : base(context, new PdfDictionary())
+        public Tree(PdfDocument context) : base(context, new PdfDictionary())
         { Initialize(); }
 
         public Tree(PdfDirectObject baseObject) : base(baseObject)

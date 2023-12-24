@@ -1007,7 +1007,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
                             )
                             {
                                 jfif = new JFIF(
-                                  version: new Version(major: appData[5],
+                                  version: new PdfVersion(major: appData[5],
                                     minor: appData[6]),
                                     densityUnits: appData[7],
                                     xDensity: (appData[8] << 8) | appData[9],
@@ -1744,7 +1744,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
 
     internal class JFIF
     {
-        internal Version Version;
+        internal PdfVersion Version;
         internal byte DensityUnits;
         internal int XDensity;
         internal int YDensity;
@@ -1752,7 +1752,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
         internal byte ThumbHeight;
         internal Memory<byte> ThumbData;
 
-        public JFIF(Version version, byte densityUnits, int xDensity, int yDensity, byte thumbWidth, byte thumbHeight, Memory<byte> thumbData)
+        public JFIF(PdfVersion version, byte densityUnits, int xDensity, int yDensity, byte thumbWidth, byte thumbHeight, Memory<byte> thumbData)
         {
             Version = version;
             DensityUnits = densityUnits;

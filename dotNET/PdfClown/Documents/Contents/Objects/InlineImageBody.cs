@@ -47,7 +47,7 @@ namespace PdfClown.Documents.Contents.Objects
             set => this.value = value;
         }
 
-        public override void WriteTo(IOutputStream stream, Document context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         { stream.Write(value); }
     }
 }

@@ -69,7 +69,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             set => ((PdfArray)BaseDataObject).SetInt(0, value);
         }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         {
             throw new NotImplementedException();
         }

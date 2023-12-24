@@ -23,9 +23,9 @@ namespace PdfClown.Samples.CLI
         private class TextHighlighter : TextExtractor.IIntervalFilter
         {
             private IEnumerator matchEnumerator;
-            private Page page;
+            private PdfPage page;
 
-            public TextHighlighter(Page page, MatchCollection matches)
+            public TextHighlighter(PdfPage page, MatchCollection matches)
             {
                 this.page = page;
                 this.matchEnumerator = matches.GetEnumerator();
@@ -92,15 +92,15 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
                 // Define the text pattern to look for!
-                string textRegEx = PromptChoice("Please enter the pattern to look for: ");
-                Regex pattern = new Regex(textRegEx, RegexOptions.IgnoreCase);
+                var textRegEx = PromptChoice("Please enter the pattern to look for: ");
+                var pattern = new Regex(textRegEx, RegexOptions.IgnoreCase);
 
                 // 2. Iterating through the document pages...
-                TextExtractor textExtractor = new TextExtractor(true, true);
-                foreach (Page page in file.Document.Pages)
+                var textExtractor = new TextExtractor(true, true);
+                foreach (var page in file.Document.Pages)
                 {
                     Console.WriteLine("\nScanning page " + page.Number + "...\n");
 

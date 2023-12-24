@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF10)]
     public sealed class Resources : PdfObjectWrapper<PdfDictionary>, ICompositeDictionary<PdfName>
     {
-        public Resources(Document context) : base(context, new PdfDictionary())
+        public Resources(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public Resources(PdfDirectObject baseObject) : base(baseObject)

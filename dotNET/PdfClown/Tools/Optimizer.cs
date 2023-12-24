@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
@@ -36,21 +35,14 @@ namespace PdfClown.Tools
     */
     public sealed class Optimizer
     {
-        #region types
-        private class AliveObjectCollector
-          : Visitor
+        private class AliveObjectCollector : Visitor
         {
             private ISet<int> aliveObjectNumbers;
 
-            public AliveObjectCollector(
-              ISet<int> aliveObjectNumbers
-              )
+            public AliveObjectCollector(ISet<int> aliveObjectNumbers)
             { this.aliveObjectNumbers = aliveObjectNumbers; }
 
-            public override PdfObject Visit(
-              PdfReference obj,
-              object data
-              )
+            public override PdfObject Visit(PdfReference obj, object data)
             {
                 int objectNumber = obj.Reference.ObjectNumber;
                 if (aliveObjectNumbers.Contains(objectNumber))
@@ -60,18 +52,12 @@ namespace PdfClown.Tools
                 return base.Visit(obj, data);
             }
         }
-        #endregion
 
-        #region static
-        #region interface
-        #region public
         /**
           <summary>Removes indirect objects which have no reference in the document structure.</summary>
           <param name="file">File to optimize.</param>
         */
-        public static void RemoveOrphanedObjects(
-          File file
-          )
+        public static void RemoveOrphanedObjects(PdfFile file)
         {
             // 1. Collecting alive indirect objects...
             ISet<int> aliveObjectNumbers = new HashSet<int>();
@@ -83,15 +69,12 @@ namespace PdfClown.Tools
             }
 
             // 2. Removing orphaned indirect objects...
-            IndirectObjects indirectObjects = file.IndirectObjects;
+            var indirectObjects = file.IndirectObjects;
             for (int objectNumber = 0, objectCount = indirectObjects.Count; objectNumber < objectCount; objectNumber++)
             {
                 if (!aliveObjectNumbers.Contains(objectNumber))
                 { indirectObjects.RemoveAt(objectNumber); }
             }
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

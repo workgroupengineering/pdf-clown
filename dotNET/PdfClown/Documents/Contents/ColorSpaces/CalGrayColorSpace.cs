@@ -74,7 +74,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             this.G = gamma;
         }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); }
 
         public override int ComponentCount => 1;

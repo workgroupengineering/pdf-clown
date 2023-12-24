@@ -17,8 +17,8 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. Instantiate a new PDF file!
-            File file = new File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            var document = file.Document;
 
             // 2. Insert the contents into the document!
             Populate(document);
@@ -30,10 +30,10 @@ namespace PdfClown.Samples.CLI
         /**
           <summary>Populates a PDF file with contents.</summary>
         */
-        private void Populate(Document document)
+        private void Populate(PdfDocument document)
         {
             // 1. Add the page to the document!
-            var page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             // 2. Create a content composer for the page!

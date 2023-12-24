@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF12)]
     public sealed class ExtGStateResources : ResourceItems<ExtGState>
     {
-        public ExtGStateResources(Document context) : base(context)
+        public ExtGStateResources(PdfDocument context) : base(context)
         { }
 
         public ExtGStateResources(PdfDirectObject baseObject) : base(baseObject)

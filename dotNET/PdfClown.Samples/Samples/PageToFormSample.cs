@@ -21,14 +21,14 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the form source file...
             string filePath = PromptFileChoice("Please select a PDF file to use as form");
-            using (var formFile = new File(filePath))
+            using (var formFile = new PdfFile(filePath))
             {
                 // 2. Instantiate a new PDF file!
-                File file = new File();
-                Document document = file.Document;
+                var file = new PdfFile();
+                var document = file.Document;
 
                 // 3. Convert the first page of the source file into a form inside the new document!
-                XObject form = formFile.Document.Pages[0].ToXObject(document);
+                var form = formFile.Document.Pages[0].ToXObject(document);
 
                 // 4. Insert the contents into the new document!
                 Populate(document, form);
@@ -41,14 +41,14 @@ namespace PdfClown.Samples.CLI
         /**
           <summary>Populates a PDF file with contents.</summary>
         */
-        private void Populate(Document document, XObject form)
+        private void Populate(PdfDocument document, XObject form)
         {
             // 1. Add a page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             // 2. Create a content composer for the content stream!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             // 3. Inserting contents...
             SKSize pageSize = page.Size;

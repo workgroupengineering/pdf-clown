@@ -36,7 +36,7 @@ namespace PdfClown.Documents.Files
     [PDF(VersionEnum.PDF11)]
     public sealed class SimpleFileSpecification : FileSpecification
     {
-        internal SimpleFileSpecification(Document context, string path)
+        internal SimpleFileSpecification(PdfDocument context, string path)
             : base(context, new PdfString(path))
         { }
 

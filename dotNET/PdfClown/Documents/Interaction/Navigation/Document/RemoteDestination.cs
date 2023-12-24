@@ -36,11 +36,11 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF10)]
     public sealed class RemoteDestination : Destination
     {
-        public RemoteDestination(Document context, int pageIndex)
+        public RemoteDestination(PdfDocument context, int pageIndex)
             : this(context, pageIndex, ModeEnum.Fit, null, null)
         { }
 
-        public RemoteDestination(Document context, int pageIndex, ModeEnum mode, object location, double? zoom)
+        public RemoteDestination(PdfDocument context, int pageIndex, ModeEnum mode, object location, double? zoom)
             : base(context, pageIndex, mode, location, zoom)
         { }
 

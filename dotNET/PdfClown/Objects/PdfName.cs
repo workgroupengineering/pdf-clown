@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using tokens = PdfClown.Tokens;
 
 using System;
@@ -851,7 +850,7 @@ namespace PdfClown.Objects
             return buffer.ToString();
         }
 
-        public override void WriteTo(IOutputStream stream, File context)
+        public override void WriteTo(IOutputStream stream, PdfFile context)
         {
             stream.Write(NamePrefixChunk);
             stream.Write(RawValue);

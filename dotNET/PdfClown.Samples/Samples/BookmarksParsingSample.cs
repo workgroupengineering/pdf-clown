@@ -19,9 +19,9 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                PdfDocument document = file.Document;
 
                 // 2. Get the bookmarks collection!
                 Bookmarks bookmarks = document.Bookmarks;
@@ -93,16 +93,13 @@ namespace PdfClown.Samples.CLI
             { Console.WriteLine("      URI: " + ((actions::GoToURI)action).URI); }
         }
 
-        private void PrintDestination(
-          Destination destination
-          )
+        private void PrintDestination(Destination destination)
         {
             Console.WriteLine(destination.GetType().Name + " " + destination.BaseObject);
             Console.Write("        Page ");
             object pageRef = destination.Page;
-            if (pageRef is Page)
+            if (pageRef is PdfPage page)
             {
-                Page page = (Page)pageRef;
                 Console.WriteLine(page.Number + " [ID: " + page.BaseObject + "]");
             }
             else

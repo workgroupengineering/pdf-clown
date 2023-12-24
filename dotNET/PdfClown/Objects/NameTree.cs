@@ -39,7 +39,7 @@ namespace PdfClown.Objects
     public abstract class NameTree<TValue> : Tree<PdfString, TValue>
         where TValue : PdfObjectWrapper
     {
-        protected NameTree(Document context) : base(context)
+        protected NameTree(PdfDocument context) : base(context)
         { }
 
         protected NameTree(PdfDirectObject baseObject) : base(baseObject)

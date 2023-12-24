@@ -8,7 +8,7 @@ using PdfClown.Documents.Files;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Navigation;
-using files = PdfClown.Files;
+using PdfClown.Files;
 
 using System;
 using SkiaSharp;
@@ -19,14 +19,13 @@ namespace PdfClown.Samples.CLI
     /**
       <summary>This sample demonstrates how to apply links to a PDF document.</summary>
     */
-    public class LinkCreationSample
-      : Sample
+    public class LinkCreationSample : Sample
     {
         public override void Run()
         {
             // 1. Creating the document...
-            files::File file = new files::File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            var document = file.Document;
 
             // 2. Applying links...
             BuildLinks(document);
@@ -35,10 +34,10 @@ namespace PdfClown.Samples.CLI
             Serialize(file, "Link annotations", "applying link annotations", "links, creation");
         }
 
-        private void BuildLinks(Document document)
+        private void BuildLinks(PdfDocument document)
         {
             var pages = document.Pages;
-            var page = new Page(document);
+            var page = new PdfPage(document);
             pages.Add(page);
 
             var composer = new PrimitiveComposer(page);

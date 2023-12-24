@@ -89,7 +89,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultSymbolType;
         }
 
-        public Caret(Page page, SKRect box, string text) : base(page, PdfName.Caret, box, text)
+        public Caret(PdfPage page, SKRect box, string text) : base(page, PdfName.Caret, box, text)
         { }
 
         internal Caret(PdfDirectObject baseObject) : base(baseObject)

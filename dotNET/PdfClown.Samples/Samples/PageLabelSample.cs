@@ -25,9 +25,9 @@ namespace PdfClown.Samples.CLI
             {
                 // 1. Opening the PDF file...
                 string filePath = PromptFileChoice("Please select a PDF file");
-                using (var file = new File(filePath))
+                using (var file = new PdfFile(filePath))
                 {
-                    Document document = file.Document;
+                    PdfDocument document = file.Document;
 
                     // 2. Defining the page labels...
                     PageLabels pageLabels = document.PageLabels;
@@ -49,7 +49,7 @@ namespace PdfClown.Samples.CLI
             }
 
             {
-                using (var file = new File(outputFilePath))
+                using (var file = new PdfFile(outputFilePath))
                 {
                     foreach (KeyValuePair<PdfInteger, PageLabel> entry in file.Document.PageLabels)
                     {

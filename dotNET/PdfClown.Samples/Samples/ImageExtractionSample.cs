@@ -1,6 +1,6 @@
 using PdfClown.Bytes;
 using PdfClown.Documents;
-using files = PdfClown.Files;
+using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -15,15 +15,13 @@ namespace PdfClown.Samples.CLI
         <para>XObject images other than JPEG aren't currently supported for handling.</para>
       </remarks>
     */
-    public class ImageExtractionSample
-      : Sample
+    public class ImageExtractionSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new files::File(filePath))
+            using (var file = new PdfFile(filePath))
             {
                 // 2. Iterating through the indirect object collection...
                 int index = 0;

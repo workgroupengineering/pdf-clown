@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         private Markup parent;
 
-        public Popup(Page page, SKRect box, string text)
+        public Popup(PdfPage page, SKRect box, string text)
             : base(page, PdfName.Popup, box, text)
         { }
 
@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         { }
 
 
-        public override Page Page
+        public override PdfPage Page
         {
             get => Parent?.Page ?? base.Page;
             set

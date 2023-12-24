@@ -90,7 +90,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultIconType;
         }
 
-        public StickyNote(Page page, SKPoint location, string text)
+        public StickyNote(PdfPage page, SKPoint location, string text)
             : base(page, PdfName.Text, SKRect.Create(location.X, location.Y, 0, 0), text)
         {
             Flags = AnnotationFlagsEnum.Print | AnnotationFlagsEnum.NoZoom | AnnotationFlagsEnum.NoRotate;

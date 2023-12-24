@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Contents.Fonts
         /**
          <summary>Creates the representation of a font.</summary>
        */
-        public static Font Get(Document context, string path)
+        public static Font Get(PdfDocument context, string path)
         {
             return FontType0.Load(context, path);
         }
@@ -188,7 +188,7 @@ namespace PdfClown.Documents.Contents.Fonts
         /**
          * Constructor for Standard 14.
          */
-        public Font(Document context, string baseFont) : this(context)
+        public Font(PdfDocument context, string baseFont) : this(context)
         {
             toUnicodeCMap = null;
             Standard14AFM = Standard14Fonts.GetAFM(baseFont);
@@ -203,11 +203,11 @@ namespace PdfClown.Documents.Contents.Fonts
         /**
           <summary>Creates a new font structure within the given document context.</summary>
         */
-        protected Font(Document context)
+        protected Font(PdfDocument context)
             : this(context, new PdfDictionary(6) { { PdfName.Type, PdfName.Font } })
         { }
 
-        protected Font(Document context, PdfDictionary dictionary)
+        protected Font(PdfDocument context, PdfDictionary dictionary)
             : base(context, dictionary)
         { Initialize(); }
 

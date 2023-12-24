@@ -62,7 +62,7 @@ namespace PdfClown.Documents.Contents.Fonts
             ZapfDingbats
         };
 
-        public static FontType1 Load(Document context, FamilyEnum family, bool bold, bool italic)
+        public static FontType1 Load(PdfDocument context, FamilyEnum family, bool bold, bool italic)
         {
             string fontName = family.ToString();
             switch (family)
@@ -98,7 +98,7 @@ namespace PdfClown.Documents.Contents.Fonts
             return Load(context, name);
         }
 
-        public static FontType1 Load(Document context, FontName name)
+        public static FontType1 Load(PdfDocument context, FontName name)
         {
             return context.Type1FontCache.GetOrAdd(name, (n) => new FontType1(context, n));
         }
@@ -127,7 +127,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private SKMatrix? fontMatrix;
         private SKRect? fontBBox;
 
-        internal FontType1(Document context) : base(context)
+        internal FontType1(PdfDocument context) : base(context)
         { }
 
         internal FontType1(PdfDirectObject baseObject) : base(baseObject)
@@ -218,7 +218,7 @@ namespace PdfClown.Documents.Contents.Fonts
             fontMatrixTransform = fontMatrixTransform.PreConcat(SKMatrix.CreateScale(1000, 1000));
         }
 
-        public FontType1(Document context, FontName baseFont) : base(context, baseFont)
+        public FontType1(PdfDocument context, FontName baseFont) : base(context, baseFont)
         {
             Dictionary[PdfName.Subtype] = PdfName.Type1;
             Dictionary[PdfName.BaseFont] = PdfName.Get(Standard14Fonts.FontNames[baseFont]);
@@ -260,10 +260,10 @@ namespace PdfClown.Documents.Contents.Fonts
             fontMatrixTransform = SKMatrix.Identity;
         }
 
-        public FontType1(Document doc, IInputStream pfbIn) : this(doc, pfbIn, null)
+        public FontType1(PdfDocument doc, IInputStream pfbIn) : this(doc, pfbIn, null)
         { }
 
-        public FontType1(Document doc, IInputStream pfbIn, Encoding encoding) : base(doc)
+        public FontType1(PdfDocument doc, IInputStream pfbIn, Encoding encoding) : base(doc)
         {
             FontType1Embedder embedder = new FontType1Embedder(doc, Dictionary, pfbIn, encoding);
             this.encoding = encoding ?? embedder.FontEncoding;

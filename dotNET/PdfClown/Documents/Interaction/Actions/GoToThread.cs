@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToThread(Document context)
+        public GoToThread(PdfDocument context)
             : base(context, PdfName.Thread)
         { }
 

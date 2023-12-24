@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Multimedia
 
         private static readonly IWrapper<Rendition> ArrayWrapper = new ArrayWrapperObject();
         
-        public Renditions(Document context) : base(context, ArrayWrapper)
+        public Renditions(PdfDocument context) : base(context, ArrayWrapper)
         { }
 
         public Renditions(PdfDirectObject baseObject) : base(ArrayWrapper, baseObject)

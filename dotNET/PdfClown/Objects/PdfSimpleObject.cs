@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 
 using System;
 using System.Reflection;
@@ -143,7 +142,7 @@ namespace PdfClown.Objects
             set {/* NOOP */}
         }
 
-        public override PdfObject Clone(File context) => this;  // NOTE: Simple objects are immutable.
+        public override PdfObject Clone(PdfFile context) => this;  // NOTE: Simple objects are immutable.
 
         public override bool Equals(object @object)
         {

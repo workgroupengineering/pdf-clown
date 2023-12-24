@@ -243,11 +243,11 @@ namespace PdfClown.Documents.Contents.Objects
             return buffer.ToString();
         }
 
-        public override void WriteTo(IOutputStream stream, Document context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             if (operands != null)
             {
-                File fileContext = context.File;
+                var fileContext = context.File;
                 foreach (PdfDirectObject operand in operands)
                 { operand.WriteTo(stream, fileContext); stream.Write(Chunk.Space); }
             }

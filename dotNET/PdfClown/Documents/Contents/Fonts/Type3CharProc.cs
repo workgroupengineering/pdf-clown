@@ -185,7 +185,7 @@ namespace PdfClown.Documents.Contents.Fonts
             throw new NotImplementedException();
         }
 
-        public XObjects.XObject ToXObject(Document context)
+        public XObjects.XObject ToXObject(PdfDocument context)
         {
             throw new NotImplementedException();
         }

@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
          * return values are 1, 2 or 3. 2 is also returned if the DocMDP transform parameters dictionary
          * is found but did not contain a /P entry, or if the value is outside the valid range.
          */
-        public static int GetMDPPermission(Document doc)
+        public static int GetMDPPermission(PdfDocument doc)
         {
             PdfDictionary permsDict = doc.BaseDataObject.GetDictionary(PdfName.Perms);
             if (permsDict != null)
@@ -108,7 +108,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
          *
          * @ if a signature exists.
          */
-        public static void SetMDPPermission(Document doc, SignatureDictionary signature, int accessPermissions)
+        public static void SetMDPPermission(PdfDocument doc, SignatureDictionary signature, int accessPermissions)
         {
             foreach (SignatureDictionary sig in doc.GetSignatureDictionaries())
             {
@@ -227,7 +227,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
          * @param document to get its last signature
          * @return last signature or null when none found
          */
-        public static SignatureDictionary getLastRelevantSignature(Document document)
+        public static SignatureDictionary getLastRelevantSignature(PdfDocument document)
         {
             // we can't use getLastSignatureDictionary() because this will fail (see PDFBOX-3978) 
             // if a signature is assigned to a pre-defined empty signature field that isn't the last.
@@ -339,7 +339,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
          *
          * @param doc document.
          */
-        public static void CheckCrossReferenceTable(Document doc)
+        public static void CheckCrossReferenceTable(PdfDocument doc)
         {
             List<XRefEntry> set = new(doc.File.IndirectObjects.Select(x => x.XrefEntry));
             if (set.Count != set.Last().Number)

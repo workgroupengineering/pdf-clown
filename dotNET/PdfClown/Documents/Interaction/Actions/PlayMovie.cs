@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public PlayMovie(Document context, Movie movie)
+        public PlayMovie(PdfDocument context, Movie movie)
             : base(context, PdfName.Movie)
         {
             Movie = movie;

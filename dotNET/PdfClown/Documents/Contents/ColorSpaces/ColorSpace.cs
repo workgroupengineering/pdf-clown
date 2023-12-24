@@ -97,7 +97,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             //throw new NotSupportedException("Color space " + name + " unknown.");
         }
 
-        protected ColorSpace(Document context, PdfDirectObject baseDataObject)
+        protected ColorSpace(PdfDocument context, PdfDirectObject baseDataObject)
             : base(context, baseDataObject)
         { }
 

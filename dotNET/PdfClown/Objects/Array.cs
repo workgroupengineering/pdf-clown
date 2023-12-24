@@ -63,7 +63,7 @@ namespace PdfClown.Objects
           <summary>Wraps a new base array using the default wrapper for wrapping its items.</summary>
           <param name="context">Document context.</param>
         */
-        public Array(Document context)
+        public Array(PdfDocument context)
             : this(context, new PdfArray())
         { }
 
@@ -72,7 +72,7 @@ namespace PdfClown.Objects
           <param name="context">Document context.</param>
           <param name="itemWrapper">Item wrapper.</param>
         */
-        public Array(Document context, IWrapper<TItem> itemWrapper)
+        public Array(PdfDocument context, IWrapper<TItem> itemWrapper)
             : this(context, itemWrapper, new PdfArray())
         { }
 
@@ -81,7 +81,7 @@ namespace PdfClown.Objects
           <param name="context">Document context.</param>
           <param name="baseDataObject">Base array.</param>
         */
-        public Array(Document context, PdfArray baseDataObject)
+        public Array(PdfDocument context, PdfArray baseDataObject)
             : this(context, new DefaultWrapper<TItem>(), baseDataObject)
         { }
 
@@ -91,7 +91,7 @@ namespace PdfClown.Objects
           <param name="itemWrapper">Item wrapper.</param>
           <param name="baseDataObject">Base array.</param>
         */
-        public Array(Document context, IWrapper<TItem> itemWrapper, PdfArray baseDataObject)
+        public Array(PdfDocument context, IWrapper<TItem> itemWrapper, PdfArray baseDataObject)
             : base(context, baseDataObject)
         {
             this.itemWrapper = itemWrapper;

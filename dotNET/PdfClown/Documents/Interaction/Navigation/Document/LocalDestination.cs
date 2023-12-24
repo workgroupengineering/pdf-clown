@@ -36,11 +36,11 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF10)]
     public sealed class LocalDestination : Destination
     {
-        public LocalDestination(Page page)
+        public LocalDestination(PdfPage page)
             : this(page, ModeEnum.Fit, null, null)
         { }
 
-        public LocalDestination(Page page, ModeEnum mode, object location, double? zoom)
+        public LocalDestination(PdfPage page, ModeEnum mode, object location, double? zoom)
             : base(page.Document, page, mode, location, zoom)
         { }
 
@@ -52,10 +52,10 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         public override object Page
         {
-            get => Wrap<Page>(BaseDataObject[0]);
+            get => Wrap<PdfPage>(BaseDataObject[0]);
             set
             {
-                if (value is not Page page)
+                if (value is not PdfPage page)
                     throw new ArgumentException("It MUST be a Page object.");
 
                 BaseDataObject[0] = page.BaseObject;

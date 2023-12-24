@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         private LineStartControlPoint cpStart;
         private LineEndControlPoint cpEnd;
 
-        public Line(Page page, SKPoint startPoint, SKPoint endPoint, string text, DeviceRGBColor color)
+        public Line(PdfPage page, SKPoint startPoint, SKPoint endPoint, string text, DeviceRGBColor color)
             : base(page, PdfName.Line, SKRect.Create(startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y), text)
         {
             BaseDataObject[PdfName.L] = new PdfArray(4) { PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0), PdfReal.Get(0) };
@@ -339,10 +339,16 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected override FormXObject RefreshAppearance()
         {
+            if (Box.Height == 0 || Box.Width == 0)
+            {
+                RefreshBox();
+            }            
             var appearence = ResetAppearance(out var matrix);
-            var composer = new PrimitiveComposer(appearence);
-            composer.SetStrokeColor(Color ?? DeviceRGBColor.Default);
-            composer.SetFillColor(InteriorColor ?? DeviceRGBColor.Default);
+            var paint = new PrimitiveComposer(appearence);
+            paint.SetStrokeColor(Color ?? DeviceRGBColor.Default);
+            paint.SetLineWidth(1);
+            Border?.Apply(paint, null);
+            paint.SetFillColor(InteriorColor ?? DeviceRGBColor.Default);
 
 
             var startPoint = matrix.MapPoint(StartPoint);
@@ -360,18 +366,18 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var textLocation = startPoint + new SKPoint(normal.X * offset, normal.Y * offset);
                 if (CaptionPosition == LineCaptionPosition.Inline)
                 {
-                    composer.StartPath(startPoint);
-                    composer.DrawLine(startPoint + new SKPoint(normal.X * offset, normal.Y * offset));
+                    paint.StartPath(startPoint);
+                    paint.DrawLine(startPoint + new SKPoint(normal.X * offset, normal.Y * offset));
 
-                    composer.StartPath(endPoint);
-                    composer.DrawLine(endPoint + new SKPoint(normal.X * -offset, normal.Y * -offset));
+                    paint.StartPath(endPoint);
+                    paint.DrawLine(endPoint + new SKPoint(normal.X * -offset, normal.Y * -offset));
                 }
                 else
                 {
-                    composer.StartPath(startPoint);
-                    composer.DrawLine(endPoint);
+                    paint.StartPath(startPoint);
+                    paint.DrawLine(endPoint);
                 }
-                composer.Stroke();
+                paint.Stroke();
 
                 var horizontal = new SKPoint(1, 0);
                 var theta = Math.Atan2(normal.X, normal.Y) - Math.Atan2(horizontal.X, horizontal.Y);
@@ -382,60 +388,60 @@ namespace PdfClown.Documents.Interaction.Annotations
                 while (theta > Math.PI)
                     theta -= 2 * Math.PI;
 
-                composer.BeginLocalState();
-                composer.SetFillColor(DeviceRGBColor.Default);
-                composer.SetFont(fontName, DefaultFontSize);
-                composer.ShowText(Contents, textLocation, XAlignmentEnum.Left,
+                paint.BeginLocalState();
+                paint.SetFillColor(DeviceRGBColor.Default);
+                paint.SetFont(fontName, DefaultFontSize);
+                paint.ShowText(Contents, textLocation, XAlignmentEnum.Left,
                     CaptionPosition == LineCaptionPosition.Inline ? YAlignmentEnum.Middle : YAlignmentEnum.Top,
                     MathUtils.ToDegrees(theta));
-                composer.End();
+                paint.End();
             }
             else
             {
-                composer.StartPath(startPoint);
-                composer.DrawLine(endPoint);
-                composer.Stroke();
+                paint.StartPath(startPoint);
+                paint.DrawLine(endPoint);
+                paint.Stroke();
             }
             if (StartStyle == LineEndStyleEnum.OpenArrow)
             {
-                composer.AddOpenArrow(startPoint, normal);
-                composer.Stroke();
+                paint.AddOpenArrow(startPoint, normal);
+                paint.Stroke();
             }
             else if (StartStyle == LineEndStyleEnum.ClosedArrow)
             {
-                composer.AddClosedArrow(startPoint, normal);
-                composer.FillStroke();
+                paint.AddClosedArrow(startPoint, normal);
+                paint.FillStroke();
             }
             else if (StartStyle == LineEndStyleEnum.Circle)
             {
-                composer.DrawCircle(startPoint, 4);
-                composer.FillStroke();
+                paint.DrawCircle(startPoint, 4);
+                paint.FillStroke();
             }
 
             if (EndStyle == LineEndStyleEnum.OpenArrow)
             {
-                composer.AddOpenArrow(endPoint, invertNormal);
-                composer.Stroke();
+                paint.AddOpenArrow(endPoint, invertNormal);
+                paint.Stroke();
             }
             else if (EndStyle == LineEndStyleEnum.ClosedArrow)
             {
-                composer.AddClosedArrow(endPoint, invertNormal);
-                composer.FillStroke();
+                paint.AddClosedArrow(endPoint, invertNormal);
+                paint.FillStroke();
             }
             else if (EndStyle == LineEndStyleEnum.Circle)
             {
-                composer.DrawCircle(endPoint, 4);
-                composer.FillStroke();
+                paint.DrawCircle(endPoint, 4);
+                paint.FillStroke();
             }
 
-            composer.Flush();
+            paint.Flush();
             return appearence;
         }
 
         public override SKRect DrawSpecial(SKCanvas canvas)
         {
-            RefreshAppearance();
-            return DrawAppearance(canvas, Appearance.Normal[null]);
+            var appearance = RefreshAppearance();
+            return DrawAppearance(canvas, appearance);
         }
 
         public override void RefreshBox()
@@ -444,7 +450,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             var box = SKRect.Create(StartPoint, SKSize.Empty);
             box.Add(EndPoint);
             box.Inflate(box.Width < 5 ? 5 : 0, box.Height < 5 ? 5 : 0);
-            Box = box;
+            Box = box;            
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()

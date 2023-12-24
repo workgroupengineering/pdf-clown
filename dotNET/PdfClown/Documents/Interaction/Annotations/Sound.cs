@@ -88,7 +88,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultIconType;
         }
 
-        public Sound(Page page, SKRect box, string text, multimedia::Sound content)
+        public Sound(PdfPage page, SKRect box, string text, multimedia::Sound content)
             : base(page, PdfName.Sound, box, text)
         { Content = content; }
 

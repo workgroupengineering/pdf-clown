@@ -178,7 +178,7 @@ namespace PdfClown.Documents.Interaction.Navigation
           <param name="location">Destination location.</param>
           <param name="zoom">Magnification factor to use when displaying the page.</param>
         */
-        protected Destination(Document context, object page, ModeEnum mode, object location, double? zoom)
+        protected Destination(PdfDocument context, object page, ModeEnum mode, object location, double? zoom)
             : base(context, new PdfArray(2) { null, null })
         {
             Page = page;

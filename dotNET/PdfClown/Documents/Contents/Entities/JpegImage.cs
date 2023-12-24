@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Contents.Entities
                   )));
         }
 
-        public override xObjects::XObject ToXObject(Document context)
+        public override xObjects::XObject ToXObject(PdfDocument context)
         {
             return new xObjects::ImageXObject(
               context,

@@ -39,15 +39,15 @@ namespace PdfClown.Documents
     public abstract class PageElements<TItem> : Array<TItem>
         where TItem : PdfObjectWrapper<PdfDictionary>
     {
-        private Page page;
+        private PdfPage page;
 
-        public PageElements(PdfDirectObject baseObject, Page page)
+        public PageElements(PdfDirectObject baseObject, PdfPage page)
             : base(baseObject)
         {
             this.page = page;
         }
 
-        public PageElements(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject, Page page)
+        public PageElements(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject, PdfPage page)
             : base(itemWrapper, baseObject)
         {
             this.page = page;
@@ -59,7 +59,7 @@ namespace PdfClown.Documents
             base.Add(item);
         }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         {
             throw new NotSupportedException();
         }
@@ -73,7 +73,7 @@ namespace PdfClown.Documents
         /**
           <summary>Gets the page associated to these elements.</summary>
         */
-        public Page Page => page;
+        public PdfPage Page => page;
 
         public override void RemoveAt(int index)
         {
@@ -100,7 +100,7 @@ namespace PdfClown.Documents
         protected virtual void DoRemove(TItem item)
         {
             // Unlink the element from its page!
-            item.BaseDataObject.Remove(PdfName.P);
+            item?.BaseDataObject.Remove(PdfName.P);
         }
     }
 }

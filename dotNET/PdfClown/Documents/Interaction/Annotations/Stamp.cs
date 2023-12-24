@@ -67,7 +67,7 @@ namespace PdfClown.Documents.Interaction.Annotations
           <param name="text">Annotation text.</param>
           <param name="type">Predefined stamp type.</param>
         */
-        public Stamp(Page page, SKPoint location, SKSize? size, string text, StandardStampEnum type)
+        public Stamp(PdfPage page, SKPoint location, SKSize? size, string text, StandardStampEnum type)
             : base(page,
                   PdfName.Stamp,
                   GeomUtils.Align(size.HasValue
@@ -89,7 +89,7 @@ namespace PdfClown.Documents.Interaction.Annotations
           <param name="text">Annotation text.</param>
           <param name="appearance">Custom appearance.</param>
         */
-        public Stamp(Page page, SKPoint location, string text, FormXObject appearance)
+        public Stamp(PdfPage page, SKPoint location, string text, FormXObject appearance)
             : base(page, PdfName.Stamp, GeomUtils.Align(appearance.Matrix.MapRect(appearance.Box), location, new SKPoint(0, 0)), text)
         {
             Appearance.Normal[null] = appearance;
@@ -102,7 +102,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets/Sets the type name of this stamp.</summary>
           <remarks>To ensure predictable rendering of the <see cref="StandardStampEnum">standard stamp
-          types</see> across the systems, <see cref="Document.Configuration.StampPath"/> must be defined
+          types</see> across the systems, <see cref="PdfDocument.Configuration.StampPath"/> must be defined
           so as to embed the corresponding templates.</remarks>
         */
         public string TypeName

@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Contents
     {
         internal static readonly IList<BlendModeEnum> DefaultBlendMode = new BlendModeEnum[0];
 
-        public ExtGState(Document context) : base(context, new PdfDictionary())
+        public ExtGState(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public ExtGState(PdfDirectObject baseObject) : base(baseObject)

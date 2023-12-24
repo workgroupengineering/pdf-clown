@@ -26,7 +26,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public FontFile(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public FontFile(Document document, PdfStream stream) : base(document, stream)
+        public FontFile(PdfDocument document, PdfStream stream) : base(document, stream)
         { }
 
 

@@ -62,7 +62,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public string Type => header?.Operands.Count > 0 ? ((header.Operands[0] as PdfName)?.RawValue) : null;
 
-        public override void WriteTo(IOutputStream stream, Document context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             header.WriteTo(stream, context);
             base.WriteTo(stream, context);

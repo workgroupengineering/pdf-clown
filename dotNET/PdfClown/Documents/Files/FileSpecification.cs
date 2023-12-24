@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Files
           <param name="context">Document context.</param>
           <param name="path">File path.</param>
         */
-        public static SimpleFileSpecification Get(Document context, string path)
+        public static SimpleFileSpecification Get(PdfDocument context, string path)
         {
             return (SimpleFileSpecification)Get(context, path, false);
         }
@@ -56,7 +56,7 @@ namespace PdfClown.Documents.Files
           <param name="path">File path.</param>
           <param name="full">Whether the reference is able to support extended dependencies.</param>
         */
-        public static FileSpecification Get(Document context, string path, bool full)
+        public static FileSpecification Get(PdfDocument context, string path, bool full)
         {
             return full
               ? (FileSpecification)new FullFileSpecification(context, path)
@@ -78,7 +78,7 @@ namespace PdfClown.Documents.Files
           <param name="context">Document context.</param>
           <param name="url">Remote file location.</param>
         */
-        public static FullFileSpecification Get(Document context, Uri url)
+        public static FullFileSpecification Get(PdfDocument context, Uri url)
         {
             return new FullFileSpecification(context, url);
         }
@@ -108,7 +108,7 @@ namespace PdfClown.Documents.Files
                 return null;
         }
 
-        protected FileSpecification(Document context, PdfDirectObject baseDataObject) : base(context, baseDataObject)
+        protected FileSpecification(PdfDocument context, PdfDirectObject baseDataObject) : base(context, baseDataObject)
         { }
 
         protected FileSpecification(PdfDirectObject baseObject) : base(baseObject)

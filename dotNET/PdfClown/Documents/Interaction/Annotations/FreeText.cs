@@ -58,11 +58,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             private SKPoint? pageKnee;
             private SKPoint? pageStart;
 
-            public CalloutLine(Page page, SKPoint start, SKPoint end)
+            public CalloutLine(PdfPage page, SKPoint start, SKPoint end)
                 : this(page, start, null, end)
             { }
 
-            public CalloutLine(Page page, SKPoint start, SKPoint? knee, SKPoint end)
+            public CalloutLine(PdfPage page, SKPoint start, SKPoint? knee, SKPoint end)
                 : base(new PdfArray())
             {
                 SKMatrix matrix = page.InvertRotateMatrix;
@@ -177,7 +177,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         private SKRect? textBox;
         private bool allowRefresh = true;
 
-        public FreeText(Page page, SKRect box, string text)
+        public FreeText(PdfPage page, SKRect box, string text)
             : base(page, PdfName.FreeText, box, text)
         { }
 

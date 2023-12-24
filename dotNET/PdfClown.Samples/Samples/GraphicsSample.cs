@@ -19,8 +19,7 @@ namespace PdfClown.Samples.CLI
       <summary>This sample demonstrates some of the graphics operations available
       through the PrimitiveComposer and BlockComposer classes to compose a PDF document.</summary>
     */
-    public class GraphicsSample
-      : Sample
+    public class GraphicsSample : Sample
     {
         private static readonly DeviceRGBColor SampleColor = DeviceRGBColor.Get(SKColors.Red);
         private static readonly DeviceRGBColor BackColor = new DeviceRGBColor(210 / 255d, 232 / 255d, 245 / 255d);
@@ -28,8 +27,8 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. Instantiate a new PDF file!
-            File file = new File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            var document = file.Document;
 
             // 2. Insert the contents into the document!
             BuildCurvesPage(document);
@@ -44,10 +43,10 @@ namespace PdfClown.Samples.CLI
             Serialize(file, "Composition elements", "applying the composition elements", "graphics, line styles, text alignment, shapes, circles, ellipses, spirals, polygons, rounded rectangles, images, clipping");
         }
 
-        private void BuildCurvesPage(Document document)
+        private void BuildCurvesPage(PdfDocument document)
         {
             // 1. Add the page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
@@ -255,10 +254,10 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private void BuildMiscellaneousPage(Document document)
+        private void BuildMiscellaneousPage(PdfDocument document)
         {
             // 1. Add the page to the document!
-            var page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
@@ -429,10 +428,10 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private void BuildSimpleTextPage(Document document)
+        private void BuildSimpleTextPage(PdfDocument document)
         {
             // 1. Add the page to the document!
-            var page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
@@ -560,10 +559,10 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private void BuildTextBlockPage(Document document)
+        private void BuildTextBlockPage(PdfDocument document)
         {
             // 1. Add the page to the document!
-            var page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
@@ -642,10 +641,10 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private void BuildTextBlockPage2(Document document)
+        private void BuildTextBlockPage2(PdfDocument document)
         {
             // 1. Add the page to the document!
-            var page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
@@ -746,10 +745,10 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private void BuildTextBlockPage3(Document document)
+        private void BuildTextBlockPage3(PdfDocument document)
         {
             // 1. Add the page to the document!
-            var page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;
@@ -818,10 +817,10 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private void BuildTextBlockPage4(Document document)
+        private void BuildTextBlockPage4(PdfDocument document)
         {
             // 1. Add the page to the document!
-            var page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;

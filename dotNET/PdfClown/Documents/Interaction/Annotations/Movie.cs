@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF12)]
     public sealed class Movie : Annotation
     {
-        public Movie(Page page, SKRect box, string text, multimedia::Movie content)
+        public Movie(PdfPage page, SKRect box, string text, multimedia::Movie content)
             : base(page, PdfName.Movie, box, text)
         { Content = content; }
 

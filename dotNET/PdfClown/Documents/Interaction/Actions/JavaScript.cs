@@ -78,7 +78,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public JavaScript(Document context, string script)
+        public JavaScript(PdfDocument context, string script)
             : base(context, PdfName.JavaScript)
         { Script = script; }
 

@@ -19,9 +19,9 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                PdfDocument document = file.Document;
 
                 // 2. Named objects extraction.
                 Names names = document.Names;
@@ -52,7 +52,7 @@ namespace PdfClown.Samples.CLI
                             { Console.WriteLine(((int)pageRef) + 1); }
                             else // NOTE: explicit page refs are typical of local destinations.
                             {
-                                Page page = (Page)pageRef;
+                                var page = (PdfPage)pageRef;
                                 Console.WriteLine(page.Number + "; ID = " + ((PdfReference)page.BaseObject).Id);
                             }
                         }

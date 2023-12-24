@@ -117,7 +117,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        protected Action(Document context, PdfName actionType) : base(
+        protected Action(PdfDocument context, PdfName actionType) : base(
             context,
             new PdfDictionary(2)
             {

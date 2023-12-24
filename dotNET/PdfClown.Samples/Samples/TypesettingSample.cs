@@ -2,7 +2,7 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
 using fonts = PdfClown.Documents.Contents.Fonts;
-using files = PdfClown.Files;
+using PdfClown.Files;
 
 using System;
 using SkiaSharp;
@@ -22,8 +22,8 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            files::File file = new files::File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            var document = file.Document;
 
             // 2. Content creation.
             Build(document);
@@ -32,10 +32,10 @@ namespace PdfClown.Samples.CLI
             Serialize(file, "Typesetting", "demonstrating how to add style to contents", "typesetting");
         }
 
-        private void Build(Document document)
+        private void Build(PdfDocument document)
         {
             // Add a page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             SKSize pageSize = page.Size;

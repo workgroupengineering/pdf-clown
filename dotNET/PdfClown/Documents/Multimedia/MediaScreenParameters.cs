@@ -268,7 +268,7 @@ namespace PdfClown.Documents.Multimedia
             }
         }
 
-        public MediaScreenParameters(Document context)
+        public MediaScreenParameters(PdfDocument context)
             : base(context, new PdfDictionary { { PdfName.Type, PdfName.MediaScreenParams } })
         { }
 

@@ -37,9 +37,9 @@ namespace PdfClown.Documents
       <summary>Document pages collection [PDF:1.6:3.6.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class Pages : PdfObjectWrapper<PdfDictionary>, IExtList<Page>, IList<Page>
+    public sealed class Pages : PdfObjectWrapper<PdfDictionary>, IExtList<PdfPage>, IList<PdfPage>
     {
-        private class Enumerator : IEnumerator<Page>
+        private class Enumerator : IEnumerator<PdfPage>
         {
             /**
               <summary>Collection size.</summary>
@@ -53,7 +53,7 @@ namespace PdfClown.Documents
             /**
               <summary>Current page.</summary>
             */
-            private Page current;
+            private PdfPage current;
 
             /**
               <summary>Current level index.</summary>
@@ -82,9 +82,9 @@ namespace PdfClown.Documents
                 kids = (PdfArray)parent.Resolve(PdfName.Kids);
             }
 
-            Page IEnumerator<Page>.Current => current;
+            PdfPage IEnumerator<PdfPage>.Current => current;
 
-            public object Current => ((IEnumerator<Page>)this).Current;
+            public object Current => ((IEnumerator<PdfPage>)this).Current;
 
             public bool MoveNext()
             {
@@ -132,7 +132,7 @@ namespace PdfClown.Documents
                                 index++; // Absolute page index.
                                 levelIndex++; // Current level node index.
 
-                                current = Wrap<Page>(kidReference);
+                                current = Wrap<PdfPage>(kidReference);
                                 return true;
                             }
                             else // Page tree node.
@@ -172,7 +172,7 @@ namespace PdfClown.Documents
           of the page tree (better insertion/deletion performance). In this case, it would
           be necessary to keep track of the modified tree nodes for incremental update.
         */
-        public Pages(Document context)
+        public Pages(PdfDocument context)
             : base(context, new PdfDictionary(3)
             {
                 { PdfName.Type, PdfName.Pages },
@@ -184,14 +184,14 @@ namespace PdfClown.Documents
         public Pages(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public IList<Page> GetRange(int index, int count)
+        public IList<PdfPage> GetRange(int index, int count)
         {
             return GetSlice(index, index + count);
         }
 
-        public IList<Page> GetSlice(int fromIndex, int toIndex)
+        public IList<PdfPage> GetSlice(int fromIndex, int toIndex)
         {
-            List<Page> pages = new List<Page>(toIndex - fromIndex);
+            var pages = new List<PdfPage>(toIndex - fromIndex);
             int i = fromIndex;
             while (i < toIndex)
             { pages.Add(this[i++]); }
@@ -200,37 +200,37 @@ namespace PdfClown.Documents
         }
 
         public void InsertAll<TVar>(int index, ICollection<TVar> pages)
-          where TVar : Page
+          where TVar : PdfPage
         {
             CommonAddAll(index, pages);
         }
 
         public void AddAll<TVar>(ICollection<TVar> pages)
-          where TVar : Page
+          where TVar : PdfPage
         {
             CommonAddAll(-1, pages);
         }
 
         public void RemoveAll<TVar>(ICollection<TVar> pages)
-          where TVar : Page
+          where TVar : PdfPage
         {
             /*
               NOTE: The interface contract doesn't prescribe any relation among the removing-collection's
               items, so we cannot adopt the optimized approach of the add*(...) methods family,
               where adding-collection's items are explicitly ordered.
             */
-            foreach (Page page in pages)
+            foreach (PdfPage page in pages)
             { Remove(page); }
         }
 
-        public int RemoveAll(Predicate<Page> match)
+        public int RemoveAll(Predicate<PdfPage> match)
         {
             /*
               NOTE: Removal is indirectly fulfilled through an intermediate collection
               in order not to interfere with the enumerator execution.
             */
-            List<Page> removingPages = new List<Page>();
-            foreach (Page page in this)
+            var removingPages = new List<PdfPage>();
+            foreach (PdfPage page in this)
             {
                 if (match(page))
                 { removingPages.Add(page); }
@@ -241,14 +241,14 @@ namespace PdfClown.Documents
             return removingPages.Count;
         }
 
-        public int IndexOf(Page page)
+        public int IndexOf(PdfPage page)
         {
             return page.Index;
         }
 
-        public void Insert(int index, Page page)
+        public void Insert(int index, PdfPage page)
         {
-            CommonAddAll(index, (ICollection<Page>)new Page[] { page });
+            CommonAddAll(index, (ICollection<PdfPage>)new PdfPage[] { page });
         }
 
         public void RemoveAt(int index)
@@ -256,7 +256,7 @@ namespace PdfClown.Documents
             Remove(this[index]);
         }
 
-        public Page this[int index]
+        public PdfPage this[int index]
         {
             get
             {
@@ -279,7 +279,7 @@ namespace PdfClown.Documents
                         // Did we reach the searched position?
                         if (pageOffset == index) // Vertical scan (we finished).
                                                  // We got it!
-                            return Wrap<Page>(kidReference);
+                            return Wrap<PdfPage>(kidReference);
                         else // Horizontal scan (go past).
                              // Cumulate current page object count!
                             pageOffset++;
@@ -312,9 +312,9 @@ namespace PdfClown.Documents
             }
         }
 
-        public void Add(Page page)
+        public void Add(PdfPage page)
         {
-            CommonAddAll(-1, (ICollection<Page>)new Page[] { page });
+            CommonAddAll(-1, (ICollection<PdfPage>)new PdfPage[] { page });
         }
 
         public void Clear()
@@ -322,12 +322,12 @@ namespace PdfClown.Documents
             throw new NotImplementedException();
         }
 
-        public bool Contains(Page page)
+        public bool Contains(PdfPage page)
         {
             throw new NotImplementedException();
         }
 
-        public void CopyTo(Page[] pages, int index)
+        public void CopyTo(PdfPage[] pages, int index)
         {
             throw new NotImplementedException();
         }
@@ -336,7 +336,7 @@ namespace PdfClown.Documents
 
         public bool IsReadOnly => false;
 
-        public bool Remove(Page page)
+        public bool Remove(PdfPage page)
         {
             PdfDictionary pageData = page.BaseDataObject;
             // Get the parent tree node!
@@ -367,7 +367,7 @@ namespace PdfClown.Documents
             return true;
         }
 
-        public IEnumerator<Page> GetEnumerator()
+        public IEnumerator<PdfPage> GetEnumerator()
         {
             return new Enumerator(this);
         }
@@ -382,7 +382,7 @@ namespace PdfClown.Documents
           <param name="index">Addition position. To append, use value -1.</param>
           <param name="pages">Collection of pages to add.</param>
         */
-        private void CommonAddAll<TPage>(int index, ICollection<TPage> pages) where TPage : Page
+        private void CommonAddAll<TPage>(int index, ICollection<TPage> pages) where TPage : PdfPage
         {
             PdfDirectObject parent;
             PdfDictionary parentData;
@@ -403,7 +403,7 @@ namespace PdfClown.Documents
             else // Insert operation.
             {
                 // Get the page currently at the specified position!
-                Page pivotPage = this[index];
+                var pivotPage = this[index];
                 // Get the parent tree node!
                 parent = pivotPage.BaseDataObject[PdfName.Parent];
                 parentData = (PdfDictionary)parent.Resolve();
@@ -415,7 +415,7 @@ namespace PdfClown.Documents
             }
 
             // Adding the pages...
-            foreach (Page page in pages)
+            foreach (var page in pages)
             {
                 // Append?
                 if (index == -1) // Append.

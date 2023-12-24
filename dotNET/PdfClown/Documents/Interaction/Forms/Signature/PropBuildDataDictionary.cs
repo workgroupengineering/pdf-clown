@@ -30,7 +30,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
 {
     public class PropBuildDataDictionary : PdfObjectWrapper<PdfDictionary>
     {
-        public PropBuildDataDictionary(Document doc)
+        public PropBuildDataDictionary(PdfDocument doc)
             : base(doc, new PdfDictionary())
         { }
 

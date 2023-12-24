@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Contents.Layers
     {
         #region dynamic
         #region constructors
-        public LayerCollection(Document context, string title) : base(context)
+        public LayerCollection(PdfDocument context, string title) : base(context)
         { Title = title; }
 
         internal LayerCollection(PdfDirectObject baseObject) : base(baseObject)

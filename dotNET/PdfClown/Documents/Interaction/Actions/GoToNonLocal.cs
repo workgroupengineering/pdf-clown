@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Interaction.Actions
     public abstract class GotoNonLocal<T> : GoToDestination<T>
       where T : Destination
     {
-        protected GotoNonLocal(Document context, PdfName actionType, FileSpecification destinationFile, T destination)
+        protected GotoNonLocal(PdfDocument context, PdfName actionType, FileSpecification destinationFile, T destination)
             : base(context, actionType, destination)
         { DestinationFile = destinationFile; }
 

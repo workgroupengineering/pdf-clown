@@ -43,7 +43,7 @@ namespace PdfClown.Documents.Interchange.Metadata
 
         private XmlDocument content;
 
-        public Metadata(Document context)
+        public Metadata(PdfDocument context)
             : base(context, new PdfStream(new PdfDictionary(2)
                       {
                           { PdfName.Type, PdfName.Metadata },

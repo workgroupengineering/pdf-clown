@@ -34,16 +34,16 @@ namespace PdfClown.Documents
       <summary>Named pages [PDF:1.6:3.6.3].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class NamedPages : NameTree<Page>
+    public sealed class NamedPages : NameTree<PdfPage>
     {
-        public NamedPages(Document context) : base(context)
+        public NamedPages(PdfDocument context) : base(context)
         { }
 
         public NamedPages(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        protected override Page WrapValue(PdfDirectObject baseObject)
-        { return Wrap<Page>(baseObject); }
+        protected override PdfPage WrapValue(PdfDirectObject baseObject)
+        { return Wrap<PdfPage>(baseObject); }
 
     }
 }

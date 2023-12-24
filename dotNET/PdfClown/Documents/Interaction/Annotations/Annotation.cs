@@ -45,6 +45,7 @@ using System.Globalization;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Tokens;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 //using System.Diagnostics;
 
 namespace PdfClown.Documents.Interaction.Annotations
@@ -55,7 +56,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF10)]
     public abstract class Annotation : PdfObjectWrapper<PdfDictionary>, ILayerable, INotifyPropertyChanged
     {
-        private Page page;
+        private PdfPage page;
         private string name;
         private SKColor? color;
         private SKRect? box;
@@ -135,7 +136,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return new GenericAnnotation(baseObject);
         }
 
-        protected Annotation(Page page, PdfName subtype, SKRect box, string text)
+        protected Annotation(PdfPage page, PdfName subtype, SKRect box, string text)
             : base(page.Document,
                   new PdfDictionary(3)
                   {
@@ -379,7 +380,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public virtual string Name
         {
-            get => name ??= BaseDataObject.GetString(PdfName.NM) ?? GenerateExistingName();
+            get => name ??= BaseDataObject.GetString(PdfName.NM);
             set
             {
                 var oldValue = Name;
@@ -396,9 +397,9 @@ namespace PdfClown.Documents.Interaction.Annotations
           <summary>Gets/Sets the associated page.</summary>
         */
         [PDF(VersionEnum.PDF13)]
-        public virtual Page Page
+        public virtual PdfPage Page
         {
-            get => page ??= Wrap<Page>(BaseDataObject[PdfName.P]);
+            get => page ??= Wrap<PdfPage>(BaseDataObject[PdfName.P]);
             set
             {
                 page = null;
@@ -736,9 +737,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             return Name = Guid.NewGuid().ToString();
         }
 
-        public string GenerateExistingName()
+        public string GenerateExistingName(string key = null)
         {
-            return Name = $"Annot{Dictionary[PdfName.Subtype]}{Page?.Index}{BaseObject.Reference?.ObjectNumber}{BaseObject.Reference?.GenerationNumber}{Author}";
+            return Name = $"{GetType().Name}{Subject}{Page?.Index}{BaseObject.Reference?.ObjectNumber}{BaseObject.Reference?.GenerationNumber}{Author}{key}";
         }
 
 
@@ -757,6 +758,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             yield return cpBottomLeft ??= new BottomLeftControlPoint { Annotation = this };
             yield return cpBottomRight ??= new BottomRightControlPoint { Annotation = this };
         }
+
+        public FormXObject ResetAppearance() => ResetAppearance(out _);
 
         public FormXObject ResetAppearance(out SKMatrix zeroMatrix) => ResetAppearance(Box, out zeroMatrix);
 

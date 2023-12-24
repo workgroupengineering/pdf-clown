@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Rectangle : Shape
     {
-        public Rectangle(Page page, SKRect box, string text)
+        public Rectangle(PdfPage page, SKRect box, string text)
             : base(page, box, text, PdfName.Square)
         { }
 

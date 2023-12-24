@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF15)]
     public sealed class Polyline : VertexShape
     {
-        public Polyline(Page page, SKRect box, string text)
+        public Polyline(PdfPage page, SKRect box, string text)
             : base(page, box, text, PdfName.PolyLine)
         {
             base.ClosePath = false;

@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Interaction.Actions
     public abstract class GoToDestination<T> : Action, IGoToAction
       where T : Destination
     {
-        protected GoToDestination(Document context, PdfName actionType, T destination)
+        protected GoToDestination(PdfDocument context, PdfName actionType, T destination)
             : base(context, actionType)
         { Destination = destination; }
 

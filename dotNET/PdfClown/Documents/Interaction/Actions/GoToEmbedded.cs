@@ -96,28 +96,28 @@ namespace PdfClown.Documents.Interaction.Actions
             /**
               <summary>Creates a new path element representing the parent of the document.</summary>
             */
-            public PathElement(Document context, PathElement next)
+            public PathElement(PdfDocument context, PathElement next)
                 : this(context, RelationEnum.Parent, null, null, null, next)
             { }
 
             /**
               <summary>Creates a new path element located in the embedded files collection of the document.</summary>
             */
-            public PathElement(Document context, string embeddedFileName, PathElement next)
+            public PathElement(PdfDocument context, string embeddedFileName, PathElement next)
                 : this(context, RelationEnum.Child, embeddedFileName, null, null, next)
             { }
 
             /**
               <summary>Creates a new path element associated with a file attachment annotation.</summary>
             */
-            public PathElement(Document context, object annotationPageRef, object annotationRef, PathElement next)
+            public PathElement(PdfDocument context, object annotationPageRef, object annotationRef, PathElement next)
                 : this(context, RelationEnum.Child, null, annotationPageRef, annotationRef, next)
             { }
 
             /**
               <summary>Creates a new path element.</summary>
             */
-            private PathElement(Document context, RelationEnum relation, string embeddedFileName, object annotationPageRef, object annotationRef, PathElement next)
+            private PathElement(PdfDocument context, RelationEnum relation, string embeddedFileName, object annotationPageRef, object annotationRef, PathElement next)
                 : base(context, new PdfDictionary())
             {
                 Relation = relation;
@@ -133,7 +133,7 @@ namespace PdfClown.Documents.Interaction.Actions
             public PathElement(PdfDirectObject baseObject) : base(baseObject)
             { }
 
-            public override object Clone(Document context)
+            public override object Clone(PdfDocument context)
             { throw new NotImplementedException(); }
 
             /**
@@ -262,7 +262,7 @@ namespace PdfClown.Documents.Interaction.Actions
           file.</param>
           <param name="destination">Destination within the target document.</param>
         */
-        public GoToEmbedded(Document context, PathElement destinationPath, Destination destination)
+        public GoToEmbedded(PdfDocument context, PathElement destinationPath, Destination destination)
             : this(context, null, destinationPath, destination)
         { }
 
@@ -273,7 +273,7 @@ namespace PdfClown.Documents.Interaction.Actions
           <param name="destinationFile">File in which the destination is located.</param>
           <param name="destination">Destination within the target document.</param>
         */
-        public GoToEmbedded(Document context, FileSpecification destinationFile, Destination destination)
+        public GoToEmbedded(PdfDocument context, FileSpecification destinationFile, Destination destination)
             : this(context, destinationFile, null, destination)
         { }
 
@@ -285,7 +285,7 @@ namespace PdfClown.Documents.Interaction.Actions
           file.</param>
           <param name="destination">Destination within the target document.</param>
         */
-        public GoToEmbedded(Document context, FileSpecification destinationFile, PathElement destinationPath, Destination destination)
+        public GoToEmbedded(PdfDocument context, FileSpecification destinationFile, PathElement destinationPath, Destination destination)
             : base(context, PdfName.GoToE, destinationFile, destination)
         { DestinationPath = destinationPath; }
 

@@ -84,7 +84,7 @@ namespace PdfClown.Documents.Contents.XObjects
          <param name="context">Document where to place this form.</param>
          <param name="size">Form size.</param>
        */
-        public FormXObject(Document context, SKSize size)
+        public FormXObject(PdfDocument context, SKSize size)
             : this(context, SKRect.Create(size))
         { }
 
@@ -93,7 +93,7 @@ namespace PdfClown.Documents.Contents.XObjects
           <param name="context">Document where to place this form.</param>
           <param name="box">Form box.</param>
         */
-        public FormXObject(Document context, SKRect box)
+        public FormXObject(PdfDocument context, SKRect box)
             : base(context)
         {
             BaseDataObject.Header[PdfName.Subtype] = PdfName.Form;
@@ -268,7 +268,7 @@ namespace PdfClown.Documents.Contents.XObjects
             throw new NotImplementedException();
         }
 
-        public XObject ToXObject(Document context) => (XObject)Clone(context);
+        public XObject ToXObject(PdfDocument context) => (XObject)Clone(context);
 
         internal void InvalidatePicture()
         {

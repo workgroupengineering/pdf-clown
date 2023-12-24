@@ -92,11 +92,11 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly Dictionary<int, SKPoint> positionVectors = new Dictionary<int, SKPoint>();     // v
         private float[] dw2 = new float[] { 880, -1000 };
 
-        public FontCID(Document document)
+        public FontCID(PdfDocument document)
             : this(document, new PdfDictionary { { PdfName.Type, PdfName.Font } })
         { }
 
-        public FontCID(Document document, PdfDictionary fontObject)
+        public FontCID(PdfDocument document, PdfDictionary fontObject)
             : base(document, fontObject)
         {
         }

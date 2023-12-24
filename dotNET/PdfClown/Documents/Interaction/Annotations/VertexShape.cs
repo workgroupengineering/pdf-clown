@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         private SKPoint[] points;
         private Dictionary<int, IndexControlPoint> controlPoints = new Dictionary<int, IndexControlPoint>();
 
-        protected VertexShape(Page page, SKRect box, string text, PdfName subtype)
+        protected VertexShape(PdfPage page, SKRect box, string text, PdfName subtype)
             : base(page, box, text, subtype)
         { }
 

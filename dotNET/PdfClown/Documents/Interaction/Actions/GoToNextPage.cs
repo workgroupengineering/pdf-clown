@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToNextPage(Document context)
+        public GoToNextPage(PdfDocument context)
             : base(context, PdfName.NextPage)
         { }
 

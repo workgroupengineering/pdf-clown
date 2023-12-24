@@ -24,9 +24,9 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                PdfDocument document = file.Document;
 
                 // 2. Get the acroform!
                 Form form = document.Form;
@@ -51,10 +51,10 @@ namespace PdfClown.Samples.CLI
                         foreach (Widget widget in field.Widgets)
                         {
                             Console.WriteLine("    Widget " + (++widgetIndex) + ":");
-                            Page widgetPage = widget.Page;
+                            var widgetPage = widget.Page;
                             Console.WriteLine("      Page: " + (widgetPage == null ? "undefined" : widgetPage.Number + " (" + widgetPage.BaseObject + ")"));
 
-                            SKRect widgetBox = widget.GetBounds();
+                            SKRect widgetBox = widget.GetViewBounds();
                             Console.WriteLine("      Coordinates: {x:" + Math.Round(widgetBox.Left) + "; y:" + Math.Round(widgetBox.Top) + "; width:" + Math.Round(widgetBox.Width) + "; height:" + Math.Round(widgetBox.Height) + "}");
                         }
 

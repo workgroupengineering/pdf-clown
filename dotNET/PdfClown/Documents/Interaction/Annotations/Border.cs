@@ -107,22 +107,22 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public Border(Document context, double width) : this(context, width, DefaultStyle, null)
+        public Border(PdfDocument context, double width) : this(context, width, DefaultStyle, null)
         { }
 
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public Border(Document context, double width, BorderStyleType style) : this(context, width, style, null)
+        public Border(PdfDocument context, double width, BorderStyleType style) : this(context, width, style, null)
         { }
 
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public Border(Document context, double width, LineDash pattern) : this(context, width, BorderStyleType.Dashed, pattern)
+        public Border(PdfDocument context, double width, LineDash pattern) : this(context, width, BorderStyleType.Dashed, pattern)
         { }
 
-        private Border(Document context, double width, BorderStyleType style, LineDash pattern)
+        private Border(PdfDocument context, double width, BorderStyleType style, LineDash pattern)
             : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Border } })
         {
             Width = width;
@@ -186,7 +186,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             borderEffect?.Apply(paint);
         }
 
-        public void Apply(PrimitiveComposer paint, BorderEffect borderEffect)
+        public void Apply(PrimitiveComposer paint, BorderEffect borderEffect = null)
         {
             paint.SetLineWidth((float)Width);
 

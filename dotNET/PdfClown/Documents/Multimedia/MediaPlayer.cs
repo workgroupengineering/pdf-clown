@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaPlayer : PdfObjectWrapper<PdfDictionary>
     {
-        public MediaPlayer(Document context) : base(
+        public MediaPlayer(PdfDocument context) : base(
             context,
             new PdfDictionary(1) { { PdfName.Type, PdfName.MediaPlayerInfo } })
         { }

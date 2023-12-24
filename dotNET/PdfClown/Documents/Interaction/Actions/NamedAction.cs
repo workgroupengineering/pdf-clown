@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public NamedAction(Document context, PdfName actionName)
+        public NamedAction(PdfDocument context, PdfName actionName)
             : base(context, PdfName.Named)
         { BaseDataObject[PdfName.N] = actionName; }
 

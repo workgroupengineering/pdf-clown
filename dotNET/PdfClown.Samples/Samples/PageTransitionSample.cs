@@ -16,23 +16,21 @@ namespace PdfClown.Samples.CLI
       <remarks>To watch the transition effects applied to the document, you typically have to select
       the presentation (full screen) view mode on your PDF viewer (for example Adobe Reader).</remarks>
     */
-    public class PageTransitionSample
-      : Sample
+    public class PageTransitionSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                var document = file.Document;
 
                 // 2. Applying the visual transitions...
                 Transition.StyleEnum[] transitionStyles = (Transition.StyleEnum[])Enum.GetValues(typeof(Transition.StyleEnum));
                 int transitionStylesLength = transitionStyles.Length;
                 Random random = new Random();
-                foreach (Page page in document.Pages)
+                foreach (var page in document.Pages)
                 {
                     // Apply a transition to the page!
                     page.Transition = new Transition(

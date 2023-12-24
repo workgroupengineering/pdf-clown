@@ -36,9 +36,9 @@ namespace PdfClown.Viewer
         private readonly float indent = 10;
         private Fields fields;
 
-        public Files.File File { get; private set; }
+        public PdfFile File { get; private set; }
 
-        public Document Document => File.Document;
+        public PdfDocument Document => File.Document;
 
         public Pages Pages { get; private set; }
 
@@ -110,7 +110,7 @@ namespace PdfClown.Viewer
             }
         }
 
-        public PdfPageView GetPageView(Documents.Page page)
+        public PdfPageView GetPageView(PdfPage page)
         {
             foreach (var pageView in pageViews)
             {
@@ -179,7 +179,7 @@ namespace PdfClown.Viewer
                 fileStream.Close();
                 stream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
             }
-            File = new Files.File(stream);
+            File = new PdfFile(stream);
             fields = null;
             LoadPages();
         }
@@ -302,7 +302,7 @@ namespace PdfClown.Viewer
             return AddAnnotation(annotation.Page, annotation);
         }
 
-        public List<Annotation> AddAnnotation(Page page, Annotation annotation)
+        public List<Annotation> AddAnnotation(PdfPage page, Annotation annotation)
         {
             var list = new List<Annotation>();
             if (page != null)

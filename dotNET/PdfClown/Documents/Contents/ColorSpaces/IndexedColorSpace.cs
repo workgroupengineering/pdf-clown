@@ -58,7 +58,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public int BaseSpaceComponentCount => componentCount ??= BaseSpace.ComponentCount;
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); }
 
         public override int ComponentCount => 1;

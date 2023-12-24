@@ -27,7 +27,6 @@ using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Forms;
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Files;
 using PdfClown.Tokens;
 
 using System;
@@ -239,11 +238,11 @@ namespace PdfClown.Objects
                 */
                 PdfDictionary cloneDictionary = (PdfDictionary)clone;
                 PdfDictionary sourceDictionary = (PdfDictionary)source;
-                foreach (PdfName key in Page.InheritableAttributeKeys)
+                foreach (PdfName key in PdfPage.InheritableAttributeKeys)
                 {
                     if (!sourceDictionary.ContainsKey(key))
                     {
-                        PdfDirectObject sourceValue = Page.GetInheritableAttribute(sourceDictionary, key);
+                        PdfDirectObject sourceValue = PdfPage.GetInheritableAttribute(sourceDictionary, key);
                         if (sourceValue != null)
                         { cloneDictionary[key] = (PdfDirectObject)sourceValue.Accept(cloner, null); }
                     }
@@ -278,15 +277,15 @@ namespace PdfClown.Objects
             commonFilters.Add(new AnnotationsFilter());
         }
 
-        private File context;
+        private PdfFile context;
         private readonly IList<Filter> filters = new List<Filter>(commonFilters);
 
-        public Cloner(File context)
+        public Cloner(PdfFile context)
         {
             Context = context;
         }
 
-        public File Context
+        public PdfFile Context
         {
             get => context;
             set

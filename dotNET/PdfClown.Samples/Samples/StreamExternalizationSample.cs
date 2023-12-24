@@ -1,6 +1,6 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Files;
-using files = PdfClown.Files;
+using PdfClown.Files;
 using PdfClown.Objects;
 
 using System.IO;
@@ -17,20 +17,18 @@ namespace PdfClown.Samples.CLI
       streams, users have to enable Enhanced Security from the Preferences dialog, specifying
       privileged locations.</remarks>
     */
-    public class StreamExternalizationSample
-      : Sample
+    public class StreamExternalizationSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Externalizing the streams...
             string externalizedFilePath;
             {
                 // 1.1. Opening the PDF file...
                 string filePath = PromptFileChoice("Please select a PDF file");
-                using (var file = new files::File(filePath))
+                using (var file = new PdfFile(filePath))
                 {
-                    Document document = file.Document;
+                    var document = file.Document;
                     /*
                       NOTE: As we are going to export streams using paths relative to the output path, it's
                       necessary to ensure they are properly resolved (otherwise they will be written relative to
@@ -51,8 +49,7 @@ namespace PdfClown.Samples.CLI
                                 stream.SetDataFile(
                                   FileSpecification.Get(
                                     document,
-                                    GetType().Name + "-external" + filenameIndex++
-                                    ),
+                                    GetType().Name + "-external" + filenameIndex++),
                                   true // Forces the stream data to be transferred to the external location.
                                   );
                             }
@@ -60,14 +57,14 @@ namespace PdfClown.Samples.CLI
                     }
 
                     // 1.3. Serialize the PDF file!
-                    externalizedFilePath = Serialize(file, files::SerializationModeEnum.Standard);
+                    externalizedFilePath = Serialize(file, SerializationModeEnum.Standard);
                 }
             }
 
             // 2. Reimporting the externalized streams...
             {
                 // 2.1. Opening the PDF file...
-                using (var file = new files::File(externalizedFilePath))
+                using (var file = new PdfFile(externalizedFilePath))
                 {
                     // 2.2. Iterating through the indirect objects to internalize streams...
                     foreach (PdfIndirectObject indirectObject in file.IndirectObjects)
@@ -89,7 +86,7 @@ namespace PdfClown.Samples.CLI
                     // 2.3. Serialize the PDF file!
                     string externalizedFileName = Path.GetFileNameWithoutExtension(externalizedFilePath);
                     string internalizedFilePath = externalizedFileName + "-reimported.pdf";
-                    Serialize(file, internalizedFilePath, files::SerializationModeEnum.Standard);
+                    Serialize(file, internalizedFilePath, SerializationModeEnum.Standard);
                 }
             }
         }

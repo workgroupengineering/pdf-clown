@@ -31,7 +31,6 @@ using PdfClown.Documents.Contents.Objects;
 using xObjects = PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Documents.Interchange.Metadata;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -45,7 +44,7 @@ namespace PdfClown.Documents
       <summary>Document page [PDF:1.6:3.6.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public class Page : PdfObjectWrapper<PdfDictionary>, IContentContext
+    public class PdfPage : PdfObjectWrapper<PdfDictionary>, IContentContext
     {
         /*
           NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
@@ -81,7 +80,7 @@ namespace PdfClown.Documents
         internal int? index;
         private Stack<GraphicsState> states;
 
-        static Page()
+        static PdfPage()
         {
             InheritableAttributeKeys = new HashSet<PdfName>
             {
@@ -158,7 +157,7 @@ namespace PdfClown.Documents
           </summary>
           <param name="context">Document where to place this page.</param>
         */
-        public Page(Document context) : this(context, null)
+        public PdfPage(PdfDocument context) : this(context, null)
         { }
 
         /**
@@ -166,7 +165,7 @@ namespace PdfClown.Documents
           <param name="context">Document where to place this page.</param>
           <param name="size">Page size. In case of <code>null</code>, uses the default SKSize.</param>
         */
-        public Page(Document context, SKSize? size)
+        public PdfPage(PdfDocument context, SKSize? size)
             : base(context, new PdfDictionary
             {
                 { PdfName.Type,PdfName.Page },
@@ -177,7 +176,7 @@ namespace PdfClown.Documents
             { Size = size.Value; }
         }
 
-        public Page(PdfDirectObject baseObject) : base(baseObject)
+        public PdfPage(PdfDirectObject baseObject) : base(baseObject)
         { }
 
         /**
@@ -513,7 +512,7 @@ namespace PdfClown.Documents
         public ContentObject ToInlineObject(PrimitiveComposer composer)
         { throw new NotImplementedException(); }
 
-        public xObjects::XObject ToXObject(Document context)
+        public xObjects::XObject ToXObject(PdfDocument context)
         {
             FormXObject form;
             {

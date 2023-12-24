@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Tokens;
 
 using System;
@@ -318,7 +317,7 @@ namespace PdfClown.Objects
             return buffer.ToString();
         }
 
-        public override void WriteTo(IOutputStream stream, File context)
+        public override void WriteTo(IOutputStream stream, PdfFile context)
         {
             // Begin.
             stream.Write(BeginDictionaryChunk);

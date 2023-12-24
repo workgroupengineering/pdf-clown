@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private static readonly int OBLIQUE = 512;
         private static readonly string BASE25 = "BCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-        private readonly Document document;
+        private readonly PdfDocument document;
         protected TrueTypeFont ttf;
         protected FontDescriptor fontDescriptor;
 
@@ -54,7 +54,7 @@ namespace PdfClown.Documents.Contents.Fonts
         /**
 		 * Creates a new TrueType font for embedding.
 		 */
-        public TrueTypeEmbedder(Document document, PdfDictionary dict, TrueTypeFont ttf, bool embedSubset)
+        public TrueTypeEmbedder(PdfDocument document, PdfDictionary dict, TrueTypeFont ttf, bool embedSubset)
         {
             this.document = document;
             this.embedSubset = embedSubset;

@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Contents.XObjects
             return Wrap<SoftMask>(baseObject);
         }
 
-        public SoftMask(Document context, PdfDictionary baseDataObject) : base(context, baseDataObject)
+        public SoftMask(PdfDocument context, PdfDictionary baseDataObject) : base(context, baseDataObject)
         {
             Type = PdfName.Mask;
         }

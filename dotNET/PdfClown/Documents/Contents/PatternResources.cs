@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF12)]
     public sealed class PatternResources : ResourceItems<Pattern>
     {
-        public PatternResources(Document context) : base(context)
+        public PatternResources(PdfDocument context) : base(context)
         { }
 
         public PatternResources(PdfDirectObject baseObject) : base(baseObject)

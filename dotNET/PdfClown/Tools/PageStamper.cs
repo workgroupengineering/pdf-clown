@@ -37,7 +37,7 @@ namespace PdfClown.Tools
     */
     public sealed class PageStamper
     {
-        private Page page;
+        private PdfPage page;
 
         private PrimitiveComposer background;
         private PrimitiveComposer foreground;
@@ -45,7 +45,7 @@ namespace PdfClown.Tools
         public PageStamper() : this(null)
         { }
 
-        public PageStamper(Page page)
+        public PageStamper(PdfPage page)
         {
             Page = page;
         }
@@ -94,7 +94,7 @@ namespace PdfClown.Tools
 
         public PrimitiveComposer Foreground => foreground;
 
-        public Page Page
+        public PdfPage Page
         {
             get => page;
             set

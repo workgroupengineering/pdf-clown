@@ -3,7 +3,7 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Entities;
 using PdfClown.Documents.Contents.XObjects;
-using files = PdfClown.Files;
+using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -24,9 +24,9 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new files::File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                PdfDocument document = file.Document;
 
                 // 2. Replace the images!
                 ReplaceImages(document);
@@ -37,7 +37,7 @@ namespace PdfClown.Samples.CLI
         }
 
         private void ReplaceImages(
-          Document document
+          PdfDocument document
           )
         {
             // Get the image used to replace existing ones!
@@ -45,7 +45,7 @@ namespace PdfClown.Samples.CLI
                                                                                                           // Add the image to the document!
             XObject imageXObject = image.ToXObject(document); // XObject (i.e. external object) is, in PDF spec jargon, a reusable object.
                                                               // Looking for images to replace...
-            foreach (Page page in document.Pages)
+            foreach (var page in document.Pages)
             {
                 Resources resources = page.Resources;
                 XObjectResources xObjects = resources.XObjects;

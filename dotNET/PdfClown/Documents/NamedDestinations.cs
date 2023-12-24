@@ -38,7 +38,7 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF12)]
     public sealed class NamedDestinations : NameTree<Destination>
     {
-        public NamedDestinations(Document context) : base(context)
+        public NamedDestinations(PdfDocument context) : base(context)
         { }
 
         public NamedDestinations(PdfDirectObject baseObject) : base(baseObject)

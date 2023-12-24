@@ -11,7 +11,7 @@ using actions = PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Documents.Interaction.Viewer;
 using PdfClown.Documents.Interchange.Metadata;
-using files = PdfClown.Files;
+using PdfClown.Files;
 
 using System;
 using SkiaSharp;
@@ -40,8 +40,8 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            var file = new files::File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            PdfDocument document = file.Document;
             // Set default page size (A4)!
             document.PageSize = PageFormat.GetSize();
 
@@ -60,11 +60,11 @@ namespace PdfClown.Samples.CLI
             Serialize(file, "Complex Typesetting", "complex typesetting", "typesetting, bookmarks, hyphenation, block composer, primitive composer, text alignment, image insertion, article threads");
         }
 
-        private void BuildBookmarks(Document document)
+        private void BuildBookmarks(PdfDocument document)
         {
             Pages pages = document.Pages;
             Bookmarks bookmarks = document.Bookmarks;
-            Page page = pages[0];
+            var page = pages[0];
             var rootBookmark = new Bookmark(document, "Creation Sample", new LocalDestination(page));
             bookmarks.Add(rootBookmark);
             bookmarks = rootBookmark.Bookmarks;
@@ -85,10 +85,10 @@ namespace PdfClown.Samples.CLI
             document.ViewerPreferences.PageMode = ViewerPreferences.PageModeEnum.Bookmarks;
         }
 
-        private void BuildFreeSoftwareDefinitionPages(Document document, FormXObject template)
+        private void BuildFreeSoftwareDefinitionPages(PdfDocument document, FormXObject template)
         {
             // Add page!
-            var page = new Page(document);
+            var page = new PdfPage(document);
             document.Pages.Add(page);
             SKSize pageSize = page.Size;
 
@@ -244,7 +244,7 @@ namespace PdfClown.Samples.CLI
                             composer.Flush();
 
                             // Create a new page!
-                            document.Pages.Add(page = new Page(document));
+                            document.Pages.Add(page = new PdfPage(document));
                             composer = new PrimitiveComposer(page);
                             // Add the background template!
                             composer.ShowXObject(template);
@@ -281,10 +281,10 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private void BuildWelcomePage(Document document, FormXObject template)
+        private void BuildWelcomePage(PdfDocument document, FormXObject template)
         {
             // Add welcome page to the document!
-            var page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
             SKSize pageSize = page.Size;
 
@@ -422,7 +422,7 @@ namespace PdfClown.Samples.CLI
             composer.Flush();
         }
 
-        private FormXObject BuildTemplate(Document document, DateTime creationDate)
+        private FormXObject BuildTemplate(PdfDocument document, DateTime creationDate)
         {
             // Create a template (form)!
             var template = new FormXObject(document, document.PageSize.Value);

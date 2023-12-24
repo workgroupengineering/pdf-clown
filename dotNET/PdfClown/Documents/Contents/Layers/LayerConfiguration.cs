@@ -60,7 +60,7 @@ namespace PdfClown.Documents.Contents.Layers
         }
 
 
-        public LayerConfiguration(Document context) : base(context, new PdfDictionary())
+        public LayerConfiguration(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public LayerConfiguration(PdfDirectObject baseObject) : base(baseObject)

@@ -43,7 +43,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF10)]
     public sealed class Link : Annotation, ILink
     {
-        public Link(Page page, SKRect box, string text, PdfObjectWrapper target) : base(page, PdfName.Link, box, text)
+        public Link(PdfPage page, SKRect box, string text, PdfObjectWrapper target) : base(page, PdfName.Link, box, text)
         { Target = target; }
 
         public Link(PdfDirectObject baseObject) : base(baseObject)

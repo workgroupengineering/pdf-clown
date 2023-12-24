@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         internal DeviceNColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); }
 
         public override int ComponentCount => ((PdfArray)((PdfArray)BaseDataObject)[1]).Count;

@@ -106,7 +106,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override bool IsZero => Equals(Black);
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         {
             throw new NotImplementedException();
         }

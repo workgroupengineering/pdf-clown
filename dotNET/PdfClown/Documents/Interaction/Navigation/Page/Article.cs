@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF11)]
     public sealed class Article : PdfObjectWrapper<PdfDictionary>
     {
-        public Article(Document context)
+        public Article(PdfDocument context)
             : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Thread } })
         { context.Articles.Add(this); }
 

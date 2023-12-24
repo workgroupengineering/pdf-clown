@@ -254,7 +254,7 @@ namespace PdfClown.Documents.Contents.Entities
             return barcodeObject;
         }
 
-        public override xObjects::XObject ToXObject(Document context)
+        public override xObjects::XObject ToXObject(PdfDocument context)
         {
             xObjects::FormXObject xObject = new xObjects::FormXObject(context, Size);
             {

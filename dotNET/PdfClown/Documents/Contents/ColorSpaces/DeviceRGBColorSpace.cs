@@ -44,13 +44,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public static readonly DeviceRGBColorSpace Default = new DeviceRGBColorSpace(PdfName.DeviceRGB);
 
-        public DeviceRGBColorSpace(Document context) : base(context, PdfName.DeviceRGB)
+        public DeviceRGBColorSpace(PdfDocument context) : base(context, PdfName.DeviceRGB)
         { }
 
         internal DeviceRGBColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); }
 
         public override int ComponentCount => 3;

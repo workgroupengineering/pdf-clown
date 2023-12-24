@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public ResetForm(Document context)
+        public ResetForm(PdfDocument context)
             : base(context, PdfName.ResetForm)
         { }
 

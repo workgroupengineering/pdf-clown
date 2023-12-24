@@ -31,7 +31,7 @@ namespace PdfClown.Documents.Encryption
         void EncryptStream(PdfStream stream, long objNum, int genNum);
         void EncryptString(PdfString pdfString, long objNum, int genNum);
         bool HasProtectionPolicy();
-        void PrepareDocumentForEncryption(Document doc);
+        void PrepareDocumentForEncryption(PdfDocument doc);
         void PrepareForDecryption(PdfEncryption encryption, PdfArray documentIDArray, DecryptionMaterial decryptionMaterial);
     }
 }

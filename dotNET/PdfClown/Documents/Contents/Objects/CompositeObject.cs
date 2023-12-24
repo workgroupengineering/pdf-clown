@@ -91,7 +91,7 @@ namespace PdfClown.Documents.Contents.Objects
             return "{" + GetType().Name + " " + objects.ToString() + "}";
         }
 
-        public override void WriteTo(IOutputStream stream, Document context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             foreach (ContentObject obj in objects)
             {

@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util;
 using PdfClown.Util.IO;
@@ -61,7 +60,7 @@ namespace PdfClown.Tokens
 
         private SortedDictionary<int, XRefEntry> entries;
 
-        public XRefStream(File file)
+        public XRefStream(PdfFile file)
             : this(new PdfDictionary() { { PdfName.Type, PdfName.XRef } }, new ByteStream())
         {
             PdfDictionary header = Header;
@@ -92,7 +91,7 @@ namespace PdfClown.Tokens
             get => Header.GetInt(PdfName.Prev, -1);
         }
 
-        public override void WriteTo(IOutputStream stream, File context)
+        public override void WriteTo(IOutputStream stream, PdfFile context)
         {
             if (entries != null)
             { Flush(stream); }

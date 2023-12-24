@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-using PdfClown;
 using PdfClown.Objects;
 using System;
 using System.IO;
@@ -77,7 +76,7 @@ namespace PdfClown.Documents.Encryption
         /**
 		 * creates a new empty encryption Dictionary.
 		 */
-        public PdfEncryption(PdfClown.Files.File context) : base(context, new PdfDictionary())
+        public PdfEncryption(PdfFile context) : base(context, new PdfDictionary())
         {
         }
 
