@@ -312,7 +312,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (oldValue != value)
                 {
                     BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value);
-                    ResetAppearance(out _);
+                    ResetAppearance();
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -643,7 +643,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public SKRect Draw(SKCanvas canvas)
         {
             var appearance = Appearance.Normal[null];
-            if (appearance != null)
+            if (appearance != null && appearance.BaseDataObject?.Body?.Length > 0)
             {
                 return DrawAppearance(canvas, appearance);
             }

@@ -279,7 +279,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                             }
 
                             composer.ApplyState(defaultExtGState);
-                            composer.SetFillColor(Color);
+                            composer.SetFillColor(Color ?? DeviceRGBColor.OrangeRed);
                             {
                                 foreach (Quad markup in PageMarkupBoxes)
                                 {
@@ -308,7 +308,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         break;
                     case TextMarkupType.Squiggly:
                         {
-                            composer.SetStrokeColor(Color);
+                            composer.SetStrokeColor(Color ?? DeviceRGBColor.OrangeRed);
                             composer.SetLineCap(LineCapEnum.Round);
                             composer.SetLineJoin(LineJoinEnum.Round);
                             {
@@ -351,7 +351,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     case TextMarkupType.StrikeOut:
                     case TextMarkupType.Underline:
                         {
-                            composer.SetStrokeColor(Color);
+                            composer.SetStrokeColor(Color ?? DeviceRGBColor.OrangeRed);
                             {
                                 float lineYRatio = 0;
                                 switch (markupType)
