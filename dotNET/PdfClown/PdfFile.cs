@@ -300,6 +300,8 @@ namespace PdfClown
             set => cloner = value;
         }
 
+        public bool IsDisposed => reader == null;
+
         public override int GetHashCode()
         {
             return hashCode;

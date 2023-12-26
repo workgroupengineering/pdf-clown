@@ -95,7 +95,7 @@ namespace PdfClown.Documents.Contents
             var dashArray = DashArray;
             if (dashArray.Length > 0)
             {
-                paint.SetLineDash(new LineDash(dashArray));
+                paint.SetLineDash(new LineDash(dashArray, DashPhase));
             }
         }
 
