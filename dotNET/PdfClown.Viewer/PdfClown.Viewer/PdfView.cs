@@ -4,6 +4,7 @@ using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Interaction.Navigation;
+using PdfClown.Documents.Multimedia;
 using PdfClown.Util.Math.Geom;
 using PdfClown.Util.Reflection;
 using SkiaSharp;
@@ -899,33 +900,10 @@ namespace PdfClown.Viewer
                 default:
                     break;
             }
-
-            if (selectedAnnotation != null && selectedAnnotation.Page == state.PageView.Page)
+            
+            if (OnTouchAnnotations(state))
             {
-                var bounds = selectedAnnotation.GetViewBounds(state.PageViewMatrix);
-                bounds.Inflate(2, 2);
-                if (bounds.Contains(state.PointerLocation))
-                {
-                    state.Annotation = selectedAnnotation;
-                    state.AnnotationBounds = bounds;
-                    OnTouchAnnotation(state);
-                    return;
-                }
-            }
-
-            foreach (var annotation in state.PageView.GetAnnotations())
-            {
-                if (annotation == null || !annotation.Visible)
-                    continue;
-                var bounds = annotation.GetViewBounds(state.PageViewMatrix);
-                bounds.Inflate(2, 2);
-                if (bounds.Contains(state.PointerLocation))
-                {
-                    state.Annotation = annotation;
-                    state.AnnotationBounds = bounds;
-                    OnTouchAnnotation(state);
-                    return;
-                }
+                return;
             }
             if (OnTouchText(state))
             {
@@ -944,6 +922,48 @@ namespace PdfClown.Viewer
             state.Annotation = null;
             state.AnnotationText = null;
             HoverPoint = null;
+        }
+
+        private bool OnTouchAnnotations(PdfViewEventArgs state)
+        {
+            state.Annotation = null;
+
+            if (selectedAnnotation != null && selectedAnnotation.Page == state.PageView.Page)
+            {
+                var bounds = selectedAnnotation.GetViewBounds(state.PageViewMatrix);
+                bounds.Inflate(2, 2);
+                if (bounds.Contains(state.PointerLocation))
+                {
+                    state.Annotation = selectedAnnotation;
+                    state.AnnotationBounds = bounds;
+                    OnTouchAnnotation(state);
+                    return true;
+                }
+            }
+            foreach (var annotation in state.PageView.GetAnnotations())
+            {
+                if (annotation == null || !annotation.Visible)
+                    continue;
+                var bounds = annotation.GetViewBounds(state.PageViewMatrix);
+                bounds.Inflate(2, 2);
+                if (bounds.Contains(state.PointerLocation))
+                {
+                    if (state.Annotation != null
+                    && bounds.Contains(state.AnnotationBounds))
+                    {
+                        continue;
+                    }
+                    state.Annotation = annotation;
+                    state.AnnotationBounds = bounds;
+                }
+            }
+
+            if (state.Annotation != null)
+            {
+                OnTouchAnnotation(state);
+                return true;
+            }
+            return false;
         }
 
         private bool OnTouchText(PdfViewEventArgs state)
