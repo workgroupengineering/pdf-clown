@@ -24,7 +24,9 @@
     <None Remove="Assets\comments.svg" />
     <None Remove="Assets\Graph.svg" />
     <None Remove="Assets\Help.svg" />
+    <None Remove="Assets\Insert.svg" />
     <None Remove="Assets\Key.svg" />
+    <None Remove="Assets\NewParagraph.svg" />
     <None Remove="Assets\Note.svg" />
     <None Remove="Assets\PaperClip.svg" />
     <None Remove="Assets\Paragraph.svg" />
@@ -499,7 +501,9 @@
 
     <EmbeddedResource Include="Assets\Comment.svg" />
     <EmbeddedResource Include="Assets\Graph.svg" />
+    <EmbeddedResource Include="Assets\Insert.svg" />
     <EmbeddedResource Include="Assets\Key.svg" />
+    <EmbeddedResource Include="Assets\NewParagraph.svg" />
     <EmbeddedResource Include="Assets\Note.svg" />
     <EmbeddedResource Include="Assets\comments.svg" />
     <EmbeddedResource Include="Assets\Help.svg" />
