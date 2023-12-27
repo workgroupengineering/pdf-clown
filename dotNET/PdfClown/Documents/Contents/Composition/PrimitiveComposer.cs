@@ -332,7 +332,7 @@ namespace PdfClown.Documents.Contents.Composition
                         StartPath(points[0]);
                         break;
                     case SKPathVerb.Line:
-                        DrawLine(points[0]);
+                        DrawLine(points[1]);
                         break;
                     case SKPathVerb.Quad:
                         DrawQuad(points[0], points[1], points[2]);

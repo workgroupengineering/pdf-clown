@@ -168,6 +168,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public override FormXObject ResetAppearance(SKRect box, out SKMatrix zeroMatrix)
+        {
+            zeroMatrix = SKMatrix.Identity;
+            return Appearance.Normal[null];
+        }
+
         public override IEnumerable<ControlPoint> GetControlPoints()
         {
             foreach (var cpBase in GetDefaultControlPoint())

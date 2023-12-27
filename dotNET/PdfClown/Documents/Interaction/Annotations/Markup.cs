@@ -238,13 +238,14 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public BorderEffect BorderEffect
         {
-            get => Wrap<BorderEffect>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            get => Wrap<BorderEffect>(BaseDataObject[PdfName.BE]);
             set
             {
                 var oldValue = BorderEffect;
                 if (!(oldValue?.Equals(value) ?? value == null))
                 {
                     BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
+                    RefreshBox();
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -254,8 +255,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             return null;
         }
+
         
-       
     }
 
     /**

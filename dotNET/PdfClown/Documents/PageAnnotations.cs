@@ -84,10 +84,10 @@ namespace PdfClown.Documents
             }
         }
 
-        public void RefreshCache(ManualResetEventSlim waitEvent = null)
+        public void RefreshCache()
         {
-            waitEvent?.Wait();
-            waitEvent?.Reset();
+            Document.LockObject.Wait();
+            Document.LockObject.Reset();
             try
             {
                 for (int i = 0, length = Count; i < length; i++)
@@ -118,7 +118,7 @@ namespace PdfClown.Documents
             }
             finally
             {
-                waitEvent?.Set();
+                Document.LockObject?.Set();
             }
         }
 

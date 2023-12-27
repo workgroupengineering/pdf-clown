@@ -70,19 +70,10 @@ namespace PdfClown.Viewer
         {
             if (pageAnnotations == null)
             {
-                Page.Annotations.RefreshCache(DocumentView.LockObject);
+                Page.Annotations.RefreshCache();
                 pageAnnotations = Page.Annotations;
             }
-            foreach (var annotation in pageAnnotations)
-            {
-                yield return annotation;
-                if (annotation is Markup markup
-                       && markup.Popup != null
-                       && !Page.Annotations.Contains(markup.Popup))
-                {
-                    yield return markup.Popup;
-                }
-            }
+            return pageAnnotations;
         }
 
         public SKPicture GetPicture(SKCanvasView canvasView)

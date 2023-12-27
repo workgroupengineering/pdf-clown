@@ -168,11 +168,40 @@ namespace PdfClown.Documents.Interaction.Annotations
             return targetPath;
         }
 
-        public void Apply(PrimitiveComposer paint)
+        public SKPath Apply(PrimitiveComposer paint, SKPath targetPath)
+        {
+            if (Type == BorderEffectType.Cloudy && targetPath != null)
+            {
+                var intensity = (float)Intensity;
+                const int r = 5;
+                var clode = new SKRect(-r * intensity, -r * intensity, r * intensity, r * intensity);
+                using var arcpath = new SKPath();
+                using var pathPaint = new SKPaint();
+                arcpath.AddOval(clode);
+                pathPaint.PathEffect = SKPathEffect.Create1DPath(arcpath, intensity * (r * 1.45F), intensity, SKPath1DPathEffectStyle.Rotate);
+                var dest = pathPaint.GetFillPath(targetPath, 1);
+                dest.FillType = SKPathFillType.Winding;
+                dest = dest.Op(targetPath, SKPathOp.Union);
+                return dest;
+            }
+            return targetPath;
+        }
+
+        public void ApplyEffect(ref SKRect box)
         {
             if (Type == BorderEffectType.Cloudy)
             {
-                
+                var intensity = 5 * (float)Math.Abs(Intensity);
+                box.Inflate(intensity, intensity);
+            }
+        }
+
+        public void InvertApplyEffect(ref SKRect box)
+        {
+            if (Type == BorderEffectType.Cloudy)
+            {
+                var intensity = 5 * (float)Math.Abs(Intensity);
+                box.Inflate(-intensity, -intensity);
             }
         }
 

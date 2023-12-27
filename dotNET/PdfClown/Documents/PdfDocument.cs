@@ -40,6 +40,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace PdfClown.Documents
 {
@@ -62,6 +63,7 @@ namespace PdfClown.Documents
         internal ConcurrentDictionary<TrueTypeFont, FontType0> Type0FontCache = new();
 
         private DocumentConfiguration configuration;
+        public readonly ManualResetEventSlim LockObject = new ManualResetEventSlim(true);
 
         internal PdfDocument(PdfFile context) :
             base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Catalog } })

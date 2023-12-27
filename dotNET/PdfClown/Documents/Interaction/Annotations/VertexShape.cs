@@ -197,7 +197,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override void RefreshBox()
         {
-            Appearance.Normal[null] = null;
+            ResetAppearance();
             SKRect box = SKRect.Empty;
             foreach (SKPoint point in Points)
             {
@@ -205,24 +205,17 @@ namespace PdfClown.Documents.Interaction.Annotations
                 { box = SKRect.Create(point.X, point.Y, 10, 10); }
                 else
                 { box.Add(point); }
-
             }
+            BorderEffect?.ApplyEffect(ref box);
             Box = box;
         }
 
-
-        public override SKRect DrawSpecial(SKCanvas canvas)
+        public override SKPath GetPath(SKMatrix sKMatrix)
         {
-            if (!(Points?.Any() ?? false))
-            {
-                return base.DrawSpecial(canvas);
-            }
-            using (var path = new SKPath())
-            {
-                path.AddPoly(Points.ToArray(), ClosePath);
-                DrawPath(canvas, path);
-                return path.Bounds;
-            }
+            var path = new SKPath();
+            path.AddPoly(Points.ToArray(), ClosePath);
+            path.Transform(sKMatrix);
+            return path;
         }
 
         public override void MoveTo(SKRect newBox)

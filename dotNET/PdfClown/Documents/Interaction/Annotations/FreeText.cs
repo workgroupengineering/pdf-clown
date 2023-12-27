@@ -37,6 +37,7 @@ using PdfClown.Documents.Contents.Fonts;
 using System.Xml.Linq;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.XObjects;
+using System.IO;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -383,9 +384,12 @@ namespace PdfClown.Documents.Interaction.Annotations
                 textBounds = matrix.MapRect(textBounds);
                 composer.SetLineWidth(1);
                 composer.SetStrokeColor(DeviceRGBColor.Default);
-                Border?.Apply(composer, BorderEffect);
                 composer.SetFillColor(Color ?? DeviceRGBColor.White);
-                composer.DrawRectangle(textBounds);
+                Border?.Apply(composer);
+                using var path = new SKPath();
+                path.AddRect(textBounds);
+                using var tpath = BorderEffect?.Apply(composer, path) ?? path;
+                composer.DrawPath(tpath);
                 composer.FillStroke();
 
                 if (Intent == MarkupIntent.FreeTextCallout && Line != null)
@@ -519,17 +523,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             box.Add(TextTopRightPoint);
             box.Add(TextBottomRightPoint);
             box.Add(TextBottomLeftPoint);
+            BorderEffect?.ApplyEffect(ref box);
             if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
                 box.Add(Line.Start);
                 if (Line.Knee is SKPoint knee)
                     box.Add(knee);
                 box.Add(Line.End);
-
             }
             Box = box;
             TextBox = oldTextBox;
-            base.RefreshBox();
             RefreshAppearance();
             allowRefresh = true;
         }

@@ -140,7 +140,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             paint.SetStrokeColor(Color);
             paint.SetLineWidth(1);
             paint.SetLineJoin(Documents.Contents.LineJoinEnum.Round);
-            Border?.Apply(paint, null);
+            Border?.Apply(paint);
             foreach (var pathData in PagePaths)
             {
                 using var tempPath = new SKPath();
@@ -158,7 +158,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (oldBox.Width != newBox.Width
                 || oldBox.Height != newBox.Height)
             {
-                Appearance.Normal[null] = null;
+                ResetAppearance();
             }
             //base.MoveTo(newBox);
             var dif = SKMatrix.CreateIdentity()

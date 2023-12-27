@@ -141,8 +141,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                   new PdfDictionary(3)
                   {
                       { PdfName.Type, PdfName.Annot },
-                      { PdfName.Subtype, subtype },
-                      { PdfName.Border, new PdfArray(3){ PdfInteger.Default, PdfInteger.Default, PdfInteger.Default } }// NOTE: Hide border by default.
+                      { PdfName.Subtype, subtype }, // NOTE: Hide border by default.
                   })
         {
             GenerateName();
@@ -248,16 +247,17 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF11)]
         public virtual Border Border
         {
-            get => Wrap<Border>(BaseDataObject.Get<PdfDictionary>(PdfName.BS));
+            get => Wrap<Border>(BaseDataObject[PdfName.BS]);
             set
             {
                 var oldValue = Border;
                 if (!(oldValue?.Equals(value) ?? value == null))
                 {
-                    BaseDataObject[PdfName.BS] = PdfObjectWrapper.GetBaseObject(value);
+                    BaseDataObject[PdfName.BS] = value.BaseDataObject;
                     if (value != null)
                     { BaseDataObject.Remove(PdfName.Border); }
                     OnPropertyChanged(oldValue, value);
+                    ResetAppearance();
                 }
             }
         }
@@ -763,7 +763,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public FormXObject ResetAppearance(out SKMatrix zeroMatrix) => ResetAppearance(Box, out zeroMatrix);
 
-        public FormXObject ResetAppearance(SKRect box, out SKMatrix zeroMatrix)
+        public virtual FormXObject ResetAppearance(SKRect box, out SKMatrix zeroMatrix)
         {
             var boxSize = SKRect.Create(box.Width, box.Height);
             zeroMatrix = PageMatrix;

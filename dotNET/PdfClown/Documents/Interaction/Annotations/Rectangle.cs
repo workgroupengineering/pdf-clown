@@ -29,6 +29,8 @@ using PdfClown.Objects;
 
 using System;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Contents.Composition;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -47,14 +49,15 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(baseObject)
         { }
 
-        public override SKRect DrawSpecial(SKCanvas canvas)
+
+        public override SKPath GetPath(SKMatrix sKMatrix)
         {
-            using (var path = new SKPath())
-            {
-                path.AddRect(Box);
-                DrawPath(canvas, path);
-                return Box;
-            }
+            var box = sKMatrix.MapRect(Box);
+            BorderEffect?.InvertApplyEffect(ref box);
+            var path = new SKPath();
+            path.AddRect(box);
+            return path;
         }
+
     }
 }

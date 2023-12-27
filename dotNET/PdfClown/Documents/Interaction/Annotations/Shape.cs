@@ -32,6 +32,10 @@ using System;
 using SkiaSharp;
 using System.Collections.Generic;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.XObjects;
+using System.IO;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -73,13 +77,68 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public void DrawPath(PrimitiveComposer canvas, SKPath path)
+        {
+            if (InteriorColor != null)
+            {
+                canvas.SetFillColor(InteriorColor);
+            }
+            if (Border != null)
+            {
+                canvas.SetStrokeColor(Color ?? DeviceRGBColor.Default);
+                Border.Apply(canvas);
+            }
+            var effectPath = BorderEffect?.Apply(canvas, path) ?? path;
+            canvas.DrawPath(effectPath);
+            if (effectPath != path)
+            {
+                effectPath.Dispose();
+            }
+            if (InteriorColor != null && Border != null)
+            {
+                canvas.FillStroke();
+            }
+            else if (InteriorColor != null)
+            {
+                canvas.Fill();
+            }
+            else
+            {
+                canvas.Stroke();
+            }
+        }
+
+        public abstract SKPath GetPath(SKMatrix sKMatrix);
+
+        public override SKRect DrawSpecial(SKCanvas canvas)
+        {
+            var apperance = RefreshAppearance();
+            return DrawAppearance(canvas, apperance);
+        }
+
+        protected override FormXObject RefreshAppearance()
+        {
+            var appearance = ResetAppearance(out var zeroMatrix);
+
+            var canvas = new PrimitiveComposer(appearance);
+            {
+                using var path = GetPath(zeroMatrix);
+                if (path != null)
+                {
+                    DrawPath(canvas, path);
+                }
+            }
+            canvas.Flush();
+            return appearance;
+        }
+
         public override void MoveTo(SKRect newBox)
         {
             var oldBox = Box;
             if (oldBox.Width != newBox.Width
                 || oldBox.Height != newBox.Height)
             {
-                Appearance.Normal[null] = null;
+                ResetAppearance();
             }
 
             base.MoveTo(newBox);

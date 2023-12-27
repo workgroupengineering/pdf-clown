@@ -324,6 +324,7 @@ namespace PdfClown
                     CompleatSave();
                 }
                 Document?.ClearCache();
+                Document.LockObject?.Dispose();
             }
         }
 

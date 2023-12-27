@@ -13,8 +13,9 @@ namespace PdfClown.Viewer
 {
     public class PdfDocumentView : IDisposable
     {
-        internal readonly ManualResetEventSlim LockObject = new ManualResetEventSlim(true);
-        public bool IsPaintComplete => LockObject.IsSet;
+        public ManualResetEventSlim LockObject => Document?.LockObject;
+
+        public bool IsPaintComplete => LockObject?.IsSet ?? true;
 
         public static PdfDocumentView LoadFrom(string filePath)
         {
@@ -139,7 +140,6 @@ namespace PdfClown.Viewer
                 ClearPages();
                 File.Dispose();
                 File = null;
-                LockObject.Dispose();
 
                 try { System.IO.File.Delete(TempFilePath); }
                 catch { }
@@ -235,17 +235,8 @@ namespace PdfClown.Viewer
             {
                 if (fields == null || fields != Document.Form.Fields)
                 {
-                    LockObject.Wait();
-                    try
-                    {
-                        LockObject.Reset();
-                        Document.Form.RefreshCache();
-                        fields = Document.Form.Fields;
-                    }
-                    finally
-                    {
-                        LockObject.Set();
-                    }
+                    Document.Form.RefreshCache();
+                    fields = Document.Form.Fields;
                 }
                 return fields;
             }

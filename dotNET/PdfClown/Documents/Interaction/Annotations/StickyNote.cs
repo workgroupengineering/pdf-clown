@@ -93,7 +93,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         public StickyNote(PdfPage page, SKPoint location, string text)
             : base(page, PdfName.Text, SKRect.Create(location.X, location.Y, 0, 0), text)
         {
-            Flags = AnnotationFlagsEnum.Print | AnnotationFlagsEnum.NoZoom | AnnotationFlagsEnum.NoRotate;
         }
 
         public StickyNote(PdfDirectObject baseObject) : base(baseObject)
@@ -171,7 +170,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected override FormXObject RefreshAppearance()
         {
-            SKRect bound = GetBound(Box.Location);
+            SKRect bound = GetBound();
             var normalAppearance = ResetAppearance(bound, out var zeroMatrix);
             bound = zeroMatrix.MapRect(bound);
             var svg = SvgImage.GetCache(ImageName.ToString());
@@ -192,12 +191,17 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected override SKRect GetDrawBox()
         {
-            return GetBound(Box.Location);
+            return GetBound();
         }
 
-        private SKRect GetBound(SKPoint location)
+        private SKRect GetBound()
         {
-            return SKRect.Create(location + new SKPoint(0, -size), new SKSize(size, size));
+            if (Box.Width == 0 || Box.Height == 0)
+            {
+                SKPoint location = Box.Location;
+                return SKRect.Create(location + new SKPoint(0, -size), new SKSize(size, size));
+            }
+            return Box;
         }
 
         public override void SetBounds(SKRect value)
@@ -208,7 +212,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override SKRect GetViewBounds(SKMatrix viewMatrix)
         {
             base.GetViewBounds();
-            var bound = GetBound(Box.Location);
+            var bound = GetBound();
             return viewMatrix.PreConcat(PageMatrix).MapRect(bound);
             //return SKRect.Create(bound.Left, bound.Top, size / Math.Abs(viewMatrix.ScaleX), size / Math.Abs(viewMatrix.ScaleY));
         }

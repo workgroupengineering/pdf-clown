@@ -186,7 +186,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             borderEffect?.Apply(paint);
         }
 
-        public void Apply(PrimitiveComposer paint, BorderEffect borderEffect = null)
+       public void Apply(PrimitiveComposer paint)
         {
             paint.SetLineWidth((float)Width);
 
@@ -194,7 +194,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 Pattern?.Apply(paint);
             }
-            borderEffect?.Apply(paint);
         }
 
         public bool Equals(Border other)
@@ -205,6 +204,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 && Style == other.Style
                 && Pattern.Equals(other.Pattern);
         }
+
     }
 
     /**

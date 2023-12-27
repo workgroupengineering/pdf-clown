@@ -311,7 +311,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (oldBox.Width != newBox.Width
                || oldBox.Height != newBox.Height)
             {
-                Appearance.Normal[null] = null;
+                ResetAppearance();
             }
             var dif = SKMatrix.CreateIdentity()
                 .PreConcat(SKMatrix.CreateTranslation(newBox.MidX, newBox.MidY))
@@ -342,12 +342,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (Box.Height == 0 || Box.Width == 0)
             {
                 RefreshBox();
-            }            
+            }
             var appearence = ResetAppearance(out var matrix);
             var paint = new PrimitiveComposer(appearence);
             paint.SetStrokeColor(Color ?? DeviceRGBColor.Default);
             paint.SetLineWidth(1);
-            Border?.Apply(paint, null);
+            Border?.Apply(paint);
             paint.SetFillColor(InteriorColor ?? DeviceRGBColor.Default);
 
 
@@ -446,11 +446,11 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override void RefreshBox()
         {
-            Appearance.Normal[null] = null;
+            ResetAppearance();
             var box = SKRect.Create(StartPoint, SKSize.Empty);
             box.Add(EndPoint);
             box.Inflate(box.Width < 5 ? 5 : 0, box.Height < 5 ? 5 : 0);
-            Box = box;            
+            Box = box;
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()
