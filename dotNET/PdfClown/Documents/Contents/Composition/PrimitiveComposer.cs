@@ -338,8 +338,10 @@ namespace PdfClown.Documents.Contents.Composition
                         DrawQuad(points[0], points[1], points[2]);
                         break;
                     case SKPathVerb.Conic:
-                        var quadPoints = SKPath.ConvertConicToQuads(points[0], points[1], points[2], iterator.ConicWeight(), 0);
+                        var quadPoints = SKPath.ConvertConicToQuads(points[0], points[1], points[2], iterator.ConicWeight(), 1);
                         DrawQuad(quadPoints[0], quadPoints[1], quadPoints[2]);
+                        DrawQuad(quadPoints[2], quadPoints[3], quadPoints[4]);
+                        // DrawQuad(quadPoints[6], quadPoints[7], quadPoints[8]);
                         break;
                     case SKPathVerb.Cubic:
                         DrawCurve(points[3], points[1], points[2]);
