@@ -20,7 +20,7 @@ using Xamarin.Forms;
 
 namespace PdfClown.Viewer
 {
-    public partial class PdfView : SKScrollView
+    public partial class PdfView : SKScrollView, IPdfView
     {
         public static readonly BindableProperty FitModeProperty = BindableProperty.Create(nameof(FitMode), typeof(PdfViewFitMode), typeof(PdfView), PdfViewFitMode.PageSize,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnFitModeChanged((PdfViewFitMode)oldValue, (PdfViewFitMode)newValue));
@@ -900,7 +900,7 @@ namespace PdfClown.Viewer
                 default:
                     break;
             }
-            
+
             if (OnTouchAnnotations(state))
             {
                 return;
