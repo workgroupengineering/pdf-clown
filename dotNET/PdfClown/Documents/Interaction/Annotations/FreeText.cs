@@ -116,7 +116,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         coordinates[5] = PdfReal.Get(value.Y);
                     }
                     FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
-                    FreeText.RefreshBox();
+                    FreeText.ResetAppearance();
                 }
             }
 
@@ -158,7 +158,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     coordinates[0] = PdfReal.Get(value.X);
                     coordinates[1] = PdfReal.Get(value.Y);
                     FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
-                    FreeText.RefreshBox();
+                    FreeText.ResetAppearance();
                 }
             }
 
@@ -273,6 +273,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => throw new NotSupportedException();
         }
 
+        public SKRect UserTextBox
+        {
+            get => PageMatrix.MapRect(TextBox);
+            set => TextBox = InvertPageMatrix.MapRect(value);
+        }
+
         public SKRect TextBox
         {
             get => textBox ??= GetTextBox();
@@ -281,13 +287,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = textBox;
                 if (oldValue != value)
                 {
+                    var bounds = Box;
+                    bounds.Add(SKRect.Inflate(value, 5, 5));
+                    Padding = new Objects.Padding(new SKRect(
+                        value.Left - bounds.Left,
+                        value.Top - bounds.Top,
+                        bounds.Right - value.Right,
+                        bounds.Bottom - value.Bottom));
                     textBox = value;
-                    var bounds = Rect.ToRect();
-                    Padding = new Objects.Rectangle(new SKRect(
-                        bounds.Left - value.Left,
-                        bounds.Top - value.Top,
-                        value.Right - bounds.Right,
-                        value.Bottom - bounds.Bottom));
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -295,59 +302,53 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         private SKRect GetTextBox()
         {
-            var bounds = Rect.ToRect();
-            var padding = Padding?.ToRect();
+            var bounds = Box;
+            var padding = Padding?.ToRect() ?? SKRect.Empty;
             return new SKRect(
-                bounds.Left + (float)(padding?.Left ?? 0D),
-                bounds.Top + (float)(padding?.Top ?? 0D),
-                bounds.Right - (float)(padding?.Right ?? 0D),
-                bounds.Bottom - (float)(padding?.Bottom ?? 0D));
+                bounds.Left + padding.Left,
+                bounds.Top + padding.Top,
+                bounds.Right - padding.Right,
+                bounds.Bottom - padding.Bottom);
         }
 
-        public Objects.Rectangle Padding
+        public Padding Padding
         {
-            get => Wrap<Objects.Rectangle>(BaseDataObject[PdfName.RD]);
-            set => BaseDataObject[PdfName.RD] = value?.BaseDataObject;
+            get => Wrap<Padding>(BaseDataObject[PdfName.RD]);
+            set
+            {
+                var oldValue = Padding;
+                if (!(oldValue?.Equals(value) ?? value == null))
+                {
+                    textBox = null;
+                    BaseDataObject[PdfName.RD] = value?.BaseDataObject;
+                    OnPropertyChanged(oldValue, value);
+                    ResetAppearance();
+                }
+            }
         }
 
         public SKPoint TextTopLeftPoint
         {
             get => new SKPoint(TextBox.Left, TextBox.Top);
-            set
-            {
-                TextBox = new SKRect(value.X, value.Y, TextBox.Right, TextBox.Bottom);
-                RefreshBox();
-            }
+            set => TextBox = new SKRect(value.X, value.Y, TextBox.Right, TextBox.Bottom);
         }
 
         public SKPoint TextTopRightPoint
         {
             get => new SKPoint(TextBox.Right, TextBox.Top);
-            set
-            {
-                TextBox = new SKRect(TextBox.Left, value.Y, value.X, TextBox.Bottom);
-                RefreshBox();
-            }
+            set => TextBox = new SKRect(TextBox.Left, value.Y, value.X, TextBox.Bottom);
         }
 
         public SKPoint TextBottomLeftPoint
         {
             get => new SKPoint(TextBox.Left, TextBox.Bottom);
-            set
-            {
-                TextBox = new SKRect(value.X, TextBox.Top, TextBox.Right, value.Y);
-                RefreshBox();
-            }
+            set => TextBox = new SKRect(value.X, TextBox.Top, TextBox.Right, value.Y);
         }
 
         public SKPoint TextBottomRightPoint
         {
             get => new SKPoint(TextBox.Right, TextBox.Bottom);
-            set
-            {
-                TextBox = new SKRect(TextBox.Left, TextBox.Top, value.X, value.Y);
-                RefreshBox();
-            }
+            set => TextBox = new SKRect(TextBox.Left, TextBox.Top, value.X, value.Y);
         }
 
 
@@ -360,7 +361,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldMid = new SKPoint(textBox.MidX, textBox.MidY);
                 textBox.Location += value - oldMid;
                 TextBox = textBox;
-                RefreshBox();
             }
         }
 
@@ -368,6 +368,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override SKRect DrawSpecial(SKCanvas canvas)
         {
+            RefreshBox();
             var appearence = RefreshAppearance();
             return DrawAppearance(canvas, appearence);
         }
@@ -519,11 +520,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             allowRefresh = false;
             var oldTextBox = TextBox;
             CalcLine();
-            var box = SKRect.Create(TextTopLeftPoint, SKSize.Empty);
-            box.Add(TextTopRightPoint);
-            box.Add(TextBottomRightPoint);
-            box.Add(TextBottomLeftPoint);
+            var box = oldTextBox;
             BorderEffect?.ApplyEffect(ref box);
+            box.Inflate(5, 5);
+
             if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
                 box.Add(Line.Start);
@@ -533,24 +533,24 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             Box = box;
             TextBox = oldTextBox;
-            RefreshAppearance();
+            ResetAppearance();
             allowRefresh = true;
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()
         {
-            yield return cpTexcTopLeft ?? (cpTexcTopLeft = new TextTopLeftControlPoint { Annotation = this });
-            yield return cpTexcTopRight ?? (cpTexcTopRight = new TextTopRightControlPoint { Annotation = this });
-            yield return cpTexcBottomLeft ?? (cpTexcBottomLeft = new TextBottomLeftControlPoint { Annotation = this });
-            yield return cpTexcBottomRight ?? (cpTexcBottomRight = new TextBottomRightControlPoint { Annotation = this });
-            yield return cpTextMid ?? (cpTextMid = new TextMidControlPoint { Annotation = this });
+            yield return cpTexcTopLeft ??= new TextTopLeftControlPoint { Annotation = this };
+            yield return cpTexcTopRight ??= new TextTopRightControlPoint { Annotation = this };
+            yield return cpTexcBottomLeft ??= new TextBottomLeftControlPoint { Annotation = this };
+            yield return cpTexcBottomRight ??= new TextBottomRightControlPoint { Annotation = this };
+            yield return cpTextMid ??= new TextMidControlPoint { Annotation = this };
             if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
-                yield return cpLineStart ?? (cpLineStart = new TextLineStartControlPoint { Annotation = this });
-                yield return cpLineEnd ?? (cpLineEnd = new TextLineEndControlPoint { Annotation = this });
+                yield return cpLineStart ??= new TextLineStartControlPoint { Annotation = this };
+                yield return cpLineEnd ??= new TextLineEndControlPoint { Annotation = this };
                 if (Line.Knee != null)
                 {
-                    yield return cpLineKnee ?? (cpLineKnee = new TextLineKneeControlPoint { Annotation = this });
+                    yield return cpLineKnee ??= new TextLineKneeControlPoint { Annotation = this };
                 }
             }
 

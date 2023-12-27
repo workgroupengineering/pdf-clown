@@ -131,7 +131,7 @@ namespace PdfClown.Objects
 
         public double Height
         {
-            get => (Top - Bottom);
+            get => Top - Bottom;
             set => Bottom = Top - value;
         }
 
