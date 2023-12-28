@@ -216,6 +216,19 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public override string Contents
+        {
+            get => base.Contents;
+            set
+            {
+                if (!string.Equals(Contents, value, StringComparison.Ordinal))
+                {
+                    base.Contents = value;
+                    ResetAppearance();
+                }
+            }
+        }
+
         /**
           <summary>Gets/Sets the callout line attached to the free text annotation.</summary>
         */
