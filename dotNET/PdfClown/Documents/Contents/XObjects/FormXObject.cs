@@ -300,7 +300,7 @@ namespace PdfClown.Documents.Contents.XObjects
                     FontResources formFonts = Document.Form.Resources.Fonts;
                     foreach (KeyValuePair<PdfName, Font> entry in formFonts)
                     {
-                        if (!entry.Value.Symbolic)
+                        if (!entry.Value.Symbolic && !entry.Value.IsStandard14)
                         {
                             defaultFont = entry.Value;
                             defaultFontName = entry.Key;
@@ -310,7 +310,7 @@ namespace PdfClown.Documents.Contents.XObjects
                     if (defaultFontName == null)
                     {
                         //TODO:manage name collision!
-                        formFonts[defaultFontName = new PdfName("default")] = defaultFont = FontType1.Load(Document, fontName);
+                        formFonts[defaultFontName = new PdfName("defaultTTF")] = defaultFont = FontType0.Load(Document, fontName);
                     }
                     normalAppearanceFonts[defaultFontName] = defaultFont;
                 }

@@ -80,7 +80,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
             var box = zeroMatrix.MapRect(rect);
 
-            var font = FontType0.Load(Document, FontMappers.Instance.GetTrueTypeFont("Times", null).Font, false);
+            var font = FontType0.Load(Document, FontName.TimesRoman);
 
             var horizontal = box.Width > box.Height;
             var maxSize = nameArray.Select(x => font.GetWidth(x, 1)).Max();

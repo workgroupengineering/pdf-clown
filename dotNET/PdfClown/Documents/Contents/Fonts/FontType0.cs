@@ -65,6 +65,11 @@ namespace PdfClown.Documents.Contents.Fonts
             return new FontType0(doc, new TTFParser().Parse(stream), true, true, false);
         }
 
+        public static Font Load(PdfDocument document, FontName fontName)
+        {
+            return Load(document, FontMappers.Instance.GetTrueTypeFont(Standard14Fonts.FontNames[fontName], null).Font, false);
+        }
+
         public static FontType0 Load(PdfDocument doc, string fileName)
         {
             using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -572,6 +577,8 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
             }
         }
+
+       
 
         /**
      * Returns the CMap lookup table if present.
