@@ -182,5 +182,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public Field Field { get; internal set; }
+
+        public override bool AllowSize => false;
     }
 }

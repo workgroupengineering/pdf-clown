@@ -635,6 +635,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public bool IsDrawed { get; private set; }
+
         protected RotationEnum GetPageRotation()
         {
             return Page?.Rotation ?? RotationEnum.Downward;
@@ -675,6 +677,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 canvas.DrawPicture(picture, ref matrix);
             }
+            IsDrawed = true;
             return bounds;
         }
 
@@ -782,7 +785,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 normalAppearances[null] =
                       normalAppearance = new FormXObject(Document, boxSize);
             }
-
+            IsDrawed = false;
             return normalAppearance;
         }
     }
