@@ -13,5 +13,6 @@ namespace PdfClown
         bool Undo();
 
         IEnumerable<Annotation> RemoveAnnotation(Annotation annotation);
+        void InvalidateSurface();
     }
 }
