@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Tools;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -122,14 +123,18 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override SKRect DrawSpecial(SKCanvas canvas)
+        public override SKRect RestoreAppearance(SKCanvas canvas)
         {
             var bounds = Box;
             var color = SKColor;
             SvgImage.DrawImage(canvas, AttachmentName.ToString(), color, bounds, 1);
-            return base.DrawSpecial(canvas);
+            return bounds;
         }
 
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
+        }
     }
 
     /**

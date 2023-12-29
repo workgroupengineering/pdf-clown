@@ -32,6 +32,7 @@ using PdfClown.Objects;
 using system = System;
 using SkiaSharp;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -113,14 +114,19 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override SKRect DrawSpecial(SKCanvas canvas)
+        public override SKRect RestoreAppearance(SKCanvas canvas)
         {
             //var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
             //using (var paint = new SKPaint { Color = color })
             //{
             //    Border?.Apply(paint, null);
             //}
-            return base.DrawSpecial(canvas);
+            return base.RestoreAppearance(canvas);
+        }
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
         }
     }
 }

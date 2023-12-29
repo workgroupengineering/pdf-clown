@@ -409,14 +409,17 @@ namespace PdfClown.Documents.Contents.Composition
                           lineAlignment,
                           baseLine,
                           state.FontSize,
-                          state.Scale
-                          );
+                          state.Scale);
                         baseComposer.ShowText(textChunk, textChunkLocation);
                         baseComposer.End();  // Closes the row object's local state.
                     }
                     AddRowObject(obj, lineAlignment);
 
                     index = textFitter.EndIndex;
+                }
+                else if (textFitter.EndIndex == 0 && textLength > 0)
+                {
+                    goto endTextShowing;
                 }
 
                 // Evaluating trailing text...

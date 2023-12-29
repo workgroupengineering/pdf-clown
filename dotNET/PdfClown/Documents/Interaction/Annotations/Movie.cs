@@ -30,6 +30,7 @@ using PdfClown.Objects;
 
 using System;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -59,6 +60,11 @@ namespace PdfClown.Documents.Interaction.Annotations
 
                 BaseDataObject[PdfName.Movie] = value.BaseObject;
             }
+        }
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
         }
     }
 }

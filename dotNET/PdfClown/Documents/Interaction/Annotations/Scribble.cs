@@ -123,15 +123,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 pathObject.GetFloat(pointIndex + 1));
         }
 
-        public override SKRect DrawSpecial(SKCanvas canvas)
-        {
-            if (!(PagePaths?.Any() ?? false))
-                return base.DrawSpecial(canvas);
-            var appearance = RefreshAppearance();
-            return DrawAppearance(canvas, appearance);
-        }
-
-        protected override FormXObject RefreshAppearance()
+        protected override FormXObject GenerateAppearance()
         {
             var appearence = ResetAppearance(out var zeroMatrix);
             var bound = zeroMatrix.MapRect(Box);
@@ -158,7 +150,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (oldBox.Width != newBox.Width
                 || oldBox.Height != newBox.Height)
             {
-                ResetAppearance();
+                QueueRefreshAppearance();
             }
             //base.MoveTo(newBox);
             var dif = SKMatrix.CreateIdentity()

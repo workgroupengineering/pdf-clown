@@ -110,7 +110,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (oldValue != value)
                 {
                     BaseDataObject[PdfName.Name] = (value != DefaultIconType ? ToCode(value) : null);
-                    RefreshAppearance();
+                    GenerateAppearance();
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -162,13 +162,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override SKRect DrawSpecial(SKCanvas canvas)
-        {
-            var appearance = RefreshAppearance();
-            return DrawAppearance(canvas, appearance);
-        }
-
-        protected override FormXObject RefreshAppearance()
+        protected override FormXObject GenerateAppearance()
         {
             SKRect bound = GetBound();
             var normalAppearance = ResetAppearance(bound, out var zeroMatrix);

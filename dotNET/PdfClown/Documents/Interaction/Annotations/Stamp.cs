@@ -174,6 +174,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             return Appearance.Normal[null];
         }
 
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
+        }
+
         public override IEnumerable<ControlPoint> GetControlPoints()
         {
             foreach (var cpBase in GetDefaultControlPoint())

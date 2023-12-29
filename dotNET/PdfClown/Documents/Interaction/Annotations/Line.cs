@@ -190,7 +190,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         LeaderLineLength = DefaultLeaderLineLength;
                     }
                     OnPropertyChanged(oldValue, value);
-                    RefreshBox();
+                    QueueRefreshAppearance();
                 }
             }
         }
@@ -213,7 +213,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         LeaderLineLength = DefaultLeaderLineLength;
                     }
                     OnPropertyChanged(oldValue, value);
-                    RefreshBox();
+                    QueueRefreshAppearance();
                 }
             }
         }
@@ -236,7 +236,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     BaseDataObject.SetDouble(PdfName.LL, value);
                     OnPropertyChanged(oldValue, value);
-                    RefreshBox();
+                    QueueRefreshAppearance();
                 }
             }
         }
@@ -254,7 +254,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     {
                         startPoint = null;
                         endPoint = null;
-                        RefreshBox();
+                        QueueRefreshAppearance();
                     }
                 }
             }
@@ -276,7 +276,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     coordinatesObject.SetFloat(0, value.X);
                     coordinatesObject.SetFloat(1, value.Y);
                     OnPropertyChanged(coordinatesObject, coordinatesObject, nameof(LineData));
-                    RefreshBox();
+                    QueueRefreshAppearance();
                 }
             }
         }
@@ -297,7 +297,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     var coordinatesObject = LineData;
                     coordinatesObject.SetFloat(2, value.X);
                     coordinatesObject.SetFloat(3, value.Y);
-                    RefreshBox();
+                    QueueRefreshAppearance();
                     OnPropertyChanged(LineData, LineData, nameof(LineData));
                 }
             }
@@ -311,7 +311,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (oldBox.Width != newBox.Width
                || oldBox.Height != newBox.Height)
             {
-                ResetAppearance();
+                QueueRefreshAppearance();
             }
             var dif = SKMatrix.CreateIdentity()
                 .PreConcat(SKMatrix.CreateTranslation(newBox.MidX, newBox.MidY))
@@ -337,12 +337,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             return endStylesObject;
         }
 
-        protected override FormXObject RefreshAppearance()
+        protected override FormXObject GenerateAppearance()
         {
-            if (Box.Height == 0 || Box.Width == 0)
-            {
-                RefreshBox();
-            }
             var appearence = ResetAppearance(out var matrix);
             var paint = new PrimitiveComposer(appearence);
             paint.SetStrokeColor(Color ?? DeviceRGBColor.Default);
@@ -438,15 +434,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             return appearence;
         }
 
-        public override SKRect DrawSpecial(SKCanvas canvas)
-        {
-            var appearance = RefreshAppearance();
-            return DrawAppearance(canvas, appearance);
-        }
-
         public override void RefreshBox()
         {
-            ResetAppearance();
+            if (LineData == null)
+                return;
             var box = SKRect.Create(StartPoint, SKSize.Empty);
             box.Add(EndPoint);
             box.Inflate(box.Width < 5 ? 5 : 0, box.Height < 5 ? 5 : 0);
@@ -455,8 +446,8 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override IEnumerable<ControlPoint> GetControlPoints()
         {
-            yield return cpStart ?? (cpStart = new LineStartControlPoint { Annotation = this });
-            yield return cpEnd ?? (cpEnd = new LineEndControlPoint { Annotation = this });
+            yield return cpStart ??= new LineStartControlPoint { Annotation = this };
+            yield return cpEnd ??= new LineEndControlPoint { Annotation = this };
         }
 
         public override object Clone(Cloner cloner)

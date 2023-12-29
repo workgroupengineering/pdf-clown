@@ -32,6 +32,7 @@ using System;
 using SkiaSharp;
 using System.Collections.Generic;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -153,6 +154,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 yield return cpBase;
             }
+        }
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
         }
     }
 }

@@ -49,6 +49,18 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(baseObject)
         { }
 
+        public override Objects.Rectangle Rect
+        {
+            get => base.Rect;
+            set
+            {
+                if (!(Rect?.Equals(value) ?? value == null))
+                {
+                    base.Rect = value;
+                    QueueRefreshAppearance();
+                }
+            }
+        }
 
         public override SKPath GetPath(SKMatrix sKMatrix)
         {

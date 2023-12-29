@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 
 namespace PdfClown.Documents.Interaction.Annotations
@@ -35,5 +36,10 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         internal GenericAnnotation(PdfDirectObject baseObject) : base(baseObject)
         { }
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
+        }
     }
 }

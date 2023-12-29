@@ -31,6 +31,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -126,6 +127,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override Popup Popup
         {
             set => throw new NotSupportedException();
+        }
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
         }
     }
 }

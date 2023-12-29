@@ -35,6 +35,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -62,15 +63,9 @@ namespace PdfClown.Documents.Interaction.Annotations
           + "}";
 
         public Screen(PdfPage page, SKRect box, String text, String mediaPath, String mimeType)
-            : this(page, box, text, new MediaRendition(
-              new MediaClipData(
-                FileSpecification.Get(
-                  EmbeddedFile.Get(page.Document, mediaPath),
-                  System.IO.Path.GetFileName(mediaPath)
-                  ),
-                mimeType
-                )
-              )
+            : this(page, box, text, new MediaRendition(new MediaClipData(
+                FileSpecification.Get(EmbeddedFile.Get(page.Document, mediaPath), System.IO.Path.GetFileName(mediaPath)),
+                mimeType))
             )
         { }
 
@@ -119,5 +114,10 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         internal Screen(PdfDirectObject baseObject) : base(baseObject)
         { }
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return Appearance.Normal[null];
+        }
     }
 }

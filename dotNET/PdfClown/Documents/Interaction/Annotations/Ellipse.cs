@@ -45,6 +45,19 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Ellipse(PdfDirectObject baseObject) : base(baseObject)
         { }
 
+        public override Objects.Rectangle Rect
+        {
+            get => base.Rect;
+            set
+            {
+                if (!(Rect?.Equals(value) ?? value == null))
+                {
+                    base.Rect = value;
+                    QueueRefreshAppearance();
+                }
+            }
+        }
+
         public override SKPath GetPath(SKMatrix sKMatrix)
         {
             var box = sKMatrix.MapRect(Box);

@@ -245,18 +245,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (!(oldValue?.Equals(value) ?? value == null))
                 {
                     BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
-                    RefreshBox();
+                    QueueRefreshAppearance();
                     OnPropertyChanged(oldValue, value);
                 }
             }
         }
-
-        protected virtual FormXObject RefreshAppearance()
-        {
-            return null;
-        }
-
-        
     }
 
     /**

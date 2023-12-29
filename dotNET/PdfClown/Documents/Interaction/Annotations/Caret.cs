@@ -30,6 +30,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -102,6 +103,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get => ToSymbolTypeEnum((IPdfString)BaseDataObject[PdfName.Sy]);
             set => BaseDataObject[PdfName.Sy] = value != DefaultSymbolType ? ToCode(value) : null;
+        }
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
         }
     }
 }

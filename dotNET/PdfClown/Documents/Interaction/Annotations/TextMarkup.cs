@@ -124,7 +124,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public TextMarkup(PdfDirectObject baseObject) : base(baseObject)
-        { }        
+        { }
 
         public override PdfPage Page
         {
@@ -164,7 +164,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var quadPoints = new PdfArray();
-                SKRect box = SKRect.Empty;
                 foreach (Quad markupBox in value)
                 {
                     /*
@@ -180,18 +179,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                     quadPoints.Add(PdfReal.Get(points[3].Y)); // y4.
                     quadPoints.Add(PdfReal.Get(points[2].X)); // x3.
                     quadPoints.Add(PdfReal.Get(points[2].Y)); // y3.
-                    if (box.IsEmpty)
-                    { box = markupBox.GetBounds(); }
-                    else
-                    { box = SKRect.Union(box, markupBox.GetBounds()); }
                 }
 
-                /*
-                  NOTE: Box width is expanded to make room for end decorations (e.g. rounded highlight caps).
-                */
-                float markupBoxMargin = GetMarkupBoxMargin(box.Height);
-                box.Inflate(markupBoxMargin, 0);
-                Box = box;
                 QuadPoints = quadPoints;
                 pageMarkupBoxes = value;
                 markupBoxes = null;
@@ -232,28 +221,30 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override SKRect DrawSpecial(SKCanvas canvas)
+        public override void RefreshBox()
         {
-            var appearance = RefreshAppearance();
-            return base.DrawAppearance(canvas, appearance);
+            SKRect box = SKRect.Empty;
+            foreach (var markupBox in PageMarkupBoxes)
+            {
+                if (box.IsEmpty)
+                { box = markupBox.GetBounds(); }
+                else
+                { box = SKRect.Union(box, markupBox.GetBounds()); }
+            }
+            //NOTE: Box width is expanded to make room for end decorations (e.g. rounded highlight caps).
+            float markupBoxMargin = GetMarkupBoxMargin(box.Height);
+            box.Inflate(markupBoxMargin, 0);
+            Box = box;
         }
 
-        /*
-          TODO: refresh should happen for every Annotation with overwrite\remove check 
-        */
-        protected override FormXObject RefreshAppearance()
+        protected override FormXObject GenerateAppearance()
         {
             if (Page == null)
             {
                 return null;
             }
-            if (Rect == null)
-            {
-                PageMarkupBoxes = PageMarkupBoxes;
-                return null;
-            }
+            var normalAppearance = ResetAppearance(out var matrix);
             SKRect box = Box;
-            var normalAppearance = ResetAppearance(box, out var matrix);
             var composer = new PrimitiveComposer(normalAppearance);
             {
                 var first = PageMarkupBoxes.FirstOrDefault();

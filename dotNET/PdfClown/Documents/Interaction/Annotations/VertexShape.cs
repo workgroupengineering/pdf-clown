@@ -90,7 +90,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                     verticesObject.Add(PdfReal.Get(vertex.X));
                     verticesObject.Add(PdfReal.Get(vertex.Y));
                 }
-                RefreshBox();
                 Vertices = verticesObject;
             }
         }
@@ -105,6 +104,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     BaseDataObject[PdfName.Vertices] = value;
                     OnPropertyChanged(oldValue, value);
+                    QueueRefreshAppearance();
                 }
             }
         }
@@ -197,7 +197,10 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override void RefreshBox()
         {
-            ResetAppearance();
+            if (!(Points?.Any() ?? false))
+            {
+                return;
+            }
             SKRect box = SKRect.Empty;
             foreach (SKPoint point in Points)
             {

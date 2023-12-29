@@ -330,7 +330,9 @@ namespace PdfClown.Documents.Contents.Fonts
             // these widths are supposed to be consistent with the actual widths given in the CIDFont
             // program, but PDFBOX-563 shows that when they are not, Acrobat overrides the embedded
             // font widths with the widths given in the font dictionary
-            return GetWidthForCID(CodeToCID(code));
+            return codeToWidthMap.TryGetValue(code, out var width)
+                ? width
+                : codeToWidthMap[code] = GetWidthForCID(CodeToCID(code));
         }
 
         // todo: this method is highly suspicious, the average glyph width is not usually a good metric

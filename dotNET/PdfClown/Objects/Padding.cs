@@ -24,6 +24,7 @@
 */
 
 using System;
+using PdfClown.Files;
 using SkiaSharp;
 
 namespace PdfClown.Objects
@@ -84,10 +85,21 @@ namespace PdfClown.Objects
 
         public bool Equals(Padding other)
         {
-            return Math.Round(Left, 2).Equals(Math.Round(other.Left, 2))
-                && Math.Round(Bottom, 2).Equals(Math.Round(other.Bottom, 2))
-                && Math.Round(Right, 2).Equals(Math.Round(other.Right, 2))
-                && Math.Round(Top, 2).Equals(Math.Round(other.Top, 2));
+            return Math.Round(Left, 5).Equals(Math.Round(other.Left, 5))
+                && Math.Round(Bottom, 5).Equals(Math.Round(other.Bottom, 5))
+                && Math.Round(Right, 5).Equals(Math.Round(other.Right, 5))
+                && Math.Round(Top, 5).Equals(Math.Round(other.Top, 5));
+        }
+
+        public Padding Round() => Round(File?.Configuration?.RealPrecision ?? 5);
+
+        public Padding Round(int precision)
+        {
+            Left = Math.Round(Left, precision);
+            Bottom = Math.Round(Bottom, precision);
+            Right = Math.Round(Right, precision);
+            Top = Math.Round(Top, precision);
+            return this;
         }
 
         public double LeftRight

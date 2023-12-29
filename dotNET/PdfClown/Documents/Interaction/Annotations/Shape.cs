@@ -110,13 +110,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public abstract SKPath GetPath(SKMatrix sKMatrix);
 
-        public override SKRect DrawSpecial(SKCanvas canvas)
-        {
-            var apperance = RefreshAppearance();
-            return DrawAppearance(canvas, apperance);
-        }
-
-        protected override FormXObject RefreshAppearance()
+        protected override FormXObject GenerateAppearance()
         {
             var appearance = ResetAppearance(out var zeroMatrix);
 
@@ -138,7 +132,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (oldBox.Width != newBox.Width
                 || oldBox.Height != newBox.Height)
             {
-                ResetAppearance();
+                QueueRefreshAppearance();
             }
 
             base.MoveTo(newBox);

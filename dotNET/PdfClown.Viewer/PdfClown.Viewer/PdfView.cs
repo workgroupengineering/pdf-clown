@@ -831,7 +831,7 @@ namespace PdfClown.Viewer
 
         private void CloseVertextShape(VertexShape vertexShape)
         {
-            vertexShape.RefreshBox();
+            vertexShape.QueueRefreshAppearance();
             SelectedPoint = null;
             CurrentOperation = OperationType.None;
         }
