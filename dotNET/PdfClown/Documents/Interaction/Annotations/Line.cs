@@ -76,6 +76,19 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Line(PdfDirectObject baseObject) : base(baseObject)
         { }
 
+        public override string Contents
+        {
+            get => base.Contents;
+            set
+            {
+                if (base.Contents != value)
+                {
+                    base.Contents = value;
+                    QueueRefreshAppearance();
+                }
+            }
+        }
+
         /**
           <summary>Gets/Sets whether the contents should be shown as a caption.</summary>
         */
