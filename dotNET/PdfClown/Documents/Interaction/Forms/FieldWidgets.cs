@@ -62,7 +62,7 @@ namespace PdfClown.Documents.Interaction.Forms
             this.field = field;
         }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); } // TODO:verify field reference.
 
         /**

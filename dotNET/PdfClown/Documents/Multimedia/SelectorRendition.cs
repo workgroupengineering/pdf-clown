@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Multimedia
     public sealed class SelectorRendition : Rendition
     {
 
-        public SelectorRendition(Document context) : base(context, PdfName.SR)
+        public SelectorRendition(PdfDocument context) : base(context, PdfName.SR)
         { }
 
         internal SelectorRendition(PdfDirectObject baseObject) : base(baseObject)

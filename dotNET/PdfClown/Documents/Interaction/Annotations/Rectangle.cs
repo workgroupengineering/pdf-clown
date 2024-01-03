@@ -29,6 +29,8 @@ using PdfClown.Objects;
 
 using System;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Contents.Composition;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -39,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Rectangle : Shape
     {
-        public Rectangle(Page page, SKRect box, string text)
+        public Rectangle(PdfPage page, SKRect box, string text)
             : base(page, box, text, PdfName.Square)
         { }
 
@@ -47,13 +49,27 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(baseObject)
         { }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        public override Objects.Rectangle Rect
         {
-            using (var path = new SKPath())
+            get => base.Rect;
+            set
             {
-                path.AddRect(Box);
-                DrawPath(canvas, path);
+                if (!(Rect?.Equals(value) ?? value == null))
+                {
+                    base.Rect = value;
+                    QueueRefreshAppearance();
+                }
             }
         }
+
+        public override SKPath GetPath(SKMatrix sKMatrix)
+        {
+            var box = sKMatrix.MapRect(Box);
+            BorderEffect?.InvertApplyEffect(ref box);
+            var path = new SKPath();
+            path.AddRect(box);
+            return path;
+        }
+
     }
 }

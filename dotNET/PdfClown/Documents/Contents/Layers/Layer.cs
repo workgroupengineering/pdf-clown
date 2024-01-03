@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Files;
 using PdfClown.Documents.Interchange.Access;
 using PdfClown.Objects;
 using PdfClown.Tools;
@@ -109,7 +108,7 @@ namespace PdfClown.Documents.Contents.Layers
         private static readonly PdfName MembershipName = new PdfName("D-OCMD");
 
 
-        public Layer(Document context, string title) : base(context, PdfName.OCG)
+        public Layer(PdfDocument context, string title) : base(context, PdfName.OCG)
         {
             Title = title;
 

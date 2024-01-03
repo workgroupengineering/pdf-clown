@@ -67,7 +67,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public Appearance Appearance => appearance;
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); } // TODO: verify appearance reference.
 
         //TODO

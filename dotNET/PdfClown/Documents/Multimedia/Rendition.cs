@@ -101,15 +101,15 @@ namespace PdfClown.Documents.Multimedia
             /**
               <summary>Gets the PDF version range supported by the viewer application.</summary>
             */
-            public Interval<Version> Version
+            public Interval<PdfVersion> Version
             {
                 get
                 {
                     PdfArray pdfVersionArray = (PdfArray)MediaCriteria[PdfName.P];
                     return pdfVersionArray != null && pdfVersionArray.Count > 0
-                      ? new Interval<Version>(
-                        PdfClown.Version.Get((PdfName)pdfVersionArray[0]),
-                        pdfVersionArray.Count > 1 ? PdfClown.Version.Get((PdfName)pdfVersionArray[1]) : null
+                      ? new Interval<PdfVersion>(
+                        PdfClown.PdfVersion.Get((PdfName)pdfVersionArray[0]),
+                        pdfVersionArray.Count > 1 ? PdfClown.PdfVersion.Get((PdfName)pdfVersionArray[1]) : null
                         )
                       : null;
                 }
@@ -206,7 +206,7 @@ namespace PdfClown.Documents.Multimedia
                 throw new ArgumentException("It doesn't represent a valid clip object.", "baseObject");
         }
 
-        protected Rendition(Document context, PdfName subtype)
+        protected Rendition(PdfDocument context, PdfName subtype)
             : base(context, new PdfDictionary
             {
                 { PdfName.Type, PdfName.Rendition },

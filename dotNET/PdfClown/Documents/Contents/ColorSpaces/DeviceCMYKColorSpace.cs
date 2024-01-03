@@ -44,13 +44,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public static readonly DeviceCMYKColorSpace Default = new DeviceCMYKColorSpace(PdfName.DeviceCMYK);
 
-        public DeviceCMYKColorSpace(Document context) : base(context, PdfName.DeviceCMYK)
+        public DeviceCMYKColorSpace(PdfDocument context) : base(context, PdfName.DeviceCMYK)
         { }
 
         internal DeviceCMYKColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); }
 
         public override int ComponentCount => 4;

@@ -46,16 +46,16 @@ namespace PdfClown.Tools
           <summary>Replaces the Acroform fields with their corresponding graphics representation.</summary>
           <param name="document">Document to flatten.</param>
         */
-        public void Flatten(Document document)
+        public void Flatten(PdfDocument document)
         {
-            var pageStampers = new Dictionary<Page, PageStamper>();
+            var pageStampers = new Dictionary<PdfPage, PageStamper>();
             Form form = document.Form;
             Fields formFields = form.Fields;
             foreach (Field field in formFields.Values)
             {
                 foreach (Widget widget in field.Widgets)
                 {
-                    Page widgetPage = widget.Page;
+                    var widgetPage = widget.Page;
                     AnnotationFlagsEnum flags = widget.Flags;
                     // Is the widget to be rendered?
                     if (((flags & AnnotationFlagsEnum.Hidden) == 0 || hiddenRendered)
@@ -70,7 +70,7 @@ namespace PdfClown.Tools
                             if (!pageStampers.TryGetValue(widgetPage, out widgetStamper))
                             { pageStampers[widgetPage] = widgetStamper = new PageStamper(widgetPage); }
 
-                            SKRect widgetBox = widget.GetBounds();
+                            SKRect widgetBox = widget.GetViewBounds();
                             widgetStamper.Foreground.ShowXObject(widgetCurrentAppearance, widgetBox.Location, widgetBox.Size);
                         }
                     }

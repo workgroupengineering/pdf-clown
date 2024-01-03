@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -46,7 +45,7 @@ namespace PdfClown.Tokens
         private const string XRefGenerationFormat = "00000";
         private const string XRefOffsetFormat = "0000000000";
 
-        internal PlainWriter(Files.File file, IOutputStream stream) : base(file, stream)
+        internal PlainWriter(PdfFile file, IOutputStream stream) : base(file, stream)
         { }
 
         protected override void WriteIncremental()

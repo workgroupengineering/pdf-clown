@@ -35,7 +35,7 @@ namespace PdfClown.Documents.Contents.Layers
       <summary>Visibility expression, used to compute visibility of content based on a set of layers
       [PDF:1.7:4.10.1].</summary>
     */
-    [@PDF(VersionEnum.PDF16)]
+    [PDF(VersionEnum.PDF16)]
     public class VisibilityExpression : PdfObjectWrapper<PdfArray>
     {
         public enum OperatorEnum
@@ -103,7 +103,7 @@ namespace PdfClown.Documents.Contents.Layers
             }
         }
 
-        public VisibilityExpression(Document context, OperatorEnum @operator, params IPdfObjectWrapper[] operands)
+        public VisibilityExpression(PdfDocument context, OperatorEnum @operator, params IPdfObjectWrapper[] operands)
             : base(context, new PdfArray(operands?.Length ?? 1) { (PdfDirectObject)null })
         {
             Operator = @operator;

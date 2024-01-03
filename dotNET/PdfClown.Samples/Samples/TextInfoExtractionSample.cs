@@ -33,14 +33,14 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                PdfDocument document = file.Document;
 
                 PageStamper stamper = new PageStamper(); // NOTE: Page stamper is used to draw contents on existing pages.
 
                 // 2. Iterating through the document pages...
-                foreach (Page page in document.Pages)
+                foreach (var page in document.Pages)
                 {
                     Console.WriteLine("\nScanning page " + page.Number + "...\n");
 

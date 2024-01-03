@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Multimedia
         /**
           <summary>Creates a new movie within the given document context.</summary>
         */
-        public Movie(Document context, FileSpecification dataFile) : base(context, new PdfDictionary())
+        public Movie(PdfDocument context, FileSpecification dataFile) : base(context, new PdfDictionary())
         { DataFile = dataFile; }
 
         public Movie(PdfDirectObject baseObject) : base(baseObject)

@@ -23,28 +23,24 @@
   this list of conditions.
 */
 
-using PdfClown;
 using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Layers;
-using PdfClown.Documents.Interaction.Forms;
-using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Documents.Interchange.Metadata;
-using PdfClown.Documents.Interaction.Viewer;
-using PdfClown.Files;
-using PdfClown.Objects;
-using PdfClown.Tokens;
-using PdfClown.Util;
-using PdfClown.Util.IO;
-
-using System;
-using System.Collections.Generic;
-using SkiaSharp;
-using io = System.IO;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Fonts.TTF;
+using PdfClown.Documents.Contents.Layers;
+using PdfClown.Documents.Interaction.Annotations;
+using PdfClown.Documents.Interaction.Forms;
+using PdfClown.Documents.Interaction.Forms.Signature;
+using PdfClown.Documents.Interaction.Navigation;
+using PdfClown.Documents.Interaction.Viewer;
+using PdfClown.Documents.Interchange.Metadata;
+using PdfClown.Objects;
+using SkiaSharp;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 
 namespace PdfClown.Documents
 {
@@ -52,7 +48,7 @@ namespace PdfClown.Documents
       <summary>PDF document [PDF:1.6::3.6.1].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class Document : PdfObjectWrapper<PdfDictionary>, IAppDataHolder
+    public sealed class PdfDocument : PdfObjectWrapper<PdfDictionary>, IAppDataHolder
     {
         public static T Resolve<T>(PdfDirectObject baseObject) where T : PdfObjectWrapper
         {
@@ -67,8 +63,9 @@ namespace PdfClown.Documents
         internal ConcurrentDictionary<TrueTypeFont, FontType0> Type0FontCache = new();
 
         private DocumentConfiguration configuration;
+        public readonly ManualResetEventSlim LockObject = new ManualResetEventSlim(true);
 
-        internal Document(File context) :
+        internal PdfDocument(PdfFile context) :
             base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Catalog } })
         {
             configuration = new DocumentConfiguration(this);
@@ -86,7 +83,7 @@ namespace PdfClown.Documents
             Resources = new Resources(this);
         }
 
-        internal Document(PdfDirectObject baseObject)// Catalog.
+        internal PdfDocument(PdfDirectObject baseObject)// Catalog.
             : base(baseObject)
         { configuration = new DocumentConfiguration(this); }
 
@@ -119,7 +116,7 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.Outlines] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         {
             throw new NotImplementedException();
         }
@@ -258,7 +255,7 @@ namespace PdfClown.Documents
         public SKSize GetSize()
         {
             float height = 0, width = 0;
-            foreach (Page page in Pages)
+            foreach (var page in Pages)
             {
                 SKSize pageSize = page.Size;
                 height = Math.Max(height, pageSize.Height);
@@ -344,7 +341,7 @@ namespace PdfClown.Documents
           <summary>Gets/Sets the version of the PDF specification this document conforms to.</summary>
         */
         [PDF(VersionEnum.PDF14)]
-        public Version Version
+        public PdfVersion Version
         {
             get
             {
@@ -352,13 +349,13 @@ namespace PdfClown.Documents
                   NOTE: If the header specifies a later version, or if this entry is absent, the document
                   conforms to the version specified in the header.
                 */
-                Version fileVersion = File.Version;
+                PdfVersion fileVersion = File.Version;
 
                 PdfName versionObject = (PdfName)BaseDataObject[PdfName.Version];
                 if (versionObject == null)
                     return fileVersion;
 
-                Version version = Version.Get(versionObject);
+                PdfVersion version = PdfVersion.Get(versionObject);
                 if (File.Reader == null)
                     return version;
 
@@ -378,13 +375,21 @@ namespace PdfClown.Documents
 
         public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this);
 
-        public AppData GetAppData(PdfName appName)
-        { return AppData.Ensure(appName); }
+        /**
+          <summary>Gets the default media box.</summary>
+        */
+        private PdfArray MediaBox =>
+                //NOTE: Document media box MUST be associated with the page-tree root node in order to be
+                //inheritable by all the pages.
+                (PdfArray)((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages)).Resolve(PdfName.MediaBox);
+
+
+
+        public AppData GetAppData(PdfName appName) => AppData.Ensure(appName);
 
         public DateTime? ModificationDate => Information.ModificationDate;
 
-        public void Touch(PdfName appName)
-        { Touch(appName, DateTime.Now); }
+        public void Touch(PdfName appName) => Touch(appName, DateTime.Now);
 
         public void Touch(PdfName appName, DateTime modificationDate)
         {
@@ -397,12 +402,35 @@ namespace PdfClown.Documents
             throw new NotImplementedException();
         }
 
-        /**
-          <summary>Gets the default media box.</summary>
-        */
-        private PdfArray MediaBox =>
-                //NOTE: Document media box MUST be associated with the page-tree root node in order to be
-                //inheritable by all the pages.
-                (PdfArray)((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages)).Resolve(PdfName.MediaBox);
+        internal IEnumerable<SignatureDictionary> GetSignatureDictionaries()
+        {
+            if (!(BaseDataObject.ContainsKey(PdfName.AcroForm)))
+                yield break;
+            foreach (var sigField in this.Form.Fields.OfType<SignatureField>())
+            {
+                if (sigField.SignatureDictionary != null)
+                    yield return sigField.SignatureDictionary;
+            }
+        }
+
+        public Annotation FindAnnotation(string name, int? pageIndex = null)
+        {
+            var annotation = (Annotation)null;
+            if (pageIndex == null)
+            {
+                foreach (var page in Pages)
+                {
+                    annotation = page.Annotations[name];
+                    if (annotation != null)
+                        return annotation;
+                }
+            }
+            else
+            {
+                var page = Pages[(int)pageIndex];
+                return page?.Annotations[name];
+            }
+            return null;
+        }
     }
 }

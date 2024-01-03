@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Tokens;
 
 using System;
@@ -43,7 +42,7 @@ namespace PdfClown.Objects
 
         private PdfIndirectObject indirectObject;
 
-        private File file;
+        private PdfFile file;
         private PdfObject parent;
         private bool updated;
         private string id;
@@ -56,7 +55,7 @@ namespace PdfClown.Objects
             this.indirectObject = indirectObject;
         }
 
-        internal PdfReference(int objectNumber, int generationNumber, File file)
+        internal PdfReference(int objectNumber, int generationNumber, PdfFile file)
         {
             this.objectNumber = objectNumber;
             this.generationNumber = generationNumber;
@@ -64,7 +63,7 @@ namespace PdfClown.Objects
             this.file = file;
         }
 
-        public override File File => file ?? base.File;
+        public override PdfFile File => file ?? base.File;
 
         /**
           <summary>Gets the generation number.</summary>
@@ -148,7 +147,7 @@ namespace PdfClown.Objects
 
         public override string ToString() => IndirectReference;
 
-        public override void WriteTo(IOutputStream stream, File context) => stream.Write(IndirectReference);
+        public override void WriteTo(IOutputStream stream, PdfFile context) => stream.Write(IndirectReference);
 
         public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 

@@ -117,10 +117,21 @@ namespace PdfClown.Objects
 
         public bool Equals(Rectangle other)
         {
-            return Left.Equals(other.Left)
-                && Bottom.Equals(other.Bottom)
-                && Right.Equals(other.Right)
-                && Top.Equals(other.Top);
+            return Math.Round(Left, 5).Equals(Math.Round(other.Left, 5))
+                && Math.Round(Bottom, 5).Equals(Math.Round(other.Bottom, 5))
+                && Math.Round(Right, 5).Equals(Math.Round(other.Right, 5))
+                && Math.Round(Top, 5).Equals(Math.Round(other.Top, 5));
+        }
+
+        public Rectangle Round() => Round(File?.Configuration?.RealPrecision ?? 5);
+
+        public Rectangle Round(int precision)
+        {
+            Left = Math.Round(Left, precision);
+            Bottom = Math.Round(Bottom, precision);
+            Right = Math.Round(Right, precision);
+            Top = Math.Round(Top, precision);
+            return this;
         }
 
         public double Width
@@ -131,7 +142,7 @@ namespace PdfClown.Objects
 
         public double Height
         {
-            get => (Top - Bottom);
+            get => Top - Bottom;
             set => Bottom = Top - value;
         }
 

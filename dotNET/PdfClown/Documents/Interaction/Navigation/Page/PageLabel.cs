@@ -73,11 +73,11 @@ namespace PdfClown.Documents.Interaction.Navigation
           <param name="baseObject">Base object to wrap.</param>
         */
 
-        public PageLabel(Document context, NumberStyleEnum numberStyle)
+        public PageLabel(PdfDocument context, NumberStyleEnum numberStyle)
             : this(context, null, numberStyle, DefaultNumberBase)
         { }
 
-        public PageLabel(Document context, String prefix, NumberStyleEnum numberStyle, int numberBase)
+        public PageLabel(PdfDocument context, String prefix, NumberStyleEnum numberStyle, int numberBase)
             : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.PageLabel } })
         {
             Prefix = prefix;

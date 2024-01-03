@@ -103,7 +103,7 @@ namespace PdfClown.Documents.Functions
                 return ((PdfStream)functionDataObject).Header;
         }
 
-        protected Function(Document context, PdfDataObject baseDataObject)
+        protected Function(PdfDocument context, PdfDataObject baseDataObject)
             : base(context, baseDataObject)
         { }
 

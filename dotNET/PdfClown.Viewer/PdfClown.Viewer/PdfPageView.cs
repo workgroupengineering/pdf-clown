@@ -1,18 +1,12 @@
 ﻿using PdfClown.Documents;
 using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Interaction.Annotations;
+using PdfClown.Tools;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using PdfClown.Tools;
-using PdfClown.Documents.Contents.Entities;
-using System.Threading;
-using System.Linq;
-using Org.BouncyCastle.Crypto.Engines;
-using System.ComponentModel;
 
 namespace PdfClown.Viewer
 {
@@ -20,7 +14,7 @@ namespace PdfClown.Viewer
     {
         private SKPicture picture;
         private SKMatrix matrix = SKMatrix.Identity;
-        private Page page;
+        private PdfPage page;
         private SKImage image;
         private float imageScale;
         private PageAnnotations pageAnnotations;
@@ -30,13 +24,13 @@ namespace PdfClown.Viewer
         {
         }
 
-        public PdfDocumentView Document
+        public PdfDocumentView DocumentView
         {
             get;
             set;
         }
 
-        public Page Page
+        public PdfPage Page
         {
             get => page;
             set => page = value;
@@ -76,35 +70,17 @@ namespace PdfClown.Viewer
         {
             if (pageAnnotations == null)
             {
-                Document.LockObject.Wait();
-                try
-                {
-                    Document.LockObject.Reset();
-                    Page.Annotations.RefreshCache();
-                    pageAnnotations = Page.Annotations;
-                }
-                finally
-                {
-                    Document.LockObject.Set();
-                }
+                Page.Annotations.RefreshCache();
+                pageAnnotations = Page.Annotations;
             }
-            foreach (var annotation in pageAnnotations)
-            {
-                yield return annotation;
-                if (annotation is Markup markup
-                       && markup.Popup != null
-                       && !Page.Annotations.Contains(markup.Popup))
-                {
-                    yield return markup.Popup;
-                }
-            }
+            return pageAnnotations;
         }
 
         public SKPicture GetPicture(SKCanvasView canvasView)
         {
-            if (picture == null && Document.LockObject.IsSet)
+            if (picture == null && DocumentView.LockObject.IsSet)
             {
-                Document.LockObject.Reset();
+                DocumentView.LockObject.Reset();
                 var task = new Task(() => Paint(canvasView));
                 task.Start();
             }
@@ -168,7 +144,7 @@ namespace PdfClown.Viewer
             }
             finally
             {
-                Document.LockObject.Set();
+                DocumentView.LockObject.Set();
             }
         }
 

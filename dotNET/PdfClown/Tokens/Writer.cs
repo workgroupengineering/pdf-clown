@@ -50,7 +50,7 @@ namespace PdfClown.Tokens
           <param name="file">File to serialize.</param>
           <param name="stream">Target stream.</param>
         */
-        public static Writer Get(File file, IOutputStream stream)
+        public static Writer Get(PdfFile file, IOutputStream stream)
         {
             // Which cross-reference table mode?
             switch (file.Configuration.XRefMode)
@@ -64,10 +64,10 @@ namespace PdfClown.Tokens
             }
         }
 
-        protected readonly File file;
+        protected readonly PdfFile file;
         protected readonly IOutputStream stream;
 
-        protected Writer(File file, IOutputStream stream)
+        protected Writer(PdfFile file, IOutputStream stream)
         {
             this.file = file;
             this.stream = stream;
@@ -76,7 +76,7 @@ namespace PdfClown.Tokens
         /**
           <summary>Gets the file to serialize.</summary>
         */
-        public File File => file;
+        public PdfFile File => file;
 
         /**
           <summary>Gets the target stream.</summary>

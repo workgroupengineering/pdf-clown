@@ -38,7 +38,7 @@ namespace PdfClown.Documents
     public sealed class NamedRenditions : NameTree<Rendition>
     {
 
-        public NamedRenditions(Document context) : base(context)
+        public NamedRenditions(PdfDocument context) : base(context)
         { }
 
         public NamedRenditions(PdfDirectObject baseObject) : base(baseObject)

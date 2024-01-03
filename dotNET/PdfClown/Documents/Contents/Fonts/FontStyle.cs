@@ -36,7 +36,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public FontStyle(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public FontStyle(Document document, PdfDictionary dictionary) : base(document, dictionary)
+        public FontStyle(PdfDocument document, PdfDictionary dictionary) : base(document, dictionary)
         { }
 
         public Panose Panose

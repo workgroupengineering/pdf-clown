@@ -35,7 +35,7 @@ namespace PdfClown.Documents.Contents.Fonts
      */
     internal sealed class FontCIDType2Embedder : TrueTypeEmbedder
     {
-        private readonly Document document;
+        private readonly PdfDocument document;
         private readonly FontType0 parent;
         private readonly PdfDictionary dict;
         private readonly PdfDictionary cidFont;
@@ -50,7 +50,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @param parent parent Type 0 font
          * @ if the TTF could not be read
          */
-        public FontCIDType2Embedder(Document document, PdfDictionary dict, TrueTypeFont ttf, bool embedSubset, FontType0 parent, bool vertical)
+        public FontCIDType2Embedder(PdfDocument document, PdfDictionary dict, TrueTypeFont ttf, bool embedSubset, FontType0 parent, bool vertical)
                 : base(document, dict, ttf, embedSubset)
         {
             this.document = document;
@@ -155,7 +155,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 var version = document.Version;
                 if (version.GetFloat() < 1.5)
                 {
-                    document.Version = new Version(1, 5);
+                    document.Version = new PdfVersion(1, 5);
                 }
             }
 

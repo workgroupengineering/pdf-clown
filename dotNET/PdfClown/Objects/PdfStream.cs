@@ -27,7 +27,6 @@ using PdfClown.Bytes;
 using PdfClown.Bytes.Filters;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Files;
-using PdfClown.Files;
 using PdfClown.Tokens;
 
 using System;
@@ -293,7 +292,7 @@ namespace PdfClown.Objects
             protected internal set => updated = value;
         }
 
-        public override void WriteTo(IOutputStream stream, File context)
+        public override void WriteTo(IOutputStream stream, PdfFile context)
         {
             /*
               NOTE: The header is temporarily tweaked to accommodate serialization settings.

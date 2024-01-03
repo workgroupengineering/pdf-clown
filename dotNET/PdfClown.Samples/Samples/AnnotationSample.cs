@@ -3,19 +3,18 @@ using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Entities;
-using fonts = PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Files;
 using PdfClown.Documents.Interaction;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Annotations.styles;
-using files = PdfClown.Files;
+using PdfClown.Files;
 
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
 using System.IO;
-using PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Samples.CLI
 {
@@ -27,8 +26,8 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            files::File file = new files::File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            var document = file.Document;
 
             // 2. Content creation.
             Populate(document);
@@ -37,9 +36,9 @@ namespace PdfClown.Samples.CLI
             Serialize(file, "Annotations", "inserting annotations", "annotations, creation, attachment, sticky notes, callout notes, rubber stamps, markup, highlighting");
         }
 
-        private void Populate(Document document)
+        private void Populate(PdfDocument document)
         {
-            var page = new Page(document);
+            var page = new PdfPage(document);
             document.Pages.Add(page);
 
             var composer = new PrimitiveComposer(page);

@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Tokens;
 
 using System;
@@ -59,7 +58,7 @@ namespace PdfClown.Objects
         public override int CompareTo(PdfDirectObject obj)
         { throw new NotImplementedException(); }
 
-        public override void WriteTo(IOutputStream stream, File context)
+        public override void WriteTo(IOutputStream stream, PdfFile context)
         { stream.Write(RawValue ? Keyword.True : Keyword.False); }
     }
 }

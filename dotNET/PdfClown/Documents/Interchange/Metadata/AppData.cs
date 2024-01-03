@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Interchange.Metadata
     [PDF(VersionEnum.PDF13)]
     public class AppData : PdfObjectWrapper<PdfDictionary>
     {
-        internal AppData(Document context) : base(context, new PdfDictionary())
+        internal AppData(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public AppData(PdfDirectObject baseObject) : base(baseObject)
@@ -54,8 +54,8 @@ namespace PdfClown.Documents.Interchange.Metadata
         }
 
         /**
-          <summary>Gets the date when the contents of the holder (<see cref="Document">document</see>,
-          <see cref="Page">page</see>, or <see cref="FormXObject">form</see>) were most recently
+          <summary>Gets the date when the contents of the holder (<see cref="PdfDocument">document</see>,
+          <see cref="PdfPage">page</see>, or <see cref="FormXObject">form</see>) were most recently
           modified by this application.</summary>
           <remarks>To update it, use the <see cref="IAppDataHolder.Touch(PdfName)"/> method of the
           holder.</remarks>

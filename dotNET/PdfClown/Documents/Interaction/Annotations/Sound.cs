@@ -31,6 +31,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -88,7 +89,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultIconType;
         }
 
-        public Sound(Page page, SKRect box, string text, multimedia::Sound content)
+        public Sound(PdfPage page, SKRect box, string text, multimedia::Sound content)
             : base(page, PdfName.Sound, box, text)
         { Content = content; }
 
@@ -126,6 +127,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override Popup Popup
         {
             set => throw new NotSupportedException();
+        }
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
         }
     }
 }

@@ -35,6 +35,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -61,20 +62,14 @@ namespace PdfClown.Documents.Interaction.Annotations
           + "var " + PlayerPlaceholder + "=app.media.openPlayer({settings:settings,events:events});"
           + "}";
 
-        public Screen(Page page, SKRect box, String text, String mediaPath, String mimeType)
-            : this(page, box, text, new MediaRendition(
-              new MediaClipData(
-                FileSpecification.Get(
-                  EmbeddedFile.Get(page.Document, mediaPath),
-                  System.IO.Path.GetFileName(mediaPath)
-                  ),
-                mimeType
-                )
-              )
+        public Screen(PdfPage page, SKRect box, String text, String mediaPath, String mimeType)
+            : this(page, box, text, new MediaRendition(new MediaClipData(
+                FileSpecification.Get(EmbeddedFile.Get(page.Document, mediaPath), System.IO.Path.GetFileName(mediaPath)),
+                mimeType))
             )
         { }
 
-        public Screen(Page page, SKRect box, String text, Rendition rendition)
+        public Screen(PdfPage page, SKRect box, String text, Rendition rendition)
             : base(page, PdfName.Screen, box, text)
         {
             Render render = new Render(this, Render.OperationEnum.PlayResume, rendition);
@@ -119,5 +114,10 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         internal Screen(PdfDirectObject baseObject) : base(baseObject)
         { }
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return Appearance.Normal[null];
+        }
     }
 }

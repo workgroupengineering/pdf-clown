@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Tokens;
 using System;
 using System.Globalization;
@@ -76,7 +75,7 @@ namespace PdfClown.Objects
 
         public override int GetHashCode() => PdfNumber.GetHashCode(this);
 
-        public override void WriteTo(IOutputStream stream, File context) => stream.WriteAsString(RawValue, context.Configuration.RealFormat, formatInfo);
+        public override void WriteTo(IOutputStream stream, PdfFile context) => stream.WriteAsString(RawValue, context.Configuration.RealFormat, formatInfo);
 
         public double DoubleValue => RawValue;
 

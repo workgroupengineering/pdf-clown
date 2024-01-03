@@ -24,10 +24,10 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
-                Page page = document.Pages[1]; // Page 2 (zero-based index).
+                var document = file.Document;
+                var page = document.Pages[1]; // Page 2 (zero-based index).
 
                 // 2. Applying actions...
                 // 2.1. Local go-to.
@@ -46,8 +46,7 @@ namespace PdfClown.Samples.CLI
                 */
                 page.Actions.OnOpen = new GoToURI(
                   document,
-                  new Uri("http://www.sourceforge.net/projects/clown")
-                  );
+                  new Uri("http://www.sourceforge.net/projects/clown"));
 
                 // 3. Serialize the PDF file!
                 Serialize(file, "Actions", "applying actions", "actions, creation, local goto, remote goto");

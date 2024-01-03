@@ -20,13 +20,13 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                PdfDocument document = file.Document;
 
                 // 2. Text extraction from the document pages.
                 var extractor = new TextExtractor();
-                foreach (Page page in document.Pages)
+                foreach (var page in document.Pages)
                 {
                     if (!PromptNextPage(page, false))
                     {

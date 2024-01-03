@@ -30,7 +30,7 @@ namespace PdfClown.Documents.Interaction.Annotations.ControlPoints
 {
     public abstract class ControlPoint
     {
-        private const int r = 3;
+        private const int r = 4;
 
         public Annotation Annotation { get; set; }
 
@@ -42,13 +42,20 @@ namespace PdfClown.Documents.Interaction.Annotations.ControlPoints
             set => Point = Annotation.InvertPageMatrix.MapPoint(value);
         }
 
-        public SKRect Bounds
+        public SKRect GetViewBounds(SKMatrix viewMatrix)
         {
-            get
-            {
-                var point = MappedPoint;
-                return new SKRect(point.X - r, point.Y - r, point.X + r, point.Y + r);
-            }
+            var point = viewMatrix.MapPoint(MappedPoint);
+            float xR = viewMatrix.ScaleX < 1 ? r / viewMatrix.ScaleX : r;
+            float yR = viewMatrix.ScaleY < 1 ? r / viewMatrix.ScaleY : r;
+            return new SKRect(point.X - xR, point.Y - yR, point.X + xR, point.Y + yR);
+        }
+
+        public SKRect GetBounds(SKMatrix viewMatrix)
+        {
+            var point = Point;
+            float xR = r / viewMatrix.ScaleX;
+            float yR = r / viewMatrix.ScaleY;
+            return new SKRect(point.X - xR, point.Y - yR, point.X + xR, point.Y + yR);
         }
 
         public virtual ControlPoint Clone(Annotation annotation)

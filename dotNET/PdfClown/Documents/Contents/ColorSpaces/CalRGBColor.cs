@@ -81,7 +81,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             set => this[2] = value;
         }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         {
             throw new NotImplementedException();
         }

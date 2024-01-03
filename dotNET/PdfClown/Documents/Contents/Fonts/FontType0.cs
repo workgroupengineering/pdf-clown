@@ -59,13 +59,18 @@ namespace PdfClown.Documents.Contents.Fonts
     public sealed class FontType0 : Font
     {
 
-        public static FontType0 Load(Document doc, Assembly assembly, string resurceFile)
+        public static FontType0 Load(PdfDocument doc, Assembly assembly, string resurceFile)
         {
             using var stream = assembly.GetManifestResourceStream(resurceFile);
             return new FontType0(doc, new TTFParser().Parse(stream), true, true, false);
         }
 
-        public static FontType0 Load(Document doc, string fileName)
+        public static Font Load(PdfDocument document, FontName fontName)
+        {
+            return Load(document, FontMappers.Instance.GetTrueTypeFont(Standard14Fonts.FontNames[fontName], null).Font, false);
+        }
+
+        public static FontType0 Load(PdfDocument doc, string fileName)
         {
             using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return Load(doc, stream);
@@ -79,7 +84,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return A Type0 font with a CIDFontType2 descendant.
          * @throws IOException If there is an error reading the font file.
          */
-        public static FontType0 Load(Document doc, Stream file)
+        public static FontType0 Load(PdfDocument doc, Stream file)
         {
             return new FontType0(doc, new OTFParser().Parse(file), false, true, false);
         }
@@ -93,7 +98,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return A Type0 font with a CIDFontType2 descendant.
          * @throws IOException If there is an error reading the font stream.
          */
-        public static FontType0 Load(Document doc, IInputStream input) => Load(doc, input, false);
+        public static FontType0 Load(PdfDocument doc, IInputStream input) => Load(doc, input, false);
 
         /**
          * Loads a TTF to be embedded into a document as a Type 0 font.
@@ -105,7 +110,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return A Type0 font with a CIDFontType2 descendant.
          * @throws IOException If there is an error reading the font stream.
          */
-        public static FontType0 Load(Document doc, IInputStream input, bool embedSubset) => Load(doc, new TTFParser().Parse(input), embedSubset);
+        public static FontType0 Load(PdfDocument doc, IInputStream input, bool embedSubset) => Load(doc, new TTFParser().Parse(input), embedSubset);
 
         /**
          * Loads a TTF to be embedded into a document as a Type 0 font.
@@ -117,7 +122,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return A Type0 font with a CIDFontType2 descendant.
          * @throws IOException If there is an error reading the font stream.
          */
-        public static FontType0 Load(Document doc, TrueTypeFont ttf, bool embedSubset)
+        public static FontType0 Load(PdfDocument doc, TrueTypeFont ttf, bool embedSubset)
         {
             return doc.Type0FontCache.GetOrAdd(ttf, (t) => new FontType0(doc, t, embedSubset, false, false));
         }
@@ -130,7 +135,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return A Type0 font with a CIDFontType2 descendant.
          * @throws IOException If there is an error reading the font file.
          */
-        public static FontType0 LoadVertical(Document doc, Stream file)
+        public static FontType0 LoadVertical(PdfDocument doc, Stream file)
         {
             return new FontType0(doc, new TTFParser().Parse(file), true, true, true);
         }
@@ -143,7 +148,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return A Type0 font with a CIDFontType2 descendant.
          * @throws IOException If there is an error reading the font stream.
          */
-        public static FontType0 LoadVertical(Document doc, IInputStream input)
+        public static FontType0 LoadVertical(PdfDocument doc, IInputStream input)
         {
             return new FontType0(doc, new TTFParser().Parse(input), true, true, true);
         }
@@ -157,7 +162,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return A Type0 font with a CIDFontType2 descendant.
          * @throws IOException If there is an error reading the font stream.
          */
-        public static FontType0 LoadVertical(Document doc, IInputStream input, bool embedSubset)
+        public static FontType0 LoadVertical(PdfDocument doc, IInputStream input, bool embedSubset)
         {
             return new FontType0(doc, new TTFParser().Parse(input), embedSubset, true, true);
         }
@@ -171,7 +176,7 @@ namespace PdfClown.Documents.Contents.Fonts
          * @return A Type0 font with a CIDFontType2 descendant.
          * @throws IOException If there is an error reading the font stream.
          */
-        public static FontType0 LoadVertical(Document doc, TrueTypeFont ttf, bool embedSubset)
+        public static FontType0 LoadVertical(PdfDocument doc, TrueTypeFont ttf, bool embedSubset)
         {
             return new FontType0(doc, ttf, embedSubset, false, true);
         }
@@ -188,7 +193,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly HashSet<int> noUnicode = new();
 #endif
 
-        internal FontType0(Document document, TrueTypeFont ttf, bool embedSubset, bool closeTTF, bool vertical)
+        internal FontType0(PdfDocument document, TrueTypeFont ttf, bool embedSubset, bool closeTTF, bool vertical)
             : base(document, new PdfDictionary(6))
         {
             if (vertical)
@@ -572,6 +577,8 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
             }
         }
+
+       
 
         /**
      * Returns the CMap lookup table if present.

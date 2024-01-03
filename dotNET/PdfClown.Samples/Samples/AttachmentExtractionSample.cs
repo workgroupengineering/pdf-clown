@@ -2,7 +2,7 @@ using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Files;
 using PdfClown.Documents.Interaction.Annotations;
-using files = PdfClown.Files;
+using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -20,9 +20,9 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new files::File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                var document = file.Document;
 
                 // 2. Extracting attachments...
                 // 2.1. Embedded files (document level).
@@ -30,7 +30,7 @@ namespace PdfClown.Samples.CLI
                 { EvaluateDataFile(entry.Value); }
 
                 // 2.2. File attachments (page level).
-                foreach (Page page in document.Pages)
+                foreach (var page in document.Pages)
                 {
                     foreach (Annotation annotation in page.Annotations)
                     {

@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Contents.Fonts
 		 * @param encoding The PostScript encoding vector to be used for embedding.
 		 * @throws IOException if the TTF could not be read
 		 */
-        public FontTrueTypeEmbedder(Document document, PdfDictionary dict, TrueTypeFont ttf, Encoding encoding)
+        public FontTrueTypeEmbedder(PdfDocument document, PdfDictionary dict, TrueTypeFont ttf, Encoding encoding)
             : base(document, dict, ttf, false)
         {
             dict[PdfName.Subtype] = PdfName.TrueType;

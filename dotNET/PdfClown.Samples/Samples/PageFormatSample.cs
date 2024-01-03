@@ -17,8 +17,8 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            var file = new File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            PdfDocument document = file.Document;
 
             // 2. Populate the document!
             Populate(document);
@@ -27,7 +27,7 @@ namespace PdfClown.Samples.CLI
             Serialize(file, "Page Format", "page formats", "page formats");
         }
 
-        private void Populate(Document document)
+        private void Populate(PdfDocument document)
         {
             var bodyFont = FontType1.Load(document, FontName.CourierBold);
 
@@ -39,7 +39,7 @@ namespace PdfClown.Samples.CLI
                 foreach (var pageOrientation in pageOrientations)
                 {
                     // Add a page to the document!
-                    var page = new Page(document, PageFormat.GetSize(pageFormat, pageOrientation));
+                    var page = new PdfPage(document, PageFormat.GetSize(pageFormat, pageOrientation));
                     // Instantiates the page inside the document context.
                     pages.Add(page); // Puts the page in the pages collection.
 

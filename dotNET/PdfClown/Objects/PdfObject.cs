@@ -23,10 +23,8 @@
   this list of conditions.
 */
 
-using PdfClown;
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents;
-using PdfClown.Files;
 
 using System;
 
@@ -43,7 +41,7 @@ namespace PdfClown.Objects
           <param name="object">Object to clone into the specified file context.</param>
           <param name="context">File context of the cloning.</param>
         */
-        public static PdfObject Clone(PdfObject @object, File context)
+        public static PdfObject Clone(PdfObject @object, PdfFile context)
         {
             return @object == null ? null : @object.Clone(context);
         }
@@ -82,7 +80,7 @@ namespace PdfClown.Objects
         /**
           <summary>Gets the file containing this object.</summary>
         */
-        public virtual File File => DataContainer?.File;
+        public virtual PdfFile File => DataContainer?.File;
 
         /**
           <summary>Gets the indirect object corresponding to this object.</summary>
@@ -143,7 +141,7 @@ namespace PdfClown.Objects
           <summary>Creates a deep copy of this object using the default cloner of the specified file
           context.</summary>
         */
-        public virtual PdfObject Clone(File context) => Clone(context.Cloner);
+        public virtual PdfObject Clone(PdfFile context) => Clone(context.Cloner);
 
         /**
           <summary>Creates a deep copy of this object using the specified cloner.</summary>
@@ -218,7 +216,7 @@ namespace PdfClown.Objects
           <param name="stream">Target stream.</param>
           <param name="context">File context.</param>
         */
-        public abstract void WriteTo(IOutputStream stream, File context);
+        public abstract void WriteTo(IOutputStream stream, PdfFile context);
 
         public abstract PdfObject Accept(IVisitor visitor, object data);
 

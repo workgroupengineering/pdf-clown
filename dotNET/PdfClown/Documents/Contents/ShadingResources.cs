@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF13)]
     public sealed class ShadingResources : ResourceItems<Shading>
     {
-        public ShadingResources(Document context) : base(context)
+        public ShadingResources(PdfDocument context) : base(context)
         { }
 
         public ShadingResources(PdfDirectObject baseObject) : base(baseObject)

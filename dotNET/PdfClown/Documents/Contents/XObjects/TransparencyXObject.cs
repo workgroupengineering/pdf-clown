@@ -30,7 +30,7 @@ namespace PdfClown.Documents.Contents.XObjects
 {
     public sealed class TransparencyXObject : GroupXObject
     {
-        public TransparencyXObject(Document context, PdfDictionary baseDataObject)
+        public TransparencyXObject(PdfDocument context, PdfDictionary baseDataObject)
             : base(context, baseDataObject)
         {
             SubType = PdfName.Transparency;

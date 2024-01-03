@@ -19,26 +19,22 @@ namespace PdfClown.Samples.CLI
       <remarks>This sample leverages the ContentScanner class, a powerful device for accessing
       each single content object within a page.</remarks>
     */
-    public class ContentScanningSample
-      : Sample
+    public class ContentScanningSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                PdfDocument document = file.Document;
 
                 // 2. Parsing the document...
                 Console.WriteLine("\nLooking for images...");
-                foreach (Page page in document.Pages)
+                foreach (var page in document.Pages)
                 {
-                    Scan(
-                      new ContentScanner(page), // Wraps the page contents into the scanner.
-                      page
-                      );
+                    Scan(new ContentScanner(page), // Wraps the page contents into the scanner.
+                      page);
                 }
             }
         }
@@ -50,7 +46,7 @@ namespace PdfClown.Samples.CLI
           NOTE: Page contents are represented by a sequence of content objects,
           possibly nested into multiple levels.
         */
-        private void Scan(ContentScanner level, Page page)
+        private void Scan(ContentScanner level, PdfPage page)
         {
             if (level == null)
                 return;

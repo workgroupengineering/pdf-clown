@@ -1,8 +1,10 @@
-﻿using PdfClown.Documents.Contents;
+﻿using PdfClown.Documents;
+using PdfClown.Documents.Contents;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Interaction.Navigation;
+using PdfClown.Documents.Multimedia;
 using PdfClown.Util.Math.Geom;
 using PdfClown.Util.Reflection;
 using SkiaSharp;
@@ -18,7 +20,7 @@ using Xamarin.Forms;
 
 namespace PdfClown.Viewer
 {
-    public partial class PdfView : SKScrollView
+    public partial class PdfView : SKScrollView, IPdfView
     {
         public static readonly BindableProperty FitModeProperty = BindableProperty.Create(nameof(FitMode), typeof(PdfViewFitMode), typeof(PdfView), PdfViewFitMode.PageSize,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnFitModeChanged((PdfViewFitMode)oldValue, (PdfViewFitMode)newValue));
@@ -51,8 +53,8 @@ namespace PdfClown.Viewer
         internal readonly SKPaint paintPointFill = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill };
         internal readonly SKPaint paintSelectionRect = new SKPaint { Color = SKColors.LightGreen.WithAlpha(125), Style = SKPaintStyle.Fill };
         internal readonly SKPaint paintTextSelectionFill = new SKPaint { Color = SKColors.LightBlue, Style = SKPaintStyle.Fill, BlendMode = SKBlendMode.Multiply, IsAntialias = true };
-        internal readonly SKPaint paintBorderDefault = new SKPaint { Color = SKColors.Silver, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true };
-        internal readonly SKPaint paintBorderSelection = new SKPaint { Color = SKColors.Blue, Style = SKPaintStyle.Stroke, StrokeWidth = 1, IsAntialias = true };
+        internal readonly SKPaint paintBorderDefault = new SKPaint { Color = SKColors.Silver, Style = SKPaintStyle.Stroke, StrokeWidth = 0, IsAntialias = true };
+        internal readonly SKPaint paintBorderSelection = new SKPaint { Color = SKColors.Blue, Style = SKPaintStyle.Stroke, StrokeWidth = 0, IsAntialias = true };
         internal readonly SKPaint paintAnnotationToolTip = new SKPaint() { Color = SKColors.LightGray, Style = SKPaintStyle.Fill, IsAntialias = true };
 
         private float oldScale = 1;
@@ -154,7 +156,9 @@ namespace PdfClown.Viewer
             set => SetValue(ShowCharBoundProperty, value);
         }
 
-        public PdfDocumentView Document
+        public PdfDocument Document => DocumentView?.Document;
+
+        public PdfDocumentView DocumentView
         {
             get => document;
             set
@@ -185,13 +189,13 @@ namespace PdfClown.Viewer
             }
         }
 
-        public SKSize DocumentSize => Document?.Size ?? SKSize.Empty;
+        public SKSize DocumentSize => DocumentView?.Size ?? SKSize.Empty;
 
         public PdfPageView CurrentPage
         {
             get
             {
-                if (currentPage == null || currentPage.Document != Document)
+                if (currentPage == null || currentPage.DocumentView != DocumentView)
                 {
                     currentPage = GetCenterPage();
                 }
@@ -260,7 +264,7 @@ namespace PdfClown.Viewer
 
         public int PagesCount
         {
-            get => Document?.PageViews.Count ?? 0;
+            get => DocumentView?.PageViews.Count ?? 0;
         }
 
         public int PageNumber
@@ -268,22 +272,22 @@ namespace PdfClown.Viewer
             get => (CurrentPage?.Index ?? -1) + 1;
             set
             {
-                if (Document == null
-                    || Document.PageViews.Count == 0)
+                if (DocumentView == null
+                    || DocumentView.PageViews.Count == 0)
                 {
                     return;
                 }
                 var index = value - 1;
                 if (index < 0)
                 {
-                    index = Document.PageViews.Count - 1;
+                    index = DocumentView.PageViews.Count - 1;
                 }
-                else if (index >= Document.PageViews.Count)
+                else if (index >= DocumentView.PageViews.Count)
                 {
                     index = 0;
                 }
 
-                CurrentPage = Document.PageViews[index];
+                CurrentPage = DocumentView.PageViews[index];
                 OnPropertyChanged();
             }
         }
@@ -316,26 +320,26 @@ namespace PdfClown.Viewer
 
         private PdfPageView GetCenterPage()
         {
-            if (Document == null)
+            if (DocumentView == null)
                 return null;
             var area = state.WindowArea;
             area.Inflate(-area.Width / 3F, -area.Height / 3F);
             area = state.InvertNavigationMatrix.MapRect(area);
-            for (int i = GetDisplayPageIndex(); i < Document.PageViews.Count; i++)
+            for (int i = GetDisplayPageIndex(); i < DocumentView.PageViews.Count; i++)
             {
-                var pageView = Document.PageViews[i];
+                var pageView = DocumentView.PageViews[i];
                 if (pageView.Bounds.IntersectsWith(area))
                 {
                     return pageView;
                 }
             }
-            return Document.PageViews.FirstOrDefault();
+            return DocumentView.PageViews.FirstOrDefault();
         }
 
         private int GetDisplayPageIndex()
         {
             var verticalValue = -(state.NavigationMatrix.TransY);
-            var page = Document.PageViews.FirstOrDefault(p => (p.Bounds.Bottom * state.NavigationMatrix.ScaleY) > verticalValue);
+            var page = DocumentView.PageViews.FirstOrDefault(p => (p.Bounds.Bottom * state.NavigationMatrix.ScaleY) > verticalValue);
             return page?.Order ?? 0;
         }
 
@@ -426,22 +430,44 @@ namespace PdfClown.Viewer
                 return;
             var annotation = (Annotation)sender;
             var details = (DetailedPropertyChangedEventArgs)e;
+            var invoker = Invoker.GetPropertyInvoker(annotation.GetType(), e.PropertyName);
             switch (e.PropertyName)
             {
                 case nameof(Annotation.SKColor):
+                    var colorDetails = (DetailedPropertyChangedEventArgs<SKColor>)details;
+                    BeginOperation(annotation, OperationType.AnnotationProperty, invoker, colorDetails.OldValue, colorDetails.NewValue);
+                    break;
                 case nameof(Annotation.Contents):
                 case nameof(Annotation.Subject):
-                case nameof(Annotation.Border):
-                case nameof(Markup.Popup):
-                case nameof(Markup.ReplyTo):
-                case nameof(Markup.ReplyType):
-                case nameof(Markup.BorderEffect):
                 case nameof(Markup.RichContents):
                 case nameof(Markup.DefaultStyle):
+                    var stringDetails = (DetailedPropertyChangedEventArgs<string>)details;
+                    BeginOperation(annotation, OperationType.AnnotationProperty, invoker, stringDetails.OldValue, stringDetails.NewValue);
+                    break;
+                case nameof(Annotation.Border):
+                    var borderDetails = (DetailedPropertyChangedEventArgs<Border>)details;
+                    BeginOperation(annotation, OperationType.AnnotationProperty, invoker, borderDetails.OldValue, borderDetails.NewValue);
+                    break;
+                case nameof(Markup.Popup):
+                    var popupDetails = (DetailedPropertyChangedEventArgs<Popup>)details;
+                    BeginOperation(annotation, OperationType.AnnotationProperty, invoker, popupDetails.OldValue, popupDetails.NewValue);
+                    break;
+                case nameof(Markup.ReplyTo):
+                    var annotationDetails = (DetailedPropertyChangedEventArgs<Annotation>)details;
+                    BeginOperation(annotation, OperationType.AnnotationProperty, invoker, annotationDetails.OldValue, annotationDetails.NewValue);
+                    break;
+                case nameof(Markup.ReplyType):
+                    var replyTypeDetails = (DetailedPropertyChangedEventArgs<ReplyTypeEnum?>)details;
+                    BeginOperation(annotation, OperationType.AnnotationProperty, invoker, replyTypeDetails.OldValue, replyTypeDetails.NewValue);
+                    break;
+                case nameof(Markup.BorderEffect):
+                    var borderEffectDetails = (DetailedPropertyChangedEventArgs<BorderEffect>)details;
+                    BeginOperation(annotation, OperationType.AnnotationProperty, invoker, borderEffectDetails.OldValue, borderEffectDetails.NewValue);
+                    break;
                 case nameof(Line.StartStyle):
                 case nameof(Line.EndStyle):
-                    var invoker = Invoker.GetPropertyInvoker(annotation.GetType(), e.PropertyName);
-                    BeginOperation(annotation, OperationType.AnnotationProperty, invoker, details.OldValue, details.NewValue);
+                    var lineEndDetails = (DetailedPropertyChangedEventArgs<LineEndStyleEnum>)details;
+                    BeginOperation(annotation, OperationType.AnnotationProperty, invoker, lineEndDetails.OldValue, lineEndDetails.NewValue);
                     break;
             }
             Device.BeginInvokeOnMainThread(() => InvalidateSurface());
@@ -583,58 +609,22 @@ namespace PdfClown.Viewer
 
         protected override void OnPaintContent(SKPaintSurfaceEventArgs e)
         {
-            if (Document == null)
+            if (DocumentView == null)
                 return;
             state.Canvas = e.Surface.Canvas;
             try
             {
+                state.Canvas.Save();
                 state.Canvas.SetMatrix(state.ViewMatrix);
                 var area = state.InvertNavigationMatrix.MapRect(state.WindowArea);
-                for (int i = GetDisplayPageIndex(); i < Document.PageViews.Count; i++)
+                for (int i = GetDisplayPageIndex(); i < DocumentView.PageViews.Count; i++)
                 {
-                    var pageView = Document.PageViews[i];
+                    var pageView = DocumentView.PageViews[i];
                     var pageBounds = pageView.Bounds;
                     if (pageBounds.IntersectsWith(area))
                     {
                         state.PageView = pageView;
-                        state.Canvas.Save();
-                        var pageMatrix = pageView.Matrix;
-                        state.Canvas.Concat(ref pageMatrix);
-                        var pageRect = SKRect.Create(pageView.Size);
-                        state.Canvas.ClipRect(pageRect);
-                        state.Canvas.DrawRect(pageRect, paintPageBackground);
-
-                        var picture = pageView.GetPicture(this);
-                        if (picture != null)
-                        {
-                            state.Canvas.DrawPicture(picture);
-
-
-                            if (ShowMarkup && pageView.GetAnnotations().Any())
-                            {
-                                OnPaintAnnotations(state);
-                            }
-                            if (TextSelection.Count > 0)
-                            {
-                                foreach (var textChar in TextSelection)
-                                {
-                                    if (textChar.TextString.Context == pageView.Page)
-                                    {
-                                        using (var path = textChar.Quad.GetPath())
-                                        {
-                                            state.Canvas.DrawPath(path, paintTextSelectionFill);
-                                        }
-                                    }
-                                }
-                            }
-                            if (showCharBound)
-                            {
-                                DrawCharBounds(state);
-                            }
-                        }
-
-                        //PaintSelectionRect();
-                        state.Canvas.Restore();
+                        OnPaintPage(state);
                     }
                     else if (pageBounds.Top > area.Bottom)
                     {
@@ -644,7 +634,61 @@ namespace PdfClown.Viewer
             }
             finally
             {
+                state.Canvas.Restore();
                 state.Canvas = null;
+            }
+        }
+
+        private void OnPaintPage(PdfViewEventArgs state)
+        {
+            PdfPageView pageView = state.PageView;
+            try
+            {
+
+                state.Canvas.Save();
+                state.Canvas.SetMatrix(state.PageViewMatrix);
+                var pageRect = SKRect.Create(pageView.Size);
+                state.Canvas.ClipRect(pageRect);
+                state.Canvas.DrawRect(pageRect, paintPageBackground);
+
+                var picture = pageView.GetPicture(this);
+                if (picture != null)
+                {
+                    state.Canvas.DrawPicture(picture);
+
+                    if (ShowMarkup && pageView.GetAnnotations().Any())
+                    {
+                        OnPaintAnnotations(state);
+                    }
+                    if (TextSelection.Count > 0)
+                    {
+                        OnPaintTextSelection(state);
+                    }
+                    if (showCharBound)
+                    {
+                        DrawCharBounds(state);
+                    }
+                }
+                //PaintSelectionRect();
+            }
+            finally
+            {
+                state.Canvas.Restore();
+            }
+        }
+
+        private void OnPaintTextSelection(PdfViewEventArgs state)
+        {
+            PdfPageView pageView = state.PageView;
+            foreach (var textChar in TextSelection)
+            {
+                if (textChar.TextString.Context == pageView.Page)
+                {
+                    using (var path = textChar.Quad.GetPath())
+                    {
+                        state.Canvas.DrawPath(path, paintTextSelectionFill);
+                    }
+                }
             }
         }
 
@@ -677,48 +721,47 @@ namespace PdfClown.Viewer
             var self = state.PageView.Page.RotateMatrix;
             state.Canvas.Save();
             state.Canvas.Concat(ref self);
-            state.DrawAnnotation = null;
             foreach (var annotation in state.PageView.GetAnnotations())
             {
                 if (annotation != null && annotation.Visible)
                 {
-                    try
-                    {
-                        annotation.Draw(state.Canvas);
-                    }
-                    catch { }
+                    state.DrawAnnotation = annotation;
+                    OnPainAnnotation(state);
                 }
             }
             state.Canvas.Restore();
-            if (selectedAnnotation != null
-                && selectedAnnotation.Page == state.PageView.Page
-                && state.DrawAnnotation == null)
-            {
-                state.DrawAnnotation = selectedAnnotation;
-                OnPaintSelectedAnnotation(state);
-            }
 
             OnPaintAnnotationToolTip(state);
         }
 
+        private void OnPainAnnotation(PdfViewEventArgs state)
+        {
+            try
+            {
+                state.DrawAnnotationBound = state.DrawAnnotation.Draw(state.Canvas);
+                if (selectedAnnotation == state.DrawAnnotation
+                && selectedAnnotation.Page == state.PageView.Page)
+                {
+                    OnPaintSelectedAnnotation(state);
+                }
+            }
+            catch { }
+        }
+
         private void OnPaintSelectedAnnotation(PdfViewEventArgs state)
         {
-            //if (CurrentOperation == OperationType.None
-            //&& state.DrawAnnotation != selectedPoint?.Annotation)
+            if (CurrentOperation == OperationType.None
+            || state.DrawAnnotation != selectedPoint?.Annotation)
             {
-                var bounds = state.DrawAnnotation.GetBounds();
-                if (state.DrawAnnotation is StickyNote stick)
-                {
-                    bounds.Size = new SKSize(StickyNote.size / state.Canvas.TotalMatrix.ScaleX, StickyNote.size / state.Canvas.TotalMatrix.ScaleY);
-                }
-                bounds.Inflate(2, 2);
-                state.Canvas.DrawRoundRect(bounds, 3, 3, paintBorderSelection);
+                var bound = state.DrawAnnotationBound;
+                bound.Inflate(1, 1);
+                state.Canvas.DrawRect(bound, paintBorderSelection);
             }
             foreach (var controlPoint in state.DrawAnnotation.GetControlPoints())
             {
-                var bounds = controlPoint.Bounds;
-                state.Canvas.DrawOval(bounds, paintPointFill);
-                state.Canvas.DrawOval(bounds, controlPoint == selectedPoint ? paintBorderSelection : paintBorderDefault);
+                var bound = controlPoint.GetBounds(state.PageViewMatrix);
+                state.Canvas.DrawOval(bound, paintPointFill);
+                state.Canvas.DrawOval(bound, controlPoint == selectedPoint ? paintBorderSelection : paintBorderDefault);
             }
         }
 
@@ -788,7 +831,7 @@ namespace PdfClown.Viewer
 
         private void CloseVertextShape(VertexShape vertexShape)
         {
-            vertexShape.RefreshBox();
+            vertexShape.QueueRefreshAppearance();
             SelectedPoint = null;
             CurrentOperation = OperationType.None;
         }
@@ -816,13 +859,13 @@ namespace PdfClown.Viewer
                     return;
                 }
             }
-            if (Document == null || !Document.IsPaintComplete)
+            if (DocumentView == null || !DocumentView.IsPaintComplete)
             {
                 return;
             }
-            for (int i = GetDisplayPageIndex(); i < Document.PageViews.Count; i++)
+            for (int i = GetDisplayPageIndex(); i < DocumentView.PageViews.Count; i++)
             {
-                var pageView = Document.PageViews[i];
+                var pageView = DocumentView.PageViews[i];
                 if (pageView.Bounds.Contains(state.ViewPointerLocation))
                 {
                     state.PageView = pageView;
@@ -837,9 +880,7 @@ namespace PdfClown.Viewer
 
         private void OnTouchPage(PdfViewEventArgs state)
         {
-            state.PageMatrix = state.ViewMatrix.PreConcat(state.PageView.Matrix);
-            state.PageMatrix.TryInvert(out state.InvertPageMatrix);
-            state.PagePointerLocation = state.InvertPageMatrix.MapPoint(state.PointerLocation);
+            state.PagePointerLocation = state.InvertPageViewMatrix.MapPoint(state.PointerLocation);
             //SKMatrix.PreConcat(ref state.PageMatrix, state.PageView.InitialMatrix);
 
             switch (CurrentOperation)
@@ -860,32 +901,9 @@ namespace PdfClown.Viewer
                     break;
             }
 
-            if (selectedAnnotation != null && selectedAnnotation.Page == state.PageView.Page)
+            if (OnTouchAnnotations(state))
             {
-                var bounds = selectedAnnotation.GetBounds(state.PageMatrix);
-                bounds.Inflate(4, 4);
-                if (bounds.Contains(state.PointerLocation))
-                {
-                    state.Annotation = selectedAnnotation;
-                    state.AnnotationBounds = bounds;
-                    OnTouchAnnotation(state);
-                    return;
-                }
-            }
-
-            foreach (var annotation in state.PageView.GetAnnotations())
-            {
-                if (annotation == null || !annotation.Visible)
-                    continue;
-                var bounds = annotation.GetBounds(state.PageMatrix);
-                bounds.Inflate(4, 4);
-                if (bounds.Contains(state.PointerLocation))
-                {
-                    state.Annotation = annotation;
-                    state.AnnotationBounds = bounds;
-                    OnTouchAnnotation(state);
-                    return;
-                }
+                return;
             }
             if (OnTouchText(state))
             {
@@ -904,6 +922,48 @@ namespace PdfClown.Viewer
             state.Annotation = null;
             state.AnnotationText = null;
             HoverPoint = null;
+        }
+
+        private bool OnTouchAnnotations(PdfViewEventArgs state)
+        {
+            state.Annotation = null;
+
+            if (selectedAnnotation != null && selectedAnnotation.Page == state.PageView.Page)
+            {
+                var bounds = selectedAnnotation.GetViewBounds(state.PageViewMatrix);
+                bounds.Inflate(2, 2);
+                if (bounds.Contains(state.PointerLocation))
+                {
+                    state.Annotation = selectedAnnotation;
+                    state.AnnotationBounds = bounds;
+                    OnTouchAnnotation(state);
+                    return true;
+                }
+            }
+            foreach (var annotation in state.PageView.GetAnnotations())
+            {
+                if (annotation == null || !annotation.Visible)
+                    continue;
+                var bounds = annotation.GetViewBounds(state.PageViewMatrix);
+                bounds.Inflate(2, 2);
+                if (bounds.Contains(state.PointerLocation))
+                {
+                    if (state.Annotation != null
+                    && bounds.Contains(state.AnnotationBounds))
+                    {
+                        continue;
+                    }
+                    state.Annotation = annotation;
+                    state.AnnotationBounds = bounds;
+                }
+            }
+
+            if (state.Annotation != null)
+            {
+                OnTouchAnnotation(state);
+                return true;
+            }
+            return false;
         }
 
         private bool OnTouchText(PdfViewEventArgs state)
@@ -1030,7 +1090,7 @@ namespace PdfClown.Viewer
                 else
                 {
                     lastOperationLink.Value.EndOperation();
-                    SelectedPoint = vertexShape.AddPoint(state.PagePointerLocation);
+                    SelectedPoint = vertexShape.AddPoint(state.Page.InvertRotateMatrix.MapPoint(state.PagePointerLocation));
                     BeginOperation(vertexShape, OperationType.PointAdd, selectedPoint);
                     return;
                 }
@@ -1067,10 +1127,10 @@ namespace PdfClown.Viewer
 
             if (state.TouchEvent.ActionType == SKTouchAction.Moved)
             {
-                var bound = selectedAnnotation.GetBounds(state.PageMatrix);
+                var bound = selectedAnnotation.GetViewBounds(state.PageViewMatrix);
                 bound.Size += new SKSize(state.PointerLocation - state.PressedLocation.Value);
 
-                selectedAnnotation.SetBounds(state.InvertPageMatrix.MapRect(bound));
+                selectedAnnotation.SetBounds(state.InvertPageViewMatrix.MapRect(bound));
 
                 state.PressedLocation = state.PointerLocation;
             }
@@ -1100,7 +1160,7 @@ namespace PdfClown.Viewer
                         state.PressedLocation = null;
                     }
                 }
-                var bound = selectedAnnotation.GetBounds(state.PageMatrix);
+                var bound = selectedAnnotation.GetViewBounds(state.PageViewMatrix);
                 if (bound.Width == 0)
                     bound.Right = bound.Left + 1;
                 if (bound.Height == 0)
@@ -1114,7 +1174,7 @@ namespace PdfClown.Viewer
                     bound.Location += state.PointerLocation - state.PressedLocation.Value;
                     state.PressedLocation = state.PointerLocation;
                 }
-                selectedAnnotation.SetBounds(state.InvertPageMatrix.MapRect(bound));
+                selectedAnnotation.SetBounds(state.InvertPageViewMatrix.MapRect(bound));
 
                 InvalidateSurface();
             }
@@ -1208,7 +1268,7 @@ namespace PdfClown.Viewer
                     {
                         foreach (var controlPoint in state.Annotation.GetControlPoints())
                         {
-                            if (state.PageMatrix.MapRect(controlPoint.Bounds).Contains(state.PointerLocation))
+                            if (controlPoint.GetViewBounds(state.PageViewMatrix).Contains(state.PointerLocation))
                             {
                                 HoverPoint = controlPoint;
                                 return;
@@ -1262,9 +1322,9 @@ namespace PdfClown.Viewer
                         if (link.Target is GoToLocal goToLocal)
                         {
                             if (goToLocal.Destination is LocalDestination localDestination
-                                && localDestination.Page is Documents.Page goToPage)
+                                && localDestination.Page is PdfPage goToPage)
                             {
-                                CurrentPage = Document.GetPageView(goToPage);
+                                CurrentPage = DocumentView.GetPageView(goToPage);
                                 ScrollTo(CurrentPage);
                             }
                         }
@@ -1274,10 +1334,10 @@ namespace PdfClown.Viewer
                             Process.Start(new ProcessStartInfo(uri.ToString()) { UseShellExecute = true });
                         }
                         else if (link.Target is LocalDestination localDestination
-                            && localDestination.Page is Documents.Page goToPage)
+                            && localDestination.Page is PdfPage goToPage)
                         {
                             {
-                                CurrentPage = Document.GetPageView(goToPage);
+                                CurrentPage = DocumentView.GetPageView(goToPage);
                                 ScrollTo(CurrentPage);
                             }
                         }
@@ -1334,32 +1394,32 @@ namespace PdfClown.Viewer
 
         public void Save()
         {
-            if (Document == null)
+            if (DocumentView == null)
                 return;
 
-            SaveWithClearOperation(Document.FilePath);
+            SaveWithClearOperation(DocumentView.FilePath);
         }
 
         public void SaveWithClearOperation(string filePath)
         {
-            Document?.Save(filePath);
+            DocumentView?.Save(filePath);
             ClearOperations();
         }
 
         public void Save(string filePath)
         {
-            Document?.Save(filePath);
+            DocumentView?.Save(filePath);
         }
 
         public void SaveTo(Stream stream)
         {
-            Document?.SaveTo(stream);
+            DocumentView?.SaveTo(stream);
         }
 
         public void Reload()
         {
-            var newDocument = PdfDocumentView.LoadFrom(Document.FilePath);
-            if (operations.Count > 0 && !(Document?.IsClosed ?? true))
+            var newDocument = PdfDocumentView.LoadFrom(DocumentView.FilePath);
+            if (operations.Count > 0 && !(DocumentView?.IsClosed ?? true))
             {
                 var newOperations = new LinkedList<EditorOperation>();
                 foreach (var oldOperation in operations)
@@ -1375,7 +1435,7 @@ namespace PdfClown.Viewer
             }
             Close();
 
-            Document = newDocument;
+            DocumentView = newDocument;
             InvalidateSurface();
             //TODO File.Reload();
         }
@@ -1383,36 +1443,33 @@ namespace PdfClown.Viewer
         public void Load(string filePath)
         {
             Close();
-
-            Document = PdfDocumentView.LoadFrom(filePath);
-            ClearOperations();
+            DocumentView = PdfDocumentView.LoadFrom(filePath);
         }
 
         public void Load(Stream stream)
         {
             Close();
-
-            Document = PdfDocumentView.LoadFrom(stream);
-            ClearOperations();
+            DocumentView = PdfDocumentView.LoadFrom(stream);
         }
 
         public void Close()
         {
-            var document = Document;
-            Document = null;
+            ClearOperations();
+            var document = DocumentView;
+            DocumentView = null;
             document?.Dispose();
         }
 
         public void ScrollTo(PdfPageView page)
         {
-            if (page == null || Document == null)
+            if (page == null || DocumentView == null)
             {
                 return;
             }
             ScrollAnimation = new Animation();
             if (FitMode == PdfViewFitMode.DocumentWidth)
             {
-                ScaleContent = (float)Width / Document.Size.Width;
+                ScaleContent = (float)Width / DocumentView.Size.Width;
             }
             else if (FitMode == PdfViewFitMode.PageWidth)
             {
@@ -1440,7 +1497,7 @@ namespace PdfClown.Viewer
                 return;
             }
 
-            var pageView = Document.GetPageView(annotation.Page);
+            var pageView = DocumentView.GetPageView(annotation.Page);
             if (pageView == null)
             {
                 return;
@@ -1448,7 +1505,7 @@ namespace PdfClown.Viewer
             var matrix = SKMatrix.CreateIdentity()
                 .PreConcat(SKMatrix.CreateScale(scale, scale))
                 .PreConcat(pageView.Matrix);
-            var bound = annotation.GetBounds(matrix);
+            var bound = annotation.GetViewBounds(matrix);
             var top = bound.Top - (state.WindowArea.MidY - bound.Height / 2);
             var left = bound.Left - (state.WindowArea.MidX - bound.Width / 2);
             AnimateScroll(Math.Max(top, 0), Math.Max(left, 0));
@@ -1503,7 +1560,7 @@ namespace PdfClown.Viewer
             if (type == OperationType.AnnotationDrag
                 || type == OperationType.AnnotationSize)
             {
-                operation.OldValue = annotation.GetBounds();
+                operation.OldValue = annotation.GetViewBounds();
             }
             if (property is ControlPoint controlPoint)
             {

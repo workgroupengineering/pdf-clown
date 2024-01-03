@@ -32,6 +32,7 @@ using PdfClown.Objects;
 using system = System;
 using SkiaSharp;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -43,7 +44,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF10)]
     public sealed class Link : Annotation, ILink
     {
-        public Link(Page page, SKRect box, string text, PdfObjectWrapper target) : base(page, PdfName.Link, box, text)
+        public Link(PdfPage page, SKRect box, string text, PdfObjectWrapper target) : base(page, PdfName.Link, box, text)
         { Target = target; }
 
         public Link(PdfDirectObject baseObject) : base(baseObject)
@@ -113,13 +114,19 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        public override SKRect RestoreAppearance(SKCanvas canvas)
         {
-            var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
-            using (var paint = new SKPaint { Color = color })
-            {
-                Border?.Apply(paint, null);
-            }
+            //var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
+            //using (var paint = new SKPaint { Color = color })
+            //{
+            //    Border?.Apply(paint, null);
+            //}
+            return base.RestoreAppearance(canvas);
+        }
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
         }
     }
 }

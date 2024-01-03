@@ -26,6 +26,7 @@
 using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -91,13 +92,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public BorderEffect(Document context, BorderEffectType type) : this(context, type, DefaultIntensity)
+        public BorderEffect(PdfDocument context, BorderEffectType type) : this(context, type, DefaultIntensity)
         { }
 
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public BorderEffect(Document context, BorderEffectType type, double intensity) : base(context, new PdfDictionary())
+        public BorderEffect(PdfDocument context, BorderEffectType type, double intensity) : base(context, new PdfDictionary())
         {
             Type = type;
             Intensity = intensity;
@@ -165,6 +166,43 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
             return targetPath;
+        }
+
+        public SKPath Apply(PrimitiveComposer paint, SKPath targetPath)
+        {
+            if (Type == BorderEffectType.Cloudy && targetPath != null)
+            {
+                var intensity = (float)Intensity;
+                const int r = 5;
+                var clode = new SKRect(-r * intensity, -r * intensity, r * intensity, r * intensity);
+                using var arcpath = new SKPath();
+                using var pathPaint = new SKPaint();
+                arcpath.AddOval(clode);
+                pathPaint.PathEffect = SKPathEffect.Create1DPath(arcpath, intensity * (r * 1.45F), intensity, SKPath1DPathEffectStyle.Rotate);
+                var dest = pathPaint.GetFillPath(targetPath, 1);
+                dest.FillType = SKPathFillType.Winding;
+                dest = dest.Op(targetPath, SKPathOp.Union);
+                return dest;
+            }
+            return targetPath;
+        }
+
+        public void ApplyEffect(ref SKRect box)
+        {
+            if (Type == BorderEffectType.Cloudy)
+            {
+                var intensity = 5 * (float)Math.Abs(Intensity);
+                box.Inflate(intensity, intensity);
+            }
+        }
+
+        public void InvertApplyEffect(ref SKRect box)
+        {
+            if (Type == BorderEffectType.Cloudy)
+            {
+                var intensity = 5 * (float)Math.Abs(Intensity);
+                box.Inflate(-intensity, -intensity);
+            }
         }
 
         public bool Equals(BorderEffect other)

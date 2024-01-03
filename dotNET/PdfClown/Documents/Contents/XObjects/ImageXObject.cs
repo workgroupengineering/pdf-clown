@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Contents.XObjects
         private SKSize? size;
         private float[] decode;
 
-        public ImageXObject(Document context, PdfStream baseDataObject) : base(context, baseDataObject)
+        public ImageXObject(PdfDocument context, PdfStream baseDataObject) : base(context, baseDataObject)
         {
             /*
               NOTE: It's caller responsability to adequately populate the stream

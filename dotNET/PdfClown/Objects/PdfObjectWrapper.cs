@@ -23,13 +23,14 @@
   this list of conditions.
 */
 
+using PdfClown;
 using PdfClown.Documents;
 using PdfClown.Documents.Interchange.Metadata;
-using PdfClown.Files;
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace PdfClown.Objects
@@ -104,7 +105,7 @@ namespace PdfClown.Objects
           <summary>Gets a clone of the object, registered inside the specified document context using
           the default object cloner.</summary>
         */
-        public virtual object Clone(Document context)
+        public virtual object Clone(PdfDocument context)
         {
             return Clone(context.File.Cloner);
         }
@@ -146,7 +147,7 @@ namespace PdfClown.Objects
         /**
           <summary>Gets the document context.</summary>
         */
-        public Document Document => File?.Document;
+        public PdfDocument Document => File?.Document;
 
         public override bool Equals(object other)
         {
@@ -158,7 +159,7 @@ namespace PdfClown.Objects
         /**
           <summary>Gets the file context.</summary>
         */
-        public File File => baseObject.File;
+        public PdfFile File => baseObject.File;
 
         public override int GetHashCode() => baseObject.GetHashCode();
 
@@ -175,7 +176,7 @@ namespace PdfClown.Objects
 
         /**
           <summary>Checks whether the specified feature is compatible with the
-            <see cref="Document.Version">document's conformance version</see>.</summary>
+            <see cref="PdfDocument.Version">document's conformance version</see>.</summary>
           <param name="feature">Entity whose compatibility has to be checked. Supported types:
             <list type="bullet">
               <item><see cref="VersionEnum"/></item>
@@ -216,12 +217,12 @@ namespace PdfClown.Objects
                 return;
             }
 
-            Version featureVersion;
+            PdfVersion featureVersion;
             if (feature is VersionEnum) // Explicit version.
             { featureVersion = ((VersionEnum)feature).GetVersion(); }
             else // Implicit version (element annotation).
             {
-                PDF annotation;
+                PDFAttribute annotation;
                 {
                     if (feature is string) // Property name.
                     { feature = GetType().GetProperty((string)feature); }
@@ -232,10 +233,10 @@ namespace PdfClown.Objects
 
                     while (true)
                     {
-                        object[] annotations = ((MemberInfo)feature).GetCustomAttributes(typeof(PDF), true);
-                        if (annotations.Length > 0)
+                        var annotations = ((MemberInfo)feature).GetCustomAttributes<PDFAttribute>(true);
+                        if (annotations.Any())
                         {
-                            annotation = (PDF)annotations[0];
+                            annotation = annotations.FirstOrDefault();
                             break;
                         }
 
@@ -336,9 +337,9 @@ namespace PdfClown.Objects
           <param name="context">Document context into which the specified data object has to be
           registered.</param>
           <param name="baseDataObject">PDF data object backing this wrapper.</param>
-          <seealso cref="PdfObjectWrapper(File, PdfDataObject)"/>
+          <seealso cref="PdfObjectWrapper(PdfFile, PdfDataObject)"/>
         */
-        protected PdfObjectWrapper(Document context, TDataObject baseDataObject)
+        protected PdfObjectWrapper(PdfDocument context, TDataObject baseDataObject)
             : this(context?.File, baseDataObject)
         { }
 
@@ -348,9 +349,9 @@ namespace PdfClown.Objects
           <param name="context">File context into which the specified data object has to be registered.
           </param>
           <param name="baseDataObject">PDF data object backing this wrapper.</param>
-          <seealso cref="PdfObjectWrapper(Document, PdfDataObject)"/>
+          <seealso cref="PdfObjectWrapper(PdfDocument, PdfDataObject)"/>
         */
-        protected PdfObjectWrapper(File context, TDataObject baseDataObject)
+        protected PdfObjectWrapper(PdfFile context, TDataObject baseDataObject)
             : this(context != null ? context.Register(baseDataObject) : (PdfDirectObject)(PdfDataObject)baseDataObject)
         { }
 

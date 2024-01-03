@@ -57,7 +57,7 @@ namespace PdfClown.Documents.Contents.Objects
             state.Restore();
         }
 
-        public override void WriteTo(IOutputStream stream, Document context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             stream.Write(BeginChunk);
             base.WriteTo(stream, context);

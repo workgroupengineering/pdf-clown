@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Contents.Entities
         #region IContentEntity
         public abstract ContentObject ToInlineObject(PrimitiveComposer composer);
 
-        public abstract xObjects::XObject ToXObject(Document context);
+        public abstract xObjects::XObject ToXObject(PdfDocument context);
         #endregion
         #endregion
         #endregion

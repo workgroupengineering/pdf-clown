@@ -23,8 +23,8 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            File file = new File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            var document = file.Document;
 
             // 2. Content creation.
             Populate(document);
@@ -33,7 +33,7 @@ namespace PdfClown.Samples.CLI
             Serialize(file, "AcroForm", "inserting AcroForm fields", "Acroform, creation, annotations, actions, javascript, button, combo, textbox, radio button");
         }
 
-        private void Populate(Document document)
+        private void Populate(PdfDocument document)
         {
             /*
               NOTE: In order to insert a field into a document, you have to follow these steps:
@@ -51,7 +51,7 @@ namespace PdfClown.Samples.CLI
             Fields fields = form.Fields;
 
             // 2. Define the page where to place the fields!
-            var page = new Page(document);
+            var page = new PdfPage(document);
             document.Pages.Add(page);
 
             // 3. Define the appearance style to apply to the fields!

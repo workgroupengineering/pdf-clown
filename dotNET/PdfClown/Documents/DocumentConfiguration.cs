@@ -45,11 +45,11 @@ namespace PdfClown.Documents
         private EncodingFallbackEnum encodingFallback = EncodingFallbackEnum.Substitution;
         private string stampPath;
 
-        private Document document;
+        private PdfDocument document;
 
         private IDictionary<StandardStampEnum, FormXObject> importedStamps;
 
-        internal DocumentConfiguration(Document document)
+        internal DocumentConfiguration(PdfDocument document)
         { this.document = document; }
 
         /**
@@ -64,7 +64,7 @@ namespace PdfClown.Documents
         /**
           <summary>Gets the document associated with this configuration.</summary>
         */
-        public Document Document => document;
+        public PdfDocument Document => document;
 
         /**
           <summary>Gets/Sets the encoding behavior in case of missing character mapping.</summary>
@@ -139,17 +139,17 @@ namespace PdfClown.Documents
                         default:
                             throw new NotSupportedException("Unknown stamp type");
                     }
-                    using (var stampFile = new File(io::Path.Combine(stampPath, stampFileName)))
+                    using (var stampFile = new PdfFile(io::Path.Combine(stampPath, stampFileName)))
                     {
-                        PdfString stampPageKey = new PdfString(type.Value.GetName().StringValue + "=" + String.Join(" ", Regex.Split(type.Value.GetName().StringValue.Substring(2), "(?!^)(?=\\p{Lu})")));
-                        Page stampPage = stampFile.Document.ResolveName<Page>(stampPageKey);
+                        var stampPageKey = new PdfString(type.Value.GetName().StringValue + "=" + String.Join(" ", Regex.Split(type.Value.GetName().StringValue.Substring(2), "(?!^)(?=\\p{Lu})")));
+                        var stampPage = stampFile.Document.ResolveName<PdfPage>(stampPageKey);
                         importedStamps[type.Value] = (stamp = (FormXObject)stampPage.ToXObject(Document));
                         stamp.Box = stampPage.ArtBox.ToRect();
                     }
                 }
                 else // Standard stamps template (std-stamps.pdf).
                 {
-                    using (var stampFile = new File(stampPath))
+                    using (var stampFile = new PdfFile(stampPath))
                     {
                         FormXObject stampXObject = stampFile.Document.Pages[0].Resources.Get<FormXObject>(type.Value.GetName());
                         importedStamps[type.Value] = (stamp = (FormXObject)stampXObject.Clone(Document));

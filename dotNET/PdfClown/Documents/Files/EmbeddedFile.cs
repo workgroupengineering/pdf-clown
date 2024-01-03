@@ -43,7 +43,7 @@ namespace PdfClown.Documents.Files
           <param name="context">Document context.</param>
           <param name="path">Path of the file to embed.</param>
         */
-        public static EmbeddedFile Get(Document context, string path)
+        public static EmbeddedFile Get(PdfDocument context, string path)
         {
             using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
@@ -56,13 +56,13 @@ namespace PdfClown.Documents.Files
           <param name="context">Document context.</param>
           <param name="stream">File stream to embed.</param>
         */
-        public static EmbeddedFile Get(Document context, bytes::IInputStream stream)
+        public static EmbeddedFile Get(PdfDocument context, bytes::IInputStream stream)
         {
             return new EmbeddedFile(context, stream);
         }
 
 
-        private EmbeddedFile(Document context, bytes::IInputStream stream) : base(
+        private EmbeddedFile(PdfDocument context, bytes::IInputStream stream) : base(
             context,
             new PdfStream(
               new PdfDictionary(1) { { PdfName.Type, PdfName.EmbeddedFile } },

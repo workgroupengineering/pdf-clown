@@ -42,7 +42,7 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF12)]
     public sealed class Names : PdfObjectWrapper<PdfDictionary>, ICompositeDictionary<PdfString>
     {
-        public Names(Document context) : base(context, new PdfDictionary())
+        public Names(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public Names(PdfDirectObject baseObject) : base(baseObject)
@@ -106,7 +106,7 @@ namespace PdfClown.Documents
                 return EmbeddedFiles;
             else if (typeof(JavaScript).IsAssignableFrom(type))
                 return JavaScripts;
-            else if (typeof(Page).IsAssignableFrom(type))
+            else if (typeof(PdfPage).IsAssignableFrom(type))
                 return Pages;
             else if (typeof(Rendition).IsAssignableFrom(type))
                 return Renditions;

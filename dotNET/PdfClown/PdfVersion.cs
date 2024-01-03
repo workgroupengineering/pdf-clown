@@ -37,14 +37,14 @@ namespace PdfClown
       <summary>Generic PDF version number [PDF:1.6:H.1].</summary>
       <seealso cref="VersionEnum"/>
     */
-    public sealed class Version : IVersion
+    public sealed class PdfVersion : IVersion
     {
         private static readonly Regex versionPattern = new Regex("^(\\d+)\\.(\\d+)$");
-        private static readonly IDictionary<string, Version> versions = new Dictionary<string, Version>(StringComparer.Ordinal);
+        private static readonly IDictionary<string, PdfVersion> versions = new Dictionary<string, PdfVersion>(StringComparer.Ordinal);
 
-        public static Version Get(PdfName version) => Get(version.RawValue);
+        public static PdfVersion Get(PdfName version) => Get(version.RawValue);
 
-        public static Version Get(string version)
+        public static PdfVersion Get(string version)
         {
             if (!versions.ContainsKey(version))
             {
@@ -52,7 +52,7 @@ namespace PdfClown
                 if (!versionMatch.Success)
                     throw new Exception("Invalid PDF version format: '" + versionPattern + "' pattern expected.");
 
-                Version versionObject = new Version(Int32.Parse(versionMatch.Groups[1].Value), Int32.Parse(versionMatch.Groups[2].Value));
+                PdfVersion versionObject = new PdfVersion(Int32.Parse(versionMatch.Groups[1].Value), Int32.Parse(versionMatch.Groups[2].Value));
                 versions[version] = versionObject;
             }
             return versions[version];
@@ -61,7 +61,7 @@ namespace PdfClown
         private readonly int major;
         private readonly int minor;
 
-        internal Version(int major, int minor)
+        internal PdfVersion(int major, int minor)
         {
             this.major = major;
             this.minor = minor;

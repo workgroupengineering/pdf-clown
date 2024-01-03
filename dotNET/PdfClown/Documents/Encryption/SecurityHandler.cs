@@ -153,7 +153,7 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @throws IOException If there is an error with the document.
 		 */
-        public abstract void PrepareDocumentForEncryption(Document doc);
+        public abstract void PrepareDocumentForEncryption(PdfDocument doc);
 
         /**
 		 * Prepares everything to decrypt the document.

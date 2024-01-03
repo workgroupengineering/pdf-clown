@@ -39,19 +39,32 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Ellipse : Shape
     {
-        public Ellipse(Page page, SKRect box, string text) : base(page, box, text, PdfName.Circle)
+        public Ellipse(PdfPage page, SKRect box, string text) : base(page, box, text, PdfName.Circle)
         { }
 
         public Ellipse(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        public override Objects.Rectangle Rect
         {
-            using (var path = new SKPath())
+            get => base.Rect;
+            set
             {
-                path.AddOval(Box);
-                DrawPath(canvas, path);
+                if (!(Rect?.Equals(value) ?? value == null))
+                {
+                    base.Rect = value;
+                    QueueRefreshAppearance();
+                }
             }
+        }
+
+        public override SKPath GetPath(SKMatrix sKMatrix)
+        {
+            var box = sKMatrix.MapRect(Box);
+            BorderEffect?.InvertApplyEffect(ref box);
+            var path = new SKPath();
+            path.AddOval(box);
+            return path;
         }
     }
 }

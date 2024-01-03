@@ -225,7 +225,7 @@ namespace PdfClown.Documents.Multimedia
             }
         }
 
-        public MediaPlayParameters(Document context)
+        public MediaPlayParameters(PdfDocument context)
             : base(context, new PdfDictionary(4) { { PdfName.Type, PdfName.MediaPlayParams } })
         { }
 

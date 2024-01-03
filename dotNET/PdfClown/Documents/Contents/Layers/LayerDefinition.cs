@@ -36,7 +36,7 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public sealed class LayerDefinition : PdfObjectWrapper<PdfDictionary>, ILayerConfiguration
     {
-        public LayerDefinition(Document context) : base(context, new PdfDictionary())
+        public LayerDefinition(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public LayerDefinition(PdfDirectObject baseObject) : base(baseObject)

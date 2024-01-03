@@ -30,6 +30,7 @@ using PdfClown.Objects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace PdfClown.Documents
 {
@@ -41,12 +42,12 @@ namespace PdfClown.Documents
     {
         public class AnnotationWrapper : IWrapper<Annotation>
         {
-            public AnnotationWrapper(Page page)
+            public AnnotationWrapper(PdfPage page)
             {
                 Page = page;
             }
 
-            public Page Page { get; }
+            public PdfPage Page { get; }
 
             public Annotation Wrap(PdfDirectObject baseObject)
             {
@@ -59,7 +60,7 @@ namespace PdfClown.Documents
             }
         }
 
-        public static PageAnnotations Wrap(PdfDirectObject baseObject, Page page)
+        public static PageAnnotations Wrap(PdfDirectObject baseObject, PdfPage page)
         {
             return baseObject?.Wrapper as PageAnnotations ?? new PageAnnotations(baseObject, page);
         }
@@ -67,7 +68,7 @@ namespace PdfClown.Documents
 
         private readonly Dictionary<string, Annotation> nameIndex = new Dictionary<string, Annotation>(StringComparer.Ordinal);
 
-        internal PageAnnotations(PdfDirectObject baseObject, Page page)
+        internal PageAnnotations(PdfDirectObject baseObject, PdfPage page)
             : base(new AnnotationWrapper(page), baseObject, page)
         { }
 
@@ -85,22 +86,39 @@ namespace PdfClown.Documents
 
         public void RefreshCache()
         {
-            for (int i = 0, length = Count; i < length; i++)
+            Document.LockObject.Wait();
+            Document.LockObject.Reset();
+            try
             {
-                var item = this[i];
-                if (item is Markup markup
-                    && markup.Popup != null
-                    && !Contains(markup.Popup))
+                for (int i = 0, length = Count; i < length; i++)
                 {
-                    AddIndex(markup.Popup);
+                    var item = this[i];
+                    if (item == null)
+                    {
+                        RemoveAt(i);
+                        length--;
+                        i--;
+                        continue;
+                    }
+                    //Recovery
+                    if (item is Markup markup
+                        && markup.Popup != null
+                        && !Contains(markup.Popup))
+                    {
+                        Add(markup.Popup);
+                    }
+                    if (item is Popup popup
+                           && popup.Parent != null
+                           && !Contains(popup.Parent))
+                    {
+                        Add(popup.Parent);
+                    }
+                    AddIndex(item);
                 }
-                //Recovery
-                if (item is Popup popup
-                       && popup.Parent != null
-                       && !Contains(popup.Parent))
-                {
-                    Add(popup.Parent);
-                }
+            }
+            finally
+            {
+                Document.LockObject?.Set();
             }
         }
 
@@ -112,8 +130,8 @@ namespace PdfClown.Documents
                 DoAdd(annotation);
             }
             if (string.IsNullOrEmpty(annotation.Name)
-                || (nameIndex.TryGetValue(annotation.Name, out var existing)
-                && existing != annotation))
+                || nameIndex.TryGetValue(annotation.Name, out var existing)
+                && existing != annotation)
             {
                 annotation.GenerateExistingName();
             }
@@ -141,7 +159,8 @@ namespace PdfClown.Documents
         public override void RemoveAt(int index)
         {
             var item = this[index];
-            nameIndex.Remove(item.Name);
+            if (item != null)
+                nameIndex.Remove(item.Name);
             base.RemoveAt(index);
         }
     }

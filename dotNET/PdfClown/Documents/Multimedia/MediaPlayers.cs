@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Multimedia
     {
         #region dynamic
         #region constructors
-        public MediaPlayers(Document context) : base(context, new PdfDictionary())
+        public MediaPlayers(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public MediaPlayers(PdfDirectObject baseObject) : base(baseObject)

@@ -20,16 +20,16 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
-                Pages pages = document.Pages;
+                var document = file.Document;
+                var pages = document.Pages;
 
                 // 2. Page rasterization.
                 int pageIndex = PromptPageChoice("Select the page to render", pages.Count);
-                Page page = pages[pageIndex];
-                SKSize imageSize = new SKSize(page.RotatedBox.Width * 2.5F, page.RotatedBox.Height * 2.5F);
-                Renderer renderer = new Renderer();
+                var page = pages[pageIndex];
+                var imageSize = new SKSize(page.RotatedBox.Width * 2.5F, page.RotatedBox.Height * 2.5F);
+                var renderer = new Renderer();
                 var image = renderer.Render(page, imageSize);
 
                 // 3. Save the page image!

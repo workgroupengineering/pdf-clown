@@ -9,7 +9,7 @@ using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Viewer;
 using PdfClown.Documents.Interchange.Access;
-using files = PdfClown.Files;
+using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 
@@ -28,8 +28,8 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            files::File file = new files::File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            var document = file.Document;
 
             // 2. Content creation.
             Populate(document);
@@ -41,10 +41,10 @@ namespace PdfClown.Samples.CLI
         /**
           <summary>Populates a PDF file with contents.</summary>
         */
-        private void Populate(Document document)
+        private void Populate(PdfDocument document)
         {
             // Initialize a new page!
-            var page = new Page(document);
+            var page = new PdfPage(document);
             document.Pages.Add(page);
 
             // Initialize the primitive composer (within the new page context)!

@@ -49,7 +49,7 @@ namespace PdfClown.Documents.Contents.Objects
         public Text(IList<ContentObject> objects) : base(objects)
         { }
 
-        public override void WriteTo(IOutputStream stream, Document context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             stream.Write(BeginChunk);
             base.WriteTo(stream, context);

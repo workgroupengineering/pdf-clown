@@ -49,7 +49,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         internal ICCBasedColorSpace(PdfDirectObject baseObject) : base(baseObject) { }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         {
             throw new NotImplementedException();
         }

@@ -4,7 +4,7 @@ using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
 using fonts = PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.XObjects;
-using files = PdfClown.Files;
+using PdfClown.Files;
 using PdfClown.Tools;
 
 using System;
@@ -30,9 +30,9 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Open the PDF file!
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new files::File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                PdfDocument document = file.Document;
 
                 // 2. Create a watermark!
                 FormXObject watermark = CreateWatermark(document);
@@ -52,7 +52,7 @@ namespace PdfClown.Samples.CLI
             var stamper = new PageStamper();
 
             // 2. Inserting the watermark into each page of the document...
-            foreach (Page page in watermark.Document.Pages)
+            foreach (var page in watermark.Document.Pages)
             {
                 // 2.1. Associate the page to the stamper!
                 stamper.Page = page;
@@ -68,7 +68,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private FormXObject CreateWatermark(Document document)
+        private FormXObject CreateWatermark(PdfDocument document)
         {
             SKSize size = document.GetSize();
 

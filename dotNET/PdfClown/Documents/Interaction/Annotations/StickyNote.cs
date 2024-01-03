@@ -34,6 +34,9 @@ using PdfClown.Tools;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Util;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -44,7 +47,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF10)]
     public sealed class StickyNote : Markup
     {
-        public const int size = 32;
+        public const int size = 28;
 
         private static readonly ImageNameEnum DefaultIconType = ImageNameEnum.Note;
         private static readonly bool DefaultOpen = false;
@@ -87,9 +90,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultIconType;
         }
 
-        public StickyNote(Page page, SKPoint location, string text)
+        public StickyNote(PdfPage page, SKPoint location, string text)
             : base(page, PdfName.Text, SKRect.Create(location.X, location.Y, 0, 0), text)
-        { }
+        {
+        }
 
         public StickyNote(PdfDirectObject baseObject) : base(baseObject)
         { }
@@ -106,6 +110,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (oldValue != value)
                 {
                     BaseDataObject[PdfName.Name] = (value != DefaultIconType ? ToCode(value) : null);
+                    GenerateAppearance();
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -157,29 +162,59 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        protected override FormXObject GenerateAppearance()
         {
-            var box = Box;
-            var bounds = SKRect.Create(box.Left, box.Top, size / canvas.TotalMatrix.ScaleX, size / canvas.TotalMatrix.ScaleY);
-            var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
-            using (var paint = new SKPaint { Color = color, Style = SKPaintStyle.Fill })
-            {
-                canvas.DrawRect(bounds, paint);
-            }
-            SvgImage.DrawImage(canvas, ImageName.ToString(), SKColors.White, bounds, 3 / canvas.TotalMatrix.ScaleX);
+            SKRect bound = GetBound();
+            var normalAppearance = ResetAppearance(bound, out var zeroMatrix);
+            bound = zeroMatrix.MapRect(bound);
+            var svg = SvgImage.GetCache(ImageName.ToString());
+            var pathMatrix = SvgImage.GetMatrix(svg, bound, 2);
+            using var tempPath = new SKPath();
+            svg.Path.Transform(pathMatrix, tempPath);
+            //var pathBounds = pathMatrix.MapRect(svg.Path.Bounds);
+            //pathMatrix = pathMatrix.PostConcat(SKMatrix.CreateTranslation(0, bound.Height));
+            var composer = new PrimitiveComposer(normalAppearance);
+            composer.SetLineWidth(1);
+            composer.SetStrokeColor(DeviceRGBColor.Default);
+            composer.SetFillColor(Color ?? DeviceRGBColor.White);
+            composer.DrawPath(tempPath);
+            composer.FillStroke();
+            composer.Flush();
+            return normalAppearance;
         }
 
-        public override SKRect GetBounds(SKMatrix pageMatrix)
+        protected override SKRect GetDrawBox()
         {
-            var baseBounds = base.GetBounds(pageMatrix);
-            return SKRect.Create(baseBounds.Left, baseBounds.Top, size, size);
+            return GetBound();
+        }
+
+        private SKRect GetBound()
+        {
+            if (Box.Width == 0 || Box.Height == 0)
+            {
+                SKPoint location = Box.Location;
+                return SKRect.Create(location + new SKPoint(0, -size), new SKSize(size, size));
+            }
+            return Box;
+        }
+
+        public override void SetBounds(SKRect value)
+        {
+            base.SetBounds(SKRect.Create(value.Left, value.Top, 0, 0));
+        }
+
+        public override SKRect GetViewBounds(SKMatrix viewMatrix)
+        {
+            base.GetViewBounds();
+            var bound = GetBound();
+            return viewMatrix.PreConcat(PageMatrix).MapRect(bound);
+            //return SKRect.Create(bound.Left, bound.Top, size / Math.Abs(viewMatrix.ScaleX), size / Math.Abs(viewMatrix.ScaleY));
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()
         {
             yield break;
         }
-        //TODO:State and StateModel!!!
     }
 
     public enum MarkupState

@@ -151,7 +151,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return (IconFitObject)(baseObjec == null ? null : baseObjec.AlternateWrapper ??= new IconFitObject(baseObjec));
             }
 
-            public IconFitObject(Document context) : base(context, new PdfDictionary())
+            public IconFitObject(PdfDocument context) : base(context, new PdfDictionary())
             { }
 
             public IconFitObject(PdfDirectObject baseObject) : base(baseObject)
@@ -279,7 +279,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             Right = 270
         };
 
-        public AppearanceCharacteristics(Document context) : base(context, new PdfDictionary())
+        public AppearanceCharacteristics(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public AppearanceCharacteristics(PdfDirectObject baseObject) : base(baseObject)

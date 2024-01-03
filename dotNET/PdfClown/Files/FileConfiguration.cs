@@ -36,9 +36,9 @@ namespace PdfClown.Files
         private bool streamFilterEnabled;
         private XRefModeEnum xrefMode = XRefModeEnum.Plain;
 
-        private readonly File file;
+        private readonly PdfFile file;
 
-        internal FileConfiguration(File file)
+        internal FileConfiguration(PdfFile file)
         {
             this.file = file;
 
@@ -49,7 +49,7 @@ namespace PdfClown.Files
         /**
           <summary>Gets the file associated with this configuration.</summary>
         */
-        public File File => file;
+        public PdfFile File => file;
 
         /**
           <summary>Gets/Sets the number of decimal places applied to real numbers' serialization.</summary>

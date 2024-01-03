@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public ToggleVisibility(Document context, ICollection<PdfObjectWrapper> objects, bool visible)
+        public ToggleVisibility(PdfDocument context, ICollection<PdfObjectWrapper> objects, bool visible)
             : base(context, PdfName.Hide)
         {
             Objects = objects;

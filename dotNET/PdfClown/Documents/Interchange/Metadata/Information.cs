@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Interchange.Metadata
     [PDF(VersionEnum.PDF10)]
     public sealed class Information : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, object>
     {
-        public Information(Document context) : base(context, new PdfDictionary())
+        public Information(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public Information(PdfDirectObject baseObject) : base(baseObject)

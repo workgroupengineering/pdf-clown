@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoTo3dView(Document context)
+        public GoTo3dView(PdfDocument context)
             : base(context, PdfName.GoTo3DView)
         { }
 

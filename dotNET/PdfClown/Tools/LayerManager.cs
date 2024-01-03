@@ -60,7 +60,7 @@ namespace PdfClown.Tools
             var removedLayers = new HashSet<Layer>(layers);
             var layerEntities = new HashSet<LayerEntity>(removedLayers);
             var layerXObjects = new HashSet<xobjects::XObject>();
-            foreach (Page page in document.Pages)
+            foreach (var page in document.Pages)
             { RemoveLayerContents(page, removedLayers, layerEntities, layerXObjects, preserveContent); }
 
             // 2. Layer definitions.
@@ -93,7 +93,7 @@ namespace PdfClown.Tools
             Optimizer.RemoveOrphanedObjects(document.File);
         }
 
-        private void RemoveLayerContents(Page page, ICollection<Layer> removedLayers, ICollection<LayerEntity> layerEntities, ICollection<xobjects::XObject> layerXObjects, bool preserveContent)
+        private void RemoveLayerContents(PdfPage page, ICollection<Layer> removedLayers, ICollection<LayerEntity> layerEntities, ICollection<xobjects::XObject> layerXObjects, bool preserveContent)
         {
             var pageResources = page.Resources;
 

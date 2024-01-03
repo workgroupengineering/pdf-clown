@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-using PdfClown.Files;
 using PdfClown.Objects;
 using System;
 
@@ -33,7 +32,8 @@ namespace PdfClown.Documents.Encryption
         /**
 		 * creates a new empty crypt filter dictionary.
 		 */
-        public PdfCryptFilterDictionary(File context) : base(context, new PdfDictionary())
+        public PdfCryptFilterDictionary(PdfFile context)
+            : base(context, new PdfDictionary())
         {
         }
 

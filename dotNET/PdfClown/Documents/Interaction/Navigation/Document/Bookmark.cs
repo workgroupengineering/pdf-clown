@@ -57,13 +57,13 @@ namespace PdfClown.Documents.Interaction.Navigation
             Bold = 0x2
         }
 
-        public Bookmark(Document context, string title) : base(context, new PdfDictionary())
+        public Bookmark(PdfDocument context, string title) : base(context, new PdfDictionary())
         { Title = title; }
 
-        public Bookmark(Document context, string title, LocalDestination destination) : this(context, title)
+        public Bookmark(PdfDocument context, string title, LocalDestination destination) : this(context, title)
         { Destination = destination; }
 
-        public Bookmark(Document context, string title, Actions.Action action) : this(context, title)
+        public Bookmark(PdfDocument context, string title, Actions.Action action) : this(context, title)
         { Action = action; }
 
         public Bookmark(PdfDirectObject baseObject) : base(baseObject)

@@ -54,7 +54,7 @@ namespace PdfClown.Tools
           <summary>Gets the data size of the specified page expressed in bytes.</summary>
           <param name="page">Page whose data size has to be calculated.</param>
         */
-        public static long GetSize(Page page) => GetSize(page, new HashSet<PdfReference>());
+        public static long GetSize(PdfPage page) => GetSize(page, new HashSet<PdfReference>());
 
         /**
           <summary>Gets the data size of the specified page expressed in bytes.</summary>
@@ -63,20 +63,20 @@ namespace PdfClown.Tools
             This set is useful, for example, to avoid recalculating the data size of shared resources.
             During the operation, this set is populated with references to visited data objects.</param>
         */
-        public static long GetSize(Page page, HashSet<PdfReference> visitedReferences) => GetSize(page.BaseObject, visitedReferences, true);
+        public static long GetSize(PdfPage page, HashSet<PdfReference> visitedReferences) => GetSize(page.BaseObject, visitedReferences, true);
 
         /**
           <summary>Gets whether the specified page is blank.</summary>
           <param name="page">Page to evaluate.</param>
         */
-        public static bool IsBlank(Page page) => IsBlank(page, page.Box);
+        public static bool IsBlank(PdfPage page) => IsBlank(page, page.Box);
 
         /**
           <summary>Gets whether the specified page is blank.</summary>
           <param name="page">Page to evaluate.</param>
           <param name="contentBox">Area to evaluate within the page.</param>
         */
-        public static bool IsBlank(Page page, SKRect contentBox) => IsBlank(new ContentScanner(page), contentBox);
+        public static bool IsBlank(PdfPage page, SKRect contentBox) => IsBlank(new ContentScanner(page), contentBox);
 
         /**
           <summary>Gets the data size of the specified object expressed in bytes.</summary>
@@ -163,13 +163,13 @@ namespace PdfClown.Tools
             return true;
         }
 
-        private Document document;
+        private PdfDocument document;
         private Pages pages;
 
         public PageManager() : this(null)
         { }
 
-        public PageManager(Document document)
+        public PageManager(PdfDocument document)
         {
             Document = document;
         }
@@ -178,9 +178,9 @@ namespace PdfClown.Tools
           <summary>Appends a document to the end of the document.</summary>
           <param name="document">Document to be added.</param>
         */
-        public void Add(Document document)
+        public void Add(PdfDocument document)
         {
-            Add((ICollection<Page>)document.Pages);
+            Add((ICollection<PdfPage>)document.Pages);
         }
 
         /**
@@ -188,19 +188,19 @@ namespace PdfClown.Tools
           <param name="index">Position at which the document has to be inserted.</param>
           <param name="document">Document to be inserted.</param>
         */
-        public void Add(int index, Document document)
+        public void Add(int index, PdfDocument document)
         {
-            Add(index, (ICollection<Page>)document.Pages);
+            Add(index, (ICollection<PdfPage>)document.Pages);
         }
 
         /**
           <summary>Appends a collection of pages to the end of the document.</summary>
           <param name="pages">Pages to be added.</param>
         */
-        public void Add(ICollection<Page> pages)
+        public void Add(ICollection<PdfPage> pages)
         {
             // Add the source pages to the document (deep level)!
-            ICollection<Page> importedPages = (ICollection<Page>)document.Include(pages); // NOTE: Alien pages MUST be contextualized (i.e. imported).
+            ICollection<PdfPage> importedPages = (ICollection<PdfPage>)document.Include(pages); // NOTE: Alien pages MUST be contextualized (i.e. imported).
 
             // Add the imported pages to the pages collection (shallow level)!
             this.pages.AddAll(importedPages);
@@ -211,10 +211,10 @@ namespace PdfClown.Tools
           <param name="index">Position at which the pages have to be inserted.</param>
           <param name="pages">Pages to be inserted.</param>
         */
-        public void Add(int index, ICollection<Page> pages)
+        public void Add(int index, ICollection<PdfPage> pages)
         {
             // Add the source pages to the document (deep level)!
-            ICollection<Page> importedPages = (ICollection<Page>)document.Include(pages); // NOTE: Alien pages MUST be contextualized (i.e. imported).
+            ICollection<PdfPage> importedPages = (ICollection<PdfPage>)document.Include(pages); // NOTE: Alien pages MUST be contextualized (i.e. imported).
 
             // Add the imported pages to the pages collection (shallow level)!
             if (index >= this.pages.Count)
@@ -226,7 +226,7 @@ namespace PdfClown.Tools
         /**
           <summary>Gets/Sets the document being managed.</summary>
         */
-        public Document Document
+        public PdfDocument Document
         {
             get => document;
             set
@@ -242,9 +242,9 @@ namespace PdfClown.Tools
           <param name="endIndex">The ending index, exclusive.</param>
           <returns>Extracted page range.</returns>
         */
-        public Document Extract(int startIndex, int endIndex)
+        public PdfDocument Extract(int startIndex, int endIndex)
         {
-            Document extractedDocument = new File().Document;
+            var extractedDocument = new PdfFile().Document;
             {
                 // Add the pages to the target file!
                 /*
@@ -252,11 +252,7 @@ namespace PdfClown.Tools
                   pages MUST be contextualized within it first,
                   then added to the target pages collection.
                 */
-                extractedDocument.Pages.AddAll(
-                  (ICollection<Page>)extractedDocument.Include(
-                    pages.GetSlice(startIndex, endIndex)
-                    )
-                  );
+                extractedDocument.Pages.AddAll(extractedDocument.Include(pages.GetSlice(startIndex, endIndex)));
             }
             return extractedDocument;
         }
@@ -271,7 +267,7 @@ namespace PdfClown.Tools
         {
             int pageCount = pages.Count;
 
-            IList<Page> movingPages = pages.GetSlice(startIndex, endIndex);
+            IList<PdfPage> movingPages = pages.GetSlice(startIndex, endIndex);
 
             // Temporarily remove the pages from the pages collection!
             /*
@@ -301,7 +297,7 @@ namespace PdfClown.Tools
         */
         public void Remove(int startIndex, int endIndex)
         {
-            IList<Page> removingPages = pages.GetSlice(startIndex, endIndex);
+            IList<PdfPage> removingPages = pages.GetSlice(startIndex, endIndex);
 
             // Remove the pages from the pages collection!
             /* NOTE: Shallow removal. */
@@ -316,13 +312,13 @@ namespace PdfClown.Tools
           <summary>Bursts the document into single-page documents.</summary>
           <returns>Split subdocuments.</returns>
         */
-        public IList<Document> Split()
+        public IList<PdfDocument> Split()
         {
-            IList<Document> documents = new List<Document>();
-            foreach (Page page in pages)
+            var documents = new List<PdfDocument>();
+            foreach (var page in pages)
             {
-                Document pageDocument = new File().Document;
-                pageDocument.Pages.Add((Page)page.Clone(pageDocument));
+                var pageDocument = new PdfFile().Document;
+                pageDocument.Pages.Add((PdfPage)page.Clone(pageDocument));
                 documents.Add(pageDocument);
             }
             return documents;
@@ -333,9 +329,9 @@ namespace PdfClown.Tools
           <param name="indexes">Split page indexes.</param>
           <returns>Split subdocuments.</returns>
         */
-        public IList<Document> Split(params int[] indexes)
+        public IList<PdfDocument> Split(params int[] indexes)
         {
-            IList<Document> documents = new List<Document>();
+            IList<PdfDocument> documents = new List<PdfDocument>();
             {
                 int startIndex = 0;
                 foreach (int index in indexes)
@@ -354,14 +350,14 @@ namespace PdfClown.Tools
             some extra structures such as cross reference tables.</param>
           <returns>Split documents.</returns>
         */
-        public IList<Document> Split(long maxDataSize)
+        public IList<PdfDocument> Split(long maxDataSize)
         {
-            IList<Document> documents = new List<Document>();
+            IList<PdfDocument> documents = new List<PdfDocument>();
             {
                 int startPageIndex = 0;
                 long incrementalDataSize = 0;
                 var visitedReferences = new HashSet<PdfReference>();
-                foreach (Page page in pages)
+                foreach (var page in pages)
                 {
                     long pageDifferentialDataSize = GetSize(page, visitedReferences);
                     incrementalDataSize += pageDifferentialDataSize;

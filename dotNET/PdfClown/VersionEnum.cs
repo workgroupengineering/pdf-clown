@@ -68,10 +68,10 @@ namespace PdfClown
 
     internal static class VersionEnumExtension
     {
-        public static Version GetVersion(this VersionEnum value)
+        public static PdfVersion GetVersion(this VersionEnum value)
         {
             string versionSuffix = value.ToString().Substring(value.ToString().Length - 2);
-            return Version.Get(versionSuffix[0] + "." + versionSuffix[1]);
+            return PdfVersion.Get(versionSuffix[0] + "." + versionSuffix[1]);
         }
     }
 }

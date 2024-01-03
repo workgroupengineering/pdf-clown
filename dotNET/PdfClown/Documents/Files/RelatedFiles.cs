@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Files
     [PDF(VersionEnum.PDF13)]
     public sealed class RelatedFiles : PdfObjectWrapper<PdfArray>, IDictionary<string, EmbeddedFile>
     {
-        public RelatedFiles(Document context) : base(context, new PdfArray())
+        public RelatedFiles(PdfDocument context) : base(context, new PdfArray())
         { }
 
         public RelatedFiles(PdfDirectObject baseObject) : base(baseObject)

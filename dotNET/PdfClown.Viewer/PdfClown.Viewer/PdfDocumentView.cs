@@ -13,8 +13,9 @@ namespace PdfClown.Viewer
 {
     public class PdfDocumentView : IDisposable
     {
-        internal readonly ManualResetEventSlim LockObject = new ManualResetEventSlim(true);
-        public bool IsPaintComplete => LockObject.IsSet;
+        public ManualResetEventSlim LockObject => Document?.LockObject;
+
+        public bool IsPaintComplete => LockObject?.IsSet ?? true;
 
         public static PdfDocumentView LoadFrom(string filePath)
         {
@@ -23,7 +24,7 @@ namespace PdfClown.Viewer
             return document;
         }
 
-        public static PdfDocumentView LoadFrom(System.IO.Stream fileStream)
+        public static PdfDocumentView LoadFrom(Stream fileStream)
         {
             var document = new PdfDocumentView();
             document.Load(fileStream);
@@ -36,9 +37,9 @@ namespace PdfClown.Viewer
         private readonly float indent = 10;
         private Fields fields;
 
-        public Files.File File { get; private set; }
+        public PdfFile File { get; private set; }
 
-        public Document Document => File.Document;
+        public PdfDocument Document => File.Document;
 
         public Pages Pages { get; private set; }
 
@@ -82,7 +83,7 @@ namespace PdfClown.Viewer
                 var imageSize = new SKSize(box.Width * dpi, box.Height * dpi);
                 var pageView = new PdfPageView
                 {
-                    Document = this,
+                    DocumentView = this,
                     Order = order++,
                     Index = page.Index,
                     Page = page,
@@ -110,7 +111,7 @@ namespace PdfClown.Viewer
             }
         }
 
-        public PdfPageView GetPageView(Documents.Page page)
+        public PdfPageView GetPageView(PdfPage page)
         {
             foreach (var pageView in pageViews)
             {
@@ -139,7 +140,6 @@ namespace PdfClown.Viewer
                 ClearPages();
                 File.Dispose();
                 File = null;
-                LockObject.Dispose();
 
                 try { System.IO.File.Delete(TempFilePath); }
                 catch { }
@@ -179,7 +179,7 @@ namespace PdfClown.Viewer
                 fileStream.Close();
                 stream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
             }
-            File = new Files.File(stream);
+            File = new PdfFile(stream);
             fields = null;
             LoadPages();
         }
@@ -207,17 +207,16 @@ namespace PdfClown.Viewer
             SaveTo(stream, GetMode());
         }
 
-        private SerializationModeEnum GetMode()
-        {
-            return ((IEnumerable<Field>)Fields).Any(x => x is SignatureField signature
-                                                                && signature.Contents != null)
-                            ? SerializationModeEnum.Incremental
-                            : SerializationModeEnum.Standard;
-        }
-
         public void SaveTo(Stream stream, SerializationModeEnum mode)
         {
             File.Save(stream, mode);
+        }
+
+        private SerializationModeEnum GetMode()
+        {
+            return ((IEnumerable<Field>)Fields).Any(x => x is SignatureField signature)
+                            ? SerializationModeEnum.Incremental
+                            : SerializationModeEnum.Standard;
         }
 
         public void OnEndOperation(object result)
@@ -236,17 +235,8 @@ namespace PdfClown.Viewer
             {
                 if (fields == null || fields != Document.Form.Fields)
                 {
-                    LockObject.Wait();
-                    try
-                    {
-                        LockObject.Reset();
-                        Document.Form.RefreshCache();
-                        fields = Document.Form.Fields;
-                    }
-                    finally
-                    {
-                        LockObject.Set();
-                    }
+                    Document.Form.RefreshCache();
+                    fields = Document.Form.Fields;
                 }
                 return fields;
             }
@@ -303,7 +293,7 @@ namespace PdfClown.Viewer
             return AddAnnotation(annotation.Page, annotation);
         }
 
-        public List<Annotation> AddAnnotation(Page page, Annotation annotation)
+        public List<Annotation> AddAnnotation(PdfPage page, Annotation annotation)
         {
             var list = new List<Annotation>();
             if (page != null)

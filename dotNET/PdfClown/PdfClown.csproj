@@ -24,7 +24,9 @@
     <None Remove="Assets\comments.svg" />
     <None Remove="Assets\Graph.svg" />
     <None Remove="Assets\Help.svg" />
+    <None Remove="Assets\Insert.svg" />
     <None Remove="Assets\Key.svg" />
+    <None Remove="Assets\NewParagraph.svg" />
     <None Remove="Assets\Note.svg" />
     <None Remove="Assets\PaperClip.svg" />
     <None Remove="Assets\Paragraph.svg" />
@@ -499,7 +501,9 @@
 
     <EmbeddedResource Include="Assets\Comment.svg" />
     <EmbeddedResource Include="Assets\Graph.svg" />
+    <EmbeddedResource Include="Assets\Insert.svg" />
     <EmbeddedResource Include="Assets\Key.svg" />
+    <EmbeddedResource Include="Assets\NewParagraph.svg" />
     <EmbeddedResource Include="Assets\Note.svg" />
     <EmbeddedResource Include="Assets\comments.svg" />
     <EmbeddedResource Include="Assets\Help.svg" />
@@ -510,10 +514,11 @@
   </ItemGroup>
    
   <ItemGroup>
-    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.2.1" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
-    <PackageReference Include="SkiaSharp" Version="2.88.5" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
+    <PackageReference Include="SkiaSharp" Version="2.88.6" />
+    <PackageReference Include="System.DirectoryServices.Protocols" Version="7.0.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
   </ItemGroup> 
  
 </Project>

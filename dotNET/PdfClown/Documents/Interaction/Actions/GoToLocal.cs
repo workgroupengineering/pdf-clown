@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToLocal(Document context, LocalDestination destination)
+        public GoToLocal(PdfDocument context, LocalDestination destination)
             : base(context, PdfName.GoTo, destination)
         { }
 

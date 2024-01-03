@@ -58,7 +58,7 @@ namespace PdfClown.Documents.Contents.Layers
         private static readonly ItemWrapper Wrapper = new ItemWrapper();
 
 
-        public UILayers(Document context) : base(context, Wrapper) { }
+        public UILayers(PdfDocument context) : base(context, Wrapper) { }
 
         public UILayers(PdfDirectObject baseObject) : base(Wrapper, baseObject)
         { }

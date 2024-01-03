@@ -92,11 +92,11 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly Dictionary<int, SKPoint> positionVectors = new Dictionary<int, SKPoint>();     // v
         private float[] dw2 = new float[] { 880, -1000 };
 
-        public FontCID(Document document)
+        public FontCID(PdfDocument document)
             : this(document, new PdfDictionary { { PdfName.Type, PdfName.Font } })
         { }
 
-        public FontCID(Document document, PdfDictionary fontObject)
+        public FontCID(PdfDocument document, PdfDictionary fontObject)
             : base(document, fontObject)
         {
         }
@@ -330,7 +330,9 @@ namespace PdfClown.Documents.Contents.Fonts
             // these widths are supposed to be consistent with the actual widths given in the CIDFont
             // program, but PDFBOX-563 shows that when they are not, Acrobat overrides the embedded
             // font widths with the widths given in the font dictionary
-            return GetWidthForCID(CodeToCID(code));
+            return codeToWidthMap.TryGetValue(code, out var width)
+                ? width
+                : codeToWidthMap[code] = GetWidthForCID(CodeToCID(code));
         }
 
         // todo: this method is highly suspicious, the average glyph width is not usually a good metric

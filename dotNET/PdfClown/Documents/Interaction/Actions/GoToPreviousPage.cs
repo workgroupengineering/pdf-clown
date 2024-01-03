@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToPreviousPage(Document context)
+        public GoToPreviousPage(PdfDocument context)
             : base(context, PdfName.PrevPage)
         { }
 

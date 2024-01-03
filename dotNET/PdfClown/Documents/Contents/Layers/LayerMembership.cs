@@ -151,7 +151,7 @@ namespace PdfClown.Documents.Contents.Layers
         public static PdfName TypeName = PdfName.OCMD;
 
 
-        public LayerMembership(Document context) : base(context, TypeName)
+        public LayerMembership(PdfDocument context) : base(context, TypeName)
         { }
 
         internal LayerMembership(PdfDirectObject baseObject) : base(baseObject)

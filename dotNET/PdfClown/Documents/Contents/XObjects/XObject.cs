@@ -69,13 +69,13 @@ namespace PdfClown.Documents.Contents.XObjects
         /**
           <summary>Creates a new external object inside the document.</summary>
         */
-        protected XObject(Document context) : this(context, new PdfStream())
+        protected XObject(PdfDocument context) : this(context, new PdfStream())
         { }
 
         /**
           <summary>Creates a new external object inside the document.</summary>
         */
-        protected XObject(Document context, PdfStream baseDataObject)
+        protected XObject(PdfDocument context, PdfStream baseDataObject)
             : base(context, baseDataObject)
         {
             baseDataObject.Header[PdfName.Type] = PdfName.XObject;

@@ -31,11 +31,11 @@ namespace PdfClown
       <summary>Indicates the PDF compatibility level of the annotated element.</summary>
     */
     [AttributeUsage(AttributeTargets.All)]
-    public class PDF : Attribute
+    public class PDFAttribute : Attribute
     {
         private VersionEnum value;
 
-        public PDF(VersionEnum value)
+        public PDFAttribute(VersionEnum value)
         { this.value = value; }
 
         /**

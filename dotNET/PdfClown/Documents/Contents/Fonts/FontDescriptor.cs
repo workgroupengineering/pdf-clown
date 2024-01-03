@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public FontDescriptor() : this(null, new PdfDictionary())
         { }
 
-        public FontDescriptor(Document document, PdfDictionary baseObject) : base(document, baseObject)
+        public FontDescriptor(PdfDocument document, PdfDictionary baseObject) : base(document, baseObject)
         { }
 
         public string FontName

@@ -40,11 +40,11 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF11)]
     public sealed class PageArticleElements : PageElements<ArticleElement>
     {
-        public static PageArticleElements Wrap(PdfDirectObject baseObject, Page page)
+        public static PageArticleElements Wrap(PdfDirectObject baseObject, PdfPage page)
         { return baseObject?.Wrapper as PageArticleElements ?? new PageArticleElements(baseObject, page); }
 
 
-        internal PageArticleElements(PdfDirectObject baseObject, Page page) : base(baseObject, page)
+        internal PageArticleElements(PdfDirectObject baseObject, PdfPage page) : base(baseObject, page)
         { }
     }
 }

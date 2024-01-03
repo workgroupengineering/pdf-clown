@@ -344,7 +344,7 @@ namespace PdfClown.Documents.Encryption
 		 *
 		 * @ If there is an error accessing data.
 		 */
-        public override void PrepareDocumentForEncryption(Document document)
+        public override void PrepareDocumentForEncryption(PdfDocument document)
         {
             PdfEncryption encryptionDictionary = document.File.Encryption;
             if (encryptionDictionary == null)
@@ -472,7 +472,7 @@ namespace PdfClown.Documents.Encryption
         }
 
         private void PrepareEncryptionDictRev234(string ownerPassword, string userPassword,
-                PdfEncryption encryptionDictionary, int permissionInt, Document document,
+                PdfEncryption encryptionDictionary, int permissionInt, PdfDocument document,
                 int revision, int length)
         {
             var idArray = document.File.ID;

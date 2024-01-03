@@ -83,7 +83,7 @@ namespace PdfClown.Documents.Contents.Patterns
         protected Pattern(PatternColorSpace colorSpace, PdfDirectObject baseObject) : base(colorSpace, baseObject)
         { }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); }
 
         public override IList<PdfDirectObject> Components => new List<PdfDirectObject>();

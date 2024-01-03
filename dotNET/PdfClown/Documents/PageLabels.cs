@@ -41,7 +41,7 @@ namespace PdfClown.Documents
         public static PageLabels Wrap(PdfDirectObject baseObject)
         { return baseObject?.Wrapper as PageLabels ?? new PageLabels(baseObject); }
 
-        public PageLabels(Document context) : base(context)
+        public PageLabels(PdfDocument context) : base(context)
         { }
 
         internal PageLabels(PdfDirectObject baseObject) : base(baseObject)

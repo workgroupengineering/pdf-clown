@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Interaction.Navigation
     [PDF(VersionEnum.PDF11)]
     public sealed class ArticleElement : PdfObjectWrapper<PdfDictionary>
     {
-        public ArticleElement(Page page, SKRect box) : base(
+        public ArticleElement(PdfPage page, SKRect box) : base(
             page.Document,
             new PdfDictionary(1) { { PdfName.Type, PdfName.Bead } })
         {
@@ -121,7 +121,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         /**
           <summary>Gets the location page.</summary>
         */
-        public Page Page => Wrap<Page>(BaseDataObject[PdfName.P]);
+        public PdfPage Page => Wrap<PdfPage>(BaseDataObject[PdfName.P]);
 
         /**
           <summary>Gets the previous bead.</summary>

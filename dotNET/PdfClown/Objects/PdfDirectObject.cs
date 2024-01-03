@@ -26,7 +26,6 @@
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Interaction.Forms;
-using PdfClown.Files;
 using PdfClown.Tokens;
 
 using System;
@@ -50,7 +49,7 @@ namespace PdfClown.Objects
           <summary>Ensures that the given direct object is properly serialized.</summary>
           <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
         */
-        internal static void WriteTo(IOutputStream stream, File context, PdfDirectObject obj)
+        internal static void WriteTo(IOutputStream stream, PdfFile context, PdfDirectObject obj)
         {
             if (obj == null)
             { stream.Write(NullChunk); }

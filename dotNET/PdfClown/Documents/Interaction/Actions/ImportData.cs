@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public ImportData(Document context)
+        public ImportData(PdfDocument context)
             : base(context, PdfName.ImportData)
         { }
 

@@ -5,7 +5,7 @@ using PdfClown.Documents.Contents;
 using actions = PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Navigation;
-using files = PdfClown.Files;
+using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Tools;
 
@@ -25,23 +25,21 @@ namespace PdfClown.Samples.CLI
       example, HTML links), so retrieving the text associated to a link is somewhat tricky
       as we have to infer the overlapping areas between links and their corresponding text.</remarks>
     */
-    public class LinkParsingSample
-      : Sample
+    public class LinkParsingSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new files::File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                var document = file.Document;
 
                 // 2. Link extraction from the document pages.
-                TextExtractor extractor = new TextExtractor();
+                var extractor = new TextExtractor();
                 extractor.AreaTolerance = 2; // 2 pt tolerance on area boundary detection.
                 bool linkFound = false;
-                foreach (Page page in document.Pages)
+                foreach (var page in document.Pages)
                 {
                     if (!PromptNextPage(page, !linkFound))
                     {
@@ -70,7 +68,7 @@ namespace PdfClown.Samples.CLI
                             if (textStrings == null)
                             { textStrings = extractor.Extract(page); }
 
-                            SKRect linkBox = link.GetBounds();
+                            SKRect linkBox = link.GetViewBounds();
 
                             // Text.
                             /*
@@ -114,9 +112,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private void PrintAction(
-          actions::Action action
-          )
+        private void PrintAction(actions::Action action)
         {
             /*
               NOTE: Here we have to deal with reflection as a workaround
@@ -144,16 +140,13 @@ namespace PdfClown.Samples.CLI
             { Console.WriteLine("      URI: " + ((actions::GoToURI)action).URI); }
         }
 
-        private void PrintDestination(
-          Destination destination
-          )
+        private void PrintDestination(Destination destination)
         {
             Console.WriteLine(destination.GetType().Name + " " + destination.BaseObject);
             Console.Write("        Page ");
             object pageRef = destination.Page;
-            if (pageRef is Page)
+            if (pageRef is PdfPage page)
             {
-                Page page = (Page)pageRef;
                 Console.WriteLine(page.Number + " [ID: " + page.BaseObject + "]");
             }
             else

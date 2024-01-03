@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF11)]
     public abstract class Markup : Annotation
     {
-        protected Markup(Page page, PdfName subtype, SKRect box, string text)
+        protected Markup(PdfPage page, PdfName subtype, SKRect box, string text)
             : base(page, subtype, box, text)
         {
             CreationDate = DateTime.Now;
@@ -238,24 +238,18 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public BorderEffect BorderEffect
         {
-            get => Wrap<BorderEffect>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            get => Wrap<BorderEffect>(BaseDataObject[PdfName.BE]);
             set
             {
                 var oldValue = BorderEffect;
                 if (!(oldValue?.Equals(value) ?? value == null))
                 {
                     BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
+                    QueueRefreshAppearance();
                     OnPropertyChanged(oldValue, value);
                 }
             }
         }
-
-        protected virtual void RefreshAppearance()
-        {
-
-        }
-        
-       
     }
 
     /**

@@ -59,9 +59,9 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
         private TypeEnum type;
         private float width;
 
-        private Document document;
+        private PdfDocument document;
 
-        public StampAppearanceBuilder(Document document, TypeEnum type, string text, float width, fonts::Font font)
+        public StampAppearanceBuilder(PdfDocument document, TypeEnum type, string text, float width, fonts::Font font)
         {
             this.document = document;
             this.type = type;

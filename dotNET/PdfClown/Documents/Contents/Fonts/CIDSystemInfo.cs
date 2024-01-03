@@ -29,7 +29,7 @@ namespace PdfClown.Documents.Contents.Fonts
     public sealed class CIDSystemInfo : PdfObjectWrapper<PdfDictionary>
     {
 
-        public CIDSystemInfo(Document document, string registry, string ordering, int supplement)
+        public CIDSystemInfo(PdfDocument document, string registry, string ordering, int supplement)
             : base(document, new PdfDictionary(3)
                 {
                     { PdfName.Registry, new PdfString(registry) },

@@ -39,6 +39,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     {
         public static readonly DeviceRGBColor Black = Get(SKColors.Black);
         public static readonly DeviceRGBColor White = Get(SKColors.White);
+        public static readonly DeviceRGBColor Red = Get(SKColors.Red);
+        public static readonly DeviceRGBColor Green = Get(SKColors.Green);
+        public static readonly DeviceRGBColor Blue = Get(SKColors.Blue);
+        public static readonly DeviceRGBColor Cyan = Get(SKColors.Cyan);
+        public static readonly DeviceRGBColor Magenta = Get(SKColors.Magenta);
+        public static readonly DeviceRGBColor Yellow = Get(SKColors.Yellow);
+        public static readonly DeviceRGBColor OrangeRed = Get(SKColors.OrangeRed);
 
         public static readonly DeviceRGBColor Default = Black;
 
@@ -106,7 +113,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override bool IsZero => Equals(Black);
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         {
             throw new NotImplementedException();
         }

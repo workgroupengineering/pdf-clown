@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Tools;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -81,7 +82,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultIconType;
         }
 
-        public FileAttachment(Page page, SKRect box, string text, FileSpecification dataFile)
+        public FileAttachment(PdfPage page, SKRect box, string text, FileSpecification dataFile)
             : base(page, PdfName.FileAttachment, box, text)
         {
             DataFile = dataFile;
@@ -122,13 +123,18 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        public override SKRect RestoreAppearance(SKCanvas canvas)
         {
             var bounds = Box;
             var color = SKColor;
             SvgImage.DrawImage(canvas, AttachmentName.ToString(), color, bounds, 1);
+            return bounds;
         }
 
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
+        }
     }
 
     /**

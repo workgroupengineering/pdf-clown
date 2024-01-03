@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private SKRect? fontBBox;
         private readonly HashSet<int> noMapping = new HashSet<int>();
 
-        public FontCIDType2(Document document, PdfDictionary fontObject) : base(document, fontObject)
+        public FontCIDType2(PdfDocument document, PdfDictionary fontObject) : base(document, fontObject)
         {
         }
 

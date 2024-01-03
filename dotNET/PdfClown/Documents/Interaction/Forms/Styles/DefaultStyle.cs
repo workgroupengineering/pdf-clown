@@ -67,7 +67,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(CheckBox field)
         {
-            Document document = field.Document;
+            PdfDocument document = field.Document;
             foreach (Widget widget in field.Widgets)
             {
                 {
@@ -148,7 +148,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(RadioButton field)
         {
-            Document document = field.Document;
+            PdfDocument document = field.Document;
             foreach (Widget widget in field.Widgets)
             {
                 {
@@ -228,7 +228,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(PushButton field)
         {
-            Document document = field.Document;
+            PdfDocument document = field.Document;
             Widget widget = field.Widgets[0];
 
             Appearance appearance = widget.Appearance;
@@ -272,7 +272,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             var document = field.Document;
             var widget = field.Widgets[0];
             var size = widget.Box.Size;
-            var signatureName = field.SignatureName;
+            var signatureName = field.SignatureDictionary.Name;
             var appearance = widget.Appearance;
             widget.DefaultAppearence = "/Helv " + FontSize + " Tf 0 0 0 rg";
 
@@ -310,7 +310,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(TextField field)
         {
-            Document document = field.Document;
+            PdfDocument document = field.Document;
             Widget widget = field.Widgets[0];
 
             Appearance appearance = widget.Appearance;
@@ -352,7 +352,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(ComboBox field)
         {
-            Document document = field.Document;
+            PdfDocument document = field.Document;
             Widget widget = field.Widgets[0];
 
             Appearance appearance = widget.Appearance;
@@ -394,7 +394,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(ListBox field)
         {
-            Document document = field.Document;
+            PdfDocument document = field.Document;
             Widget widget = field.Widgets[0];
 
             Appearance appearance = widget.Appearance;

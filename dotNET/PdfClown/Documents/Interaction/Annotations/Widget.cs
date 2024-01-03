@@ -107,7 +107,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Creates a new generic widget.</summary>
         */
-        public Widget(Page page, SKRect box)
+        public Widget(PdfPage page, SKRect box)
             : base(page, PdfName.Widget, box, null)
         { Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Print, true); }
 
@@ -115,7 +115,7 @@ namespace PdfClown.Documents.Interaction.Annotations
           <summary>Creates a new dual-state widget (required by <see
           cref="PdfClown.Documents.forms.RadioButton"/> fields).</summary>
         */
-        public Widget(Page page, SKRect box, string name)
+        public Widget(PdfPage page, SKRect box, string name)
             : this(page, box)
         {
             // Initialize the on-state appearance!
@@ -182,5 +182,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public Field Field { get; internal set; }
+
+        public override bool AllowSize => false;
+
+        protected override FormXObject GenerateAppearance()
+        {
+            return null;
+        }
     }
 }

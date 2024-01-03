@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
@@ -118,7 +117,7 @@ namespace PdfClown.Documents.Functions.Type4
             throw new NotImplementedException();
         }
 
-        public override void WriteTo(IOutputStream stream, File context)
+        public override void WriteTo(IOutputStream stream, PdfFile context)
         {
             throw new NotImplementedException();
         }

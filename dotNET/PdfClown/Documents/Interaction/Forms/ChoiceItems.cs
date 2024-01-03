@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class ChoiceItems : PdfObjectWrapper<PdfArray>, IList<ChoiceItem>
     {
-        public ChoiceItems(Document context) : base(context, new PdfArray())
+        public ChoiceItems(PdfDocument context) : base(context, new PdfArray())
         { }
 
         public ChoiceItems(PdfDirectObject baseObject) : base(baseObject)

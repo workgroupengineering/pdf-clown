@@ -26,6 +26,7 @@
 using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -106,22 +107,22 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public Border(Document context, double width) : this(context, width, DefaultStyle, null)
+        public Border(PdfDocument context, double width) : this(context, width, DefaultStyle, null)
         { }
 
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public Border(Document context, double width, BorderStyleType style) : this(context, width, style, null)
+        public Border(PdfDocument context, double width, BorderStyleType style) : this(context, width, style, null)
         { }
 
         /**
           <summary>Creates a reusable instance.</summary>
         */
-        public Border(Document context, double width, LineDash pattern) : this(context, width, BorderStyleType.Dashed, pattern)
+        public Border(PdfDocument context, double width, LineDash pattern) : this(context, width, BorderStyleType.Dashed, pattern)
         { }
 
-        private Border(Document context, double width, BorderStyleType style, LineDash pattern)
+        private Border(PdfDocument context, double width, BorderStyleType style, LineDash pattern)
             : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Border } })
         {
             Width = width;
@@ -185,6 +186,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             borderEffect?.Apply(paint);
         }
 
+       public void Apply(PrimitiveComposer paint)
+        {
+            paint.SetLineWidth((float)Width);
+
+            if (Style == BorderStyleType.Dashed)
+            {
+                Pattern?.Apply(paint);
+            }
+        }
+
         public bool Equals(Border other)
         {
             if (other == null)
@@ -193,6 +204,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 && Style == other.Style
                 && Pattern.Equals(other.Pattern);
         }
+
     }
 
     /**

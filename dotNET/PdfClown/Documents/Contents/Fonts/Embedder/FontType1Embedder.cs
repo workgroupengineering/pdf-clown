@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Contents.Fonts
 		 * @param pfbStream The pfb input.
 		 * @throws IOException If there is an error loading the data.
 		 */
-        public FontType1Embedder(Document doc, PdfDictionary dict, Bytes.IInputStream pfbStream, Encoding encoding)
+        public FontType1Embedder(PdfDocument doc, PdfDictionary dict, Bytes.IInputStream pfbStream, Encoding encoding)
         {
             dict[PdfName.Subtype] = PdfName.Type1;
 

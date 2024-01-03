@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         private SKPoint[] points;
         private Dictionary<int, IndexControlPoint> controlPoints = new Dictionary<int, IndexControlPoint>();
 
-        protected VertexShape(Page page, SKRect box, string text, PdfName subtype)
+        protected VertexShape(PdfPage page, SKRect box, string text, PdfName subtype)
             : base(page, box, text, subtype)
         { }
 
@@ -90,7 +90,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                     verticesObject.Add(PdfReal.Get(vertex.X));
                     verticesObject.Add(PdfReal.Get(vertex.Y));
                 }
-                RefreshBox();
                 Vertices = verticesObject;
             }
         }
@@ -105,6 +104,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     BaseDataObject[PdfName.Vertices] = value;
                     OnPropertyChanged(oldValue, value);
+                    QueueRefreshAppearance();
                 }
             }
         }
@@ -148,6 +148,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         public IndexControlPoint FirstControlPoint => GetControlPoint(0);
 
         public IndexControlPoint LastControlPoint => GetControlPoint(Points.Length - 1);
+
+        public bool ClosePath { get; internal set; }
 
         public IndexControlPoint GetControlPoint(int index)
         {
@@ -195,7 +197,10 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override void RefreshBox()
         {
-            Appearance.Normal[null] = null;
+            if (!(Points?.Any() ?? false))
+            {
+                return;
+            }
             SKRect box = SKRect.Empty;
             foreach (SKPoint point in Points)
             {
@@ -203,20 +208,17 @@ namespace PdfClown.Documents.Interaction.Annotations
                 { box = SKRect.Create(point.X, point.Y, 10, 10); }
                 else
                 { box.Add(point); }
-
             }
+            BorderEffect?.ApplyEffect(ref box);
             Box = box;
         }
 
-
-        public override void DrawSpecial(SKCanvas canvas)
+        public override SKPath GetPath(SKMatrix sKMatrix)
         {
-            using (var path = new SKPath())
-            {
-                path.AddPoly(Points.ToArray());
-                path.Close();
-                DrawPath(canvas, path);
-            }
+            var path = new SKPath();
+            path.AddPoly(Points.ToArray(), ClosePath);
+            path.Transform(sKMatrix);
+            return path;
         }
 
         public override void MoveTo(SKRect newBox)

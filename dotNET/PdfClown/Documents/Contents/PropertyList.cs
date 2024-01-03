@@ -65,7 +65,7 @@ namespace PdfClown.Documents.Contents
                 return new PropertyList(baseObject);
         }
 
-        public PropertyList(Document context, PdfDictionary baseDataObject)
+        public PropertyList(PdfDocument context, PdfDictionary baseDataObject)
             : base(context, baseDataObject)
         { }
 

@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         internal WidgetActions(Annotation parent, PdfDirectObject baseObject) : base(parent, baseObject)
         { }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new system::NotImplementedException(); } // TODO: verify parent reference.
 
         /**

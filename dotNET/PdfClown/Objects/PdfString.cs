@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using tokens = PdfClown.Tokens;
 using PdfClown.Util;
 
@@ -206,7 +205,7 @@ namespace PdfClown.Objects
             }
         }
 
-        public override void WriteTo(IOutputStream stream, Files.File context)
+        public override void WriteTo(IOutputStream stream, PdfFile context)
         {
             var buffer = stream;
             {

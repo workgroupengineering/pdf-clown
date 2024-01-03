@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF10)]
     public sealed class FontResources : ResourceItems<Font>
     {
-        public FontResources(Document context) : base(context)
+        public FontResources(PdfDocument context) : base(context)
         { }
 
         public FontResources(PdfDirectObject baseObject) : base(baseObject)

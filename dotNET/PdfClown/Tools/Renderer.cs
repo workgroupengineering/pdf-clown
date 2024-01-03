@@ -50,7 +50,7 @@ namespace PdfClown.Tools
           <param name="document">Document to print.</param>
           <returns>Whether the print was fulfilled.</returns>
         */
-        public bool Print(Document document)
+        public bool Print(PdfDocument document)
         {
             return Print(document.Pages);
         }
@@ -61,7 +61,7 @@ namespace PdfClown.Tools
           <param name="silent">Whether to avoid showing a print dialog.</param>
           <returns>Whether the print was fulfilled.</returns>
         */
-        public bool Print(Document document, bool silent)
+        public bool Print(PdfDocument document, bool silent)
         {
             return Print(document.Pages, silent);
         }
@@ -71,7 +71,7 @@ namespace PdfClown.Tools
           <param name="pages">Page collection to print.</param>
           <returns>Whether the print was fulfilled.</returns>
         */
-        public bool Print(IList<Page> pages)
+        public bool Print(IList<PdfPage> pages)
         {
             return Print(pages, true);
         }
@@ -82,7 +82,7 @@ namespace PdfClown.Tools
           <param name="silent">Whether to avoid showing a print dialog.</param>
           <returns>Whether the print was fulfilled.</returns>
         */
-        public bool Print(IList<Page> pages, bool silent)
+        public bool Print(IList<PdfPage> pages, bool silent)
         {
             using (var stream = new SKFileWStream("print.xps"))
             using (var document = SKDocument.CreateXps(stream))

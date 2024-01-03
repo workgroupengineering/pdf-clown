@@ -25,6 +25,7 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Documents.Contents.Layers;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
@@ -331,19 +332,16 @@ namespace PdfClown.Documents.Contents.Composition
                         StartPath(points[0]);
                         break;
                     case SKPathVerb.Line:
-                        DrawLine(points[0]);
+                        DrawLine(points[1]);
                         break;
                     case SKPathVerb.Quad:
-                        var qp0 = points[0];
-                        var qp1 = points[1];
-                        var qp2 = points[2];
-                        var controlPoint1 = qp0 + (qp1 - qp0).Multiply(QuadToQubicKoefficent);
-                        var controlPoint2 = qp2 + (qp1 - qp2).Multiply(QuadToQubicKoefficent);
-                        DrawCurve(qp2, controlPoint1, controlPoint2);
+                        DrawQuad(points[0], points[1], points[2]);
                         break;
                     case SKPathVerb.Conic:
-                        //TODO
-                        DrawLine(points[0]);
+                        var quadPoints = SKPath.ConvertConicToQuads(points[0], points[1], points[2], iterator.ConicWeight(), 1);
+                        DrawQuad(quadPoints[0], quadPoints[1], quadPoints[2]);
+                        DrawQuad(quadPoints[2], quadPoints[3], quadPoints[4]);
+                        // DrawQuad(quadPoints[6], quadPoints[7], quadPoints[8]);
                         break;
                     case SKPathVerb.Cubic:
                         DrawCurve(points[3], points[1], points[2]);
@@ -355,6 +353,13 @@ namespace PdfClown.Documents.Contents.Composition
                         break;
                 }
             }
+        }
+
+        public void DrawQuad(SKPoint qp0, SKPoint qp1, SKPoint qp2)
+        {
+            var controlPoint1 = qp0 + (qp1 - qp0).Multiply(QuadToQubicKoefficent);
+            var controlPoint2 = qp2 + (qp1 - qp2).Multiply(QuadToQubicKoefficent);
+            DrawCurve(qp2, controlPoint1, controlPoint2);
         }
 
         /**
@@ -603,8 +608,16 @@ namespace PdfClown.Documents.Contents.Composition
         {
             // Doesn't the font exist in the context resources?
             if (!Scanner.ContentContext.Resources.Fonts.ContainsKey(name))
+            {
+                var mapping = FontMappers.Instance.GetTrueTypeFont(name.StringValue, null);
+                if (mapping?.Font != null)
+                {
+                    var fallbackFont = FontType0.Load(Scanner.ContentContext.Resources.Document, mapping.Font, false);
+                    SetFont(fallbackFont, size, name);
+                    return;
+                }
                 throw new ArgumentException("No font resource associated to the given argument.", "name");
-
+            }
             SetFont_(name, size);
         }
 
@@ -616,7 +629,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="value">Font.</param>
           <param name="size">Scaling factor (points).</param>
         */
-        public void SetFont(Font value, double size) => SetFont_(GetResourceName(value), size);
+        public void SetFont(Font value, double size, PdfName defaultName = null) => SetFont_(GetResourceName(value, defaultName), size);
 
         /**
           <summary>Sets the line cap style [PDF:1.6:4.3.2].</summary>
@@ -889,7 +902,7 @@ namespace PdfClown.Documents.Contents.Composition
         public Link ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation, actions::Action action)
         {
             IContentContext contentContext = Scanner.ContentContext;
-            if (contentContext is not Page page)
+            if (contentContext is not PdfPage page)
                 throw new Exception("Links can be shown only on page contexts.");
 
             SKRect linkBox = ShowText(value, location, xAlignment, yAlignment, rotation).GetBounds();
@@ -1168,7 +1181,7 @@ namespace PdfClown.Documents.Contents.Composition
             return null;
         }
 
-        private PdfName GetResourceName<T>(T value) where T : PdfObjectWrapper
+        private PdfName GetResourceName<T>(T value, PdfName defaultName = null) where T : PdfObjectWrapper
         {
             if (value is colors::DeviceGrayColorSpace)
                 return PdfName.DeviceGray;
@@ -1185,11 +1198,18 @@ namespace PdfClown.Documents.Contents.Composition
                 // No key found?
                 if (name == null)
                 {
-                    // Insert the resource within the collection!
-                    int resourceIndex = resourceItemsObject.Count;
-                    do
-                    { name = new PdfName((++resourceIndex).ToString()); }
-                    while (resourceItemsObject.ContainsKey(name));
+                    if (defaultName == null)
+                    {
+                        // Insert the resource within the collection!
+                        int resourceIndex = resourceItemsObject.Count;
+                        do
+                        { name = new PdfName((++resourceIndex).ToString()); }
+                        while (resourceItemsObject.ContainsKey(name));
+                    }
+                    else
+                    {
+                        name = defaultName;
+                    }
                     resourceItemsObject[name] = value.BaseObject;
                 }
                 return name;

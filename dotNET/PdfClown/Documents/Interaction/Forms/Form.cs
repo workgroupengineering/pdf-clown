@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class Form : PdfObjectWrapper<PdfDictionary>
     {
-        public Form(Document context)
+        public Form(PdfDocument context)
             : base(context, new PdfDictionary() { { PdfName.Fields, new PdfArray() } })
         { }
 

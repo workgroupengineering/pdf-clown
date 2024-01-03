@@ -11,19 +11,17 @@ namespace PdfClown.Samples.CLI
     /**
       <summary>This sample is a minimalist introduction to the use of PDF Clown.</summary>
     */
-    public class HelloWorldSample
-      : Sample
+    public class HelloWorldSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Instantiate a new PDF file!
             /* NOTE: a File object is the low-level (syntactic) representation of a PDF file. */
-            File file = new File();
+            var file = new PdfFile();
 
             // 2. Get its corresponding document!
             /* NOTE: a Document object is the high-level (semantic) representation of a PDF file. */
-            Document document = file.Document;
+            var document = file.Document;
 
             // 3. Insert the contents into the document!
             Populate(document);
@@ -35,10 +33,10 @@ namespace PdfClown.Samples.CLI
         /**
           <summary>Populates a PDF file with contents.</summary>
         */
-        private void Populate(Document document)
+        private void Populate(PdfDocument document)
         {
             // 1. Add the page to the document!
-            Page page = new Page(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
             SKSize pageSize = page.Size;
 

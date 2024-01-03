@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public sealed class Frame : MediaOffset
         {
-            public Frame(Document context, int value) : base(context, PdfName.F)
+            public Frame(PdfDocument context, int value) : base(context, PdfName.F)
             { Value = value; }
 
             public Frame(PdfDirectObject baseObject) : base(baseObject)
@@ -73,7 +73,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public sealed class Marker : MediaOffset
         {
-            public Marker(Document context, string value)
+            public Marker(PdfDocument context, string value)
                 : base(context, PdfName.M)
             { Value = value; }
 
@@ -96,7 +96,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public sealed class Time : MediaOffset
         {
-            public Time(Document context, double value) : base(context, PdfName.T)
+            public Time(PdfDocument context, double value) : base(context, PdfName.T)
             { BaseDataObject[PdfName.T] = new Timespan(value).BaseObject; }
 
             internal Time(PdfDirectObject baseObject) : base(baseObject)
@@ -143,7 +143,7 @@ namespace PdfClown.Documents.Multimedia
                 throw new NotSupportedException();
         }
 
-        protected MediaOffset(Document context, PdfName subtype)
+        protected MediaOffset(PdfDocument context, PdfName subtype)
             : base(context, new PdfDictionary(2)
             {
                 { PdfName.Type,PdfName.MediaOffset },

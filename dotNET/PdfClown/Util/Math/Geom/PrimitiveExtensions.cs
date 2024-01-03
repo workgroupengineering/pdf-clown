@@ -31,7 +31,7 @@ using SkiaSharp;
 
 namespace PdfClown.Util.Math.Geom
 {
-    public static class Extension
+    public static class PrimitiveExtensions
     {
         public static float Cross(this SKPoint u, SKPoint v)
         {
@@ -187,11 +187,54 @@ namespace PdfClown.Util.Math.Geom
             return rectangle.Top + rectangle.Height / 2;
         }
 
+        public static void Normalize(this ref SKRect rectangle)
+        {
+            if (rectangle.Left > rectangle.Right)
+            {
+                var temp = rectangle.Left;
+                rectangle.Left = rectangle.Right;
+                rectangle.Right = temp;
+            }
+            if (rectangle.Bottom > rectangle.Top)
+            {
+                var temp = rectangle.Bottom;
+                rectangle.Bottom = rectangle.Top;
+                rectangle.Top = temp;
+            }
+        }
+
+        public static SKRect Normalize(SKRect rectangle)
+        {
+            var left = rectangle.Left;
+            var right = rectangle.Right;
+            var top = rectangle.Top;
+            var bottom = rectangle.Bottom;
+            if (rectangle.Left > rectangle.Right)
+            {
+                left = rectangle.Right;
+                right = rectangle.Left;
+            }
+            if (rectangle.Top > rectangle.Bottom)
+            {
+                top = rectangle.Bottom;
+                bottom = rectangle.Top;
+            }
+            return new SKRect(left, top, right, bottom);
+        }
+
         public static SKPath ToPath(this SKRect rectangle)
         {
             var path = new SKPath();
             path.AddRect(rectangle);
             return path;
+        }
+
+        public static SKRect Round(SKRect value, int precision = 4)
+        {
+            return new SKRect((float)System.Math.Round(value.Left, precision),
+                (float)System.Math.Round(value.Top, precision),
+                (float)System.Math.Round(value.Right, precision),
+                (float)System.Math.Round(value.Bottom, precision));
         }
 
         //public static SKPoint Transform(

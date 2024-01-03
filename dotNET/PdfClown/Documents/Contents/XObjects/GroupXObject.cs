@@ -52,7 +52,7 @@ namespace PdfClown.Documents.Contents.XObjects
             }
         }
 
-        public GroupXObject(Document context, PdfDictionary baseDataObject)
+        public GroupXObject(PdfDocument context, PdfDictionary baseDataObject)
             : base(context, baseDataObject)
         {
             Type = PdfName.Group;

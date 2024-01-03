@@ -61,7 +61,7 @@ namespace PdfClown.Documents.Contents
             Load();
         }
 
-        public override object Clone(Document context)
+        public override object Clone(PdfDocument context)
         { throw new NotSupportedException(); }
 
         /**
@@ -106,7 +106,7 @@ namespace PdfClown.Documents.Contents
             // Delete old contents from the stream buffer!
             buffer.SetLength(0);
             // Serializing the new contents into the stream buffer...
-            Document context = Document;
+            PdfDocument context = Document;
             foreach (ContentObject item in items)
             {
                 item.WriteTo(buffer, context);

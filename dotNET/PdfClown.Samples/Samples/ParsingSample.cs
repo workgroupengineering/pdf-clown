@@ -17,23 +17,21 @@ namespace PdfClown.Samples.CLI
       <remarks>This sample is just a limited exercise: see the API documentation
       to exploit all the available access functionalities.</remarks>
     */
-    public class ParsingSample
-      : Sample
+    public class ParsingSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new File(filePath))
+            using (var file = new PdfFile(filePath))
             {
-                Document document = file.Document;
+                var document = file.Document;
 
                 // 2. Parsing the document...
                 // 2.1. Metadata.
                 // 2.1.1. Basic metadata.
                 Console.WriteLine("\nDocument information:");
-                Information info = document.Information;
+                var info = document.Information;
                 if (info.Exists())
                 {
                     foreach (KeyValuePair<PdfName, object> infoEntry in info)
@@ -100,10 +98,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private void PrintPageInfo(
-          Page page,
-          int index
-          )
+        private void PrintPageInfo(PdfPage page, int index)
         {
             // 1. Showing basic page information...
             Console.WriteLine(" Index (calculated): " + page.Index + " (should be " + index + ")");
@@ -129,11 +124,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private int PrintContentObjects(
-          IList<ContentObject> objects,
-          int index,
-          int level
-          )
+        private int PrintContentObjects(IList<ContentObject> objects, int index, int level)
         {
             string indentation = GetIndentation(level);
             foreach (ContentObject obj in objects)
@@ -158,12 +149,10 @@ namespace PdfClown.Samples.CLI
             return index;
         }
 
-        private string ToString(
-          XmlDocument document
-          )
+        private string ToString(XmlDocument document)
         {
-            io::StringWriter stringWriter = new io::StringWriter();
-            XmlTextWriter xmlTextWriter = new XmlTextWriter(stringWriter);
+            var stringWriter = new io::StringWriter();
+            var xmlTextWriter = new XmlTextWriter(stringWriter);
             document.WriteTo(xmlTextWriter);
             return stringWriter.ToString();
         }

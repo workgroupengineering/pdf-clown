@@ -25,7 +25,6 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util;
 using PdfClown.Util.Parsers;
@@ -46,10 +45,10 @@ namespace PdfClown.Tokens
         public sealed class FileInfo
         {
             private PdfDictionary trailer;
-            private Version version;
+            private PdfVersion version;
             private SortedDictionary<int, XRefEntry> xrefEntries;
 
-            internal FileInfo(Version version, PdfDictionary trailer, SortedDictionary<int, XRefEntry> xrefEntries)
+            internal FileInfo(PdfVersion version, PdfDictionary trailer, SortedDictionary<int, XRefEntry> xrefEntries)
             {
                 this.version = version;
                 this.trailer = trailer;
@@ -58,14 +57,14 @@ namespace PdfClown.Tokens
 
             public PdfDictionary Trailer => trailer;
 
-            public Version Version => version;
+            public PdfVersion Version => version;
 
             public SortedDictionary<int, XRefEntry> XrefEntries => xrefEntries;
         }
 
         private FileParser parser;
 
-        internal Reader(IInputStream stream, Files.File file, string password = null, System.IO.Stream keyStoreInputStream = null)
+        internal Reader(IInputStream stream, PdfFile file, string password = null, Stream keyStoreInputStream = null)
         { this.parser = new FileParser(stream, file, password, keyStoreInputStream); }
 
         ~Reader()
@@ -84,7 +83,7 @@ namespace PdfClown.Tokens
         public FileInfo ReadInfo()
         {
             //TODO:hybrid xref table/stream
-            Version version = Version.Get(parser.RetrieveVersion());
+            PdfVersion version = PdfVersion.Get(parser.RetrieveVersion());
             PdfDictionary trailer = null;
             var xrefEntries = new SortedDictionary<int, XRefEntry>();
             {

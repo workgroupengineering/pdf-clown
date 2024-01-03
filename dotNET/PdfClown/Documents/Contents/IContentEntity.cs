@@ -64,6 +64,6 @@ namespace PdfClown.Documents.Contents
           <param name="context">Target document.</param>
           <returns>The external object representing the entity.</returns>
         */
-        XObjects.XObject ToXObject(Document context);
+        XObjects.XObject ToXObject(PdfDocument context);
     }
 }

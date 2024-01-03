@@ -34,6 +34,9 @@ using System.Collections.Generic;
 using SkiaSharp;
 using System.Linq;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -45,7 +48,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         private IList<SKPath> paths;
         private IList<SKPath> pagePaths;
-        public Scribble(Page page, IList<SKPath> paths, string text, DeviceColor color)
+        public Scribble(PdfPage page, IList<SKPath> paths, string text, DeviceColor color)
             : base(page, PdfName.Ink, new SKRect(), text)
         {
             Paths = paths;
@@ -99,8 +102,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-
-
         ///<summary>Gets/Sets the coordinates of each path.</summary>
         public IList<SKPath> Paths
         {
@@ -122,17 +123,25 @@ namespace PdfClown.Documents.Interaction.Annotations
                 pathObject.GetFloat(pointIndex + 1));
         }
 
-        public override void DrawSpecial(SKCanvas canvas)
+        protected override FormXObject GenerateAppearance()
         {
-            var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
-            using (var paint = new SKPaint { Color = color })
+            var appearence = ResetAppearance(out var zeroMatrix);
+            var bound = zeroMatrix.MapRect(Box);
+            var matrix = zeroMatrix;//.PostConcat(SKMatrix.CreateTranslation(0, bound.Height));
+            var paint = new PrimitiveComposer(appearence);
+            paint.SetStrokeColor(Color);
+            paint.SetLineWidth(1);
+            paint.SetLineJoin(Documents.Contents.LineJoinEnum.Round);
+            Border?.Apply(paint);
+            foreach (var pathData in PagePaths)
             {
-                Border?.Apply(paint, null);
-                foreach (var pathData in PagePaths)
-                {
-                    canvas.DrawPath(pathData, paint);
-                }
+                using var tempPath = new SKPath();
+                pathData.Transform(matrix, tempPath);
+                paint.DrawPath(tempPath);
+                paint.Stroke();
             }
+            paint.Flush();
+            return appearence;
         }
 
         public override void MoveTo(SKRect newBox)
@@ -141,7 +150,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (oldBox.Width != newBox.Width
                 || oldBox.Height != newBox.Height)
             {
-                Appearance.Normal[null] = null;
+                QueueRefreshAppearance();
             }
             //base.MoveTo(newBox);
             var dif = SKMatrix.CreateIdentity()
@@ -179,11 +188,17 @@ namespace PdfClown.Documents.Interaction.Annotations
                     {
                         path.MoveTo(point);
                     }
+                    //else if (pointIndex + 3 < pointLength)
+                    //{
+                    //    var nextPoint = GetPagePoint(pathObject, pointIndex + 2);                        
+                    //    path.QuadTo(, point);
+                    //}
                     else
                     {
                         path.LineTo(point);
                     }
                 }
+                //path.Close();
                 list.Add(path);
             }
             return list;
@@ -214,14 +229,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             foreach (var path in fromPaths)
             {
                 var clone = new SKPath();
-                //path.Transform(sKMatrix, clone);
+                path.Transform(sKMatrix, clone);
 
-                var vertices = sKMatrix.MapPoints(path.Points);
-                //for (int i = 0; i < vertices.Length; i++)
-                //{
-                //    vertices[i] = sKMatrix.MapPoint(vertices[i]);
-                //}                
-                clone.AddPoly(vertices, false);
 
                 toPaths.Add(clone);
             }

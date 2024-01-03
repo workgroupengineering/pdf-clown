@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF10)]
     public sealed class ColorSpaceResources : ResourceItems<ColorSpace>
     {
-        public ColorSpaceResources(Document context) : base(context)
+        public ColorSpaceResources(PdfDocument context) : base(context)
         { }
 
         public ColorSpaceResources(PdfDirectObject baseObject) : base(baseObject)

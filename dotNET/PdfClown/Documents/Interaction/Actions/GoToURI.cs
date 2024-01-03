@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Interaction.Actions
         /**
           <summary>Creates a new action within the given document context.</summary>
         */
-        public GoToURI(Document context, Uri uri)
+        public GoToURI(PdfDocument context, Uri uri)
             : base(context, PdfName.URI)
         {
             URI = uri;

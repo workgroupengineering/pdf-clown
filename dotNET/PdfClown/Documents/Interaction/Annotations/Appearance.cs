@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF12)]
     public sealed class Appearance : PdfObjectWrapper<PdfDictionary>
     {
-        public Appearance(Document context) : base(context, new PdfDictionary())
+        public Appearance(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public Appearance(PdfDirectObject baseObject) : base(baseObject)

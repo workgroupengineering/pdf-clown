@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Tokens;
 
 using System;
@@ -41,7 +40,7 @@ namespace PdfClown.Objects
         private static readonly byte[] EndIndirectObjectChunk = Tokens.Encoding.Pdf.Encode(Symbol.LineFeed + Keyword.EndIndirectObject + Symbol.LineFeed);
 
         private PdfDataObject dataObject;
-        private File file;
+        private PdfFile file;
         private bool original;
         private PdfReference reference;
         private XRefEntry xrefEntry;
@@ -62,7 +61,7 @@ namespace PdfClown.Objects
           <param name="xrefEntry">Cross-reference entry associated to the indirect object. If the
             indirect object is new, its offset field MUST be set to 0.</param>
         */
-        internal PdfIndirectObject(File file, PdfDataObject dataObject, XRefEntry xrefEntry)
+        internal PdfIndirectObject(PdfFile file, PdfDataObject dataObject, XRefEntry xrefEntry)
         {
             this.file = file;
             this.dataObject = Include(dataObject);
@@ -105,7 +104,7 @@ namespace PdfClown.Objects
 
         public override PdfIndirectObject Container => this;
 
-        public override File File => file;
+        public override PdfFile File => file;
 
         public override PdfObject Parent
         {
@@ -196,7 +195,7 @@ namespace PdfClown.Objects
             xrefEntry.Offset = XRefEntry.UndefinedOffset; // Offset unknown (to set on file serialization -- see CompressedWriter).
         }
 
-        public override void WriteTo(IOutputStream stream, File context)
+        public override void WriteTo(IOutputStream stream, PdfFile context)
         {
             // Header.
             stream.Write(reference.Id); stream.Write(BeginIndirectObjectChunk);

@@ -63,7 +63,7 @@ namespace PdfClown.Documents.Multimedia
                 throw new ArgumentException("It doesn't represent a valid clip object.", "baseObject");
         }
 
-        protected MediaClip(Document context, PdfName subtype)
+        protected MediaClip(PdfDocument context, PdfName subtype)
             : base(context, new PdfDictionary(2)
             {
                 { PdfName.Type, PdfName.MediaClip},

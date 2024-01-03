@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class Fields : PdfObjectWrapper<PdfArray>, IDictionary<string, Field>, IEnumerable<Field>
     {
-        public Fields(Document context) : base(context, new PdfArray())
+        public Fields(PdfDocument context) : base(context, new PdfArray())
         { }
 
         public Fields(PdfDirectObject baseObject) : base(baseObject)

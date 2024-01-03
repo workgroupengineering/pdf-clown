@@ -15,17 +15,15 @@ namespace PdfClown.Samples.CLI
     /**
       <summary>This sample demonstrates how to show bar codes in a PDF document.</summary>
     */
-    public class BarcodeSample
-      : Sample
+    public class BarcodeSample : Sample
     {
         private const float Margin = 36;
 
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. PDF file instantiation.
-            File file = new File();
-            Document document = file.Document;
+            var file = new PdfFile();
+            var document = file.Document;
 
             // 2. Content creation.
             Populate(document);
@@ -37,23 +35,21 @@ namespace PdfClown.Samples.CLI
         /**
           <summary>Populates a PDF file with contents.</summary>
         */
-        private void Populate(
-          Document document
-          )
+        private void Populate(PdfDocument document)
         {
             // Get the abstract barcode entity!
             EAN13Barcode barcode = new EAN13Barcode("8012345678901");
             // Create the reusable barcode within the document!
             XObject barcodeXObject = barcode.ToXObject(document);
 
-            Pages pages = document.Pages;
+            var pages = document.Pages;
             // Page 1.
             {
-                Page page = new Page(document);
+                var page = new PdfPage(document);
                 pages.Add(page);
                 SKSize pageSize = page.Size;
 
-                PrimitiveComposer composer = new PrimitiveComposer(page);
+                var composer = new PrimitiveComposer(page);
                 {
                     var blockComposer = new BlockComposer(composer);
                     blockComposer.Hyphenation = true;
@@ -89,7 +85,7 @@ namespace PdfClown.Samples.CLI
 
             // Page 2.
             {
-                Page page = new Page(document);
+                var page = new PdfPage(document);
                 pages.Add(page);
                 SKSize pageSize = page.Size;
 
@@ -108,7 +104,7 @@ namespace PdfClown.Samples.CLI
 
             // Page 3.
             {
-                Page page = new Page(document);
+                var page = new PdfPage(document);
                 pages.Add(page);
                 SKSize pageSize = page.Size;
 

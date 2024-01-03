@@ -60,7 +60,7 @@ namespace PdfClown.Documents.Contents.Layers
             AllOff
         }
 
-        protected LayerEntity(Document context, PdfName typeName) : base(
+        protected LayerEntity(PdfDocument context, PdfName typeName) : base(
             context,
             new PdfDictionary(1) { { PdfName.Type, typeName } })
         { }

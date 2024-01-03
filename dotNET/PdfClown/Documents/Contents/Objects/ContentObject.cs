@@ -52,7 +52,7 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="stream">Target stream.</param>
           <param name="context">Document context.</param>
         */
-        public abstract void WriteTo(IOutputStream stream, Document context);
+        public abstract void WriteTo(IOutputStream stream, PdfDocument context);
 
     }
 }
