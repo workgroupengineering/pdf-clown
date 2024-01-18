@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Contents.Scanner
             }
         }
 
-        public Quad? Quad
+        public Quad Quad
         {
             get
             {
@@ -72,13 +72,17 @@ namespace PdfClown.Documents.Contents.Scanner
                 {
                     foreach (TextStringWrapper textString in textStrings)
                     {
-                        if (!quad.HasValue)
+                        if (textString.Quad.IsEmpty)
+                            continue;
+                        if (quad == null)
                         { quad = textString.Quad; }
                         else
-                        { quad = Util.Math.Geom.Quad.Union(quad.Value, textString.Quad); }
+                        { quad = Quad.Union(quad.Value, textString.Quad); }
                     }
+                    if (quad == null)
+                        quad = Quad.Empty;
                 }
-                return quad;
+                return quad.Value;
             }
         }
 

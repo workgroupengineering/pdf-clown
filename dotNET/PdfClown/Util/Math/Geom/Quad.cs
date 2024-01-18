@@ -34,7 +34,12 @@ namespace PdfClown.Util.Math.Geom
     */
     public struct Quad : IEquatable<Quad>
     {
-        public static readonly Quad Empty = new Quad(SKRect.Empty);
+        public static readonly Quad Empty = new Quad(SKPoint.Empty, SKPoint.Empty, SKPoint.Empty, SKPoint.Empty);
+
+        public static bool operator ==(Quad value, Quad value2) => value.Equals(value2);
+
+        public static bool operator !=(Quad value, Quad value2) => !value.Equals(value2);
+
         public static Quad Union(Quad value, Quad value2)
         {
             return value.Union(value2);
@@ -72,6 +77,8 @@ namespace PdfClown.Util.Math.Geom
             this.pointBottomRight = pointBottomRight;
             this.pointBottomLeft = pointBottomLeft;
         }
+
+        public bool IsEmpty => this.Equals(Empty);
 
         public SKPoint TopLeft => pointTopLeft;
 
@@ -315,6 +322,8 @@ namespace PdfClown.Util.Math.Geom
             //}
         }
 
+        public override bool Equals(object other) => Equals(other is Quad quad ? quad : Quad.Empty);
+
         public bool Equals(Quad other)
         {
             return this.pointTopLeft == other.pointTopLeft
@@ -326,6 +335,11 @@ namespace PdfClown.Util.Math.Geom
         public override string ToString()
         {
             return GetBounds().ToString();
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(pointTopLeft, pointTopRight, pointBottomRight, pointBottomLeft);
         }
     }
 }

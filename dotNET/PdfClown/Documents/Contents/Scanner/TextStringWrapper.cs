@@ -94,13 +94,17 @@ namespace PdfClown.Documents.Contents.Scanner
                 {
                     foreach (TextChar textChar in textChars)
                     {
-                        if (!quad.HasValue)
+                        if (textChar.Quad.IsEmpty)
+                            continue;
+                        if (quad == null)
                         { quad = textChar.Quad; }
                         else
-                        { quad = Util.Math.Geom.Quad.Union(quad.Value, textChar.Quad); }
+                        { quad = Quad.Union(quad.Value, textChar.Quad); }
                     }
+                    if (quad == null)
+                        quad = Quad.Empty;
                 }
-                return quad ?? Quad.Empty;
+                return quad.Value;
             }
         }
 

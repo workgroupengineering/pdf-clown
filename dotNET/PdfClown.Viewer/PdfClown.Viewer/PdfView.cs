@@ -972,6 +972,8 @@ namespace PdfClown.Viewer
             var page = state.PageView.Page;
             foreach (var textString in page.Strings)
             {
+                if (textString.Quad.IsEmpty)
+                    continue;
                 if (textString.Quad.Contains(state.PagePointerLocation))
                 {
                     foreach (var textChar in textString.TextChars)
@@ -1007,7 +1009,8 @@ namespace PdfClown.Viewer
                 for (int i = firstStringIndex < 1 ? 0 : firstStringIndex - 1; i < page.Strings.Count; i++)
                 {
                     var textString = page.Strings[i];
-                    if (!selectionRect.ContainsOrIntersect(textString.Quad))
+                    if (textString.Quad.IsEmpty
+                        || !selectionRect.ContainsOrIntersect(textString.Quad))
                         continue;
                     var isFirstLine = textString.Quad.Top <= firstString.Quad.Top
                                     && textString.Quad.Bottom >= firstString.Quad.Bottom;
