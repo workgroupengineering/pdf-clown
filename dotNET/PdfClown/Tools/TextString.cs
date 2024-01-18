@@ -73,7 +73,7 @@ namespace PdfClown.Tools
                         { quad = Quad.Union(quad.Value, textChar.Quad); }
                     }
                 }
-                return quad.Value;
+                return quad ?? Quad.Empty;
             }
         }
 
