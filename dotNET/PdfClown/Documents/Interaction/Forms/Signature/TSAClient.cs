@@ -28,6 +28,7 @@ using System.Net.Http;
 using PdfClown.Tokens;
 using System.Threading.Tasks;
 using System.Net.Http.Headers;
+using Org.BouncyCastle.Operators.Utilities;
 
 /**
  * Time Stamping Authority (TSA) Client [RFC 3161].
@@ -37,8 +38,7 @@ using System.Net.Http.Headers;
 public class TSAClient
 {
 
-    private static readonly DefaultDigestAlgorithmIdentifierFinder ALGORITHM_OID_FINDER =
-            new DefaultDigestAlgorithmIdentifierFinder();
+    private static readonly DefaultDigestAlgorithmFinder ALGORITHM_OID_FINDER = DefaultDigestAlgorithmFinder.Instance;
 
     private readonly Uri url;
     private readonly string username;

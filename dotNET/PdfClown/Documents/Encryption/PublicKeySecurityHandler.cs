@@ -499,7 +499,7 @@ namespace PdfClown.Documents.Encryption
                 certificate = TbsCertificateStructure.GetInstance(input.ReadObject());
             }
 
-            AlgorithmIdentifier algorithmId = certificate.SubjectPublicKeyInfo.AlgorithmID;
+            AlgorithmIdentifier algorithmId = certificate.SubjectPublicKeyInfo.Algorithm;
 
             var serial = new Org.BouncyCastle.Asn1.Cms.IssuerAndSerialNumber(certificate.Issuer, certificate.SerialNumber.Value);
             IBufferedCipher cipher;

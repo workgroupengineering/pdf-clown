@@ -222,7 +222,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature.Sertificate
             try
             {
                 using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
-                return hash.Digest(info.PublicKeyData.GetBytes());
+                return hash.Digest(info.PublicKey.GetBytes());
             }
             catch (Exception ex)
             {
@@ -517,7 +517,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature.Sertificate
             CertificateID certId;
             try
             {
-                certId = new CertificateID(CertificateID.HashSha1, issuerCertificate, certificateToCheck.SerialNumber);
+                certId = new CertificateID(CertificateID.DigestSha1, issuerCertificate, certificateToCheck.SerialNumber);
             }
             catch (CertificateEncodingException e)
             {

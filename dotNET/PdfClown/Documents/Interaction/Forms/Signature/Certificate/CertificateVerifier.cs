@@ -276,7 +276,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature.Sertificate
                     continue;
                 }
                 var location = Asn1TaggedObject.GetInstance(obj[1]);
-                var uri = (Asn1OctetString)location.GetObject();
+                var uri = (Asn1OctetString)location.GetExplicitBaseObject().ToAsn1Object();
                 string urlString = Charset.UTF8.GetString(uri.GetOctets());
                 Debug.WriteLine($"info: CA issuers URL: {urlString}");
                 try
@@ -380,7 +380,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature.Sertificate
                     if (X509ObjectIdentifiers.IdADOcsp.Equals(oid)
                         && location.TagNo == GeneralName.UniformResourceIdentifier)
                     {
-                        var url = (Asn1OctetString)location.GetObject();
+                        var url = (Asn1OctetString)location.GetExplicitBaseObject().ToAsn1Object();
                         string ocspURL = Charset.UTF8.GetString(url.GetOctets());
                         Debug.WriteLine($"info: OCSP URL: {ocspURL}");
                         return ocspURL;
