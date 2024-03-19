@@ -161,7 +161,7 @@ of the explicit representation of a field -- they are retrieved everytime client
                 return referenceField;
             }
             PdfDictionary dataObject = (PdfDictionary)reference.DataObject;
-            PdfName fieldType = (PdfName)GetInheritableAttribute(dataObject, PdfName.FT);
+            PdfName fieldType = (PdfName)GetInheritableAttribute(dataObject, PdfName.FT) ?? PdfName.Tx;
             PdfInteger fieldFlags = (PdfInteger)GetInheritableAttribute(dataObject, PdfName.Ff);
             FlagsEnum fieldFlagsValue = (FlagsEnum)(fieldFlags?.IntValue ?? 0);
             if (fieldType.Equals(PdfName.Btn)) // Button.
