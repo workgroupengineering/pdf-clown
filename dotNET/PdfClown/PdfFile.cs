@@ -26,17 +26,13 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents;
-using PdfClown.Documents.Contents;
-using PdfClown.Objects;
-using PdfClown.Tokens;
-
-using System;
-using System.Collections;
-using System.Reflection;
-using System.Text;
-using System.IO;
 using PdfClown.Documents.Encryption;
 using PdfClown.Files;
+using PdfClown.Objects;
+using PdfClown.Tokens;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace PdfClown
 {
@@ -84,7 +80,10 @@ namespace PdfClown
         { }
 
         public PdfFile(Stream stream) : this((IInputStream)new StreamContainer(stream))
-        { }
+        {
+            //if (stream is FileStream fileStream)
+            //    path = fileStream.Name;
+        }
 
         public PdfFile(IInputStream stream)
         {
@@ -205,14 +204,10 @@ namespace PdfClown
             return indirectObjects.Add(obj).Reference;
         }
 
-        /**
-          <summary>Serializes the file to the current file-system path using the <see
-          cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
-        */
-        public void Save()
-        {
-            Save(SerializationModeEnum.Standard);
-        }
+        ///<summary>Serializes the file to the current file-system path using the 
+        ///<see cref="SerializationModeEnum.Incremental">incremental for signatures</see> or 
+        ///<see cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
+        public void Save() => Save(Document.HasSignatures ? SerializationModeEnum.Incremental : SerializationModeEnum.Standard);
 
         /**
           <summary>Serializes the file to the current file-system path.</summary>
@@ -232,11 +227,15 @@ namespace PdfClown
             CompleatSave();
         }
 
-        /**
-          <summary>Serializes the file to the specified file system path.</summary>
-          <param name="path">Target path.</param>
-          <param name="mode">Serialization mode.</param>
-        */
+        ///<summary>Serializes the file to the specified file system path using the 
+        ///<see cref="SerializationModeEnum.Incremental">incremental for signatures</see> or 
+        ///<see cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
+        ///<param name="path">Target path.</param>
+        public void Save(string path) => Save(path, Document.HasSignatures ? SerializationModeEnum.Incremental : SerializationModeEnum.Standard);
+
+        ///<summary>Serializes the file to the specified file system path .</summary>
+        ///<param name="path">Target path.</param>
+        ///<param name="mode">Serialization mode.</param>
         public void Save(string path, SerializationModeEnum mode)
         {
             using (var outputStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
@@ -245,6 +244,12 @@ namespace PdfClown
             }
             File.SetLastWriteTimeUtc(path, DateTime.UtcNow);
         }
+
+        ///<summary>Serializes the file to the specified stream using the 
+        ///<see cref="SerializationModeEnum.Incremental">incremental for signatures</see> or 
+        ///<see cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
+        ///<param name="path">Target path.</param>
+        public void Save(Stream stream) => Save(stream, Document.HasSignatures ? SerializationModeEnum.Incremental : SerializationModeEnum.Standard);
 
         /**
           <summary>Serializes the file to the specified stream.</summary>

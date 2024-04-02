@@ -402,6 +402,8 @@ namespace PdfClown.Documents
             throw new NotImplementedException();
         }
 
+        public bool HasSignatures => GetSignatureDictionaries().Any();
+
         internal IEnumerable<SignatureDictionary> GetSignatureDictionaries()
         {
             if (!(BaseDataObject.ContainsKey(PdfName.AcroForm)))

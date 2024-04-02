@@ -647,8 +647,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 try
                 {
                     queueRefresh = RefreshAppearanceState.Process;
-                    RefreshBox();
-                    GenerateAppearance();
+                    RestoreAppearance();
                 }
                 finally
                 {
@@ -664,6 +663,12 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 return RestoreAppearance(canvas);
             }
+        }
+
+        public void RestoreAppearance()
+        {
+            RefreshBox();
+            GenerateAppearance();
         }
 
         protected abstract FormXObject GenerateAppearance();
