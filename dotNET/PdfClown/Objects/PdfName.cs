@@ -741,11 +741,11 @@ namespace PdfClown.Objects
             return value == null ? null : names.GetOrAdd(value, (v) => new PdfName(v, escaped));
         }
 
-        public PdfName(string value)
+        private PdfName(string value)
             : this(value, true)
         { }
 
-        internal PdfName(string value, bool escaped)
+        private PdfName(string value, bool escaped)
         {
             /*
               NOTE: To avoid ambiguities due to the presence of '#' characters,
