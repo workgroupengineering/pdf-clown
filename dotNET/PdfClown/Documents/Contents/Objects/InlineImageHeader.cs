@@ -106,19 +106,19 @@ namespace PdfClown.Documents.Contents.Objects
         public string ImageMask
         {
             get => (this[PdfName.IM] ?? this[PdfName.ImageMask])?.ToString();
-            set => this[PdfName.IM] = new PdfName(value);
+            set => this[PdfName.IM] = PdfName.Get(value);
         }
 
         public string Interpolate
         {
             get => (this[PdfName.I] ?? this[PdfName.Interpolate])?.ToString();
-            set => this[PdfName.I] = new PdfName(value);
+            set => this[PdfName.I] = PdfName.Get(value);
         }
 
         public string Intent
         {
             get => this[PdfName.Intent]?.ToString();
-            set => this[PdfName.Intent] = new PdfName(value);
+            set => this[PdfName.Intent] = PdfName.Get(value);
         }
 
         public bool ContainsKey(PdfName key)

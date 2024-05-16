@@ -206,7 +206,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
             fontDescriptor.FontName = newName;
             dict[PdfName.BaseFont] =
-                cidFont[PdfName.BaseFont] = new PdfName(newName);
+                cidFont[PdfName.BaseFont] = PdfName.Get(newName);
         }
 
         private void BuildCIDToGIDMap(Dictionary<int, int> cidToGid)

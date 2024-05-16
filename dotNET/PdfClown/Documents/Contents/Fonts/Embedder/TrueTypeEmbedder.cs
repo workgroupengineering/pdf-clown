@@ -82,7 +82,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 fontDescriptor.FontFile2 = new FontFile(document, stream);
             }
             dict[PdfName.Type] = PdfName.Font;
-            dict[PdfName.BaseFont] = new PdfName(ttf.Name);
+            dict[PdfName.BaseFont] = PdfName.Get(ttf.Name);
 
             // choose a Unicode "cmap"
             cmapLookup = ttf.GetUnicodeCmapLookup();

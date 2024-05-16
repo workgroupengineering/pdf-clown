@@ -310,7 +310,7 @@ namespace PdfClown.Documents.Contents.XObjects
                     if (defaultFontName == null)
                     {
                         //TODO:manage name collision!
-                        formFonts[defaultFontName = new PdfName("defaultTTF")] = defaultFont = FontType0.Load(Document, fontName);
+                        formFonts[defaultFontName = PdfName.Get("defaultTTF")] = defaultFont = FontType0.Load(Document, fontName);
                     }
                     normalAppearanceFonts[defaultFontName] = defaultFont;
                 }

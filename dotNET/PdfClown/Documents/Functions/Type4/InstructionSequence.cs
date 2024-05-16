@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Functions.Type4
          */
         public void AddName(string name)
         {
-            this.instructions.Add(new PdfName(name));
+            this.instructions.Add(PdfName.Get(name));
         }
 
         /**

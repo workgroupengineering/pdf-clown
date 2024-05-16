@@ -42,8 +42,7 @@ namespace PdfClown.Objects
         */
         public static PdfInteger Get(int? value) => value.HasValue ? new PdfInteger(value.Value) : null;
 
-        public PdfInteger(int value)
-        { RawValue = value; }
+        public PdfInteger(int value) => RawValue = value;
 
         public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 

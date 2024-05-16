@@ -170,7 +170,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
                 Appearance appearance = widget.Appearance;
                 AppearanceStates normalAppearance = appearance.Normal;
-                FormXObject onState = normalAppearance[new PdfName(widget.Value)];
+                FormXObject onState = normalAppearance[PdfName.Get(widget.Value)];
 
                 //TODO:verify!!!
                 //   appearance.getRollover()[new PdfName(...),onState);

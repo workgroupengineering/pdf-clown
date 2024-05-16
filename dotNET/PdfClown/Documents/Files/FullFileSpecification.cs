@@ -138,7 +138,7 @@ namespace PdfClown.Documents.Files
                 if (value is StandardFileSystemEnum)
                 { fileSystemObject = ((StandardFileSystemEnum)value).GetCode(); }
                 else if (value is string)
-                { fileSystemObject = new PdfName((string)value); }
+                { fileSystemObject = PdfName.Get((string)value); }
                 else
                     throw new ArgumentException("MUST be either StandardFileSystemEnum (standard file system) or String (custom file system)");
 

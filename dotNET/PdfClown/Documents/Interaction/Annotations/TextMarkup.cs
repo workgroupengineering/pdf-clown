@@ -83,7 +83,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             throw new Exception("Invalid markup type.");
         }
 
-        private static readonly PdfName HighlightExtGStateName = new PdfName("highlight");
+        private static readonly PdfName HighlightExtGStateName = PdfName.highlight;
         private IList<Quad> markupBoxes;
         private IList<Quad> pageMarkupBoxes;
 

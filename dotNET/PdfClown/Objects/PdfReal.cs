@@ -60,10 +60,7 @@ namespace PdfClown.Objects
             return new PdfReal(doubleValue);
         }
 
-        public PdfReal(double value)
-        {
-            RawValue = value;
-        }
+        public PdfReal(double value) => RawValue = value;
 
         public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 

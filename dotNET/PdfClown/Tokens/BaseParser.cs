@@ -87,7 +87,7 @@ namespace PdfClown.Tokens
                 case TokenTypeEnum.Integer:
                     return PdfInteger.Get((int)Token);
                 case TokenTypeEnum.Name:
-                    return new PdfName(Token.ToString(), true);
+                    return PdfName.Get(Token.ToString(), true);
                 case TokenTypeEnum.DictionaryBegin:
                     {
                         var dictionary = new PdfDictionary();
@@ -96,14 +96,14 @@ namespace PdfClown.Tokens
                         {
                             // Key.
                             MoveNext(); if (TokenType == TokenTypeEnum.DictionaryEnd) break;
-                            PdfName key = (PdfName)ParsePdfObject();
+                            var key = (PdfName)ParsePdfObject();
                             // Value.
                             MoveNext(); if (TokenType == TokenTypeEnum.DictionaryEnd) break;
                             PdfDirectObject value = (PdfDirectObject)ParsePdfObject();
                             // Add the current entry to the dictionary!
                             if (dictionary.ContainsKey(key))
                             {
-                                key = new PdfName(key.StringValue + "Dublicat");
+                                key = PdfName.Get(key.StringValue + "Dublicat", true);
                             }
                             dictionary[key] = value;
                         }

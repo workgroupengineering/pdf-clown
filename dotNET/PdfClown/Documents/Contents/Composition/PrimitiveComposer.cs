@@ -1203,7 +1203,7 @@ namespace PdfClown.Documents.Contents.Composition
                         // Insert the resource within the collection!
                         int resourceIndex = resourceItemsObject.Count;
                         do
-                        { name = new PdfName((++resourceIndex).ToString()); }
+                        { name = PdfName.Get($"Res{(++resourceIndex)}", true); }
                         while (resourceItemsObject.ContainsKey(name));
                     }
                     else

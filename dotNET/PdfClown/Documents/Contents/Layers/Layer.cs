@@ -105,7 +105,7 @@ namespace PdfClown.Documents.Contents.Layers
 
         public static readonly PdfName TypeName = PdfName.OCG;
 
-        private static readonly PdfName MembershipName = new PdfName("D-OCMD");
+        private static readonly PdfName MembershipName = PdfName.Get("D-OCMD");
 
 
         public Layer(PdfDocument context, string title) : base(context, PdfName.OCG)

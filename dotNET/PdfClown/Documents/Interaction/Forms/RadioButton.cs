@@ -82,7 +82,7 @@ namespace PdfClown.Documents.Interaction.Forms
                   of whichever child field is currently in the on state; the default value for this entry is
                   Off.
                 */
-                PdfName selectedValue = new PdfName((string)value);
+                PdfName selectedValue = PdfName.Get((string)value);
                 bool selected = false;
                 // Selecting the current appearance state for each widget...
                 foreach (Widget widget in Widgets)

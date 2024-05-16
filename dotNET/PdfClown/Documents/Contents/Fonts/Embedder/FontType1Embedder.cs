@@ -66,7 +66,7 @@ namespace PdfClown.Documents.Contents.Fonts
             fontStream.Header.SetInt(PdfName.Length, pfbParser.Size);
             for (int i = 0; i < pfbParser.Lengths.Length; i++)
             {
-                fontStream.Header[new PdfName("Length" + (i + 1))] = PdfInteger.Get(pfbParser.Lengths[i]);
+                fontStream.Header[PdfName.Get("Length" + (i + 1), true)] = PdfInteger.Get(pfbParser.Lengths[i]);
             }
             fd.FontFile = new FontFile(doc, fontStream);
 
