@@ -134,7 +134,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 base.Page = value;
                 if (PageMarkupBoxes.Count > 0)
                 {
-                    ResetAppearance(out _);
+                    QueueRefreshAppearance();
                 }
             }
         }
@@ -151,7 +151,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     markupBoxes = null;
                     pageMarkupBoxes = null;
                     OnPropertyChanged(oldValue, value);
-                    ResetAppearance(out _);
+                    QueueRefreshAppearance();
                 }
             }
         }

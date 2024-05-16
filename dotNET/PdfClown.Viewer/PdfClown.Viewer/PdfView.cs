@@ -86,8 +86,8 @@ namespace PdfClown.Viewer
 
             UndoCommand = new Command(() => Undo(), () => CanUndo);
             RedoCommand = new Command(() => Redo(), () => CanRedo);
-            PrevPageCommand = new Command(() => PrevPage());
-            NextPageCommand = new Command(() => NextPage());
+            PrevPageCommand = new Command(() => PrevPage(), CanPrevPage);
+            NextPageCommand = new Command(() => NextPage(), CanNextPage);
         }
 
         public PdfViewFitMode FitMode
@@ -189,19 +189,27 @@ namespace PdfClown.Viewer
                     document.AnnotationRemoved += OnDocumentAnnotationRemoved;
                     document.EndOperation += OnDocumentEndOperation;
 
-                    CurrentPage = document.PageViews.FirstOrDefault();
-                    ScrollTo(CurrentPage);
+                    CurrentPageView = document.PageViews.FirstOrDefault();
+                    ScrollTo(CurrentPageView);
                 }
+                DocumentChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
         public SKSize DocumentSize => DocumentView?.Size ?? SKSize.Empty;
 
-        public PdfPageView CurrentPage
+        public PdfPage CurrentPage
+        {
+            get => CurrentPageView?.Page;
+            set => CurrentPageView = DocumentView.GetPageView(value);
+        }
+
+        public PdfPageView CurrentPageView
         {
             get
             {
-                if (currentPage == null || currentPage.DocumentView != DocumentView)
+                if (currentPage == null
+                    || currentPage.DocumentView != DocumentView)
                 {
                     currentPage = GetCenterPage();
                 }
@@ -213,7 +221,11 @@ namespace PdfClown.Viewer
                 {
                     currentPage = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(CurrentPage));
                     OnPropertyChanged(nameof(PageNumber));
+                    OnPropertyChanged(nameof(PageNumberWithScroll));
+                    ((Command)NextPageCommand).ChangeCanExecute();
+                    ((Command)PrevPageCommand).ChangeCanExecute();
                 }
             }
         }
@@ -273,46 +285,48 @@ namespace PdfClown.Viewer
             get => DocumentView?.PageViews.Count ?? 0;
         }
 
+        public int PageNumberWithScroll
+        {
+            get => PageNumber;
+            set
+            {
+                if (PageNumber != value)
+                {
+                    PageNumber = value <= 0 ? 1 : value > PagesCount ? PagesCount : value;
+                    ScrollTo(CurrentPageView);
+                }
+            }
+        }
+
         public int PageNumber
         {
-            get => (CurrentPage?.Index ?? -1) + 1;
+            get => (CurrentPageView?.Index ?? -1) + 1;
             set
             {
                 if (DocumentView == null
-                    || DocumentView.PageViews.Count == 0)
+                    || PagesCount == 0)
                 {
                     return;
                 }
                 var index = value - 1;
                 if (index < 0)
                 {
-                    index = DocumentView.PageViews.Count - 1;
+                    index = PagesCount - 1;
                 }
-                else if (index >= DocumentView.PageViews.Count)
+                else if (index >= PagesCount)
                 {
                     index = 0;
                 }
-
-                CurrentPage = DocumentView.PageViews[index];
-                OnPropertyChanged();
+                if ((index + 1) != PageNumber)
+                {
+                    CurrentPageView = DocumentView.PageViews[index];
+                }
             }
         }
 
         public ICommand NextPageCommand { get; set; }
 
-        public void NextPage()
-        {
-            PageNumber += 1;
-            ScrollTo(CurrentPage);
-        }
-
         public ICommand PrevPageCommand { get; set; }
-
-        public void PrevPage()
-        {
-            PageNumber -= 1;
-            ScrollTo(CurrentPage);
-        }
 
         public event EventHandler<AnnotationEventArgs> CheckCanRemove;
 
@@ -328,6 +342,16 @@ namespace PdfClown.Viewer
 
         public event EventHandler<AnnotationEventArgs> SelectedAnnotationChanged;
 
+        public event EventHandler<EventArgs> DocumentChanged;
+
+        public void NextPage() => PageNumberWithScroll += 1;
+
+        private bool CanNextPage() => PageNumber < PagesCount;
+
+        public void PrevPage() => PageNumberWithScroll -= 1;
+
+        private bool CanPrevPage() => PageNumber > 1;
+        
         private PdfPageView GetCenterPage()
         {
             if (DocumentView == null)
@@ -355,7 +379,7 @@ namespace PdfClown.Viewer
 
         private void OnFitModeChanged(PdfViewFitMode oldValue, PdfViewFitMode newValue)
         {
-            ScrollTo(CurrentPage);
+            ScrollTo(CurrentPageView);
         }
 
         private void OnPageBackgroundChanged(Color oldValue, Color newValue)
@@ -601,7 +625,7 @@ namespace PdfClown.Viewer
             base.OnVerticalValueChanged(oldValue, newValue);
             if (ScrollAnimation == null)
             {
-                CurrentPage = GetCenterPage();
+                CurrentPageView = GetCenterPage();
             }
         }
 
@@ -1339,8 +1363,8 @@ namespace PdfClown.Viewer
                             if (goToLocal.Destination is LocalDestination localDestination
                                 && localDestination.Page is PdfPage goToPage)
                             {
-                                CurrentPage = DocumentView.GetPageView(goToPage);
-                                ScrollTo(CurrentPage);
+                                CurrentPage = goToPage;
+                                ScrollTo(CurrentPageView);
                             }
                         }
                         else if (link.Target is GoToURI toToUri)
@@ -1352,8 +1376,8 @@ namespace PdfClown.Viewer
                             && localDestination.Page is PdfPage goToPage)
                         {
                             {
-                                CurrentPage = DocumentView.GetPageView(goToPage);
-                                ScrollTo(CurrentPage);
+                                CurrentPage = goToPage;
+                                ScrollTo(CurrentPageView);
                             }
                         }
 
@@ -1404,7 +1428,7 @@ namespace PdfClown.Viewer
         {
             base.OnSizeAllocated(width, height);
             UpdateCurrentMatrix();
-            ScrollTo(CurrentPage);
+            ScrollTo(CurrentPageView);
         }
 
         public void Save()
@@ -1474,6 +1498,8 @@ namespace PdfClown.Viewer
             DocumentView = null;
             document?.Dispose();
         }
+        
+        public void ScrollTo(PdfPage page) => ScrollTo(DocumentView.GetPageView(page));
 
         public void ScrollTo(PdfPageView page)
         {
@@ -1499,8 +1525,8 @@ namespace PdfClown.Viewer
 
             var matrix = SKMatrix.CreateScale(scale, scale);
             var bound = matrix.MapRect(page.Bounds);
-            var top = bound.Top - 10;
-            var left = bound.Left - 10;
+            var top = bound.Top - (state.WindowArea.MidY - bound.Height / 2);
+            var left = bound.Left - (state.WindowArea.MidX - bound.Width / 2);
             AnimateScroll(Math.Max(top, 0), Math.Max(left, 0));
         }
 
@@ -1516,8 +1542,7 @@ namespace PdfClown.Viewer
             {
                 return;
             }
-            var matrix = SKMatrix.CreateIdentity()
-                .PreConcat(SKMatrix.CreateScale(scale, scale))
+            var matrix = SKMatrix.CreateScale(scale, scale)
                 .PreConcat(pageView.Matrix);
             var bound = annotation.GetViewBounds(matrix);
             var top = bound.Top - (state.WindowArea.MidY - bound.Height / 2);
@@ -1646,7 +1671,7 @@ namespace PdfClown.Viewer
             }
             return false;
         }
-        
+
         public ICommand UndoCommand { get; set; }
 
         public bool Undo()

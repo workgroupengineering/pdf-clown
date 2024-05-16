@@ -1,8 +1,7 @@
-﻿using PdfClown.Documents.Interaction.Annotations;
-using System;
+﻿using System;
 using System.ComponentModel;
 
-namespace PdfClown.Viewer
+namespace PdfClown.Documents.Interaction.Annotations
 {
     public class AnnotationEventArgs : CancelEventArgs
     {

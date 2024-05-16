@@ -33,9 +33,6 @@ namespace PdfClown.Util
     */
     public static class EnumUtils
     {
-        #region static
-        #region interface
-        #region public
         public static T Mask<T>(T map, T key, bool enabled) where T : Enum
         {
             int mapValue = Unsafe.As<T, int>(ref map);
@@ -46,8 +43,5 @@ namespace PdfClown.Util
             { mapValue ^= keyValue; }
             return Unsafe.As<int, T>(ref mapValue);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

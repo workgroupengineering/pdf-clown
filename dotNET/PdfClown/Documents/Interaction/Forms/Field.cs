@@ -160,10 +160,10 @@ of the explicit representation of a field -- they are retrieved everytime client
                 reference.Wrapper = referenceField;
                 return referenceField;
             }
-            PdfDictionary dataObject = (PdfDictionary)reference.DataObject;
-            PdfName fieldType = (PdfName)GetInheritableAttribute(dataObject, PdfName.FT) ?? PdfName.Tx;
-            PdfInteger fieldFlags = (PdfInteger)GetInheritableAttribute(dataObject, PdfName.Ff);
-            FlagsEnum fieldFlagsValue = (FlagsEnum)(fieldFlags?.IntValue ?? 0);
+            var dataObject = (PdfDictionary)reference.DataObject;
+            var fieldType = (PdfName)GetInheritableAttribute(dataObject, PdfName.FT) ?? PdfName.Tx;
+            var fieldFlags = (PdfInteger)GetInheritableAttribute(dataObject, PdfName.Ff);
+            var fieldFlagsValue = (FlagsEnum)(fieldFlags?.IntValue ?? 0);
             if (fieldType.Equals(PdfName.Btn)) // Button.
             {
                 if ((fieldFlagsValue & FlagsEnum.Pushbutton) == FlagsEnum.Pushbutton) // Pushbutton.

@@ -459,13 +459,16 @@ namespace PdfClown.Documents.Interaction.Annotations
                     }
 
                 }
+                if (Contents != null)
+                {
+                    var block = new BlockComposer(composer);
+                    block.Begin(SKRect.Inflate(textBounds, -0.5F, -0.5F), XAlignmentEnum.Left, YAlignmentEnum.Top);
+                    composer.SetFillColor(DeviceRGBColor.Default);
+                    composer.SetFont(font, fontSize);
 
-                var block = new BlockComposer(composer);
-                block.Begin(SKRect.Inflate(textBounds, -0.5F, -0.5F), XAlignmentEnum.Left, YAlignmentEnum.Top);
-                composer.SetFillColor(DeviceRGBColor.Default);
-                composer.SetFont(font, fontSize);
-                block.ShowText(Contents);
-                block.End();
+                    block.ShowText(Contents);
+                    block.End();
+                }
 
                 composer.Flush();
             }
@@ -685,7 +688,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
     public class TextBottomLeftControlPoint : FreeTextControlPoint
     {
-        public override SKPoint GetPoint()=> FreeText.TextBottomLeftPoint;
+        public override SKPoint GetPoint() => FreeText.TextBottomLeftPoint;
 
         public override void SetPoint(SKPoint point)
         {

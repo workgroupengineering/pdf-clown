@@ -343,8 +343,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 BaseDataObject[PdfName.LE] = endStylesObject = new PdfArray(2)
                 {
-                      new PdfName(DefaultLineEndStyle.GetName()),
-                      new PdfName(DefaultLineEndStyle.GetName())
+                      PdfName.Get(DefaultLineEndStyle.GetName()),
+                      PdfName.Get(DefaultLineEndStyle.GetName())
                 };
             }
             return endStylesObject;
