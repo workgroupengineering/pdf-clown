@@ -154,11 +154,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                 return null;
             if (baseObject.Wrapper is Destination destination)
                 return destination;
-            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is Destination referenceDestination)
-            {
-                baseObject.Wrapper = referenceDestination;
-                return referenceDestination;
-            }
+            
             PdfArray dataObject = (PdfArray)baseObject.Resolve();
             PdfDirectObject pageObject = dataObject[0];
             if (pageObject is PdfReference)

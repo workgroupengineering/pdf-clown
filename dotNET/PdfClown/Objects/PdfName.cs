@@ -765,7 +765,7 @@ namespace PdfClown.Objects
             }
         }
 
-        public string StringValue => (string)Value;
+        public string StringValue => RawValue;
 
         public override object Value
         {

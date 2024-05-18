@@ -59,7 +59,7 @@ namespace PdfClown.Documents.Files
             PdfArray itemPairs = BaseDataObject;
             for (int index = 0, length = itemPairs.Count; index < length; index += 2)
             {
-                if (((PdfTextString)itemPairs[index]).Value.Equals(key))
+                if (itemPairs.GetString(index).Equals(key, StringComparison.Ordinal))
                     return true;
             }
             return false;
@@ -73,7 +73,7 @@ namespace PdfClown.Documents.Files
                 PdfArray itemPairs = BaseDataObject;
                 for (int index = 0, length = itemPairs.Count; index < length; index += 2)
                 {
-                    keys.Add((string)((PdfTextString)itemPairs[index]).Value);
+                    keys.Add(itemPairs.GetString(index));
                 }
                 return keys;
             }
@@ -84,7 +84,7 @@ namespace PdfClown.Documents.Files
             PdfArray itemPairs = BaseDataObject;
             for (int index = 0, length = itemPairs.Count; index < length; index += 2)
             {
-                if (((PdfTextString)itemPairs[index]).Value.Equals(key))
+                if (itemPairs.GetString(index).Equals(key, StringComparison.Ordinal))
                 {
                     itemPairs.RemoveAt(index); // Key removed.
                     itemPairs.RemoveAt(index); // Value removed.
@@ -101,7 +101,7 @@ namespace PdfClown.Documents.Files
                 PdfArray itemPairs = BaseDataObject;
                 for (int index = 0, length = itemPairs.Count; index < length; index += 2)
                 {
-                    if (((PdfTextString)itemPairs[index]).Value.Equals(key))
+                    if (itemPairs.GetString(index).Equals(key, StringComparison.Ordinal))
                         return Wrap<EmbeddedFile>(itemPairs[index + 1]);
                 }
                 return null;
@@ -112,7 +112,7 @@ namespace PdfClown.Documents.Files
                 for (int index = 0, length = itemPairs.Count; index < length; index += 2)
                 {
                     // Already existing entry?
-                    if (((PdfTextString)itemPairs[index]).Value.Equals(key))
+                    if (itemPairs.GetString(index).Equals(key, StringComparison.Ordinal))
                     {
                         itemPairs[index + 1] = value.BaseObject;
                         return;
@@ -182,9 +182,8 @@ namespace PdfClown.Documents.Files
             for (int index = 0, length = itemPairs.Count; index < length; index += 2)
             {
                 yield return new KeyValuePair<string, EmbeddedFile>(
-                  (string)((PdfTextString)itemPairs[index]).Value,
-                  Wrap<EmbeddedFile>(itemPairs[index + 1])
-                  );
+                  itemPairs.GetString(index),
+                  Wrap<EmbeddedFile>(itemPairs[index + 1]));
             }
         }
 

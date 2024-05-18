@@ -39,10 +39,12 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public sealed class LayerConfiguration : PdfObjectWrapper<PdfDictionary>, ILayerConfiguration
     {
+        private ISet<PdfName> intents;
+
         /**
-          <summary>Base state used to initialize the states of all the layers in a document when this
-          configuration is applied.</summary>
-        */
+<summary>Base state used to initialize the states of all the layers in a document when this
+configuration is applied.</summary>
+*/
         internal enum BaseStateEnum
         {
             /**
@@ -74,24 +76,7 @@ namespace PdfClown.Documents.Contents.Layers
 
         public ISet<PdfName> Intents
         {
-            get
-            {
-                ISet<PdfName> intents = new HashSet<PdfName>();
-                PdfDataObject intentObject = BaseDataObject.Resolve(PdfName.Intent);
-                if (intentObject != null)
-                {
-                    if (intentObject is PdfArray) // Multiple intents.
-                    {
-                        foreach (PdfDirectObject intentItem in (PdfArray)intentObject)
-                        { intents.Add((PdfName)intentItem); }
-                    }
-                    else // Single intent.
-                    { intents.Add((PdfName)intentObject); }
-                }
-                else
-                { intents.Add(IntentEnum.View.Name()); }
-                return intents;
-            }
+            get => intents ??= GetIntents();
             set
             {
                 PdfDirectObject intentObject = null;
@@ -113,6 +98,25 @@ namespace PdfClown.Documents.Contents.Layers
                 }
                 BaseDataObject[PdfName.Intent] = intentObject;
             }
+        }
+
+        private ISet<PdfName> GetIntents()
+        {
+            ISet<PdfName> intents = new HashSet<PdfName>();
+            PdfDataObject intentObject = BaseDataObject.Resolve(PdfName.Intent);
+            if (intentObject != null)
+            {
+                if (intentObject is PdfArray) // Multiple intents.
+                {
+                    foreach (PdfDirectObject intentItem in (PdfArray)intentObject)
+                    { intents.Add((PdfName)intentItem); }
+                }
+                else // Single intent.
+                { intents.Add((PdfName)intentObject); }
+            }
+            else
+            { intents.Add(IntentEnum.View.Name()); }
+            return intents;
         }
 
         public Array<OptionGroup> OptionGroups => Wrap<Array<OptionGroup>>(BaseDataObject.Get<PdfArray>(PdfName.RBGroups));

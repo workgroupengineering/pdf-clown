@@ -33,6 +33,7 @@ using PdfClown.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
@@ -91,39 +92,39 @@ namespace PdfClown.Documents.Interaction.Forms
                     IList<string> values = new List<string>();
                     if (valueObject != null)
                     {
-                        if (valueObject is PdfArray)
+                        if (valueObject is PdfArray array)
                         {
-                            foreach (PdfDirectObject valueItemObject in (PdfArray)valueObject)
-                            { values.Add(((PdfString)valueItemObject).StringValue); }
+                            foreach (var valueItemObject in array.OfType<IPdfString>())
+                            { values.Add(valueItemObject.StringValue); }
                         }
                         else
-                        { values.Add(((PdfString)valueObject).StringValue); }
+                        { values.Add(((IPdfString)valueObject).StringValue); }
                     }
                     return values;
                 }
                 else
-                    return valueObject != null ? ((PdfString)valueObject).Value : null;
+                    return valueObject != null ? ((IPdfString)valueObject).StringValue : null;
             }
             set
             {
                 if (value is string)
                 { BaseDataObject[PdfName.V] = new PdfTextString((string)value); }
-                else if (value is IList<string>)
+                else if (value is IList<string> list)
                 {
                     if (!MultiSelect)
                         throw new ArgumentException("IList<string> value is only allowed when MultiSelect flag is active.");
 
                     PdfDataObject oldValueObject = BaseDataObject.Resolve(PdfName.V);
                     PdfArray valuesObject;
-                    if (oldValueObject is PdfArray)
+                    if (oldValueObject is PdfArray array)
                     {
-                        valuesObject = (PdfArray)oldValueObject;
+                        valuesObject = array;
                         valuesObject.Clear();
                     }
                     else
                     { valuesObject = new PdfArray(); }
 
-                    foreach (string valueItem in (IList<string>)value)
+                    foreach (string valueItem in list)
                     { valuesObject.Add(new PdfTextString(valueItem)); }
 
                     if (valuesObject != oldValueObject)

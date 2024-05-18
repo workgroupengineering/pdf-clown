@@ -131,10 +131,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => base.Page;
             set
             {
-                base.Page = value;
-                if (PageMarkupBoxes.Count > 0)
+                if (base.Page != value)
                 {
-                    QueueRefreshAppearance();
+                    base.Page = value;
+                    if (PageMarkupBoxes.Count > 0)
+                    {
+                        QueueRefreshAppearance();
+                    }
                 }
             }
         }

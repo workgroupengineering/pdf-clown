@@ -114,18 +114,11 @@ namespace PdfClown.Objects
             protected set => this.value = value;
         }
 
-        public override bool Updateable
+        public override PdfObjectStatus Status
         {
-            get => false;  // NOTE: Simple objects are immutable.
-            set {/* NOOP: As simple objects are immutable, no update can be done. */}
-        }
-
-        public sealed override bool Updated
-        {
-            get => false;  // NOTE: Simple objects are immutable.
-            protected internal set
-            {/* NOOP: As simple objects are immutable, no update can be done. */}
-        }
+            get => PdfObjectStatus.None; // NOTE: Simple objects are immutable.
+            protected internal set { }// NOOP: As simple objects are immutable, no update can be done.
+        }        
 
         /**
           <summary>Gets/Sets the high-level representation of the value.</summary>
@@ -134,13 +127,7 @@ namespace PdfClown.Objects
         {
             get => value;
             protected set => this.value = (TValue)value;
-        }
-
-        protected internal override bool Virtual
-        {
-            get => false;
-            set {/* NOOP */}
-        }
+        }       
 
         public override PdfObject Clone(PdfFile context) => this;  // NOTE: Simple objects are immutable.
 

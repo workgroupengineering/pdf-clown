@@ -61,11 +61,7 @@ namespace PdfClown.Documents.Functions
                 return null;
             if (baseObject.Wrapper is Function function)
                 return function;
-            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is Function referenceFunction)
-            {
-                baseObject.Wrapper = referenceFunction;
-                return referenceFunction;
-            }
+            
             var dataObject = baseObject.Resolve();
 
             if (dataObject is PdfName dataName

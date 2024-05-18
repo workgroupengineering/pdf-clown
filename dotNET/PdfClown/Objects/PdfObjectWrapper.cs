@@ -32,12 +32,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Base high-level representation of a weakly-typed PDF object.</summary>
-    */
+
+    ///<summary>Base high-level representation of a weakly-typed PDF object.</summary>
     public abstract class PdfObjectWrapper : IPdfObjectWrapper
     {
         /**
@@ -59,70 +59,48 @@ namespace PdfClown.Objects
                 return null;
         }
 
-        public static T WrapAlternate<T>(PdfDirectObject baseObject)
-            where T : IPdfObjectWrapper
-        {
-            return baseObject != null
-                  ? (baseObject.AlternateWrapper is T exist ? exist
-                    : (T)Activator.CreateInstance(typeof(T), baseObject))
-                  : default(T);
-        }
-
         public static T Wrap<T>(PdfDirectObject baseObject)
             where T : IPdfObjectWrapper
         {
             return baseObject != null
-                ? (baseObject.Wrapper is T exist ? exist
-                  : baseObject is PdfReference reference && reference.DataObject?.Wrapper is T dexist ? (T)(baseObject.Wrapper = dexist)
+                ? (baseObject.Wrapper is T exist ? exist                  
                   : (T)Activator.CreateInstance(typeof(T), baseObject))
                 : default(T);
         }
 
+        public static T Wrap2<T>(PdfDirectObject baseObject)
+            where T : PdfObjectWrapper2
+        {
+            return baseObject != null
+                  ? (baseObject.Wrapper2 is T exist ? exist
+                    : (T)Activator.CreateInstance(typeof(T), baseObject))
+                  : default(T);
+        }
+
+        public static T Wrap3<T>(PdfDirectObject baseObject)
+            where T : PdfObjectWrapper3
+        {
+            return baseObject != null
+                  ? (baseObject.Wrapper3 is T exist ? exist
+                    : (T)Activator.CreateInstance(typeof(T), baseObject))
+                  : default(T);
+        }
+
         private PdfDirectObject baseObject;
 
-        /**
-          <summary>Instantiates an empty wrapper.</summary>
-        */
+        ///<summary>Instantiates an empty wrapper.</summary>
         protected PdfObjectWrapper()
         { }
 
-        /**
-          <summary>Instantiates a wrapper from the specified base object.</summary>
-          <param name="baseObject">PDF object backing this wrapper. MUST be a <see cref="PdfReference"/>
-          every time available.</param>
-        */
+        ///<summary>Instantiates a wrapper from the specified base object.</summary>
+        ///<param name="baseObject">PDF object backing this wrapper. MUST be a <see cref="PdfReference"/>
+        ///every time available.</param>
         public PdfObjectWrapper(PdfDirectObject baseObject)
         {
             BaseObject = baseObject;
 
             if (baseObject != null)
-                baseObject.Wrapper = this;
-            if (baseObject is PdfReference reference && reference.DataObject != null)
-                reference.DataObject.Wrapper = this;
-        }
-
-        /**
-          <summary>Gets a clone of the object, registered inside the specified document context using
-          the default object cloner.</summary>
-        */
-        public virtual object Clone(PdfDocument context)
-        {
-            return Clone(context.File.Cloner);
-        }
-
-        /**
-          <summary>Gets a clone of the object, registered using the specified object cloner.</summary>
-        */
-        public virtual object Clone(Cloner cloner)
-        {
-            PdfObjectWrapper clone = (PdfObjectWrapper)base.MemberwiseClone();
-            clone.BaseObject = (PdfDirectObject)BaseObject.Clone(cloner);
-            if (clone.BaseObject.Reference != null)
-                clone.BaseObject.Reference.Wrapper = clone;
-            if (clone.BaseObject.Wrapper == null)
-                clone.BaseObject.Wrapper = clone;
-
-            return clone;
+                baseObject.Wrapper = this;            
         }
 
         /**
@@ -135,6 +113,45 @@ namespace PdfClown.Objects
         */
         public PdfIndirectObject DataContainer => baseObject.DataContainer;
 
+        ///<summary>Gets/Sets the metadata associated to this object.</summary>
+        ///<returns><code>null</code>, if base data object's type isn't suitable (only
+        ///<see cref="PdfDictionary"/> and <see cref="PdfStream"/> objects are allowed).</returns>
+        ///<throws>NotSupportedException If base data object's type isn't suitable (only
+        ///<see cref="PdfDictionary"/> and <see cref="PdfStream"/> objects are allowed).</throws>
+        public Metadata Metadata
+        {
+            get
+            {
+                PdfDictionary dictionary = Dictionary;
+                if (dictionary == null)
+                    return null;
+
+                return Metadata.Wrap(dictionary.Get<PdfStream>(PdfName.Metadata, false));
+            }
+            set
+            {
+                PdfDictionary dictionary = Dictionary;
+                if (dictionary == null)
+                    throw new NotSupportedException("Metadata can be attached only to PdfDictionary/PdfStream base data objects.");
+
+                dictionary[PdfName.Metadata] = PdfObjectWrapper.GetBaseObject(value);
+            }
+        }
+
+        protected virtual PdfDictionary Dictionary
+        {
+            get
+            {
+                var baseDataObject = BaseDataObject;
+                if (baseDataObject is PdfDictionary dictionary)
+                    return dictionary;
+                else if (baseDataObject is PdfStream stream)
+                    return stream.Header;
+                else
+                    return null;
+            }
+        }
+
         /**
           <summary>Removes the object from its document context.</summary>
           <remarks>Only indirect objects can be removed through this method; direct objects have to be
@@ -144,10 +161,44 @@ namespace PdfClown.Objects
         */
         public virtual bool Delete() => baseObject.Delete();
 
-        /**
-          <summary>Gets the document context.</summary>
-        */
+        ///<summary>Gets the document context.</summary>
         public PdfDocument Document => File?.Document;
+
+        ///<summary>Gets the file context.</summary>
+        public PdfFile File => baseObject.File;
+
+        public virtual PdfDirectObject BaseObject
+        {
+            get => baseObject;
+            protected set => baseObject = value;
+        }
+
+        ///<summary>Gets the underlying data object.</summary>
+        public PdfDataObject BaseDataObject => PdfObject.Resolve(BaseObject);
+
+        ///<summary>Gets whether the underlying data object is concrete.</summary>
+        public bool Exists()
+        {
+            return !BaseDataObject.Virtual;
+        }
+
+        ///<summary>Gets a clone of the object, registered inside the specified document context using
+        ///the default object cloner.</summary>
+        public virtual object Clone(PdfDocument context)
+        {
+            return Clone(context.File.Cloner);
+        }
+
+        ///<summary>Gets a clone of the object, registered using the specified object cloner.</summary>
+        public virtual object Clone(Cloner cloner)
+        {
+            PdfObjectWrapper clone = (PdfObjectWrapper)base.MemberwiseClone();
+            clone.BaseObject = (PdfDirectObject)BaseObject.Clone(cloner);
+            if (clone.BaseObject != null)
+                clone.BaseObject.Wrapper = clone;
+
+            return clone;
+        }
 
         public override bool Equals(object other)
         {
@@ -156,22 +207,11 @@ namespace PdfClown.Objects
               && ((PdfObjectWrapper)other).baseObject.Equals(baseObject);
         }
 
-        /**
-          <summary>Gets the file context.</summary>
-        */
-        public PdfFile File => baseObject.File;
-
         public override int GetHashCode() => baseObject.GetHashCode();
 
         public override string ToString()
         {
             return $"{GetType().Name} {{{(BaseObject is PdfReference ? (PdfObject)BaseObject.DataContainer : BaseObject)}}}";
-        }
-
-        public virtual PdfDirectObject BaseObject
-        {
-            get => baseObject;
-            protected set => baseObject = value;
         }
 
         /**
@@ -266,10 +306,8 @@ namespace PdfClown.Objects
             }
         }
 
-        /**
-          <summary>Retrieves the name possibly associated to this object, walking through the document's
-          name dictionary.</summary>
-        */
+        ///<summary>Retrieves the name possibly associated to this object, walking through the document's
+        ///name dictionary.</summary>
         protected virtual PdfString RetrieveName()
         {
             object names = Document.Names.Get(GetType());
@@ -293,27 +331,25 @@ namespace PdfClown.Objects
         }
     }
 
-    /**
-      <summary>High-level representation of a strongly-typed PDF object.</summary>
-      <remarks>
-        <para>Specialized objects don't inherit directly from their low-level counterparts (e.g.
-          <see cref="PdfClown.Documents.Contents.ContentWrapper">Contents</see> extends <see
-          cref="PdfClown.Objects.PdfStream">PdfStream</see>, <see
-          cref="PdfClown.Documents.Pages">Pages</see> extends <see
-          cref="PdfClown.Objects.PdfArray">PdfArray</see> and so on) because there's no plain
-          one-to-one mapping between primitive PDF types and specialized instances: the
-          <code>Content</code> entry of <code>Page</code> dictionaries may be a simple reference to a
-          <code>PdfStream</code> or a <code>PdfArray</code> of references to <code>PdfStream</code>s,
-          <code>Pages</code> collections may be spread across a B-tree instead of a flat
-          <code>PdfArray</code> and so on.
-        </para>
-        <para>So, in order to hide all these annoying inner workings, I chose to adopt a composition
-          pattern instead of the apparently-reasonable (but actually awkward!) inheritance pattern.
-          Nonetheless, users can navigate through the low-level structure getting the <see
-          cref="BaseDataObject">BaseDataObject</see> backing this object.
-        </para>
-      </remarks>
-    */
+      ///<summary>High-level representation of a strongly-typed PDF object.</summary>
+      ///<remarks>
+      ///  <para>Specialized objects don't inherit directly from their low-level counterparts (e.g.
+      ///    <see cref="PdfClown.Documents.Contents.ContentWrapper">Contents</see> extends <see
+      ///    cref="PdfClown.Objects.PdfStream">PdfStream</see>, <see
+      ///    cref="PdfClown.Documents.Pages">Pages</see> extends <see
+      ///    cref="PdfClown.Objects.PdfArray">PdfArray</see> and so on) because there's no plain
+      ///    one-to-one mapping between primitive PDF types and specialized instances: the
+      ///    <code>Content</code> entry of <code>Page</code> dictionaries may be a simple reference to a
+      ///    <code>PdfStream</code> or a <code>PdfArray</code> of references to <code>PdfStream</code>s,
+      ///    <code>Pages</code> collections may be spread across a B-tree instead of a flat
+      ///    <code>PdfArray</code> and so on.
+      ///  </para>
+      ///  <para>So, in order to hide all these annoying inner workings, I chose to adopt a composition
+      ///    pattern instead of the apparently-reasonable (but actually awkward!) inheritance pattern.
+      ///    Nonetheless, users can navigate through the low-level structure getting the <see
+      ///    cref="BaseDataObject">BaseDataObject</see> backing this object.
+      ///  </para>
+      ///</remarks>
     public abstract class PdfObjectWrapper<TDataObject> : PdfObjectWrapper
       where TDataObject : PdfDataObject
     {
@@ -355,58 +391,7 @@ namespace PdfClown.Objects
             : this(context != null ? context.Register(baseDataObject) : (PdfDirectObject)(PdfDataObject)baseDataObject)
         { }
 
-        /**
-          <summary>Gets the underlying data object.</summary>
-        */
-        public TDataObject BaseDataObject => (TDataObject)PdfObject.Resolve(BaseObject);
-
-        /**
-          <summary>Gets whether the underlying data object is concrete.</summary>
-        */
-        public bool Exists()
-        {
-            return !BaseDataObject.Virtual;
-        }
-
-        /**
-          <summary>Gets/Sets the metadata associated to this object.</summary>
-          <returns><code>null</code>, if base data object's type isn't suitable (only
-          <see cref="PdfDictionary"/> and <see cref="PdfStream"/> objects are allowed).</returns>
-          <throws>NotSupportedException If base data object's type isn't suitable (only
-          <see cref="PdfDictionary"/> and <see cref="PdfStream"/> objects are allowed).</throws>
-        */
-        public Metadata Metadata
-        {
-            get
-            {
-                PdfDictionary dictionary = Dictionary;
-                if (dictionary == null)
-                    return null;
-
-                return Metadata.Wrap(dictionary.Get<PdfStream>(PdfName.Metadata, false));
-            }
-            set
-            {
-                PdfDictionary dictionary = Dictionary;
-                if (dictionary == null)
-                    throw new NotSupportedException("Metadata can be attached only to PdfDictionary/PdfStream base data objects.");
-
-                dictionary[PdfName.Metadata] = PdfObjectWrapper.GetBaseObject(value);
-            }
-        }
-
-        protected virtual PdfDictionary Dictionary
-        {
-            get
-            {
-                TDataObject baseDataObject = BaseDataObject;
-                if (baseDataObject is PdfDictionary dictionary)
-                    return dictionary;
-                else if (baseDataObject is PdfStream stream)
-                    return stream.Header;
-                else
-                    return null;
-            }
-        }
+        ///<summary>Gets the underlying data object.</summary>
+        public new TDataObject BaseDataObject => (TDataObject)PdfObject.Resolve(BaseObject);
     }
 }

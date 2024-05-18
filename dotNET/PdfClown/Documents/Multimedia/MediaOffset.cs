@@ -120,12 +120,7 @@ namespace PdfClown.Documents.Multimedia
                 return null;
             if (baseObject.Wrapper is MediaOffset offset)
                 return offset;
-            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is MediaOffset referenceOffset)
-            {
-                baseObject.Wrapper = referenceOffset;
-                return referenceOffset;
-            }
-
+            
             PdfDictionary dataObject = (PdfDictionary)baseObject.Resolve();
             PdfName offsetType = (PdfName)dataObject[PdfName.S];
             if (offsetType == null

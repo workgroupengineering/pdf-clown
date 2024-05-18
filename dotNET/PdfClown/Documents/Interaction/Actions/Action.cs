@@ -49,12 +49,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 return null;
             if (baseObject.Wrapper is Action action)
                 return action;
-            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is Action referenceAction)
-            {
-                baseObject.Wrapper = referenceAction;
-                return referenceAction;
-            }
-
+            
             PdfDictionary dataObject = (PdfDictionary)baseObject.Resolve();
             PdfName actionType = (PdfName)dataObject[PdfName.S];
             if (actionType == null

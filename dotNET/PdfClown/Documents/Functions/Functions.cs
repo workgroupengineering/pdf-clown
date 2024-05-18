@@ -32,32 +32,23 @@ using System.Collections.Generic;
 namespace PdfClown.Documents.Functions
 {
     /**
-      <summary>List of 1-input functions combined in a <see cref="Parent">stitching function</see> [PDF:1.6:3.9.3].</summary>
+      <summary>List of 1-input functions combined in a Parent stitching function</see> [PDF:1.6:3.9.3].</summary>
     */
     [PDF(VersionEnum.PDF13)]
     public sealed class Functions : PdfObjectWrapper<PdfArray>, IList<Function>
     {
-        public static Functions Wrap(PdfDirectObject baseObject, Type3Function parent)
+        public static Functions Wrap(PdfDirectObject baseObject)
         {
-            if (baseObject.Wrapper is Functions functions && functions.Parent == parent)
+            if (baseObject.Wrapper is Functions functions)
                 return functions;
-            return new Functions(baseObject, parent);
-        }
-        /**
-          <summary>Parent function.</summary>
-        */
-        private Type3Function parent;
+            return new Functions(baseObject);
+        }       
 
-        public Functions(PdfDirectObject baseObject, Type3Function parent) : base(baseObject)
-        { this.parent = parent; }
+        public Functions(PdfDirectObject baseObject) : base(baseObject)
+        { }
 
         public override Object Clone(PdfDocument context)
         { return new NotImplementedException(); }
-
-        /**
-          <summary>Gets the parent stitching function.</summary>
-        */
-        public Type3Function Parent => parent;
 
         public int IndexOf(Function value) => BaseDataObject.IndexOf(value.BaseObject);
 

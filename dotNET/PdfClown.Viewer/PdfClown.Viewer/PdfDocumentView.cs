@@ -35,6 +35,7 @@ namespace PdfClown.Viewer
         private readonly List<PdfPageView> pageViews = new List<PdfPageView>();
         private readonly Dictionary<int, PdfPageView> pagesIndex = new Dictionary<int, PdfPageView>();
         private readonly float indent = 10;
+        private int iniFieldsCount;
         private Fields fields;
 
         public PdfFile File { get; private set; }
@@ -235,7 +236,7 @@ namespace PdfClown.Viewer
             {
                 if (fields == null || fields != Document.Form.Fields)
                 {
-                    Document.Form.RefreshCache();
+                    iniFieldsCount = Document.Form.Fields.Count;
                     fields = Document.Form.Fields;
                 }
                 return fields;
@@ -246,11 +247,7 @@ namespace PdfClown.Viewer
 
         public Field AddField(Field field)
         {
-            if (string.IsNullOrEmpty(field.Name))
-            {
-                field.Name = Fields.GenerateName(field.GetType());
-            }
-            if (!Fields.ContainsKey(field.Name))
+            if (!Fields.ContainsKey(field.FullName))
             {
                 Fields.Add(field);
             }
@@ -299,12 +296,13 @@ namespace PdfClown.Viewer
             if (page != null)
             {
                 annotation.Page = page;
-                if (annotation is Widget widget && widget.Field != null)
+                
+                if (annotation is Widget widget 
+                    && widget.NewField != null)
                 {
-                    AddField(widget.Field);
-                    list.Add(annotation);
+                    AddField(widget.NewField);
                 }
-                else if (!page.Annotations.Contains(annotation))
+                if (!page.Annotations.Contains(annotation))
                 {
                     page.Annotations.Add(annotation);
                     list.Add(annotation);
@@ -342,9 +340,10 @@ namespace PdfClown.Viewer
                     }
                 }
             }
-            if (annotation is Widget widget && widget.Field != null)
+            if (annotation is Widget widget 
+                && widget.NewField != null)
             {
-                Fields.Remove(widget.Field);
+                Fields.Remove(widget.NewField);
             }
 
             annotation.Remove();

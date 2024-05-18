@@ -138,7 +138,7 @@ namespace PdfClown.Objects
 
         public DateTime? DateValue
         {
-            get => date ??= ToDate((string)base.Value);
+            get => date ??= ToDate(StringValue);
             set => Value = value;
         }
     }

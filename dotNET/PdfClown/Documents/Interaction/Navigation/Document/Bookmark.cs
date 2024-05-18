@@ -155,7 +155,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         public string Title
         {
-            get => (string)((PdfTextString)BaseDataObject[PdfName.Title]).Value;
+            get => BaseDataObject.GetString(PdfName.Title);
             set => BaseDataObject[PdfName.Title] = new PdfTextString(value);
         }
 

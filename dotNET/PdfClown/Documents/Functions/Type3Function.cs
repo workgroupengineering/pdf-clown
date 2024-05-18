@@ -123,6 +123,6 @@ namespace PdfClown.Documents.Functions
           <summary>Gets the 1-input functions making up this stitching function.</summary>
           <remarks>The output dimensionality of all functions must be the same.</remarks>
         */
-        public Functions Functions => Functions.Wrap(Dictionary[PdfName.Functions], this);
+        public Functions Functions => Functions.Wrap(Dictionary[PdfName.Functions]);
     }
 }

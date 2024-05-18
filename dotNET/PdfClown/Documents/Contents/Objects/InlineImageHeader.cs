@@ -43,6 +43,7 @@ namespace PdfClown.Documents.Contents.Objects
     public sealed class InlineImageHeader : Operation, IDictionary<PdfName, PdfDirectObject>
     {
         private float[] decode;
+        private ICollection<PdfName> keys;
 
         // [FIX:0.0.4:2] Null operator.
         public InlineImageHeader(IList<PdfDirectObject> operands) : base(String.Empty, operands)
@@ -124,15 +125,15 @@ namespace PdfClown.Documents.Contents.Objects
         public bool ContainsKey(PdfName key)
         { return GetKeyIndex(key) != null; }
 
-        public ICollection<PdfName> Keys
+        public ICollection<PdfName> Keys => keys ??= GetKeys();
+
+        private ICollection<PdfName> GetKeys()
         {
-            get
-            {
-                ICollection<PdfName> keys = new List<PdfName>();
-                for (int index = 0, length = operands.Count - 1; index < length; index += 2)
-                { keys.Add((PdfName)operands[index]); }
-                return keys;
-            }
+            ICollection<PdfName> keys = new List<PdfName>();
+            for (int index = 0, length = operands.Count - 1; index < length; index += 2)
+            { keys.Add((PdfName)operands[index]); }
+
+            return keys;
         }
 
         public bool Remove(PdfName key)

@@ -78,7 +78,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         public bool PopBool()
         {
-            return ((PdfBoolean)stack.Pop()).BooleanValue;
+            return ((PdfBoolean)stack.Pop()).RawValue;
         }
 
         public InstructionSequence PopInstruction()

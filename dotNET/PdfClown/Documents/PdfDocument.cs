@@ -63,7 +63,7 @@ namespace PdfClown.Documents
         internal ConcurrentDictionary<TrueTypeFont, FontType0> Type0FontCache = new();
 
         private DocumentConfiguration configuration;
-        public readonly ManualResetEventSlim LockObject = new ManualResetEventSlim(true);
+        public readonly ManualResetEventSlim LockObject = new(true);
 
         internal PdfDocument(PdfFile context) :
             base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Catalog } })

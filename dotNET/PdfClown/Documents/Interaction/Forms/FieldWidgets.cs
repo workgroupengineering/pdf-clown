@@ -40,12 +40,12 @@ namespace PdfClown.Documents.Interaction.Forms
       <summary>Field widget annotations [PDF:1.6:8.6].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class FieldWidgets : PdfObjectWrapper<PdfDataObject>, IList<Widget>
+    public sealed class FieldWidgets : PdfObjectWrapper3<PdfDataObject>, IList<Widget>
     {
         public static FieldWidgets Wrap(PdfDirectObject baseObject, Field field)
         {
             return baseObject != null
-                ? (FieldWidgets)(baseObject.AlternateWrapper ??= new FieldWidgets(baseObject, field))
+                ? (baseObject.Wrapper3 as FieldWidgets) ?? new FieldWidgets(baseObject, field)
                 : null;
         }
         /*
@@ -56,9 +56,8 @@ namespace PdfClown.Documents.Interaction.Forms
         */
         private Field field;
 
-        internal FieldWidgets(PdfDirectObject baseObject, Field field)
+        internal FieldWidgets(PdfDirectObject baseObject, Field field) : base(baseObject)
         {
-            BaseObject = baseObject;
             this.field = field;
         }
 

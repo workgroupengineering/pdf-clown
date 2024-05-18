@@ -37,10 +37,10 @@ namespace PdfClown.Objects
     {
         public static readonly PdfInteger Default = new PdfInteger(0);
 
-        /**
-          <summary>Gets the object equivalent to the given value.</summary>
-        */
+        ///<summary>Gets the object equivalent to the given value.</summary>
         public static PdfInteger Get(int? value) => value.HasValue ? new PdfInteger(value.Value) : null;
+        
+        public static PdfInteger Get(long? value) => value.HasValue ? new PdfInteger((int)value.Value) : null;
 
         public PdfInteger(int value) => RawValue = value;
 

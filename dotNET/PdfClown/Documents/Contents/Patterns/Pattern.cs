@@ -56,11 +56,7 @@ namespace PdfClown.Documents.Contents.Patterns
                 return null;
             if (baseObject.Wrapper is Pattern pattern)
                 return pattern;
-            if (baseObject is PdfReference reference && reference.DataObject?.Wrapper is Pattern referencePattern)
-            {
-                baseObject.Wrapper = referencePattern;
-                return referencePattern;
-            }
+            
             var dataObject = baseObject.Resolve();
             var dictionary = TryGetDictionary(dataObject);
             int patternType = dictionary.GetInt(PdfName.PatternType);

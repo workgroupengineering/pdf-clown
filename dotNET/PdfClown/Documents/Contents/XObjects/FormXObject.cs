@@ -51,11 +51,7 @@ namespace PdfClown.Documents.Contents.XObjects
                 return null;
             if (baseObject.Wrapper is FormXObject formObject)
                 return formObject;
-            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is FormXObject referenceFormObject)
-            {
-                baseObject.Wrapper = referenceFormObject;
-                return referenceFormObject;
-            }
+            
             var header = ((PdfStream)PdfObject.Resolve(baseObject)).Header;
             var subtype = (PdfName)header[PdfName.Subtype];
             /*

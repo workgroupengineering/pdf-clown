@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Files
 
         public override string Path
         {
-            get => (string)((PdfString)BaseDataObject).Value;
+            get => ((IPdfString)BaseDataObject).StringValue;
             set { }
         }
     }

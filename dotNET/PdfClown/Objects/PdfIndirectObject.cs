@@ -41,13 +41,10 @@ namespace PdfClown.Objects
 
         private PdfDataObject dataObject;
         private PdfFile file;
-        private bool original;
         private PdfReference reference;
         private XRefEntry xrefEntry;
+        private PdfObjectStatus status;
 
-        private bool updateable = true;
-        private bool updated;
-        private bool virtual_;
 
         /**
           <param name="file">Associated file.</param>
@@ -62,13 +59,14 @@ namespace PdfClown.Objects
             indirect object is new, its offset field MUST be set to 0.</param>
         */
         internal PdfIndirectObject(PdfFile file, PdfDataObject dataObject, XRefEntry xrefEntry)
+            : base(PdfObjectStatus.Updateable)
         {
             this.file = file;
             this.dataObject = Include(dataObject);
             this.xrefEntry = xrefEntry;
 
-            this.original = (xrefEntry.Offset >= 0);
-            this.reference = new PdfReference(this);
+            IsOriginal = (xrefEntry.Offset >= 0);
+            reference = new PdfReference(this);
         }
 
         public override PdfObject Accept(IVisitor visitor, object data)
@@ -112,18 +110,18 @@ namespace PdfClown.Objects
             internal set {/* NOOP: As indirect objects are root objects, no parent can be associated. */}
         }
 
-        public override bool Updateable
+        public override PdfObjectStatus Status
         {
-            get => updateable;
-            set => updateable = value;
+            get => status;
+            protected internal set => status = value;
         }
 
         public override bool Updated
         {
-            get => updated;
+            get => base.Updated;
             protected internal set
             {
-                if (value && original)
+                if (value && IsOriginal)
                 {
                     /*
                       NOTE: It's expected that DropOriginal() is invoked by IndirectObjects indexer;
@@ -132,7 +130,7 @@ namespace PdfClown.Objects
                     */
                     file.IndirectObjects.Update(this);
                 }
-                updated = value;
+                base.Updated = value;
             }
         }
 
@@ -165,7 +163,11 @@ namespace PdfClown.Objects
         /**
           <summary>Gets whether this object comes intact from an existing file.</summary>
         */
-        public bool IsOriginal() => original;
+        public bool IsOriginal
+        {
+            get => (Status & PdfObjectStatus.Original) != 0;
+            internal set => Status = value ? (Status | PdfObjectStatus.Original) : (Status & ~PdfObjectStatus.Original);
+        }
 
         public override PdfObject Swap(PdfObject other)
         {
@@ -269,13 +271,25 @@ namespace PdfClown.Objects
 
         public override IPdfObjectWrapper Wrapper
         {
-            get => base.Wrapper ?? Reference.Wrapper;
-            internal set => base.Wrapper = value;
+            get => DataObject?.Wrapper;
+            internal set => DataObject.Wrapper = value;
+        }
+
+        public override IPdfObjectWrapper Wrapper2
+        {
+            get => DataObject?.Wrapper2;
+            internal set => DataObject.Wrapper2 = value;
+        }
+
+        public override IPdfObjectWrapper Wrapper3
+        {
+            get => DataObject?.Wrapper3;
+            internal set => DataObject.Wrapper3 = value;
         }
 
         public override string ToString()
         {
-            StringBuilder buffer = new StringBuilder();
+            var buffer = new StringBuilder();
             {
                 // Header.
                 buffer.Append(reference.Id).Append(" obj").Append(Symbol.LineFeed);
@@ -287,21 +301,19 @@ namespace PdfClown.Objects
 
         protected internal override bool Virtual
         {
-            get => virtual_;
+            get => base.Virtual;
             set
             {
-                if (virtual_ && !value)
+                if (Virtual && !value)
                 {
-                    /*
-                      NOTE: When a virtual indirect object becomes concrete it must be registered.
-                    */
+                    //NOTE: When a virtual indirect object becomes concrete it must be registered.
                     file.IndirectObjects.AddVirtual(this);
-                    virtual_ = false;
+                    base.Virtual = false;
                     Reference.Update();
                 }
                 else
-                { virtual_ = value; }
-                dataObject.Virtual = virtual_;
+                { base.Virtual = value; }
+                dataObject.Virtual = Virtual;
             }
         }
 
@@ -309,11 +321,6 @@ namespace PdfClown.Objects
         {
             Uncompress();
             file = null;
-        }
-
-        internal void DropOriginal()
-        {
-            original = false;
-        }
+        }        
     }
 }

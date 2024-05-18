@@ -44,12 +44,6 @@ namespace PdfClown.Documents.Contents.Fonts
                 return null;
             if (baseObject.Wrapper is Type3CharProc charProc)
                 return charProc;
-            if (baseObject is PdfReference pdfReference
-                && pdfReference.DataObject?.Wrapper is Type3CharProc referenceCharProc)
-            {
-                baseObject.Wrapper = referenceCharProc;
-                return referenceCharProc;
-            }
             return new Type3CharProc(font, baseObject);
         }
 

@@ -106,7 +106,7 @@ namespace PdfClown.Documents.Contents.Layers
         public static readonly PdfName TypeName = PdfName.OCG;
 
         private static readonly PdfName MembershipName = PdfName.Get("D-OCMD");
-
+        private ISet<PdfName> intents;
 
         public Layer(PdfDocument context, string title) : base(context, PdfName.OCG)
         {
@@ -202,24 +202,7 @@ namespace PdfClown.Documents.Contents.Layers
         */
         public ISet<PdfName> Intents
         {
-            get
-            {
-                ISet<PdfName> intents = new HashSet<PdfName>();
-                PdfDataObject intentObject = BaseDataObject.Resolve(PdfName.Intent);
-                if (intentObject != null)
-                {
-                    if (intentObject is PdfArray pdfArray) // Multiple intents.
-                    {
-                        foreach (PdfName intentItem in pdfArray)
-                        { intents.Add(intentItem); }
-                    }
-                    else // Single intent.
-                    { intents.Add((PdfName)intentObject); }
-                }
-                else
-                { intents.Add(IntentEnum.View.Name()); }
-                return intents;
-            }
+            get => intents ??= GetIntents();
             set
             {
                 PdfDirectObject intentObject = null;
@@ -241,6 +224,26 @@ namespace PdfClown.Documents.Contents.Layers
                 }
                 BaseDataObject[PdfName.Intent] = intentObject;
             }
+        }
+
+        private ISet<PdfName> GetIntents()
+        {
+            ISet<PdfName> intents = new HashSet<PdfName>();
+            PdfDataObject intentObject = BaseDataObject.Resolve(PdfName.Intent);
+            if (intentObject != null)
+            {
+                if (intentObject is PdfArray pdfArray) // Multiple intents.
+                {
+                    foreach (PdfName intentItem in pdfArray)
+                    { intents.Add(intentItem); }
+                }
+                else // Single intent.
+                { intents.Add((PdfName)intentObject); }
+            }
+            else
+            { intents.Add(IntentEnum.View.Name()); }
+
+            return intents;
         }
 
         /**

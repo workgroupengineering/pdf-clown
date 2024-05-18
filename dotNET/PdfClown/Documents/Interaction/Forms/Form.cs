@@ -64,9 +64,6 @@ namespace PdfClown.Documents.Interaction.Forms
             set => BaseDataObject[PdfName.DR] = value.BaseObject;
         }
 
-        public void RefreshCache()
-        {
 
-        }
     }
 }

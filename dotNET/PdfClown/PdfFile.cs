@@ -102,7 +102,7 @@ namespace PdfClown
                 var documentReference = trailer[PdfName.Root];
                 if (documentReference.Resolve() is PdfDictionary)
                 {
-                    document = new PdfDocument(documentReference);
+                    document = documentReference.Wrapper as PdfDocument ?? new PdfDocument(documentReference);
                 }
                 else
                 {
@@ -112,7 +112,7 @@ namespace PdfClown
                         if (entry is PdfDictionary entryDictionary
                             && entryDictionary[PdfName.Pages] != null)
                         {
-                            document = new PdfDocument(entry.Reference);
+                            document = entry.Reference.Wrapper as PdfDocument ?? new PdfDocument(entry.Reference);
                         }
                     }
                 }

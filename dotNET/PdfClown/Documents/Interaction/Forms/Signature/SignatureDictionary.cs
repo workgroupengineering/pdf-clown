@@ -34,12 +34,19 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
     {
         private int[] byteRange;
 
+        public SignatureDictionary() : base(new PdfDictionary
+            {
+                { PdfName.Type, PdfName.Sig },
+            })
+        { }
+
         public SignatureDictionary(PdfDocument doc)
             : base(doc, new PdfDictionary {
                 { PdfName.Type, PdfName.Sig },
                 //{ PdfName.Filter, PdfName.AdobePPKLite }
             })
         { }
+
         public SignatureDictionary(PdfDirectObject baseObject)
             : base(baseObject)
         {

@@ -43,8 +43,8 @@ namespace PdfClown.Documents.Functions.Type4
                 var op1 = stack.Pop();
                 if (op1 is PdfBoolean op1Bool && op2 is PdfBoolean op2Bool)
                 {
-                    bool bool1 = op1Bool.BooleanValue;
-                    bool bool2 = op2Bool.BooleanValue;
+                    bool bool1 = op1Bool.RawValue;
+                    bool bool2 = op2Bool.RawValue;
                     bool result = ApplyForBoolean(bool1, bool2);
                     stack.Push(PdfBoolean.Get(result));
                 }
@@ -130,7 +130,7 @@ namespace PdfClown.Documents.Functions.Type4
                 var op1 = stack.Pop();
                 if (op1 is PdfBoolean pdfBool)
                 {
-                    bool bool1 = pdfBool.BooleanValue;
+                    bool bool1 = pdfBool.RawValue;
                     bool result = !bool1;
                     stack.Push(PdfBoolean.Get(result));
                 }

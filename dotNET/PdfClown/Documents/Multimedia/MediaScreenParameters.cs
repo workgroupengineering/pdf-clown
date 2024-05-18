@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Multimedia
         /**
           <summary>Media screen parameters viability.</summary>
         */
-        public class Viability : PdfObjectWrapper<PdfDictionary>
+        public class Viability : PdfObjectWrapper2<PdfDictionary>
         {
             public class FloatingWindowParametersObject : PdfObjectWrapper<PdfDictionary>
             {
@@ -201,11 +201,6 @@ namespace PdfClown.Documents.Multimedia
                 Annotation
             }
 
-            public static Viability Wrap(PdfDirectObject baseObject)
-            {
-                return (Viability)(baseObject == null ? null : baseObject.AlternateWrapper ??= new Viability(baseObject));
-            }
-
             public Viability(PdfDirectObject baseObject) : base(baseObject)
             { }
 
@@ -281,7 +276,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Viability Preferences
         {
-            get => Viability.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            get => Wrap2<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
             set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -291,7 +286,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Viability Requirements
         {
-            get => Viability.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.MH));
+            get => Wrap2<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.MH));
             set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
         }
     }

@@ -35,12 +35,9 @@ namespace PdfClown.Objects
     */
     public abstract class PdfObject : IVisitable
     {
-        private IPdfObjectWrapper wrapper;
-        /**
-          <summary>Gets the clone of the specified object, registered inside the specified file context.</summary>
-          <param name="object">Object to clone into the specified file context.</param>
-          <param name="context">File context of the cloning.</param>
-        */
+        ///<summary>Gets the clone of the specified object, registered inside the specified file context.</summary>
+        ///<param name="object">Object to clone into the specified file context.</param>
+        ///<param name="context">File context of the cloning.</param>
         public static PdfObject Clone(PdfObject @object, PdfFile context)
         {
             return @object == null ? null : @object.Clone(context);
@@ -68,6 +65,13 @@ namespace PdfClown.Objects
 
         protected PdfObject()
         { }
+
+        protected PdfObject(PdfObjectStatus status)
+        {
+            Status = status;
+        }
+
+        public abstract PdfObjectStatus Status { get; protected internal set; }
 
         public virtual PdfIndirectObject Container => Parent?.Container;
 
@@ -106,13 +110,24 @@ namespace PdfClown.Objects
 
         public ContentWrapper ContentsWrapper { get; internal set; }
 
-        public IPdfObjectWrapper AlternateWrapper { get; internal set; }
-
-        public virtual IPdfObjectWrapper Wrapper
+        public abstract IPdfObjectWrapper Wrapper
         {
-            get => wrapper;
-            internal set => wrapper = value;
+            get;
+            internal set;
         }
+
+        public abstract IPdfObjectWrapper Wrapper2
+        {
+            get;
+            internal set;
+        }
+
+        public abstract IPdfObjectWrapper Wrapper3
+        {
+            get;
+            internal set;
+        }
+
 
         public IContentContext GetContentContext()
         {
@@ -189,26 +204,28 @@ namespace PdfClown.Objects
         */
         public PdfDirectObject Unresolve()
         {
-            PdfReference reference = Reference;
-            return reference != null ? reference : (PdfDirectObject)this;
+            return Reference ?? (PdfDirectObject)this;
         }
 
-        /**
-          <summary>Gets/Sets whether the detection of object state changes is enabled.</summary>
-        */
-        public abstract bool Updateable
+        ///<summary>Gets/Sets whether the detection of object state changes is enabled.</summary>
+        public virtual bool Updateable
         {
-            get;
-            set;
+            get => (Status & PdfObjectStatus.Updateable) != 0;
+            set => Status = value ? (Status | PdfObjectStatus.Updateable) : (Status & ~PdfObjectStatus.Updateable);
         }
 
-        /**
-          <summary>Gets/Sets whether the initial state of this object has been modified.</summary>
-        */
-        public abstract bool Updated
+        ///<summary>Gets/Sets whether the initial state of this object has been modified.</summary>
+        public virtual bool Updated
         {
-            get;
-            protected internal set;
+            get => (Status & PdfObjectStatus.Updated) != 0;
+            protected internal set => Status = value ? (Status | PdfObjectStatus.Updated) : (Status & ~PdfObjectStatus.Updated);
+        }
+
+        ///<summary>Gets/Sets whether this object acts like a null-object placeholder.</summary>
+        protected internal virtual bool Virtual
+        {
+            get => (Status & PdfObjectStatus.Virtual) != 0;
+            set => Status = value ? (Status | PdfObjectStatus.Virtual) : (Status & ~PdfObjectStatus.Virtual);
         }
 
         /**
@@ -232,17 +249,7 @@ namespace PdfClown.Objects
             Virtual = false;
 
             // Propagate the update to the ascendants!
-            if (Parent != null)
-            { Parent.Update(); }
-        }
-
-        /**
-          <summary>Gets/Sets whether this object acts like a null-object placeholder.</summary>
-        */
-        protected internal abstract bool Virtual
-        {
-            get;
-            set;
+            Parent?.Update();
         }
 
         /**
@@ -273,5 +280,15 @@ namespace PdfClown.Objects
             }
             return obj;
         }
+    }
+
+    [Flags]
+    public enum PdfObjectStatus : byte
+    {
+        None = 0,
+        Updateable = 1,
+        Updated = 2,
+        Virtual = 4,
+        Original = 8,
     }
 }

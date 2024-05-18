@@ -39,22 +39,21 @@ namespace PdfClown.Documents.Interaction.Annotations
       <summary>Appearance states [PDF:1.6:8.4.4].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class AppearanceStates : PdfObjectWrapper<PdfDataObject>, IDictionary<PdfName, FormXObject>
+    public sealed class AppearanceStates : PdfObjectWrapper2<PdfDataObject>, IDictionary<PdfName, FormXObject>
     {
         public static AppearanceStates Wrap(PdfName statesKey, Appearance appearance)
         {
             var baseObject = appearance.BaseDataObject[statesKey];
-            return baseObject != null
-                ? (AppearanceStates)(baseObject.AlternateWrapper ??= new AppearanceStates(statesKey, appearance))
-            : new AppearanceStates(statesKey, appearance);
+            return (baseObject?.Wrapper2 as AppearanceStates) ??
+                new AppearanceStates(statesKey, appearance);
         }
         private Appearance appearance;
 
         private PdfName statesKey;
 
         public AppearanceStates(PdfName statesKey, Appearance appearance)
+            :base(appearance.BaseDataObject[statesKey])
         {
-            BaseObject = appearance.BaseDataObject[statesKey];
             this.appearance = appearance;
             this.statesKey = statesKey;
         }

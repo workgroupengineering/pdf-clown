@@ -46,14 +46,17 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF13)]
     public sealed class SignatureField : Field
     {
-        /**
-          <summary>Creates a new signature field within the given document context.</summary>
-        */
+        //workaround of cross thread error while reading
+        private SignatureDictionary initialSD;
+
+        ///<summary>Creates a new signature field within the given document context.</summary>
         public SignatureField(string name, Widget widget) : base(PdfName.Sig, name, widget)
         { }
 
         internal SignatureField(PdfDirectObject baseObject) : base(baseObject)
-        { }
+        {
+            initialSD = Wrap<SignatureDictionary>(BaseDataObject.GetDictionary(PdfName.V));
+        }
 
         /**
           <returns>A <see cref="PdfDictionary"/>.</returns>

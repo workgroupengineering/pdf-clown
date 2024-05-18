@@ -220,7 +220,7 @@ namespace PdfClown.Tokens
                     {
                         int baseStreamNumber = xrefEntry.StreamNumber;
                         PdfIndirectObject baseStreamIndirectObject = file.IndirectObjects[baseStreamNumber];
-                        if (baseStreamIndirectObject.IsOriginal()) // Extension stream needed in order to preserve the original object stream.
+                        if (baseStreamIndirectObject.IsOriginal) // Extension stream needed in order to preserve the original object stream.
                         {
                             // Get the extension object stream associated to the original object stream!
                             ObjectStream extensionObjectStream;

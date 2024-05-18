@@ -36,11 +36,7 @@ namespace PdfClown.Documents.Contents.XObjects
                 return null;
             if (baseObject.Wrapper is GroupXObject groupObject)
                 return groupObject;
-            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is GroupXObject referenceGroupObject)
-            {
-                baseObject.Wrapper = referenceGroupObject;
-                return referenceGroupObject;
-            }
+            
             var subtype = (PdfName)((PdfDictionary)baseObject)[PdfName.S];
             if (subtype.Equals(PdfName.Transparency))
             {

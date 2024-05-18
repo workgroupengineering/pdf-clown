@@ -90,7 +90,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 
             PdfInteger countObject = EnsureCountObject();
             // Is it the first bookmark?
-            if ((int)countObject.Value == 0) // First bookmark.
+            if (countObject.RawValue == 0) // First bookmark.
             {
                 BaseDataObject[PdfName.Last]
                   = BaseDataObject[PdfName.First]

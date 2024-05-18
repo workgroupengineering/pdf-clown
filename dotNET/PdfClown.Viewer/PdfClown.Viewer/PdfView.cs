@@ -67,7 +67,7 @@ namespace PdfClown.Viewer
         private ControlPoint selectedPoint;
 
         private string selectedString;
-        private Quad? selectedQuad;
+        private Quad? textSelectedQuad;
         private TextChar startSelectionChar;
 
         private LinkedList<EditorOperation> operations = new LinkedList<EditorOperation>();
@@ -232,25 +232,25 @@ namespace PdfClown.Viewer
 
         public List<TextChar> TextSelection { get; private set; } = new List<TextChar>();
 
-        public Quad? SelectedQuad
+        public Quad? TextSelectionQuad
         {
             get
             {
-                if (selectedQuad == null)
+                if (textSelectedQuad == null)
                 {
                     foreach (TextChar textChar in TextSelection)
                     {
-                        if (!selectedQuad.HasValue)
-                        { selectedQuad = textChar.Quad; }
+                        if (!textSelectedQuad.HasValue)
+                        { textSelectedQuad = textChar.Quad; }
                         else
-                        { selectedQuad = Quad.Union(selectedQuad.Value, textChar.Quad); }
+                        { textSelectedQuad = Quad.Union(textSelectedQuad.Value, textChar.Quad); }
                     }
                 }
-                return selectedQuad;
+                return textSelectedQuad;
             }
         }
 
-        public string SelectedString
+        public string TextSelectionString
         {
             get
             {
@@ -772,11 +772,17 @@ namespace PdfClown.Viewer
         {
             try
             {
-                state.DrawAnnotationBound = state.DrawAnnotation.Draw(state.Canvas);
-                if (selectedAnnotation == state.DrawAnnotation
-                && selectedAnnotation.Page == state.PageView.Page)
+                if (state.DrawAnnotation.IsNew)
                 {
-                    OnPaintSelectedAnnotation(state);
+                }
+                else
+                {
+                    state.DrawAnnotationBound = state.DrawAnnotation.Draw(state.Canvas);
+                    if (selectedAnnotation == state.DrawAnnotation
+                    && selectedAnnotation.Page == state.PageView.Page)
+                    {
+                        OnPaintSelectedAnnotation(state);
+                    }
                 }
             }
             catch { }
@@ -859,7 +865,7 @@ namespace PdfClown.Viewer
 
         private void OnTextSelectionChanged()
         {
-            selectedQuad = null;
+            textSelectedQuad = null;
             selectedString = null;
             InvalidateSurface();
             TextSelectionChanged?.Invoke(this, EventArgs.Empty);

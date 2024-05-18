@@ -32,5 +32,11 @@ namespace PdfClown.Objects
     {
         protected PdfDataObject()
         { }
+
+        protected PdfDataObject(PdfObjectStatus status) 
+            : base(status)
+        { }
+
+
     }
 }

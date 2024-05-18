@@ -47,9 +47,7 @@ namespace PdfClown.Objects
         internal PdfDictionary header;
 
         private PdfObject parent;
-        private bool updateable = true;
-        private bool updated;
-        private bool virtual_;
+        private PdfObjectStatus status;
 
         /**
           <summary>Indicates whether {@link #body} has already been resolved and therefore contains the
@@ -68,6 +66,7 @@ namespace PdfClown.Objects
         { }
 
         public PdfStream(PdfDictionary header, IByteStream body)
+            : base(PdfObjectStatus.Updateable)
         {
             this.header = (PdfDictionary)Include(header);
 
@@ -171,6 +170,35 @@ namespace PdfClown.Objects
         {
             get => parent;
             internal set => parent = value;
+        }
+
+        public override PdfObjectStatus Status
+        {
+            get => status;
+            protected internal set => status = value;
+        }
+
+        [PDF(VersionEnum.PDF12)]
+        public FileSpecification DataFile
+        {
+            get => FileSpecification.Wrap(header[PdfName.F]);
+            set => SetDataFile(value, false);
+        }
+
+        public override IPdfObjectWrapper Wrapper
+        {
+            get => Header.Wrapper;
+            internal set => Header.Wrapper = value;
+        }
+        public override IPdfObjectWrapper Wrapper2
+        {
+            get => Header.Wrapper2;
+            internal set => Header.Wrapper2 = value;
+        }
+        public override IPdfObjectWrapper Wrapper3
+        {
+            get => Header.Wrapper3;
+            internal set => Header.Wrapper3 = value;
         }
 
         /**
@@ -280,18 +308,6 @@ namespace PdfClown.Objects
             return this;
         }
 
-        public override bool Updateable
-        {
-            get => updateable;
-            set => updateable = value;
-        }
-
-        public override bool Updated
-        {
-            get => updated;
-            protected internal set => updated = value;
-        }
-
         public override void WriteTo(IOutputStream stream, PdfFile context)
         {
             /*
@@ -362,18 +378,7 @@ namespace PdfClown.Objects
             header.Updateable = true;
         }
 
-        [PDF(VersionEnum.PDF12)]
-        public FileSpecification DataFile
-        {
-            get => FileSpecification.Wrap(header[PdfName.F]);
-            set => SetDataFile(value, false);
-        }
 
-        protected internal override bool Virtual
-        {
-            get => virtual_;
-            set => virtual_ = value;
-        }
     }
 
     public enum EncodeState

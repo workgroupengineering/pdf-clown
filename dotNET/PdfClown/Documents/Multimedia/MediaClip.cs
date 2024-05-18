@@ -49,11 +49,7 @@ namespace PdfClown.Documents.Multimedia
                 return null;
             if (baseObject.Wrapper is MediaClip clip)
                 return clip;
-            if (baseObject is PdfReference pdfReference && pdfReference.DataObject?.Wrapper is MediaClip referenceClip)
-            {
-                baseObject.Wrapper = referenceClip;
-                return referenceClip;
-            }
+            
             var subtype = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.S];
             if (PdfName.MCD.Equals(subtype))
                 return new MediaClipData(baseObject);

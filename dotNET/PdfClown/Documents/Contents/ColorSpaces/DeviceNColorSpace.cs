@@ -30,6 +30,7 @@ using PdfClown.Util;
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using System.Linq;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -39,6 +40,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF13)]
     public sealed class DeviceNColorSpace : SpecialDeviceColorSpace
     {
+        IList<string> componentNames;
+        private Color defaultColor;
+
         //TODO:IMPL new element constructor!
 
         internal DeviceNColorSpace(PdfDirectObject baseObject) : base(baseObject)
@@ -47,32 +51,33 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); }
 
-        public override int ComponentCount => ((PdfArray)((PdfArray)BaseDataObject)[1]).Count;
+        public override int ComponentCount => ComponentArray.Count;
 
-        public override IList<string> ComponentNames
+        private PdfArray ComponentArray
         {
-            get
-            {
-                IList<string> componentNames = new List<string>();
-                {
-                    PdfArray namesObject = (PdfArray)((PdfArray)BaseDataObject)[1];
-                    foreach (PdfDirectObject nameObject in namesObject)
-                    { componentNames.Add((string)((PdfName)nameObject).Value); }
-                }
-                return componentNames;
-            }
+            get => ((PdfArray)BaseDataObject).GetArray(1);
         }
 
-        public override Color DefaultColor
-        {
-            get
-            {
-                double[] components = new double[ComponentCount];
-                for (int index = 0, length = components.Length; index < length; index++)
-                { components[index] = 1; }
+        public override IList<string> ComponentNames => componentNames ??= GetComponentNames();
 
-                return new DeviceNColor(components);
-            }
+        public override Color DefaultColor => defaultColor ??= GetDefaultColor();
+
+        private IList<string> GetComponentNames()
+        {
+            var componentNames = new List<string>();
+            foreach (var nameObject in ComponentArray.OfType<IPdfString>())
+            { componentNames.Add(nameObject.StringValue); }
+
+            return componentNames;
+        }
+
+        private Color GetDefaultColor()
+        {
+            double[] components = new double[ComponentCount];
+            for (int index = 0, length = components.Length; index < length; index++)
+            { components[index] = 1; }
+
+            return new DeviceNColor(components);
         }
 
         public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)

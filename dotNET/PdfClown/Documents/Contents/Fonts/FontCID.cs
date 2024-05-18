@@ -46,12 +46,6 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 return cidFont;
             }
-            if (baseObject is PdfReference pdfReference
-               && pdfReference.DataObject?.Wrapper is FontCID referenceFont)
-            {
-                baseObject.Wrapper = referenceFont;
-                return referenceFont;
-            }
 
             var dictionary = (PdfDictionary)baseObject.Resolve();
             PdfName type = dictionary.GetName(PdfName.Type, PdfName.Font);

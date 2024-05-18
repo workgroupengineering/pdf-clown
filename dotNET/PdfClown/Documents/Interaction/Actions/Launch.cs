@@ -116,11 +116,7 @@ namespace PdfClown.Documents.Interaction.Actions
             */
             public string DefaultDirectory
             {
-                get
-                {
-                    PdfString defaultDirectoryObject = (PdfString)BaseDataObject[PdfName.D];
-                    return defaultDirectoryObject != null ? (string)defaultDirectoryObject.Value : null;
-                }
+                get => BaseDataObject.GetString(PdfName.D);
                 set => BaseDataObject[PdfName.D] = new PdfString(value);
             }
 
@@ -130,7 +126,7 @@ namespace PdfClown.Documents.Interaction.Actions
             */
             public string FileName
             {
-                get => (string)((PdfString)BaseDataObject[PdfName.F]).Value;
+                get => BaseDataObject.GetString(PdfName.F);
                 set => BaseDataObject[PdfName.F] = new PdfString(value);
             }
 
@@ -148,11 +144,7 @@ namespace PdfClown.Documents.Interaction.Actions
             */
             public string ParameterString
             {
-                get
-                {
-                    PdfString parameterStringObject = (PdfString)BaseDataObject[PdfName.P];
-                    return parameterStringObject != null ? (string)parameterStringObject.Value : null;
-                }
+                get => BaseDataObject.GetString(PdfName.P);
                 set => BaseDataObject[PdfName.P] = new PdfString(value);
             }
         }

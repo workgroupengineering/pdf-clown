@@ -111,12 +111,6 @@ namespace PdfClown.Documents.Contents.Fonts
                 return null;
             if (baseObject.Wrapper is Font font)
                 return font;
-            if (baseObject is PdfReference pdfReference
-                && pdfReference.DataObject?.Wrapper is Font referenceFont)
-            {
-                baseObject.Wrapper = referenceFont;
-                return referenceFont;
-            }
             // Has the font been already instantiated?
             /*
               NOTE: Font structures are reified as complex objects, both IO- and CPU-intensive to load.

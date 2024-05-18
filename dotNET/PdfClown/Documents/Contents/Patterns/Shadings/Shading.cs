@@ -50,11 +50,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                 return null;
             if (baseObject.Wrapper is Shading shading)
                 return shading;
-            if (baseObject is PdfReference reference && reference.DataObject?.Wrapper is Shading referenceShading)
-            {
-                baseObject.Wrapper = referenceShading;
-                return referenceShading;
-            }
+            
             var dataObject = baseObject.Resolve();
             var dictionary = TryGetDictionary(dataObject);
             var type = dictionary.GetInt(PdfName.ShadingType);

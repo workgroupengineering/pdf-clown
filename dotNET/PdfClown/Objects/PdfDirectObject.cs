@@ -57,10 +57,56 @@ namespace PdfClown.Objects
             { obj.WriteTo(stream, context); }
         }
 
+        protected internal IPdfObjectWrapper wrapper;
+        protected internal IPdfObjectWrapper wrapper2;
+        protected internal IPdfObjectWrapper wrapper3;
+
         protected PdfDirectObject()
+        { }
+
+        protected PdfDirectObject(PdfObjectStatus status)
+            : base(status)
         { }
 
         public abstract int CompareTo(PdfDirectObject obj);
 
+        public override IPdfObjectWrapper Wrapper
+        {
+            get => wrapper;
+            internal set
+            {
+#if DEBUG
+                if (wrapper != null)
+                    throw new Exception($"Wrapper override. Existing:{wrapper}");
+#endif
+                wrapper = value;
+            }
+        }
+
+        public override IPdfObjectWrapper Wrapper2
+        {
+            get => wrapper2;
+            internal set
+            {
+#if DEBUG
+                if (wrapper2 != null)
+                    throw new Exception($"Wrapper2 override. Existing:{wrapper2}");
+#endif
+                wrapper2 = value;
+            }
+        }
+
+        public override IPdfObjectWrapper Wrapper3
+        {
+            get => wrapper3;
+            internal set
+            {
+#if DEBUG
+                if (wrapper3 != null)
+                    throw new Exception($"Wrapper3 override. Existing:{wrapper3}");
+#endif
+                wrapper3 = value;
+            }
+        }
     }
 }

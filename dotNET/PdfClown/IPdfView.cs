@@ -1,5 +1,7 @@
 ﻿using PdfClown.Documents;
+using PdfClown.Documents.Contents;
 using PdfClown.Documents.Interaction.Annotations;
+using PdfClown.Util.Math.Geom;
 using System;
 using System.Collections.Generic;
 
@@ -14,10 +16,14 @@ namespace PdfClown
         PdfPage CurrentPage { get; set; }
 
         Annotation SelectedAnnotation { get; set; }
+        List<TextChar> TextSelection { get; }
+        Quad? TextSelectionQuad { get; }
+        string TextSelectionString { get; }
 
         event EventHandler<AnnotationEventArgs> AnnotationAdded;
         event EventHandler<AnnotationEventArgs> AnnotationRemoved;
         event EventHandler<AnnotationEventArgs> SelectedAnnotationChanged;
+        event EventHandler<EventArgs> TextSelectionChanged;
 
         IEnumerable<Annotation> RemoveAnnotation(Annotation annotation);
         void InvalidateSurface();

@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public LineCapEnum Value
         {
-            get => (LineCapEnum)((IPdfNumber)operands[0]).Value;
+            get => (LineCapEnum)((IPdfNumber)operands[0]).IntValue;
             set => operands[0] = PdfInteger.Get((int)value);
         }
     }

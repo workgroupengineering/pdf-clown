@@ -44,8 +44,8 @@ namespace PdfClown.Objects
 
         private PdfFile file;
         private PdfObject parent;
-        private bool updated;
         private string id;
+        private PdfObjectStatus status;
 
         internal PdfReference(PdfIndirectObject indirectObject)
         {
@@ -93,6 +93,12 @@ namespace PdfClown.Objects
             internal set => parent = value;
         }
 
+        public override PdfObjectStatus Status
+        {
+            get => status;
+            protected internal set => status = value;
+        }
+
         public override bool Updateable
         {
             get => IndirectObject?.Updateable ?? false;
@@ -100,12 +106,12 @@ namespace PdfClown.Objects
             set => IndirectObject.Updateable = value;
         }
 
-        public override bool Updated
+        protected internal override bool Virtual
         {
-            get => updated;
-            protected internal set => updated = value;
+            get => IndirectObject?.Virtual ?? false;
+            //NOTE: Fail fast if the referenced indirect object is undefined.
+            set => IndirectObject.Virtual = value;
         }
-
 
         public PdfDataObject DataObject
         {
@@ -121,11 +127,22 @@ namespace PdfClown.Objects
 
         public override PdfReference Reference => this;
 
-        protected internal override bool Virtual
+        public override IPdfObjectWrapper Wrapper
         {
-            get => IndirectObject?.Virtual ?? false;
-            //NOTE: Fail fast if the referenced indirect object is undefined.
-            set => IndirectObject.Virtual = value;
+            get => IndirectObject?.Wrapper;
+            internal set => IndirectObject.Wrapper = value;
+        }
+
+        public override IPdfObjectWrapper Wrapper2
+        {
+            get => IndirectObject?.Wrapper2;
+            internal set => IndirectObject.Wrapper2 = value;
+        }
+
+        public override IPdfObjectWrapper Wrapper3
+        {
+            get => IndirectObject?.Wrapper3;
+            internal set => IndirectObject.Wrapper3 = value;
         }
 
         public override PdfObject Swap(PdfObject other)

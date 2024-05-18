@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
           of the contextual resource dictionary) [PDF:1.6:4.5.7].
         */
-        public static readonly DeviceCMYKColorSpace Default = new DeviceCMYKColorSpace(PdfName.DeviceCMYK);
+        public static readonly DeviceCMYKColorSpace Default = (DeviceCMYKColorSpace)Wrap(PdfName.DeviceCMYK);
 
         public DeviceCMYKColorSpace(PdfDocument context) : base(context, PdfName.DeviceCMYK)
         { }

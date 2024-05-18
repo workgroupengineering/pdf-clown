@@ -351,7 +351,7 @@ namespace PdfClown.Files
             // Remove old indirect object from cache!
             wokenObjects.Remove(index);
             // Mark the new indirect object as modified!
-            obj.DropOriginal();
+            obj.IsOriginal = false;
 
             return old;
         }

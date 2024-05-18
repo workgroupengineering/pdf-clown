@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public TextRenderModeEnum Value
         {
-            get => (TextRenderModeEnum)((IPdfNumber)operands[0]).Value;
+            get => (TextRenderModeEnum)((IPdfNumber)operands[0]).IntValue;
             set => operands[0] = PdfInteger.Get((int)value);
         }
     }

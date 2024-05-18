@@ -117,10 +117,10 @@ namespace PdfClown.Documents.Interaction.Forms
             get
             {
                 PdfDataObject valueObject = PdfObject.Resolve(GetInheritableAttribute(PdfName.V));
-                if (valueObject is PdfString)
-                    return ((PdfString)valueObject).Value;
-                else if (valueObject is PdfStream)
-                    return ((PdfStream)valueObject).Body;
+                if (valueObject is PdfString pdfString)
+                    return pdfString.Value;
+                else if (valueObject is PdfStream pdfStream)
+                    return pdfStream.Body;
                 else
                     return null;
             }

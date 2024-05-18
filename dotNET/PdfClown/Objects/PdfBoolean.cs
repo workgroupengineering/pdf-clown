@@ -53,7 +53,7 @@ namespace PdfClown.Objects
         public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
-        public bool BooleanValue => (bool)Value;
+        public bool BooleanValue => RawValue;
 
         public override int CompareTo(PdfDirectObject obj)
         { throw new NotImplementedException(); }

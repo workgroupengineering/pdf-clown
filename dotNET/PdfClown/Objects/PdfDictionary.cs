@@ -45,23 +45,19 @@ namespace PdfClown.Objects
         internal IDictionary<PdfName, PdfDirectObject> entries;
 
         private PdfObject parent;
-        private bool updateable = true;
-        private bool updated;
-        private bool virtual_;
+        private PdfObjectStatus status;
 
         /**
           <summary>Creates a new empty dictionary object with the default initial capacity.</summary>
         */
-        public PdfDictionary()
-        {
-            entries = new Dictionary<PdfName, PdfDirectObject>();
-        }
+        public PdfDictionary() : this(4)
+        { }
 
         /**
           <summary>Creates a new empty dictionary object with the specified initial capacity.</summary>
           <param name="capacity">Initial capacity.</param>
         */
-        public PdfDictionary(int capacity)
+        public PdfDictionary(int capacity) : base(PdfObjectStatus.Updateable)
         {
             entries = new Dictionary<PdfName, PdfDirectObject>(capacity);
         }
@@ -114,16 +110,10 @@ namespace PdfClown.Objects
             internal set => parent = value;
         }
 
-        public override bool Updateable
+        public override PdfObjectStatus Status
         {
-            get => updateable;
-            set => updateable = value;
-        }
-
-        public override bool Updated
-        {
-            get => updated;
-            protected internal set => updated = value;
+            get => status;
+            protected internal set => status = value;
         }
 
         public ICollection<PdfName> Keys => entries.Keys;
@@ -240,9 +230,9 @@ namespace PdfClown.Objects
 
         public void SetInt(PdfName key, int? value) => this[key] = PdfInteger.Get(value);
 
-        public bool GetBool(PdfName key, bool def = false) => ((PdfBoolean)Resolve(key))?.BooleanValue ?? def;
+        public bool GetBool(PdfName key, bool def = false) => ((PdfBoolean)Resolve(key))?.RawValue ?? def;
 
-        public bool? GetNBool(PdfName key, bool? def = null) => (Resolve(key) as PdfBoolean)?.BooleanValue ?? def;
+        public bool? GetNBool(PdfName key, bool? def = null) => (Resolve(key) as PdfBoolean)?.RawValue ?? def;
 
         public void SetBool(PdfName key, bool? value) => this[key] = PdfBoolean.Get(value);
 
@@ -422,12 +412,6 @@ namespace PdfClown.Objects
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>)this).GetEnumerator();
-        }
-
-        protected internal override bool Virtual
-        {
-            get => virtual_;
-            set => virtual_ = value;
         }
     }
 }

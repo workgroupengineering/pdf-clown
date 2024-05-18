@@ -49,7 +49,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <remarks>When a separation space with this component name is the current color space, painting
           operators apply tint values to all available components at once.</remarks>
         */
-        public static readonly string AllComponentName = (string)PdfName.All.Value;
+        public static readonly string AllComponentName = PdfName.All.StringValue;
+        private List<string> list;
 
         //TODO:IMPL new element constructor!
 
@@ -71,7 +72,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             </list>
           </remarks>
         */
-        public override IList<string> ComponentNames => new List<string> { (string)((PdfName)((PdfArray)BaseDataObject)[1]).Value };
+        public override IList<string> ComponentNames => list ??= new List<string> { ((PdfArray)BaseDataObject).GetString(1) };
 
         public override Color DefaultColor => SeparationColor.Default;
 

@@ -42,153 +42,117 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class Fields : PdfObjectWrapper<PdfArray>, IDictionary<string, Field>, IEnumerable<Field>
     {
+        private Dictionary<string, Field> cache;
         public Fields(PdfDocument context) : base(context, new PdfArray())
         { }
 
         public Fields(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public void Add(Field value) => BaseDataObject.Add(value.BaseObject);
+        private Dictionary<string, Field> Cache => cache ??= RefreshCache();
+
+        public ICollection<string> Keys => Cache.Keys;
+
+        public ICollection<Field> Values => Cache.Values;
+
+        public int Count => Cache.Count;
+
+        public bool IsReadOnly => false;
+
+        public Field this[string key]
+        {
+            get => TryGetValue(key, out var field) ? field : null;
+            set => Add(key, value);
+        }
+
+        private Dictionary<string, Field> RefreshCache()
+        {
+            var cache = new Dictionary<string, Field>();
+            Document.LockObject.Wait();
+            Document.LockObject.Reset();
+            try
+            {
+                foreach (var field in RetrieveValues(BaseDataObject))
+                {
+                    cache[field.FullName] = field;
+                }
+            }
+            finally
+            {
+                Document.LockObject.Set();
+            }
+            return cache;
+        }
+
+        public void Add(Field value) => Add(value.FullName, value);
 
         public void Add(string key, Field value)
-        { throw new NotImplementedException(); }
-
-        public bool ContainsKey(string key)
-        //TODO: avoid getter (use raw matching).
-        { return this[key] != null; }
-
-        public ICollection<string> Keys => throw new NotImplementedException();//TODO: retrieve all the full names (keys)!!!
-
-        public bool Remove(string key)
         {
-            Field field = this[key];
-            if (field == null)
-                return false;
-            return Remove(field);
+            Cache[key] = value;
+            var fieldObjects = GetHolderArray(value);
+            fieldObjects.Add(value.BaseObject);
         }
+
+        public bool ContainsKey(string key) => Cache.ContainsKey(key);
+
+        public bool Remove(string key) => TryGetValue(key, out var field) && Remove(field);
 
         public bool Remove(Field field)
         {
+            Cache.Remove(field.Name);
+            var fieldObjects = GetHolderArray(field);
+            return fieldObjects.Remove(field.BaseObject);
+        }
+
+        private PdfArray GetHolderArray(Field field)
+        {
             PdfArray fieldObjects;
             {
-                PdfReference fieldParentReference = (PdfReference)field.BaseDataObject[PdfName.Parent];
+                var fieldParentReference = (PdfReference)field.BaseDataObject[PdfName.Parent];
                 if (fieldParentReference == null)
                 { fieldObjects = BaseDataObject; }
                 else
                 { fieldObjects = (PdfArray)((PdfDictionary)fieldParentReference.DataObject).Resolve(PdfName.Kids); }
             }
-            return fieldObjects.Remove(field.BaseObject);
+
+            return fieldObjects;
         }
 
-        public Field this[string key]
-        {
-            get
-            {
-                /*
-                  TODO: It is possible for different field dictionaries to have the SAME fully qualified field
-                  name if they are descendants of a common ancestor with that name and have no
-                  partial field names (T entries) of their own. Such field dictionaries are different
-                  representations of the same underlying field; they should differ only in properties
-                  that specify their visual appearance. In particular, field dictionaries with the same
-                  fully qualified field name must have the same field type (FT), value (V), and default
-                  value (DV).
-                 */
-                PdfReference valueFieldReference = null;
-                {
-                    IEnumerator partialNamesIterator = key.Split('.').GetEnumerator();
-                    IEnumerator<PdfDirectObject> fieldObjectsIterator = BaseDataObject.GetEnumerator();
-                    while (partialNamesIterator.MoveNext())
-                    {
-                        string partialName = (string)partialNamesIterator.Current;
-                        valueFieldReference = null;
-                        while (fieldObjectsIterator != null
-                          && fieldObjectsIterator.MoveNext())
-                        {
-                            PdfReference fieldReference = (PdfReference)fieldObjectsIterator.Current;
-                            PdfDictionary fieldDictionary = (PdfDictionary)fieldReference.DataObject;
-                            PdfTextString fieldName = (PdfTextString)fieldDictionary[PdfName.T];
-                            if (fieldName != null && fieldName.Value.Equals(partialName))
-                            {
-                                valueFieldReference = fieldReference;
-                                PdfArray kidFieldObjects = (PdfArray)fieldDictionary.Resolve(PdfName.Kids);
-                                fieldObjectsIterator = (kidFieldObjects == null ? null : kidFieldObjects.GetEnumerator());
-                                break;
-                            }
-                        }
-                        if (valueFieldReference == null)
-                            break;
-                    }
-                }
-                return Field.Wrap(valueFieldReference);
-            }
-            set => throw new NotImplementedException();/*
-                TODO:put the field into the correct position, based on the full name (key)!!!
-                */
-        }
-
-        public bool TryGetValue(string key, out Field value)
-        {
-            value = this[key];
-            return (value != null
-              || ContainsKey(key));
-        }
-
-        public ICollection<Field> Values
-        {
-            get
-            {
-                IList<Field> values = new List<Field>();
-                RetrieveValues(BaseDataObject, values);
-                return values;
-            }
-        }
+        public bool TryGetValue(string key, out Field value) => Cache.TryGetValue(key, out value);
 
         void ICollection<KeyValuePair<string, Field>>.Add(KeyValuePair<string, Field> entry) => Add(entry.Key, entry.Value);
 
-        public void Clear() => BaseDataObject.Clear();
+        public void Clear()
+        {
+            Cache.Clear();
+            BaseDataObject.Clear();
+        }
 
-        bool ICollection<KeyValuePair<string, Field>>.Contains(KeyValuePair<string, Field> entry)
-        { throw new NotImplementedException(); }
+        bool ICollection<KeyValuePair<string, Field>>.Contains(KeyValuePair<string, Field> entry) => Cache.Contains(entry);
 
         public void CopyTo(KeyValuePair<string, Field>[] entries, int index)
         { throw new NotImplementedException(); }
 
-        public int Count => Values.Count;
+        public bool Remove(KeyValuePair<string, Field> entry) => throw new NotImplementedException();
 
-        public bool IsReadOnly => false;
+        IEnumerator<KeyValuePair<string, Field>> IEnumerable<KeyValuePair<string, Field>>.GetEnumerator() => Cache.GetEnumerator();
 
-        public bool Remove(KeyValuePair<string, Field> entry)
-        { throw new NotImplementedException(); }
-
-        IEnumerator<KeyValuePair<string, Field>> IEnumerable<KeyValuePair<string, Field>>.GetEnumerator()
-        {
-            IEnumerator<PdfDirectObject> fieldObjectsIterator = BaseDataObject.GetEnumerator();
-            while (fieldObjectsIterator.MoveNext())
-            {
-                PdfReference fieldReference = (PdfReference)fieldObjectsIterator.Current;
-                var field = Field.Wrap(fieldReference);
-                yield return new KeyValuePair<string, Field>(field.Name, field);
-            }
-        }
-
-        public IEnumerator<Field> GetEnumerator()
-        {
-            IEnumerator<PdfDirectObject> fieldObjectsIterator = BaseDataObject.GetEnumerator();
-            while (fieldObjectsIterator.MoveNext())
-            {
-                PdfReference fieldReference = (PdfReference)fieldObjectsIterator.Current;
-                var field = Field.Wrap(fieldReference);
-                yield return field;
-            }
-        }
+        public IEnumerator<Field> GetEnumerator() => Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private IList<Field> RetrieveValues(PdfArray fieldObjects)
+        {
+            var list = new List<Field>();
+            RetrieveValues(fieldObjects, list);
+            return list;
+        }
 
         private void RetrieveValues(PdfArray fieldObjects, IList<Field> values)
         {
             foreach (PdfReference fieldReference in fieldObjects)
             {
-                PdfArray kidReferences = (PdfArray)((PdfDictionary)fieldReference.DataObject).Resolve(PdfName.Kids);
+                var kidReferences = ((PdfDictionary)fieldReference.DataObject).GetArray(PdfName.Kids);
                 PdfDictionary kidObject;
                 if (kidReferences == null)
                 { kidObject = null; }
@@ -203,11 +167,6 @@ namespace PdfClown.Documents.Interaction.Forms
                 else // Non-terminal field.
                 { RetrieveValues(kidReferences, values); }
             }
-        }
-
-        public string GenerateName(Type type)
-        {
-            return type.Name + ((IEnumerable<Field>)this).Count(x => type.IsAssignableFrom(x.GetType()));
-        }
+        }        
     }
 }

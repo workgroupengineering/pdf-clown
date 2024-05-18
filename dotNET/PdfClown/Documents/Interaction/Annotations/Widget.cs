@@ -70,6 +70,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         };
 
         private static readonly Dictionary<HighlightModeEnum, PdfName> HighlightModeEnumCodes;
+        private Field field;
 
         static Widget()
         {
@@ -169,7 +170,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     PdfName key = normalAppearanceEntry.Key;
                     if (!key.Equals(PdfName.Off)) // 'On' state.
-                        return (string)key.Value;
+                        return key.StringValue;
                 }
                 return null; // NOTE: It MUST NOT happen (on-state should always be defined).
             }
@@ -181,13 +182,22 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => BaseDataObject.SetString(PdfName.DA, value);
         }
 
-        public Field Field { get; internal set; }
+        public Field NewField { get => field; internal set => field = value; }
 
         public override bool AllowSize => false;
 
         protected override FormXObject GenerateAppearance()
         {
             return null;
+        }
+
+        public Field FormsField
+        {
+            get
+            {
+                var field = Document.Form.Fields[BaseDataObject.GetString(PdfName.T)];
+                return field ??= BaseObject.Wrapper2 as Field;
+            }
         }
     }
 }

@@ -34,6 +34,7 @@ using PdfClown.Util;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -43,14 +44,14 @@ namespace PdfClown.Documents.Interaction.Forms
       <summary>Interactive form field [PDF:1.6:8.6.2].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public abstract class Field : PdfObjectWrapper<PdfDictionary>
+    public abstract class Field : PdfObjectWrapper2<PdfDictionary>
     {
         private SetFont setFontOperation;
+        private string fullName;
 
-        /*
-NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
-of the explicit representation of a field -- they are retrieved everytime clients call.
-*/
+        ///NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
+        ///of the explicit representation of a field -- they are retrieved everytime clients call.
+
         /**
           <summary>Field flags [PDF:1.6:8.6.2].</summary>
         */
@@ -153,13 +154,9 @@ of the explicit representation of a field -- they are retrieved everytime client
         {
             if (reference == null)
                 return null;
-            if (reference.Wrapper is Field field)
+            if (reference.Wrapper2 is Field field)
                 return field;
-            if (reference.DataObject?.Wrapper is Field referenceField)
-            {
-                reference.Wrapper = referenceField;
-                return referenceField;
-            }
+
             var dataObject = (PdfDictionary)reference.DataObject;
             var fieldType = (PdfName)GetInheritableAttribute(dataObject, PdfName.FT) ?? PdfName.Tx;
             var fieldFlags = (PdfInteger)GetInheritableAttribute(dataObject, PdfName.Ff);
@@ -199,7 +196,7 @@ of the explicit representation of a field -- they are retrieved everytime client
                 if (entry != null)
                     return entry;
 
-                dictionary = (PdfDictionary)dictionary.Resolve(PdfName.Parent);
+                dictionary = dictionary.GetDictionary(PdfName.Parent);
             } while (dictionary != null);
             // Default.
             if (key.Equals(PdfName.Ff))
@@ -213,7 +210,7 @@ of the explicit representation of a field -- they are retrieved everytime client
         */
         protected Field(PdfName fieldType, string name, Widget widget) : this(widget.BaseObject)
         {
-            widget.Field = this;
+            widget.NewField = this;
             PdfDictionary baseDataObject = BaseDataObject;
             baseDataObject[PdfName.FT] = fieldType;
             baseDataObject[PdfName.T] = new PdfTextString(name);
@@ -280,40 +277,43 @@ of the explicit representation of a field -- they are retrieved everytime client
             set => BaseDataObject[PdfName.Ff] = PdfInteger.Get((int)value);
         }
 
-        //public Field Parent
-        //{
-        //    get => Wrap((PdfReference)BaseDataObject[PdfName.Parent]);
-        //    set => BaseDataObject[PdfName.Parent] = value?.BaseObject;
-        //}
+        public Field Parent
+        {
+            get => Wrap((PdfReference)BaseDataObject[PdfName.Parent]);
+            set
+            {
+                BaseDataObject[PdfName.Parent] = value?.BaseObject;
+                fullName = null;
+            }
+        }
 
         /**
           <summary>Gets the fully-qualified field name.</summary>
         */
-        public string FullName
-        {
-            get
-            {
-                var buffer = new StringBuilder();
-                {
-                    var partialNameStack = new Stack<string>();
-                    {
-                        PdfDictionary parent = BaseDataObject;
-                        while (parent != null)
-                        {
-                            partialNameStack.Push((string)((PdfTextString)parent[PdfName.T]).Value);
-                            parent = (PdfDictionary)parent.Resolve(PdfName.Parent);
-                        }
-                    }
-                    while (partialNameStack.Count > 0)
-                    {
-                        if (buffer.Length > 0)
-                        { buffer.Append('.'); }
+        public string FullName => fullName ??= ResolveFullName();
 
-                        buffer.Append(partialNameStack.Pop());
-                    }
+        private string ResolveFullName()
+        {
+            var partialNameStack = new List<string>();
+            {
+                var parent = this;
+                while (parent != null)
+                {
+                    partialNameStack.Add(parent.GetOrGenerateName());
+                    parent = parent.Parent;
                 }
-                return buffer.ToString();
             }
+
+            partialNameStack.Reverse();
+            return string.Join('.', partialNameStack);
+        }
+
+        private string GetOrGenerateName()
+        {
+            var name = Name;
+            if (name == null)
+                name = Name = GetType().Name + Guid.NewGuid().ToString();
+            return name;
         }
 
         /**
@@ -321,9 +321,12 @@ of the explicit representation of a field -- they are retrieved everytime client
         */
         public string Name
         {
-            // NOTE: Despite the field name is not a canonical 'inheritable' attribute, sometimes it's not expressed at leaf level.
-            get => ((IPdfString)GetInheritableAttribute(PdfName.T)).StringValue;
-            set => BaseDataObject.SetText(PdfName.T, value);
+            get => BaseDataObject.GetString(PdfName.T);
+            set
+            {
+                BaseDataObject.SetText(PdfName.T, value);
+                fullName = null;
+            }
         }
 
         /**
@@ -374,6 +377,8 @@ of the explicit representation of a field -- they are retrieved everytime client
                   this);
             }
         }
+
+        public Widget Widget => Widgets.FirstOrDefault();
 
         protected PdfString DAString
         {

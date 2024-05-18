@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <remarks>When a color space with this component name is the current color space, painting
           operators have no effect.</remarks>
         */
-        public static readonly string NoneComponentName = (string)PdfName.None.Value;
+        public static readonly string NoneComponentName = PdfName.None.StringValue;
         private ColorSpace alternate;
         private Function function;
 

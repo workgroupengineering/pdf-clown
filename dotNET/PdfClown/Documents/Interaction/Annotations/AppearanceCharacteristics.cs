@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Icon fit [PDF:1.6:8.6.6].</summary>
         */
-        public class IconFitObject : PdfObjectWrapper<PdfDictionary>
+        public class IconFitObject : PdfObjectWrapper2<PdfDictionary>
         {
             /**
               <summary>Scaling mode [PDF:1.6:8.6.6].</summary>
@@ -144,11 +144,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                         return scaleType.Key;
                 }
                 return ScaleTypeEnum.Proportional;
-            }
-
-            public static IconFitObject Wrap(PdfDirectObject baseObjec)
-            {
-                return (IconFitObject)(baseObjec == null ? null : baseObjec.AlternateWrapper ??= new IconFitObject(baseObjec));
             }
 
             public IconFitObject(PdfDocument context) : base(context, new PdfDictionary())
@@ -342,7 +337,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public IconFitObject IconFit
         {
-            get => IconFitObject.Wrap(BaseDataObject[PdfName.IF]);
+            get => Wrap2<IconFitObject>(BaseDataObject[PdfName.IF]);
             set => BaseDataObject[PdfName.IF] = PdfObjectWrapper.GetBaseObject(value);
         }
 

@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using Org.BouncyCastle.Utilities;
 using PdfClown.Bytes;
 using PdfClown.Tokens;
 using PdfClown.Util.Collections;
@@ -49,14 +48,12 @@ namespace PdfClown.Objects
         internal List<PdfDirectObject> items;
 
         private PdfObject parent;
-        private bool updateable = true;
-        private bool updated;
-        private bool virtual_;
+        private PdfObjectStatus status;
 
         public PdfArray() : this(10)
         { }
 
-        public PdfArray(int capacity)
+        public PdfArray(int capacity) : base(PdfObjectStatus.Updateable)
         {
             items = new List<PdfDirectObject>(capacity);
         }
@@ -119,6 +116,8 @@ namespace PdfClown.Objects
                 && ((PdfArray)@object).items.Equals(items));
         }
 
+        public PdfArray GetArray(int index) => (PdfArray)Resolve(index);
+
         public IPdfNumber GetNumber(int index) => (IPdfNumber)Resolve(index);
 
         public float GetFloat(int index, float def = 0) => ((IPdfNumber)Resolve(index))?.FloatValue ?? def;
@@ -137,7 +136,7 @@ namespace PdfClown.Objects
 
         public void SetInt(int index, int? value) => this[index] = PdfInteger.Get(value);
 
-        public bool GetBool(int index, bool def = false) => ((PdfBoolean)Resolve(index))?.BooleanValue ?? def;
+        public bool GetBool(int index, bool def = false) => ((PdfBoolean)Resolve(index))?.RawValue ?? def;
 
         public void SetBool(int index, bool? value) => this[index] = PdfBoolean.Get(value);
 
@@ -205,16 +204,10 @@ namespace PdfClown.Objects
             internal set => parent = value;
         }
 
-        public override bool Updateable
+        public override PdfObjectStatus Status
         {
-            get => updateable;
-            set => updateable = value;
-        }
-
-        public override bool Updated
-        {
-            get => updated;
-            protected internal set => updated = value;
+            get => status;
+            protected internal set => status = value;
         }
 
         /**
@@ -240,13 +233,13 @@ namespace PdfClown.Objects
         public override PdfObject Swap(PdfObject other)
         {
             PdfArray otherArray = (PdfArray)other;
-            List<PdfDirectObject> otherItems = (List<PdfDirectObject>)otherArray.items;
+            var otherItems = otherArray.items;
             // Update the other!
-            otherArray.items = this.items;
+            otherArray.items = items;
             otherArray.Update();
             // Update this one!
-            this.items = otherItems;
-            this.Update();
+            items = otherItems;
+            Update();
             return this;
         }
 
@@ -396,12 +389,6 @@ namespace PdfClown.Objects
             return newArray;
         }
 
-        protected internal override bool Virtual
-        {
-            get => virtual_;
-            set => virtual_ = value;
-        }
 
-        public override PdfReference Reference => base.Reference;
     }
 }
