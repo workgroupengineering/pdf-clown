@@ -63,7 +63,7 @@ namespace PdfClown.Documents.Interchange.Metadata
         public DateTime ModificationDate
         {
             get => BaseDataObject.GetDate(PdfName.LastModified) ?? DateTime.MinValue;
-            internal set => BaseDataObject[PdfName.LastModified] = new PdfDate(value);
+            internal set => BaseDataObject[PdfName.LastModified] = PdfDate.Get(value);
         }
     }
 }

@@ -37,6 +37,17 @@ namespace PdfClown.Util.Parsers
     */
     public class PostScriptParser : IDisposable
     {
+        public struct Reference
+        {
+            public readonly int GenerationNumber;
+            public readonly int ObjectNumber;
+
+            public Reference(int objectNumber, int generationNumber)
+            {
+                ObjectNumber = objectNumber;
+                GenerationNumber = generationNumber;
+            }
+        }
         public enum TokenTypeEnum // [PS:3.3].
         {
             Keyword,
@@ -44,6 +55,7 @@ namespace PdfClown.Util.Parsers
             Integer,
             Real,
             Literal,
+            Date,
             Hex,
             Name,
             Comment,
@@ -96,10 +108,14 @@ namespace PdfClown.Util.Parsers
         { return c == 32 || IsEOL(c) || c == 0 || c == 9 || c == 12; }
 
         private IInputStream stream;
-        private object token;
         private TokenTypeEnum tokenType;
         private StringStream sBuffer = new StringStream(64);
         private MemoryStream mBuffer = new MemoryStream();
+        private bool booleanToken;
+        private int integerToken;
+        private DateTime? dateToken;
+        private double realToken;
+        private Reference referenceToken;
 
         public PostScriptParser(IInputStream stream)
         {
@@ -114,16 +130,16 @@ namespace PdfClown.Util.Parsers
 
         public override int GetHashCode() => stream.GetHashCode();
 
-        /**
-          <summary>Gets a token after moving to the given offset.</summary>
-          <param name="offset">Number of tokens to skip before reaching the intended one.</param>
-          <seealso cref="Token"/>
-        */
-        public object GetToken(int offset = 1)
-        {
-            MoveNext(offset);
-            return Token;
-        }
+        ///**
+        //  <summary>Gets a token after moving to the given offset.</summary>
+        //  <param name="offset">Number of tokens to skip before reaching the intended one.</param>
+        //  <seealso cref="Token"/>
+        //*/
+        //public object GetToken(int offset = 1)
+        //{
+        //    MoveNext(offset);
+        //    return Token;
+        //}
 
         public long Length => stream.Length;
 
@@ -153,7 +169,6 @@ namespace PdfClown.Util.Parsers
             mBuffer.Reset();
             sBuffer.Reset();
 
-            token = null;
             tokenType = (TokenTypeEnum)(-1);
             // Skip leading white-space characters.
             int c = ReadIgnoreWhitespace();
@@ -166,7 +181,6 @@ namespace PdfClown.Util.Parsers
                 case Symbol.Slash: // Name.
                     {
                         tokenType = TokenTypeEnum.Name;
-
                         /*
                           NOTE: As name objects are simple symbols uniquely defined by sequences of characters,
                           the bytes making up the name are never treated as text, so here they are just
@@ -401,38 +415,27 @@ namespace PdfClown.Util.Parsers
                     if (MemoryExtensions.Equals(span, Keyword.False, StringComparison.Ordinal))
                     {
                         tokenType = TokenTypeEnum.Boolean;
-                        token = false;
+                        booleanToken = false;
                     }
                     else if (MemoryExtensions.Equals(span, Keyword.True, StringComparison.Ordinal))
                     {
                         tokenType = TokenTypeEnum.Boolean;
-                        token = true;
+                        booleanToken = true;
                     }
                     else if (MemoryExtensions.Equals(span, Keyword.Null, StringComparison.Ordinal))
                     {
                         tokenType = TokenTypeEnum.Null;
-                        token = null;
                     }
-                    else
-                    {
-                        token = sBuffer;
-                    }
-                    break;
-                case TokenTypeEnum.Literal:
-                case TokenTypeEnum.Hex:
-                    token = mBuffer;
-                    break;
-                case TokenTypeEnum.Name:
-                case TokenTypeEnum.Comment:
-                    token = sBuffer;
                     break;
                 case TokenTypeEnum.Integer:
-                    if (long.TryParse(sBuffer.AsSpan().ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var lResult))
-                        token = unchecked((int)lResult);
+                    integerToken = long.TryParse(sBuffer.AsSpan(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var lResult)
+                        ? unchecked((int)lResult)
+                        : 0;
                     break;
                 case TokenTypeEnum.Real:
-                    if (double.TryParse(sBuffer.AsSpan().ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var dResult))
-                        token = dResult;
+                    realToken = double.TryParse(sBuffer.AsSpan(), NumberStyles.Float, CultureInfo.InvariantCulture, out var dResult)
+                        ? dResult
+                        : 0D;
                     break;
                 default:
                     break;
@@ -576,14 +579,60 @@ namespace PdfClown.Util.Parsers
         */
         public object Token
         {
-            get => token;
-            protected set => token = value;
+            get
+            {
+                return TokenType switch
+                {
+                    TokenTypeEnum.Literal or TokenTypeEnum.Hex => mBuffer,
+                    TokenTypeEnum.Name or TokenTypeEnum.Comment or TokenTypeEnum.Keyword => sBuffer,
+                    TokenTypeEnum.Integer => integerToken,
+                    TokenTypeEnum.Real => realToken,
+                    TokenTypeEnum.Boolean => booleanToken,
+                    TokenTypeEnum.Date => dateToken,
+                    TokenTypeEnum.Reference or TokenTypeEnum.InderectObject => referenceToken,
+                    _ => null,
+                }; ;
+            }
         }
+
+        public int IntegerToken
+        {
+            get => integerToken;
+            protected set => integerToken = value;
+        }
+
+        public double RealToken
+        {
+            get => realToken;
+            protected set => realToken = value;
+        }
+
+        public bool BooleanToken
+        {
+            get => booleanToken;
+            protected set => booleanToken = value;
+        }
+
+        public DateTime? DateToken
+        {
+            get => dateToken;
+            protected set => dateToken = value;
+        }
+
+        public Reference ReferenceToken
+        {
+            get => referenceToken;
+            protected set => referenceToken = value;
+        }
+
+        public StringStream StringBuffer => sBuffer;
 
         public ReadOnlySpan<char> CharsToken
         {
             get => sBuffer.AsSpan();
         }
+
+        public MemoryStream MemoryBuffer => mBuffer;
 
         public ReadOnlySpan<byte> BytesToken
         {

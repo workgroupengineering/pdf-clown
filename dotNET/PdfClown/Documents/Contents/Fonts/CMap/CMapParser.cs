@@ -155,22 +155,23 @@ namespace PdfClown.Documents.Contents.Fonts
                             // Skip.
                             break;
                         case TokenTypeEnum.Literal:
-                            operands.Add(Token is MemoryStream literalStream
-                                    ? Charset.ISO88591.GetString(literalStream.AsSpan())
+                            var mSpan = BytesToken;
+                            operands.Add(mSpan.Length > 0
+                                    ? Charset.ISO88591.GetString(mSpan)
                                     : string.Empty);
                             break;
                         case TokenTypeEnum.Hex:
-                            operands.Add(Token is MemoryStream hexStream
-                                    ? ConvertUtils.ByteArrayToHex(hexStream.AsSpan())
+                            var hSpan = BytesToken;
+                            operands.Add(hSpan.Length > 0
+                                    ? ConvertUtils.ByteArrayToHex(hSpan)
                                     : string.Empty);
                             break;
+                        case TokenTypeEnum.Name:
+                            operands.Add(CharsToken.ToString());
+                            break;
                         default:
-                            {
-                                operands.Add(Token is StringStream stringStream
-                                    ? stringStream.ToString()
-                                    : Token);
-                                break;
-                            }
+                            operands.Add(Token);
+                            break;
                     }
                 }
             }
@@ -330,11 +331,19 @@ namespace PdfClown.Documents.Contents.Fonts
         */
         private ReadOnlySpan<byte> ParseInputCode()
         {
-            if (Token is MemoryStream memoryStream)
-                return memoryStream.ToArray();
-            if (Token is StringStream stringStream)
-                ConvertUtils.HexToByteArray(stringStream.AsSpan()).AsSpan();
-            return ConvertUtils.HexToByteArray(Token.ToString()).AsSpan();
+            switch (TokenType)
+            {
+                case TokenTypeEnum.Literal:
+                case TokenTypeEnum.Hex:
+                    return BytesToken.ToArray();
+                case TokenTypeEnum.Keyword:
+                case TokenTypeEnum.Name:
+                    return ConvertUtils.HexToByteArray(CharsToken).AsSpan();
+                default:
+                    var chars = CharsToken;
+                    return ConvertUtils.HexToByteArray(chars.Length > 0
+                        ? chars : Token.ToString()).AsSpan();
+            }
         }
 
         /**
@@ -345,13 +354,12 @@ namespace PdfClown.Documents.Contents.Fonts
             switch (TokenType)
             {
                 case TokenTypeEnum.Integer: // Character code in plain format.
-                    return (int)Token;
+                    return IntegerToken;
                 case TokenTypeEnum.Hex: // Character code in hexadecimal format.
                 case TokenTypeEnum.Literal:
-                    var hData = (MemoryStream)Token;
-                    return ConvertUtils.ReadIntOffset(hData.AsSpan());
+                    return ConvertUtils.ReadIntOffset(BytesToken);
                 case TokenTypeEnum.Name: // Character name.
-                    return GlyphMapping.Default.ToUnicode(Token.ToString()).Value;
+                    return GlyphMapping.Default.ToUnicode(CharsToken.ToString()).Value;
                 default:
                     throw new Exception("Hex string, integer or name expected instead of " + TokenType);
             }

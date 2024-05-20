@@ -44,18 +44,6 @@ namespace PdfClown.Tokens
     */
     public sealed class FileParser : BaseParser
     {
-        public struct Reference
-        {
-            public readonly int GenerationNumber;
-            public readonly int ObjectNumber;
-
-            internal Reference(int objectNumber, int generationNumber)
-            {
-                this.ObjectNumber = objectNumber;
-                this.GenerationNumber = generationNumber;
-            }
-        }
-
         // private static readonly int EOFMarkerChunkSize = 1024; // [PDF:1.6:H.3.18].
 
         private PdfFile file;
@@ -81,10 +69,8 @@ namespace PdfClown.Tokens
             bool moved = base.MoveNext();
             if (moved)
             {
-                switch (TokenType)
+                if (TokenType == TokenTypeEnum.Integer)
                 {
-                    case TokenTypeEnum.Integer:
-                        {
                             /*
                               NOTE: We need to verify whether indirect reference pattern is applicable:
                               ref :=  { int int 'R' }
@@ -93,12 +79,12 @@ namespace PdfClown.Tokens
                             long baseOffset = stream.Position; // Backs up the recovery position.
 
                             // 1. Object number.
-                            int objectNumber = (int)Token;
+                    int objectNumber = IntegerToken;
                             // 2. Generation number.
                             base.MoveNext();
                             if (TokenType == TokenTypeEnum.Integer)
                             {
-                                int generationNumber = (int)Token;
+                        int generationNumber = IntegerToken;
                                 // 3. Reference keyword.
                                 base.MoveNext();
                                 if (TokenType == TokenTypeEnum.Keyword)
@@ -107,40 +93,33 @@ namespace PdfClown.Tokens
                                     if (span.Equals(Keyword.Reference, StringComparison.Ordinal))
                                     {
                                         TokenType = TokenTypeEnum.Reference;
-                                        Token = new Reference(objectNumber, generationNumber);
+                                ReferenceToken = new Reference(objectNumber, generationNumber);
+                                return moved;
                                     }
                                     else if (span.Equals(Keyword.BeginIndirectObject, StringComparison.Ordinal))
                                     {
                                         TokenType = TokenTypeEnum.InderectObject;
-                                        Token = new Reference(objectNumber, generationNumber);
+                                ReferenceToken = new Reference(objectNumber, generationNumber);
+                                return moved;
                                     }
                                 }
                             }
-                            if (Token is not Reference)
-                            {
                                 // Rollback!
                                 stream.Seek(baseOffset);
-                                Token = objectNumber;
+                    IntegerToken = objectNumber;
                                 TokenType = TokenTypeEnum.Integer;
                             }
                         }
-                        break;
-                }
-            }
             return moved;
         }
 
         public override PdfDataObject ParsePdfObject()
         {
-            switch (TokenType)
+            if (TokenType == TokenTypeEnum.Reference)
             {
-                case TokenTypeEnum.Reference:
-                    if (Token is Reference reference)
-                    {
+                var reference = ReferenceToken;
                         return new PdfReference(reference.ObjectNumber, reference.GenerationNumber, file);
                     }
-                    break;
-            }
 
             PdfDataObject pdfObject = base.ParsePdfObject();
             if (pdfObject is PdfDictionary streamHeader)
@@ -299,7 +278,7 @@ namespace PdfClown.Tokens
             MoveNext();
             if (TokenType != TokenTypeEnum.Integer)
                 throw new PostScriptParseException("'" + Keyword.StartXRef + "' value invalid.", this);
-            long xrefPosition = (int)Token;
+            long xrefPosition = IntegerToken;
 
             stream.Seek(xrefPosition);
             MoveNext();
@@ -311,7 +290,6 @@ namespace PdfClown.Tokens
                 xrefPosition = SeekRevers(streamLength, "\n" + Keyword.XRef);
                 if (xrefPosition >= 0)
                     xrefPosition++;
-
             }
             return xrefPosition;
         }

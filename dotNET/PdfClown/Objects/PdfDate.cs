@@ -47,21 +47,27 @@ namespace PdfClown.Objects
         */
         public static PdfDate Get(DateTime? value)
         {
-            return value.HasValue ? new PdfDate(value.Value) : null;
+            return value.HasValue ? new PdfDate(Trimm(value).Value) : null;
+        }
+
+        public static PdfDate Get(Memory<byte> data, DateTime? value)
+        {
+            return value.HasValue ? new PdfDate(data, value.Value) : null;
         }
 
         /**
           <summary>Converts a PDF date literal into its corresponding date.</summary>
           <exception cref="PdfClown.Util.Parsers.ParseException">Thrown when date literal parsing fails.</exception>
         */
-        public static DateTime? ToDate(ReadOnlySpan<char> value)
+        public static bool ToDate(ReadOnlySpan<char> value, out DateTime date)
         {
+            date = DateTime.MinValue;
             if (value.IsEmpty)
-                return null;
+                return false;
             value = value.Trim();
             if (value.Equals("D:", StringComparison.Ordinal)
                 || value.Length < 6)
-                return null;
+                return false;
             // 1. Normalization.
             var dateBuilder = new StringStream();
             try
@@ -86,8 +92,10 @@ namespace PdfClown.Objects
                 // UT Minute offset (mm').
                 dateBuilder.Append(':').Append(length < 22 ? "00" : value.Slice(20, 2));
             }
-            catch (Exception exception)
-            { throw new ParseException("Failed to normalize the date string.", exception); }
+            catch
+            {
+                return false;
+            }
 
             // 2. Parsing.
             return DateTime.TryParseExact(
@@ -95,25 +103,39 @@ namespace PdfClown.Objects
                 FormatString,
                 CultureInfo.InvariantCulture,//("en-US")
                 DateTimeStyles.None,
-                out var date) ? date : DateTime.MinValue;
-            //{ throw new ParseException("Failed to parse the date string.", exception); }
+                out date);
         }
 
         private static string Format(DateTime value)
         {
             if (value.Kind == DateTimeKind.Utc)
                 value = value.ToLocalTime();
-            return ("D:" + value.ToString(FormatString).Replace(':', '\'') + "'");
+            return ($"D:{value.ToString(FormatString, CultureInfo.InvariantCulture).Replace(':', '\'')}'");
         }
 
         public PdfDate(DateTime value)
         {
-            Value = value;
+            DateValue = value;
+        }
+
+        public PdfDate(Memory<byte> data, DateTime value)
+            :base(data)
+        {
+            date = value;
         }
 
         public override PdfObject Accept(IVisitor visitor, object data)
         {
             return visitor.Visit(this, data);
+        }
+
+        internal static DateTime? Trimm(DateTime? value)
+        {
+            if (value is DateTime dateTime && dateTime.Millisecond > 0)
+            {
+                return new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, dateTime.Second);
+            }
+            return value;
         }
 
         public override SerializationModeEnum SerializationMode
@@ -138,8 +160,8 @@ namespace PdfClown.Objects
 
         public DateTime? DateValue
         {
-            get => date ??= ToDate(StringValue);
-            set => Value = value;
+            get => date ??= (ToDate(StringValue, out var parsed) ? parsed : null);
+            set => Value = date = value;
         }
     }
 }

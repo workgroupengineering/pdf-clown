@@ -110,7 +110,7 @@ namespace PdfClown.Documents.Contents.Tokens
                 switch (TokenType)
                 {
                     case TokenTypeEnum.Keyword:
-                        @operator = Token as StringStream;
+                        @operator = StringBuffer;
                         break;
                     default:
                         operands.Add((PdfDirectObject)ParsePdfObject());
@@ -122,9 +122,10 @@ namespace PdfClown.Documents.Contents.Tokens
 
         public override PdfDataObject ParsePdfObject()
         {
-            if (Token is sysIO.MemoryStream memoryStream)
+            if (TokenType == TokenTypeEnum.Literal
+                || TokenType == TokenTypeEnum.Hex)
             {
-                return new PdfByteString(memoryStream.ToArray());
+                return new PdfByteString(BytesToken.ToArray());
             }
             return base.ParsePdfObject();
         }

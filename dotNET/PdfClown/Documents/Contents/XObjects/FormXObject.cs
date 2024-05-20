@@ -256,7 +256,7 @@ namespace PdfClown.Documents.Contents.XObjects
         public void Touch(PdfName appName, DateTime modificationDate)
         {
             GetAppData(appName).ModificationDate = modificationDate;
-            BaseDataObject.Header[PdfName.LastModified] = new PdfDate(modificationDate);
+            BaseDataObject.Header[PdfName.LastModified] = PdfDate.Get(modificationDate);
         }
 
         public ContentObject ToInlineObject(PrimitiveComposer composer)

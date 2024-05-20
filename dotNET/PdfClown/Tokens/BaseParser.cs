@@ -52,23 +52,20 @@ namespace PdfClown.Tokens
                 if (tokenType == TokenTypeEnum.Comment)
                     continue; // Comments are ignored.
 
-                if (tokenType == TokenTypeEnum.Literal
-                    && Token is MemoryStream stream)
+                if (tokenType == TokenTypeEnum.Literal)
                 {
-                    var bytes = (ReadOnlySpan<byte>)stream.AsSpan();
+                    var bytes = BytesToken;
                     if (bytes.Length > 5)
                     {
                         Span<char> chars = stackalloc char[2];
                         Charset.ISO88591.GetChars(bytes.Slice(0, 2), chars);
                         if (MemoryExtensions.Equals(chars, Keyword.DatePrefix, StringComparison.Ordinal))
                         {
+                            TokenType = TokenTypeEnum.Date;
                             Span<char> full = stackalloc char[bytes.Length];
                             Charset.ISO88591.GetChars(bytes, full);
-                            ///NOTE: Dates are a weak extension to the PostScript language.
-                            try
-                            { Token = PdfDate.ToDate(full); }
-                            catch (ParseException)
-                            {/* NOOP: gently degrade to a common literal. */}
+                            //NOTE: Dates are a weak extension to the PostScript language.                            
+                            DateToken = PdfDate.ToDate(full, out var date) ? date : null;
                         }
                     }
                 }
@@ -85,9 +82,9 @@ namespace PdfClown.Tokens
             switch (TokenType)
             {
                 case TokenTypeEnum.Integer:
-                    return PdfInteger.Get((int)Token);
+                    return PdfInteger.Get(IntegerToken);
                 case TokenTypeEnum.Name:
-                    return PdfName.Get(Token.ToString(), true);
+                    return PdfName.Get(CharsToken.ToString(), true);
                 case TokenTypeEnum.DictionaryBegin:
                     {
                         var dictionary = new PdfDictionary();
@@ -124,17 +121,16 @@ namespace PdfClown.Tokens
                         array.Updateable = true;
                         return array;
                     }
+                case TokenTypeEnum.Date:
+                    return PdfDate.Get(BytesToken.ToArray(), DateToken);
                 case TokenTypeEnum.Literal:
-                    if (Token is DateTime dateTime)
-                        return PdfDate.Get(dateTime);
-                    else
-                        return new PdfTextString(BytesToken.ToArray());
+                    return new PdfTextString(BytesToken.ToArray(), PdfString.SerializationModeEnum.Literal);
                 case TokenTypeEnum.Hex:
                     return new PdfTextString(BytesToken.ToArray(), PdfString.SerializationModeEnum.Hex);
                 case TokenTypeEnum.Real:
-                    return PdfReal.Get((double)Token);
+                    return PdfReal.Get(RealToken);
                 case TokenTypeEnum.Boolean:
-                    return PdfBoolean.Get((bool)Token);
+                    return PdfBoolean.Get(BooleanToken);
                 case TokenTypeEnum.Null:
                     return null;
                 default:

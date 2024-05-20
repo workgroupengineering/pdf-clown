@@ -95,8 +95,9 @@ namespace PdfClown.Tokens
                     parser.Seek(sectionOffset);
 
                     PdfDictionary sectionTrailer = null;
-                    if (parser.GetToken() is StringStream xrefStream
-                        && MemoryExtensions.Equals(xrefStream.AsSpan(), Keyword.XRef, StringComparison.Ordinal)) // XRef-table section.
+                    if (parser.MoveNext()
+                        && parser.TokenType == PostScriptParser.TokenTypeEnum.Keyword
+                        && MemoryExtensions.Equals(parser.CharsToken, Keyword.XRef, StringComparison.Ordinal)) // XRef-table section.
                     {
                         ReadXRefTable(xrefEntries);
                         // Get the previous trailer!
@@ -172,7 +173,7 @@ namespace PdfClown.Tokens
                     throw new PostScriptParseException("Neither object number of the first object in this xref subsection nor end of xref section found.", parser);
 
                 // Get the object number of the first object in this xref-table subsection!
-                int startObjectNumber = (int)parser.Token;
+                int startObjectNumber = parser.IntegerToken;
 
                 // 2. Last object number.
                 parser.MoveNext();
@@ -180,7 +181,7 @@ namespace PdfClown.Tokens
                     throw new PostScriptParseException("Number of entries in this xref subsection not found.", parser);
 
                 // Get the object number of the last object in this xref-table subsection!
-                int endObjectNumber = (int)parser.Token + startObjectNumber;
+                int endObjectNumber = parser.IntegerToken + startObjectNumber;
 
                 // 3. XRef-table subsection entries.
                 for (int index = startObjectNumber; index < endObjectNumber; index++)
@@ -193,13 +194,13 @@ namespace PdfClown.Tokens
                     }
 
                     // Get the indirect object offset!
-                    int offset = (int)parser.GetToken();
+                    int offset = parser.MoveNext() ? parser.IntegerToken : 0;
                     // Get the object generation number!
-                    int generation = (int)parser.GetToken();
+                    int generation = parser.MoveNext() ? parser.IntegerToken : 0;
                     // Get the usage tag!
                     XRefEntry.UsageEnum usage;
                     {
-                        var usageToken = ((StringStream)parser.GetToken()).AsSpan();
+                        var usageToken = parser.MoveNext() ? parser.CharsToken : ReadOnlySpan<char>.Empty;
                         if (MemoryExtensions.Equals(usageToken, Keyword.InUseXrefEntry, StringComparison.Ordinal))
                             usage = XRefEntry.UsageEnum.InUse;
                         else if (MemoryExtensions.Equals(usageToken, Keyword.FreeXrefEntry, StringComparison.Ordinal))
