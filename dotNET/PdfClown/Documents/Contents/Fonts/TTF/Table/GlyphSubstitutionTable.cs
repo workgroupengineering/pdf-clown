@@ -295,7 +295,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
                 default:
                     // Other lookup types are not supported
-                    Debug.WriteLine($"debug: Type {lookupType} GSUB lookup table is not supported and will be ignored");
+                    //Debug.WriteLine($"debug: Type {lookupType} GSUB lookup table is not supported and will be ignored");
                     return null;
                     //TODO next: implement type 6
                     // https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#lookuptype-6-chained-contexts-substitution-subtable
