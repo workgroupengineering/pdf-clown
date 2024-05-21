@@ -797,11 +797,14 @@ namespace PdfClown.Viewer
                 bound.Inflate(1, 1);
                 state.Canvas.DrawRect(bound, paintBorderSelection);
             }
-            foreach (var controlPoint in state.DrawAnnotation.GetControlPoints())
+            if (!readOnly)
             {
-                var bound = controlPoint.GetBounds(state.PageViewMatrix);
-                state.Canvas.DrawOval(bound, paintPointFill);
-                state.Canvas.DrawOval(bound, controlPoint == selectedPoint ? paintBorderSelection : paintBorderDefault);
+                foreach (var controlPoint in state.DrawAnnotation.GetControlPoints())
+                {
+                    var bound = controlPoint.GetBounds(state.PageViewMatrix);
+                    state.Canvas.DrawOval(bound, paintPointFill);
+                    state.Canvas.DrawOval(bound, controlPoint == selectedPoint ? paintBorderSelection : paintBorderDefault);
+                }
             }
         }
 
