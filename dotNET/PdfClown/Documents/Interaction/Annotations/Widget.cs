@@ -93,13 +93,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the highlighting mode corresponding to the given value.</summary>
         */
-        private static HighlightModeEnum ToHighlightModeEnum(IPdfString value)
+        private static HighlightModeEnum ToHighlightModeEnum(string value)
         {
             if (value == null)
                 return HighlightModeEnum.Invert;
             foreach (KeyValuePair<HighlightModeEnum, PdfName> mode in HighlightModeEnumCodes)
             {
-                if (string.Equals(mode.Value.StringValue, value.StringValue, StringComparison.Ordinal))
+                if (string.Equals(mode.Value.StringValue, value, StringComparison.Ordinal))
                     return mode.Key;
             }
             return HighlightModeEnum.Invert;
@@ -134,7 +134,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override AnnotationActions Actions
         {
-            get => WidgetActions.Wrap(this, BaseDataObject.Get<PdfDictionary>(PdfName.AA));
+            get => WidgetActions.Wrap(this, BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.AA));
             set => base.Actions = value;
         }
 
@@ -144,7 +144,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public AppearanceCharacteristics AppearanceCharacteristics
         {
-            get => Wrap<AppearanceCharacteristics>(BaseDataObject.Get<PdfDictionary>(PdfName.MK));
+            get => Wrap<AppearanceCharacteristics>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MK));
             set => BaseDataObject[PdfName.MK] = value.BaseObject;
         }
 
@@ -154,7 +154,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public HighlightModeEnum HighlightMode
         {
-            get => ToHighlightModeEnum((IPdfString)BaseDataObject[PdfName.H]);
+            get => ToHighlightModeEnum(BaseDataObject.GetString(PdfName.H));
             set => BaseDataObject[PdfName.H] = ToCode(value);
         }
 
@@ -180,6 +180,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get => BaseDataObject.GetString(PdfName.DA);
             set => BaseDataObject.SetString(PdfName.DA, value);
+        }
+
+        public override string Name
+        {
+            get => base.Name ?? BaseDataObject.GetString(PdfName.T);
+            set => base.Name = value;
         }
 
         public Field NewField { get => field; internal set => field = value; }

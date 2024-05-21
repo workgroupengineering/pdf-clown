@@ -269,7 +269,7 @@ namespace PdfClown.Documents.Contents
                       : basePosition + stream.Length;
 
                     stream = streamIndex < streams.Count
-                      ? ((PdfStream)streams.Resolve(streamIndex)).Body
+                      ? streams.Get<PdfStream>(streamIndex).Body
                       : null;
                 }
             }

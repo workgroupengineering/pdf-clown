@@ -25,30 +25,30 @@ namespace PdfClown.Documents.Interaction.Annotations
 
     internal static class MarkupIntentExtension
     {
-        private static readonly BiDictionary<MarkupIntent, PdfName> codes;
+        private static readonly BiDictionary<MarkupIntent, string> codes;
 
         static MarkupIntentExtension()
         {
-            codes = new BiDictionary<MarkupIntent, PdfName>
+            codes = new BiDictionary<MarkupIntent, string>
             {
-                [MarkupIntent.Text] = PdfName.Text,
-                [MarkupIntent.FreeText] = PdfName.FreeText,
-                [MarkupIntent.FreeTextCallout] = PdfName.FreeTextCallout,
-                [MarkupIntent.FreeTextTypeWriter] = PdfName.FreeTextTypeWriter,
+                [MarkupIntent.Text] = PdfName.Text.StringValue,
+                [MarkupIntent.FreeText] = PdfName.FreeText.StringValue,
+                [MarkupIntent.FreeTextCallout] = PdfName.FreeTextCallout.StringValue,
+                [MarkupIntent.FreeTextTypeWriter] = PdfName.FreeTextTypeWriter.StringValue,
 
-                [MarkupIntent.Line] = PdfName.Line,
-                [MarkupIntent.LineArrow] = PdfName.LineArrow,
-                [MarkupIntent.LineDimension] = PdfName.LineDimension,
+                [MarkupIntent.Line] = PdfName.Line.StringValue,
+                [MarkupIntent.LineArrow] = PdfName.LineArrow.StringValue,
+                [MarkupIntent.LineDimension] = PdfName.LineDimension.StringValue,
 
-                [MarkupIntent.Polygon] = PdfName.Polygon,
-                [MarkupIntent.PolygonCloud] = PdfName.PolygonCloud,
-                [MarkupIntent.PolygonDimension] = PdfName.PolygonDimension,
-                [MarkupIntent.PolyLine] = PdfName.PolyLine,
-                [MarkupIntent.PolyLineDimension] = PdfName.PolyLineDimension
+                [MarkupIntent.Polygon] = PdfName.Polygon.StringValue,
+                [MarkupIntent.PolygonCloud] = PdfName.PolygonCloud.StringValue,
+                [MarkupIntent.PolygonDimension] = PdfName.PolygonDimension.StringValue,
+                [MarkupIntent.PolyLine] = PdfName.PolyLine.StringValue,
+                [MarkupIntent.PolyLineDimension] = PdfName.PolyLineDimension.StringValue
             };
         }
 
-        public static MarkupIntent? Get(PdfName name)
+        public static MarkupIntent? Get(string name)
         {
             if (name == null)
                 return null;
@@ -58,7 +58,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public static PdfName GetCode(this MarkupIntent? intent)
         {
-            return intent == null ? null : codes[intent.Value];
+            return intent == null ? null : PdfName.Get(codes[intent.Value], true);
         }
     }
 }

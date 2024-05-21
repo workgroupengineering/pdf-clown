@@ -44,6 +44,7 @@ namespace PdfClown.Documents.Contents
     public sealed class ExtGState : PdfObjectWrapper<PdfDictionary>
     {
         internal static readonly IList<BlendModeEnum> DefaultBlendMode = new BlendModeEnum[0];
+        private LineDash lineDash;
 
         public ExtGState(PdfDocument context) : base(context, new PdfDictionary())
         { }
@@ -253,12 +254,12 @@ namespace PdfClown.Documents.Contents
         {
             get
             {
-                var fontObject = (PdfArray)BaseDataObject[PdfName.Font];
+                var fontObject = BaseDataObject.Get<PdfArray>(PdfName.Font);
                 return Font.Wrap(fontObject?[0]);
             }
             set
             {
-                var fontObject = (PdfArray)BaseDataObject[PdfName.Font];
+                var fontObject = BaseDataObject.Get<PdfArray>(PdfName.Font);
                 if (fontObject == null)
                 { fontObject = new PdfArray(2) { PdfObjectWrapper.GetBaseObject(value), PdfInteger.Default }; }
                 else
@@ -272,12 +273,12 @@ namespace PdfClown.Documents.Contents
         {
             get
             {
-                var fontObject = (PdfArray)BaseDataObject[PdfName.Font];
+                var fontObject = BaseDataObject.Get<PdfArray>(PdfName.Font);
                 return fontObject?.GetFloat(1);
             }
             set
             {
-                var fontObject = (PdfArray)BaseDataObject[PdfName.Font];
+                var fontObject = BaseDataObject.Get<PdfArray>(PdfName.Font);
                 if (fontObject == null)
                 { fontObject = new PdfArray(2) { null, PdfReal.Get(value) }; }
                 else
@@ -296,22 +297,17 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF13)]
         public LineDash LineDash
         {
-            get
-            {
-                var lineDashObject = (PdfArray)BaseDataObject[PdfName.D];
-                return lineDashObject != null ? LineDash.Get((PdfArray)lineDashObject[0], (IPdfNumber)lineDashObject[1]) : null;
-            }
+            get => lineDash ??= BaseDataObject.Resolve(PdfName.D) is PdfArray lineDashObject 
+                ? LineDash.Get(lineDashObject.Get<PdfArray>(0), lineDashObject.GetNumber(1)) 
+                : null;
             set
             {
-                var lineDashObject = new PdfArray();
+                lineDash = value;                
+                BaseDataObject[PdfName.D] = new PdfArray
                 {
-                    var dashArrayObject = new PdfArray();
-                    foreach (double dashArrayItem in value.DashArray)
-                    { dashArrayObject.Add(PdfReal.Get(dashArrayItem)); }
-                    lineDashObject.Add(dashArrayObject);
-                    lineDashObject.Add(PdfReal.Get(value.DashPhase));
-                }
-                BaseDataObject[PdfName.D] = lineDashObject;
+                    PdfArray.FromFloats(value.DashArray),
+                    PdfReal.Get(value.DashPhase)
+                };
             }
         }
 

@@ -52,7 +52,7 @@ namespace PdfClown.Documents.Contents.XObjects
             if (baseObject.Wrapper is XObject xobject)
                 return xobject;
             
-            PdfName subtype = (PdfName)((PdfStream)baseObject.Resolve()).Header[PdfName.Subtype];
+            var subtype = ((PdfStream)baseObject.Resolve()).Header.Get<PdfName>(PdfName.Subtype);
             if (PdfName.Form.Equals(subtype))
                 return FormXObject.Wrap(baseObject);
             else if (PdfName.Image.Equals(subtype))

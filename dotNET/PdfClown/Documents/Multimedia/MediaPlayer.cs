@@ -53,7 +53,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public SoftwareIdentifier Identifier
         {
-            get => Wrap<SoftwareIdentifier>(BaseDataObject.Get<PdfDictionary>(PdfName.PID));
+            get => Wrap<SoftwareIdentifier>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PID));
             set => BaseDataObject[PdfName.PID] = value.BaseObject;
         }
     }

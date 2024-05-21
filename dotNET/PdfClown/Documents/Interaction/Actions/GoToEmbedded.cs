@@ -149,10 +149,10 @@ namespace PdfClown.Documents.Interaction.Actions
                     if (pageRefObject == null)
                         return null;
 
-                    if (pageRefObject is PdfInteger)
-                        return ((PdfInteger)pageRefObject).Value;
+                    if (pageRefObject is PdfInteger pdfInteger)
+                        return pdfInteger.Value;
                     else
-                        return ((PdfString)pageRefObject).Value;
+                        return ((IPdfString)pageRefObject).StringValue;
                 }
                 set
                 {
@@ -186,10 +186,10 @@ namespace PdfClown.Documents.Interaction.Actions
                     if (annotationRefObject == null)
                         return null;
 
-                    if (annotationRefObject is PdfInteger)
-                        return ((PdfInteger)annotationRefObject).Value;
+                    if (annotationRefObject is PdfInteger pdfInteger)
+                        return pdfInteger.Value;
                     else
-                        return ((PdfTextString)annotationRefObject).Value;
+                        return ((IPdfString)annotationRefObject).StringValue;
                 }
                 set
                 {
@@ -239,18 +239,8 @@ namespace PdfClown.Documents.Interaction.Actions
             */
             public PathElement Next
             {
-                get
-                {
-                    PdfDirectObject targetObject = BaseDataObject[PdfName.T];
-                    return targetObject != null ? new PathElement(targetObject) : null;
-                }
-                set
-                {
-                    if (value == null)
-                    { BaseDataObject.Remove(PdfName.T); }
-                    else
-                    { BaseDataObject[PdfName.T] = value.BaseObject; }
-                }
+                get => Wrap<PathElement>(BaseDataObject[PdfName.T]);
+                set => BaseDataObject[PdfName.T] = value?.BaseObject;
             }
         }
 
@@ -298,13 +288,7 @@ namespace PdfClown.Documents.Interaction.Actions
         public PathElement DestinationPath
         {
             get => Wrap<PathElement>(BaseDataObject[PdfName.T]);
-            set
-            {
-                if (value == null)
-                { BaseDataObject.Remove(PdfName.T); }
-                else
-                { BaseDataObject[PdfName.T] = value.BaseObject; }
-            }
+            set => BaseDataObject[PdfName.T] = value?.BaseObject;
         }
     }
 }

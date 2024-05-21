@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Interaction.Actions
         public Sound Sound
         {
             //NOTE: 'Sound' entry MUST exist.
-            get => Wrap<Sound>(BaseDataObject.Get<PdfStream>(PdfName.Sound));
+            get => Wrap<Sound>(BaseDataObject.GetOrCreate<PdfStream>(PdfName.Sound));
             set
             {
                 if (value == null)

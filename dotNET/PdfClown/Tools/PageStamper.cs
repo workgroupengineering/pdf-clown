@@ -69,9 +69,10 @@ namespace PdfClown.Tools
                       NOTE: Content stream MUST be expressed as an array of data streams in order to host
                       background- and foreground-stamped contents.
                     */
-                    streams = new PdfArray();
-                    streams.Add(contentsObject);
-                    page.BaseDataObject[PdfName.Contents] = streams;
+                    page.BaseDataObject[PdfName.Contents] = streams = new PdfArray
+                    {
+                        contentsObject
+                    }; ;
                 }
                 else
                 { streams = (PdfArray)contentsDataObject; }

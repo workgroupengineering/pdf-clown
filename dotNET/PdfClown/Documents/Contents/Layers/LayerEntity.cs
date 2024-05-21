@@ -112,18 +112,20 @@ namespace PdfClown.Documents.Contents.Layers
 
     internal static class VisibilityPolicyEnumExtension
     {
-        private static readonly BiDictionary<LayerMembership.VisibilityPolicyEnum, PdfName> codes;
+        private static readonly BiDictionary<LayerMembership.VisibilityPolicyEnum, string> codes;
 
         static VisibilityPolicyEnumExtension()
         {
-            codes = new BiDictionary<LayerMembership.VisibilityPolicyEnum, PdfName>();
-            codes[LayerMembership.VisibilityPolicyEnum.AllOn] = PdfName.AllOn;
-            codes[LayerMembership.VisibilityPolicyEnum.AnyOn] = PdfName.AnyOn;
-            codes[LayerMembership.VisibilityPolicyEnum.AnyOff] = PdfName.AnyOff;
-            codes[LayerMembership.VisibilityPolicyEnum.AllOff] = PdfName.AllOff;
+            codes = new BiDictionary<LayerMembership.VisibilityPolicyEnum, string>
+            {
+                [LayerMembership.VisibilityPolicyEnum.AllOn] = PdfName.AllOn.StringValue,
+                [LayerMembership.VisibilityPolicyEnum.AnyOn] = PdfName.AnyOn.StringValue,
+                [LayerMembership.VisibilityPolicyEnum.AnyOff] = PdfName.AnyOff.StringValue,
+                [LayerMembership.VisibilityPolicyEnum.AllOff] = PdfName.AllOff.StringValue
+            };
         }
 
-        public static LayerMembership.VisibilityPolicyEnum Get(PdfName name)
+        public static LayerMembership.VisibilityPolicyEnum Get(string name)
         {
             if (name == null)
                 return LayerMembership.VisibilityPolicyEnum.AnyOn;
@@ -135,7 +137,6 @@ namespace PdfClown.Documents.Contents.Layers
             return visibilityPolicy.Value;
         }
 
-        public static PdfName GetName(this LayerMembership.VisibilityPolicyEnum visibilityPolicy)
-        { return codes[visibilityPolicy]; }
+        public static PdfName GetName(this LayerMembership.VisibilityPolicyEnum visibilityPolicy) => PdfName.Get(codes[visibilityPolicy], true);
     }
 }

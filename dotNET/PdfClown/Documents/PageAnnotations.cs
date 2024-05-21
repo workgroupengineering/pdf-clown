@@ -86,39 +86,30 @@ namespace PdfClown.Documents
 
         public void RefreshCache()
         {
-            Document.LockObject.Wait();
-            Document.LockObject.Reset();
-            try
+            for (int i = 0, length = Count; i < length; i++)
             {
-                for (int i = 0, length = Count; i < length; i++)
+                var item = this[i];
+                if (item == null)
                 {
-                    var item = this[i];
-                    if (item == null)
-                    {
-                        RemoveAt(i);
-                        length--;
-                        i--;
-                        continue;
-                    }
-                    //Recovery
-                    if (item is Markup markup
-                        && markup.Popup != null
-                        && !Contains(markup.Popup))
-                    {
-                        Add(markup.Popup);
-                    }
-                    if (item is Popup popup
-                           && popup.Parent != null
-                           && !Contains(popup.Parent))
-                    {
-                        Add(popup.Parent);
-                    }
-                    AddIndex(item);
+                    RemoveAt(i);
+                    length--;
+                    i--;
+                    continue;
                 }
-            }
-            finally
-            {
-                Document.LockObject?.Set();
+                //Recovery
+                if (item is Markup markup
+                    && markup.Popup != null
+                    && !Contains(markup.Popup))
+                {
+                    Add(markup.Popup);
+                }
+                if (item is Popup popup
+                       && popup.Parent != null
+                       && !Contains(popup.Parent))
+                {
+                    Add(popup.Parent);
+                }
+                AddIndex(item);
             }
         }
 
@@ -127,11 +118,11 @@ namespace PdfClown.Documents
             //Recovery
             if (annotation.Page == null)
             {
-                DoAdd(annotation);
+                LinkPage(annotation);
             }
             if (string.IsNullOrEmpty(annotation.Name)
-                || nameIndex.TryGetValue(annotation.Name, out var existing)
-                && existing != annotation)
+                || (nameIndex.TryGetValue(annotation.Name, out var existing)
+                && existing != annotation))
             {
                 annotation.GenerateExistingName();
             }

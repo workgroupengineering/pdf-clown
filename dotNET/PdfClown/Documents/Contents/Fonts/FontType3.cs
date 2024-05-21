@@ -100,7 +100,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public override SKMatrix FontMatrix
         {
-            get => fontMatrix ??= Dictionary.GetArray(PdfName.FontMatrix) is PdfArray array && array.Count > 5
+            get => fontMatrix ??= Dictionary.Resolve(PdfName.FontMatrix) is PdfArray array && array.Count > 5
                             ? new SKMatrix(
                                 array.GetFloat(0), array.GetFloat(1), array.GetFloat(4),
                                 array.GetFloat(2), array.GetFloat(3), array.GetFloat(5),
@@ -141,14 +141,7 @@ namespace PdfClown.Documents.Contents.Fonts
          */
         public PdfDictionary CharProcs
         {
-            get
-            {
-                if (charProcs == null)
-                {
-                    charProcs = (PdfDictionary)Dictionary.Resolve(PdfName.CharProcs);
-                }
-                return charProcs;
-            }
+            get => charProcs ??= Dictionary.Get<PdfDictionary>(PdfName.CharProcs);
         }
 
         public override SKPath GetPath(int code)

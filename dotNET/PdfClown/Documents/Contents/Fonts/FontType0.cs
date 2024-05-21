@@ -249,7 +249,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public PdfArray DescendantFonts
         {
-            get => BaseDataObject.GetArray(PdfName.DescendantFonts);
+            get => BaseDataObject.Get<PdfArray>(PdfName.DescendantFonts);
             set => BaseDataObject[PdfName.DescendantFonts] = value;
         }
         /**
@@ -536,7 +536,7 @@ namespace PdfClown.Documents.Contents.Fonts
             // if the font is composite and uses a predefined cmap (excluding Identity-H/V)
             // or whose descendant CIDFont uses the Adobe-GB1, Adobe-CNS1, Adobe-Japan1, or
             // Adobe-Korea1 character collection:
-            var name = Dictionary.GetName(PdfName.Encoding);
+            var name = Dictionary.Get<PdfName>(PdfName.Encoding);
             if (isCMapPredefined && !(name.Equals(PdfName.IdentityH) || name.Equals(PdfName.IdentityV)) ||
                 isDescendantCJK)
             {

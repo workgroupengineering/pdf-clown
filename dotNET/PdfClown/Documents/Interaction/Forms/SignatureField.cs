@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         internal SignatureField(PdfDirectObject baseObject) : base(baseObject)
         {
-            initialSD = Wrap<SignatureDictionary>(BaseDataObject.GetDictionary(PdfName.V));
+            initialSD = Wrap<SignatureDictionary>(BaseDataObject.Get<PdfDictionary>(PdfName.V));
         }
 
         /**
@@ -75,7 +75,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public void RefreshAppearence(string text)
         {
-            var nameArray = SignatureDictionary.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var nameArray = (SignatureDictionary?.Name ?? "Sign Here").Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var widget = Widgets[0];
             var rect = widget.Box;
 

@@ -71,7 +71,7 @@ namespace PdfClown.Documents.Multimedia
                 {
                     get
                     {
-                        PdfName durationSubtype = (PdfName)BaseDataObject[PdfName.S];
+                        var durationSubtype = BaseDataObject.Get<PdfName>(PdfName.S);
                         if (PdfName.I.Equals(durationSubtype))
                             return Double.NegativeInfinity;
                         else if (PdfName.F.Equals(durationSubtype))
@@ -96,7 +96,7 @@ namespace PdfClown.Documents.Multimedia
                         else
                         {
                             BaseDataObject[PdfName.S] = PdfName.T;
-                            new Timespan(BaseDataObject.Get<PdfDictionary>(PdfName.T)).Time = value;
+                            new Timespan(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.T)).Time = value;
                         }
                     }
                 }
@@ -178,7 +178,7 @@ namespace PdfClown.Documents.Multimedia
             */
             public FitModeEnum? FitMode
             {
-                get => FitModeEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.F]);
+                get => FitModeEnumExtension.Get(BaseDataObject.Get<PdfInteger>(PdfName.F));
                 set => BaseDataObject[PdfName.F] = (value.HasValue ? value.Value.GetCode() : null);
             }
 
@@ -238,7 +238,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public MediaPlayers Players
         {
-            get => Wrap<MediaPlayers>(BaseDataObject.Get<PdfDictionary>(PdfName.PL));
+            get => Wrap<MediaPlayers>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PL));
             set => BaseDataObject[PdfName.PL] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -248,7 +248,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Viability Preferences
         {
-            get => Wrap<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.BE));
             set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -258,7 +258,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Viability Requirements
         {
-            get => Wrap<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.MH));
+            get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MH));
             set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
         }
     }

@@ -97,7 +97,7 @@ namespace PdfClown.Documents.Contents
                         File.Unregister((PdfReference)streams[1]); // Removes the exceeding stream from the file.
                         streams.RemoveAt(1); // Removes the exceeding stream from the content stream.
                     }
-                    stream = (PdfStream)streams.Resolve(0);
+                    stream = streams.Get<PdfStream>(0);
                 }
             }
 
@@ -143,7 +143,7 @@ namespace PdfClown.Documents.Contents
 
         public IEnumerator<ContentObject> GetEnumerator() => items.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<ContentObject>)this).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => items.GetEnumerator();
 
         private void Load()
         {

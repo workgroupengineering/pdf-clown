@@ -85,7 +85,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = CreationDate;
-                if (oldValue != value)
+                if (oldValue != PdfDate.Trimm(value))
                 {
                     BaseDataObject.SetDate(PdfName.CreationDate, value);
                     OnPropertyChanged(oldValue, value);
@@ -145,7 +145,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF16)]
         public virtual ReplyTypeEnum? ReplyType
         {
-            get => ReplyTypeEnumExtension.Get((PdfName)BaseDataObject[PdfName.RT]);
+            get => ReplyTypeEnumExtension.Get(BaseDataObject.GetString(PdfName.RT));
             set
             {
                 var oldValue = ReplyType;
@@ -189,7 +189,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF16)]
         public MarkupIntent? Intent
         {
-            get => MarkupIntentExtension.Get((PdfName)BaseDataObject[PdfName.IT]);
+            get => MarkupIntentExtension.Get(BaseDataObject.GetString(PdfName.IT));
             set
             {
                 var oldValue = Intent;
@@ -206,7 +206,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public DeviceColor InteriorColor
         {
-            get => DeviceColor.Get((PdfArray)BaseDataObject[PdfName.IC]);
+            get => DeviceColor.Get(BaseDataObject.Get<PdfArray>(PdfName.IC));
             set
             {
                 var oldValue = InteriorColor;
@@ -264,18 +264,18 @@ namespace PdfClown.Documents.Interaction.Annotations
 
     internal static class ReplyTypeEnumExtension
     {
-        private static readonly BiDictionary<ReplyTypeEnum, PdfName> codes;
+        private static readonly BiDictionary<ReplyTypeEnum, string> codes;
 
         static ReplyTypeEnumExtension()
         {
-            codes = new BiDictionary<ReplyTypeEnum, PdfName>
+            codes = new BiDictionary<ReplyTypeEnum, string>
             {
-                [ReplyTypeEnum.Thread] = PdfName.R,
-                [ReplyTypeEnum.Group] = PdfName.Group
+                [ReplyTypeEnum.Thread] = PdfName.R.StringValue,
+                [ReplyTypeEnum.Group] = PdfName.Group.StringValue
             };
         }
 
-        public static ReplyTypeEnum? Get(PdfName name)
+        public static ReplyTypeEnum? Get(string name)
         {
             if (name == null)
                 return ReplyTypeEnum.Thread;
@@ -285,7 +285,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public static PdfName GetCode(this ReplyTypeEnum? replyType)
         {
-            return replyType == null ? null : codes[replyType.Value];
+            return replyType == null ? null : PdfName.Get(codes[replyType.Value], true);
         }
     }
 }

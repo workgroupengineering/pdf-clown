@@ -33,6 +33,7 @@ using PdfClown.Tokens;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 
 namespace PdfClown
 {
@@ -59,6 +60,7 @@ namespace PdfClown
         private readonly PdfDictionary trailer;
         private readonly PdfVersion version;
         private Cloner cloner;
+        public readonly ManualResetEventSlim LockObject = new(true);
 
         public PdfFile()
         {
@@ -102,7 +104,7 @@ namespace PdfClown
                 var documentReference = trailer[PdfName.Root];
                 if (documentReference.Resolve() is PdfDictionary)
                 {
-                    document = documentReference.Wrapper as PdfDocument ?? new PdfDocument(documentReference);
+                    document = PdfObjectWrapper.Wrap<PdfDocument>(documentReference);
                 }
                 else
                 {
@@ -112,7 +114,7 @@ namespace PdfClown
                         if (entry is PdfDictionary entryDictionary
                             && entryDictionary[PdfName.Pages] != null)
                         {
-                            document = entry.Reference.Wrapper as PdfDocument ?? new PdfDocument(entry.Reference);
+                            document = PdfObjectWrapper.Wrap<PdfDocument>(entry.Reference);
                         }
                     }
                 }
@@ -329,7 +331,7 @@ namespace PdfClown
                     CompleatSave();
                 }
                 Document?.ClearCache();
-                Document.LockObject?.Dispose();
+                LockObject?.Dispose();
             }
         }
 

@@ -74,10 +74,8 @@ namespace PdfClown.Objects
             return visitor.Visit(this, data);
         }
 
-        public override PdfDataObject Resolve()
-        {
-            return DataObject;
-        }
+        public override PdfDataObject Resolve() => DataObject;
+
         /**
           <summary>Adds the <see cref="DataObject">data object</see> to the specified object stream
           [PDF:1.6:3.4.6].</summary>
@@ -224,7 +222,7 @@ namespace PdfClown.Objects
                         case XRefEntry.UsageEnum.InUse:
                             {
                                 // Get the indirect data object!
-                                dataObject = Include(file.Reader.Parser.ParsePdfObject(xrefEntry));
+                                dataObject = Include(file.Reader.Parser.ParsePdfObjectWithLock(xrefEntry));
                                 break;
                             }
                         case XRefEntry.UsageEnum.InUseCompressed:

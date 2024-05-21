@@ -45,6 +45,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         private static readonly double DefaultWidth = 1;
 
         private static readonly Dictionary<BorderStyleType, PdfName> StyleEnumCodes;
+        private LineDash lineDash;
 
         static Border()
         {
@@ -74,13 +75,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the style corresponding to the given value.</summary>
         */
-        private static BorderStyleType ToStyleEnum(IPdfString value)
+        private static BorderStyleType ToStyleEnum(string value)
         {
             if (value == null)
                 return DefaultStyle;
             foreach (KeyValuePair<BorderStyleType, PdfName> style in StyleEnumCodes)
             {
-                if (string.Equals(style.Value.StringValue, value.StringValue, StringComparison.Ordinal))
+                if (string.Equals(style.Value.StringValue, value, StringComparison.Ordinal))
                     return style.Key;
             }
             return DefaultStyle;
@@ -123,7 +124,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         { }
 
         private Border(PdfDocument context, double width, BorderStyleType style, LineDash pattern)
-            : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Border } })
+            : base(context, new PdfDictionary(4) { { PdfName.Type, PdfName.Border } })
         {
             Width = width;
             Style = style;
@@ -138,21 +139,14 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public LineDash Pattern
         {
-            get
-            {
-                PdfArray dashObject = (PdfArray)BaseDataObject[PdfName.D];
-                return dashObject != null ? LineDash.Get(dashObject, null) : DefaultLineDash;
-            }
+            get => lineDash ??= (BaseDataObject.Resolve(PdfName.D) is PdfArray dashObject ? LineDash.Get(dashObject, null) : DefaultLineDash);
             set
             {
-                PdfArray dashObject = null;
-                if (value != null)
+                if (Pattern != value)
                 {
-                    dashObject = new PdfArray();
-                    foreach (double dashItem in value.DashArray)
-                    { dashObject.Add(PdfReal.Get(dashItem)); }
+                    lineDash = value;
+                    BaseDataObject[PdfName.D] = value != null ? PdfArray.FromFloats(value.DashArray) : null;
                 }
-                BaseDataObject[PdfName.D] = dashObject;
             }
         }
 
@@ -161,7 +155,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public BorderStyleType Style
         {
-            get => ToStyleEnum((IPdfString)BaseDataObject[PdfName.S]);
+            get => ToStyleEnum(BaseDataObject.GetString(PdfName.S));
             set => BaseDataObject[PdfName.S] = value != DefaultStyle ? ToCode(value) : null;
         }
 

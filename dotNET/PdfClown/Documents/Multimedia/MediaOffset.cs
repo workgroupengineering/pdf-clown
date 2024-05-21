@@ -122,7 +122,7 @@ namespace PdfClown.Documents.Multimedia
                 return offset;
             
             PdfDictionary dataObject = (PdfDictionary)baseObject.Resolve();
-            PdfName offsetType = (PdfName)dataObject[PdfName.S];
+            var offsetType = dataObject.Get<PdfName>(PdfName.S);
             if (offsetType == null
               || (dataObject.ContainsKey(PdfName.Type)
                   && !dataObject[PdfName.Type].Equals(PdfName.MediaOffset)))

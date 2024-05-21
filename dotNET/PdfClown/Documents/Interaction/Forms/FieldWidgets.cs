@@ -194,7 +194,7 @@ namespace PdfClown.Documents.Interaction.Forms
                                 PdfReference widgetReference = File.Register(widgetDictionary);
 
                                 // Remove the field from the page annotations (as the widget annotation is decoupled from it)!
-                                PdfArray pageAnnotationsArray = (PdfArray)((PdfDictionary)fieldDictionary.Resolve(PdfName.P)).Resolve(PdfName.Annots);
+                                var pageAnnotationsArray = fieldDictionary.Get<PdfDictionary>(PdfName.P).Get<PdfArray>(PdfName.Annots);
                                 pageAnnotationsArray.Remove(Field.BaseObject);
 
                                 // Add the widget to the page annotations!

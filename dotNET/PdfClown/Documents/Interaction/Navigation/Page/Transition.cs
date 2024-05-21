@@ -249,13 +249,13 @@ namespace PdfClown.Documents.Interaction.Navigation
         /**
           <summary>Gets the orientation corresponding to the given value.</summary>
         */
-        private static OrientationEnum ToOrientationEnum(IPdfString value)
+        private static OrientationEnum ToOrientationEnum(string value)
         {
             if (value == null)
                 return DefaultOrientation;
             foreach (KeyValuePair<OrientationEnum, PdfName> orientation in OrientationEnumCodes)
             {
-                if (string.Equals(orientation.Value.StringValue, value.StringValue, StringComparison.Ordinal))
+                if (string.Equals(orientation.Value.StringValue, value, StringComparison.Ordinal))
                     return orientation.Key;
             }
             return DefaultOrientation;
@@ -264,13 +264,13 @@ namespace PdfClown.Documents.Interaction.Navigation
         /**
           <summary>Gets the page direction corresponding to the given value.</summary>
         */
-        private static PageDirectionEnum ToPageDirectionEnum(IPdfString value)
+        private static PageDirectionEnum ToPageDirectionEnum(string value)
         {
             if (value == null)
                 return DefaultPageDirection;
             foreach (KeyValuePair<PageDirectionEnum, PdfName> direction in PageDirectionEnumCodes)
             {
-                if (string.Equals(direction.Value.StringValue, value.StringValue, StringComparison.Ordinal))
+                if (string.Equals(direction.Value.StringValue, value, StringComparison.Ordinal))
                     return direction.Key;
             }
             return DefaultPageDirection;
@@ -279,13 +279,13 @@ namespace PdfClown.Documents.Interaction.Navigation
         /**
           <summary>Gets the style corresponding to the given value.</summary>
         */
-        private static StyleEnum ToStyleEnum(IPdfString value)
+        private static StyleEnum ToStyleEnum(string value)
         {
             if (value == null)
                 return DefaultStyle;
             foreach (KeyValuePair<StyleEnum, PdfName> style in StyleEnumCodes)
             {
-                if (string.Equals(style.Value.StringValue, value.StringValue, StringComparison.Ordinal))
+                if (string.Equals(style.Value.StringValue, value, StringComparison.Ordinal))
                     return style.Key;
             }
             return DefaultStyle;
@@ -355,7 +355,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         public OrientationEnum Orientation
         {
-            get => ToOrientationEnum((IPdfString)BaseDataObject[PdfName.Dm]);
+            get => ToOrientationEnum(BaseDataObject.GetString(PdfName.Dm));
             set
             {
                 if (value == DefaultOrientation)
@@ -370,7 +370,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 */
         public PageDirectionEnum PageDirection
         {
-            get => ToPageDirectionEnum((IPdfString)BaseDataObject[PdfName.M]);
+            get => ToPageDirectionEnum(BaseDataObject.GetString(PdfName.M));
             set
             {
                 if (value == DefaultPageDirection)
@@ -401,7 +401,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 */
         public StyleEnum Style
         {
-            get => ToStyleEnum((IPdfString)BaseDataObject[PdfName.S]);
+            get => ToStyleEnum(BaseDataObject.GetString(PdfName.S));
             set
             {
                 if (value == DefaultStyle)

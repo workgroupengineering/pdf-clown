@@ -72,6 +72,11 @@ namespace PdfClown.Objects
             return value != null ? new PdfString(value) : null;
         }
 
+        public static PdfString Get(byte[] value)
+        {
+            return value != null ? new PdfString(value) : null;
+        }
+
         public static readonly PdfString Default = new PdfString("");
 
         private const byte BackspaceCode = 8;

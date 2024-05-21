@@ -51,9 +51,9 @@ namespace PdfClown.Documents.Contents.XObjects
                 return null;
             if (baseObject.Wrapper is FormXObject formObject)
                 return formObject;
-            
-            var header = ((PdfStream)PdfObject.Resolve(baseObject)).Header;
-            var subtype = (PdfName)header[PdfName.Subtype];
+
+            var header = ((PdfStream)baseObject.Resolve()).Header;
+            var subtype = header.Get<PdfName>(PdfName.Subtype);
             /*
               NOTE: Sometimes the form stream's header misses the mandatory Subtype entry; therefore, here
               we force integrity for convenience (otherwise, content resource allocation may fail, for
@@ -137,15 +137,14 @@ namespace PdfClown.Documents.Contents.XObjects
         {
             get
             {
-                PdfArray box = (PdfArray)BaseDataObject.Header.Resolve(PdfName.BBox);
+                var box = BaseDataObject.Header.Get<PdfArray>(PdfName.BBox);
                 return new SKSize(
                   box.GetFloat(2) - box.GetFloat(0),
-                  box.GetFloat(3) - box.GetFloat(1)
-                  );
+                  box.GetFloat(3) - box.GetFloat(1));
             }
             set
             {
-                PdfArray boxObject = (PdfArray)BaseDataObject.Header.Resolve(PdfName.BBox);
+                var boxObject = BaseDataObject.Header.Get<PdfArray>(PdfName.BBox);
                 boxObject[2] = PdfReal.Get(value.Width + boxObject.GetFloat(0));
                 boxObject[3] = PdfReal.Get(value.Height + boxObject.GetFloat(1));
             }
@@ -153,8 +152,14 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public SKRect Box
         {
-            get => Wrap<Rectangle>(BaseDataObject.Header[PdfName.BBox]).ToRect();
-            set => BaseDataObject.Header[PdfName.BBox] = new Rectangle(value).BaseDataObject;
+            get => Wrap<Rectangle>(BaseDataObject.Header[PdfName.BBox])?.ToRect() ?? SKRect.Empty;
+            set
+            {
+                if (Box != value)
+                {
+                    BaseDataObject.Header[PdfName.BBox] = new Rectangle(value).BaseDataObject;
+                }
+            }
         }
 
         public ContentWrapper Contents => ContentWrapper.Wrap(BaseObject, this);
@@ -183,7 +188,7 @@ namespace PdfClown.Documents.Contents.XObjects
                         // alpha
                         canvas.Clear(SKColors.Transparent);
                     }
-                    else if(Group.ColorSpace is ColorSpace colorSpace)
+                    else if (Group.ColorSpace is ColorSpace colorSpace)
                     {
                         var backgroundColorArray = (IList<PdfDirectObject>)mask.BackColor;
                         if (backgroundColorArray == null || backgroundColorArray.Count < colorSpace.ComponentCount)
@@ -224,7 +229,7 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public Resources Resources
         {
-            get => Wrap<Resources>(BaseDataObject.Header.Get<PdfDictionary>(PdfName.Resources));
+            get => Wrap<Resources>(BaseDataObject.Header.GetOrCreate<PdfDictionary>(PdfName.Resources));
             set => BaseDataObject.Header[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -240,7 +245,7 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public AppDataCollection AppData
         {
-            get => AppDataCollection.Wrap(BaseDataObject.Header.Get<PdfDictionary>(PdfName.PieceInfo), this);
+            get => AppDataCollection.Wrap(BaseDataObject.Header.GetOrCreate<PdfDictionary>(PdfName.PieceInfo), this);
         }
 
         public DateTime? ModificationDate => BaseDataObject.Header.GetNDate(PdfName.LastModified);

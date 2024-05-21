@@ -45,6 +45,44 @@ namespace PdfClown.Objects
         private static readonly byte[] BeginArrayChunk = Encoding.Pdf.Encode(Keyword.BeginArray);
         private static readonly byte[] EndArrayChunk = Encoding.Pdf.Encode(Keyword.EndArray);
 
+        public static bool SequenceEquals(PdfArray oldValue, PdfArray newValue)
+        {
+            if (oldValue == newValue)
+                return true;
+            return oldValue != null
+                && newValue != null
+                && oldValue.SequenceEqual(newValue);
+        }
+
+        public static PdfArray FromInts(ICollection<int> source)
+        {
+            var array = new PdfArray(source.Count);
+            array.AddRange(source.Select(p => PdfInteger.Get(p)));
+            return array;
+        }
+
+        public static PdfArray FromFloats(ICollection<float> source)
+        {
+            var array = new PdfArray(source.Count);
+            array.AddRange(source.Select(p => PdfReal.Get(p)));
+            return array;
+        }
+
+        public static PdfArray FromStrings(ICollection<byte[]> source)
+        {
+            var array = new PdfArray(source.Count);
+            array.AddRange(source.Select(p => PdfString.Get(p)));
+            return array;
+        }
+
+        public static PdfArray FromStrings(ICollection<string> source)
+        {
+            var array = new PdfArray(source.Count);
+            array.AddRange(source.Select(p => PdfString.Get(p)));
+            return array;
+        }
+
+
         internal List<PdfDirectObject> items;
 
         private PdfObject parent;
@@ -116,8 +154,6 @@ namespace PdfClown.Objects
                 && ((PdfArray)@object).items.Equals(items));
         }
 
-        public PdfArray GetArray(int index) => (PdfArray)Resolve(index);
-
         public IPdfNumber GetNumber(int index) => (IPdfNumber)Resolve(index);
 
         public float GetFloat(int index, float def = 0) => ((IPdfNumber)Resolve(index))?.FloatValue ?? def;
@@ -146,14 +182,28 @@ namespace PdfClown.Objects
 
         public void SetText(int index, string value) => this[index] = PdfTextString.Get(value);
 
+        public T Get<T>(int index) where T : PdfDataObject
+        {
+            var value = this[index];
+            return value is T typedValue ? typedValue
+                : value?.Resolve() is T resolved ? resolved : default;
+        }
+
+        public T Get<T>(int index, T defaultValue) where T : PdfDataObject
+        {
+            var value = this[index];
+            return value is T typedValue ? typedValue
+                : value?.Resolve() is T resolved ? resolved : defaultValue;
+        }
+
         /**
           <summary>Gets the value corresponding to the given index, forcing its instantiation as a direct
           object in case of missing entry.</summary>
           <param name="index">Index of the item to return.</param>
           <param name="itemClass">Class to use for instantiating the item in case of missing entry.</param>
         */
-        public PdfDirectObject Get<T>(int index) where T : PdfDataObject, new()
-        { return Get<T>(index, true); }
+        public PdfDirectObject GetOrCreate<T>(int index) where T : PdfDataObject, new()
+        { return GetOrCreate<T>(index, true); }
 
         /**
           <summary>Gets the value corresponding to the given index, forcing its instantiation in case
@@ -162,7 +212,7 @@ namespace PdfClown.Objects
           <param name="direct">Whether the item has to be instantiated directly within its container
           instead of being referenced through an indirect object.</param>
         */
-        public PdfDirectObject Get<T>(int index, bool direct) where T : PdfDataObject, new()
+        public PdfDirectObject GetOrCreate<T>(int index, bool direct) where T : PdfDataObject, new()
         {
             PdfDirectObject item;
             if (index == Count
@@ -216,18 +266,18 @@ namespace PdfClown.Objects
           <see cref="this[int]">this[int]</see>.</remarks>
           <param name="index">Index of the item to return.</param>
         */
-        public PdfDataObject Resolve(int index) => Resolve(this[index]);
+        public PdfDataObject Resolve(int index) => this[index]?.Resolve();
 
         /**
           <summary>Gets the dereferenced value corresponding to the given index, forcing its
           instantiation in case of missing entry.</summary>
           <remarks>This method takes care to resolve the value returned by
-          <see cref="Get<T>">Get<T></see>.</remarks>
+          <see cref="GetOrCreate<T>">Get<T></see>.</remarks>
           <param name="index">Index of the item to return.</param>
         */
         public T Resolve<T>(int index) where T : PdfDataObject, new()
         {
-            return (T)Resolve(Get<T>(index));
+            return (T)Resolve(GetOrCreate<T>(index));
         }
 
         public override PdfObject Swap(PdfObject other)
@@ -348,21 +398,7 @@ namespace PdfClown.Objects
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable<PdfDirectObject>)this).GetEnumerator();
-        }
-
-        public static PdfArray FromInts(ICollection<int> source)
-        {
-            var array = new PdfArray(source.Count);
-            array.AddRange(source.Select(p => PdfInteger.Get(p)));
-            return array;
-        }
-
-        public static PdfArray FromFloats(ICollection<float> source)
-        {
-            var array = new PdfArray(source.Count);
-            array.AddRange(source.Select(p => PdfReal.Get(p)));
-            return array;
+            return items.GetEnumerator();
         }
 
         public int[] ToIntArray()
@@ -384,6 +420,18 @@ namespace PdfClown.Objects
                 for (int i = 0; i < Count; i++)
                 {
                     newArray[i] = GetFloat(i);
+                }
+            }
+            return newArray;
+        }
+
+        public string[] ToStringArray()
+        {
+            var newArray = new string[Count];
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    newArray[i] = GetString(i);
                 }
             }
             return newArray;

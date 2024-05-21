@@ -53,7 +53,7 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                PdfName value = (PdfName)BaseDataObject[PdfName.V];
+                var value = BaseDataObject.Get<PdfName>(PdfName.V);
                 return !(value == null || value.Equals(PdfName.Off));
             }
             set
@@ -67,10 +67,10 @@ namespace PdfClown.Documents.Interaction.Forms
                 PdfName baseValue = null;
                 if (value)
                 {
-                    PdfDictionary appearanceDictionary = (PdfDictionary)widgetDictionary.Resolve(PdfName.AP);
+                    var appearanceDictionary = widgetDictionary.Get<PdfDictionary>(PdfName.AP);
                     if (appearanceDictionary != null)
                     {
-                        foreach (PdfName appearanceKey in ((PdfDictionary)appearanceDictionary.Resolve(PdfName.N)).Keys)
+                        foreach (PdfName appearanceKey in appearanceDictionary.Get<PdfDictionary>(PdfName.N).Keys)
                         {
                             if (!appearanceKey.Equals(PdfName.Off))
                             {

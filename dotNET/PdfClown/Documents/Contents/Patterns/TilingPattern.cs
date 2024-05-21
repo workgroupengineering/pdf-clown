@@ -139,7 +139,7 @@ namespace PdfClown.Documents.Contents.Patterns
             /*
                   NOTE: 'BBox' entry MUST be defined.
             */
-            get => Wrap<Rectangle>(BaseHeader[PdfName.BBox]).ToRect();
+            get => Wrap<Rectangle>(BaseHeader[PdfName.BBox])?.ToRect() ?? SKRect.Empty;
         }
 
         /**

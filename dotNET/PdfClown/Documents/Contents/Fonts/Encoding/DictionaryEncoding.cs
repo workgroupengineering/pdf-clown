@@ -127,7 +127,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private void ApplyDifferences()
         {
             // now replace with the differences
-            var diffArray = encoding.GetArray(PdfName.Differences);
+            var diffArray = encoding.Get<PdfArray>(PdfName.Differences);
             if (diffArray == null)
             {
                 return;
@@ -140,7 +140,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     currentIndex = number.IntValue;
                 }
-                else if (next is PdfName name)
+                else if (next is IPdfString name)
                 {
                     Overwrite(currentIndex, name.StringValue);
                     this.differences[currentIndex] = name.StringValue;

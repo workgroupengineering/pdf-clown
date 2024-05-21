@@ -71,45 +71,45 @@ namespace PdfClown.Tokens
             {
                 if (TokenType == TokenTypeEnum.Integer)
                 {
-                            /*
-                              NOTE: We need to verify whether indirect reference pattern is applicable:
-                              ref :=  { int int 'R' }
-                            */
-                            IInputStream stream = Stream;
-                            long baseOffset = stream.Position; // Backs up the recovery position.
+                    /*
+                      NOTE: We need to verify whether indirect reference pattern is applicable:
+                      ref :=  { int int 'R' }
+                    */
+                    IInputStream stream = Stream;
+                    long baseOffset = stream.Position; // Backs up the recovery position.
 
-                            // 1. Object number.
+                    // 1. Object number.
                     int objectNumber = IntegerToken;
-                            // 2. Generation number.
-                            base.MoveNext();
-                            if (TokenType == TokenTypeEnum.Integer)
-                            {
+                    // 2. Generation number.
+                    base.MoveNext();
+                    if (TokenType == TokenTypeEnum.Integer)
+                    {
                         int generationNumber = IntegerToken;
-                                // 3. Reference keyword.
-                                base.MoveNext();
-                                if (TokenType == TokenTypeEnum.Keyword)
-                                {
-                                    var span = CharsToken;
-                                    if (span.Equals(Keyword.Reference, StringComparison.Ordinal))
-                                    {
-                                        TokenType = TokenTypeEnum.Reference;
+                        // 3. Reference keyword.
+                        base.MoveNext();
+                        if (TokenType == TokenTypeEnum.Keyword)
+                        {
+                            var span = CharsToken;
+                            if (span.Equals(Keyword.Reference, StringComparison.Ordinal))
+                            {
+                                TokenType = TokenTypeEnum.Reference;
                                 ReferenceToken = new Reference(objectNumber, generationNumber);
                                 return moved;
-                                    }
-                                    else if (span.Equals(Keyword.BeginIndirectObject, StringComparison.Ordinal))
-                                    {
-                                        TokenType = TokenTypeEnum.InderectObject;
-                                ReferenceToken = new Reference(objectNumber, generationNumber);
-                                return moved;
-                                    }
-                                }
                             }
-                                // Rollback!
-                                stream.Seek(baseOffset);
-                    IntegerToken = objectNumber;
-                                TokenType = TokenTypeEnum.Integer;
+                            else if (span.Equals(Keyword.BeginIndirectObject, StringComparison.Ordinal))
+                            {
+                                TokenType = TokenTypeEnum.InderectObject;
+                                ReferenceToken = new Reference(objectNumber, generationNumber);
+                                return moved;
                             }
                         }
+                    }
+                    // Rollback!
+                    stream.Seek(baseOffset);
+                    IntegerToken = objectNumber;
+                    TokenType = TokenTypeEnum.Integer;
+                }
+            }
             return moved;
         }
 
@@ -118,8 +118,8 @@ namespace PdfClown.Tokens
             if (TokenType == TokenTypeEnum.Reference)
             {
                 var reference = ReferenceToken;
-                        return new PdfReference(reference.ObjectNumber, reference.GenerationNumber, file);
-                    }
+                return new PdfReference(reference.ObjectNumber, reference.GenerationNumber, file);
+            }
 
             PdfDataObject pdfObject = base.ParsePdfObject();
             if (pdfObject is PdfDictionary streamHeader)
@@ -206,6 +206,14 @@ namespace PdfClown.Tokens
             }
 
             return length;
+        }
+
+        public PdfDataObject ParsePdfObjectWithLock(XRefEntry xrefEntry)
+        {
+            lock (file.LockObject)
+            {
+                return ParsePdfObject(xrefEntry);
+            }
         }
 
         /**

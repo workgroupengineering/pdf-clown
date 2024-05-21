@@ -131,8 +131,8 @@ namespace PdfClown.Documents.Multimedia
             {
                 PdfDictionary baseDataObject = BaseDataObject;
                 return new Interval<VersionObject>(
-                  new VersionObject(baseDataObject.GetArray(PdfName.L)),
-                  new VersionObject(baseDataObject.GetArray(PdfName.H)),
+                  new VersionObject(baseDataObject.Get<PdfArray>(PdfName.L)),
+                  new VersionObject(baseDataObject.Get<PdfArray>(PdfName.H)),
                   baseDataObject.GetBool(PdfName.LI, true),
                   baseDataObject.GetBool(PdfName.HI, true));
             }

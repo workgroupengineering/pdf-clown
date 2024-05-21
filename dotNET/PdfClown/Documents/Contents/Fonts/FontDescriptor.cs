@@ -97,20 +97,20 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public Rectangle FontBBox
         {
-            get => Wrap<Rectangle>((PdfArray)Dictionary.Resolve(PdfName.FontBBox));
+            get => Wrap<Rectangle>(Dictionary.Get<PdfArray>(PdfName.FontBBox));
             set => Dictionary[PdfName.FontBBox] = value?.BaseObject;
         }
 
         public float ItalicAngle
         {
             get => Dictionary.GetFloat(PdfName.ItalicAngle, 0F);
-            set => Dictionary[PdfName.ItalicAngle] = new PdfReal(value);
+            set => Dictionary.SetFloat(PdfName.ItalicAngle, value);
         }
 
         public float Ascent
         {
             get => Dictionary.GetFloat(PdfName.Ascent, 750F);
-            set => Dictionary[PdfName.Ascent] = new PdfReal(value);
+            set => Dictionary.SetFloat(PdfName.Ascent, value);
         }
 
         public float Descent
@@ -169,19 +169,19 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public FontFile FontFile
         {
-            get => Wrap<FontFile>((PdfDirectObject)Dictionary[PdfName.FontFile]);
+            get => Wrap<FontFile>(Dictionary[PdfName.FontFile]);
             set => Dictionary[PdfName.FontFile] = value?.BaseObject;
         }
 
         public FontFile FontFile2
         {
-            get => Wrap<FontFile>((PdfDirectObject)Dictionary[PdfName.FontFile2]);
+            get => Wrap<FontFile>(Dictionary[PdfName.FontFile2]);
             set => Dictionary[PdfName.FontFile2] = value?.BaseObject;
         }
 
         public FontFile FontFile3
         {
-            get => Wrap<FontFile>((PdfDirectObject)Dictionary[PdfName.FontFile3]);
+            get => Wrap<FontFile>(Dictionary[PdfName.FontFile3]);
             set => Dictionary[PdfName.FontFile3] = value?.BaseObject;
         }
 
@@ -206,13 +206,13 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public PdfDictionary FD
         {
-            get => (PdfDictionary)Dictionary.Resolve(PdfName.FD);
+            get => Dictionary.Get<PdfDictionary>(PdfName.FD);
             set => Dictionary[PdfName.FD] = value?.Reference;
         }
 
         public PdfStream CIDSet
         {
-            get => (PdfStream)Dictionary.Resolve(PdfName.CIDSet);
+            get => Dictionary.Get<PdfStream>(PdfName.CIDSet);
             set => Dictionary[PdfName.CIDSet] = value?.Reference;
         }
 

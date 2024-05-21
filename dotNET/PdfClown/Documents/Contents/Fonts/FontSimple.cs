@@ -362,7 +362,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 Encoding builtIn = null;
                 bool? symbolic = SymbolicFlag;
 
-                var baseEncoding = encodingDict.GetName(PdfName.BaseEncoding);
+                var baseEncoding = encodingDict.Get<PdfName>(PdfName.BaseEncoding);
 
                 bool hasValidBaseEncoding = baseEncoding != null && Encoding.Get(baseEncoding) != null;
 

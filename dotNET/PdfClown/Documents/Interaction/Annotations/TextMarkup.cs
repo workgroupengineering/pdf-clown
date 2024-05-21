@@ -71,13 +71,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /**
           <summary>Gets the markup type corresponding to the given value.</summary>
         */
-        private static TextMarkupType ToMarkupTypeEnum(IPdfString value)
+        private static TextMarkupType ToMarkupTypeEnum(string value)
         {
             if (value == null)
                 throw new Exception("Invalid markup type.");
             foreach (KeyValuePair<TextMarkupType, PdfName> markupType in MarkupTypeEnumCodes)
             {
-                if (string.Equals(markupType.Value.StringValue, value.StringValue, StringComparison.Ordinal))
+                if (string.Equals(markupType.Value.StringValue, value, StringComparison.Ordinal))
                     return markupType.Key;
             }
             throw new Exception("Invalid markup type.");
@@ -144,11 +144,11 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public PdfArray QuadPoints
         {
-            get => (PdfArray)BaseDataObject[PdfName.QuadPoints];
+            get => BaseDataObject.Get<PdfArray>(PdfName.QuadPoints);
             set
             {
                 var oldValue = QuadPoints;
-                if (oldValue != value)
+                if (!PdfArray.SequenceEquals(oldValue, value))
                 {
                     BaseDataObject[PdfName.QuadPoints] = value;
                     markupBoxes = null;
@@ -205,7 +205,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public TextMarkupType MarkupType
         {
-            get => ToMarkupTypeEnum((IPdfString)BaseDataObject[PdfName.Subtype]);
+            get => ToMarkupTypeEnum(BaseDataObject.GetString(PdfName.Subtype));
             set
             {
                 BaseDataObject[PdfName.Subtype] = ToCode(value);

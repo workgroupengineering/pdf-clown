@@ -200,24 +200,17 @@ namespace PdfClown.Tokens
                         int size = header.GetInt(PdfName.Size);
                         int[] entryFieldSizes;
                         {
-                            PdfArray entryFieldSizesObject = (PdfArray)header[PdfName.W];
+                            var entryFieldSizesObject = header.Get<PdfArray>(PdfName.W);
                             entryFieldSizes = new int[entryFieldSizesObject.Count];
                             for (int index = 0, length = entryFieldSizes.Length; index < length; index++)
                             { entryFieldSizes[index] = entryFieldSizesObject.GetInt(index); }
                         }
 
-                        PdfArray subsectionBounds;
-                        if (header.ContainsKey(PdfName.Index))
-                        {
-                            subsectionBounds = (PdfArray)header[PdfName.Index];
-                        }
-                        else
-                        {
-                            subsectionBounds = new PdfArray();
-                            subsectionBounds.Add(PdfInteger.Get(0));
-                            subsectionBounds.Add(PdfInteger.Get(size));
-                        }
-
+                        var subsectionBounds = header.Get<PdfArray>(PdfName.Index) ?? new PdfArray
+                            {
+                                PdfInteger.Get(0),
+                                PdfInteger.Get(size)
+                            };
                         body.ByteOrder = ByteOrderEnum.BigEndian;
                         body.Seek(0);
 

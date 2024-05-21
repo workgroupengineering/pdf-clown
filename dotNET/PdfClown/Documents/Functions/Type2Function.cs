@@ -74,12 +74,12 @@ namespace PdfClown.Documents.Functions
 
         public float[] C0
         {
-            get => _c0 ??= Dictionary.GetArray(PdfName.C0)?.ToFloatArray() ?? new float[] { 0, 0 };
+            get => _c0 ??= Dictionary.Get<PdfArray>(PdfName.C0)?.ToFloatArray() ?? new float[] { 0, 0 };
         }
 
         public float[] C1
         {
-            get => _c1 ??= Dictionary.GetArray(PdfName.C1)?.ToFloatArray() ?? new float[] { 1, 0 };
+            get => _c1 ??= Dictionary.Get<PdfArray>(PdfName.C1)?.ToFloatArray() ?? new float[] { 1, 0 };
         }
     }
 }

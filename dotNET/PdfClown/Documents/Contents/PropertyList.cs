@@ -52,7 +52,7 @@ namespace PdfClown.Documents.Contents
             if (baseObject.Wrapper is PropertyList propertyList)
                 return propertyList;
             
-            PdfName type = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.Type];
+            var type = ((PdfDictionary)baseObject.Resolve()).Get<PdfName>(PdfName.Type);
             if (Layer.TypeName.Equals(type))
                 return new Layer(baseObject);
             else if (LayerMembership.TypeName.Equals(type))

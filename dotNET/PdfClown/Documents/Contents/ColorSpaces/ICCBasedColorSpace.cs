@@ -69,9 +69,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null) => AlternateColorSpace.GetSKColor(components, alpha);
 
-        public PdfStream Profile => (PdfStream)((PdfArray)BaseDataObject).Resolve(1);
+        public PdfStream Profile => ((PdfArray)BaseDataObject).Get<PdfStream>(1);
 
-        public PdfName Alternate => Profile?.Header.Resolve(PdfName.Alternate) as PdfName;
+        public PdfName Alternate => Profile?.Header.Get<PdfName>(PdfName.Alternate);
 
         public ColorSpace AlternateColorSpace
         {

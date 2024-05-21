@@ -107,6 +107,7 @@ namespace PdfClown.Documents.Contents.Layers
 
         private static readonly PdfName MembershipName = PdfName.Get("D-OCMD");
         private ISet<PdfName> intents;
+        private List<string> users;
 
         public Layer(PdfDocument context, string title) : base(context, PdfName.OCG)
         {
@@ -177,8 +178,8 @@ namespace PdfClown.Documents.Contents.Layers
         {
             get
             {
-                var exportableObject = GetUsageEntry(PdfName.Export)[PdfName.ExportState];
-                return exportableObject != null ? StateEnumExtension.Get((PdfName)exportableObject).IsEnabled() : (bool?)null;
+                var exportableObject = GetUsageEntry(PdfName.Export).GetString(PdfName.ExportState);
+                return exportableObject != null ? StateEnumExtension.Get(exportableObject).IsEnabled() : (bool?)null;
             }
             set
             {
@@ -268,7 +269,7 @@ namespace PdfClown.Documents.Contents.Layers
         */
         public bool LanguagePreferred
         {
-            get => PdfName.ON.Equals(GetUsageEntry(PdfName.Language).GetName(PdfName.Preferred));
+            get => PdfName.ON.Equals(GetUsageEntry(PdfName.Language).Get<PdfName>(PdfName.Preferred));
             set => GetUsageEntry(PdfName.Language)[PdfName.Preferred] = value ? PdfName.ON : null;
         }
 
@@ -320,7 +321,7 @@ namespace PdfClown.Documents.Contents.Layers
         */
         public PageElementTypeEnum? PageElementType
         {
-            get => PageElementTypeEnumExtension.Get(GetUsageEntry(PdfName.PageElement).GetName(PdfName.Subtype));
+            get => PageElementTypeEnumExtension.Get(GetUsageEntry(PdfName.PageElement).GetString(PdfName.Subtype));
             set => GetUsageEntry(PdfName.PageElement)[PdfName.Subtype] = value.HasValue ? value.Value.GetName() : null;
         }
 
@@ -344,8 +345,8 @@ namespace PdfClown.Documents.Contents.Layers
         {
             get
             {
-                var printableObject = GetUsageEntry(PdfName.Print)[PdfName.PrintState];
-                return printableObject != null ? StateEnumExtension.Get((PdfName)printableObject).IsEnabled() : (bool?)null;
+                var printableObject = GetUsageEntry(PdfName.Print)?.GetString(PdfName.PrintState);
+                return printableObject != null ? StateEnumExtension.Get(printableObject).IsEnabled() : (bool?)null;
             }
             set
             {
@@ -371,21 +372,10 @@ namespace PdfClown.Documents.Contents.Layers
         */
         public IList<string> Users
         {
-            get
-            {
-                var users = new List<string>();
-                PdfDirectObject usersObject = GetUsageEntry(PdfName.User)[PdfName.Name];
-                if (usersObject is PdfString)
-                { users.Add(((PdfString)usersObject.Resolve()).StringValue); }
-                else if (usersObject is PdfArray)
-                {
-                    foreach (var userObject in (PdfArray)usersObject)
-                    { users.Add(((PdfString)userObject.Resolve()).StringValue); }
-                }
-                return users;
-            }
+            get => users ??= GetUsers();
             set
             {
+                users = null;
                 PdfDirectObject usersObject = null;
                 if (value != null && value.Count > 0)
                 {
@@ -406,12 +396,27 @@ namespace PdfClown.Documents.Contents.Layers
             }
         }
 
+        private List<string> GetUsers()
+        {
+            var users = new List<string>();
+            var usersObject = GetUsageEntry(PdfName.User).Resolve(PdfName.Name);
+            if (usersObject is IPdfString pdfString)
+            { users.Add(pdfString.StringValue); }
+            else if (usersObject is PdfArray pdfArray)
+            {
+                foreach (var userObject in pdfArray.OfType<IPdfString>())
+                { users.Add(userObject.StringValue); }
+            }
+
+            return users;
+        }
+
         /**
           <summary>Gets/Sets the type of the users for whom this layer is primarily intended.</summary>
         */
         public UserTypeEnum? UserType
         {
-            get => UserTypeEnumExtension.Get((PdfName)GetUsageEntry(PdfName.User)[PdfName.Type]);
+            get => UserTypeEnumExtension.Get(GetUsageEntry(PdfName.User).GetString(PdfName.Type));
             set => GetUsageEntry(PdfName.User)[PdfName.Type] = value.HasValue ? value.Value.GetName() : null;
         }
 
@@ -423,7 +428,7 @@ namespace PdfClown.Documents.Contents.Layers
         {
             get
             {
-                var viewableObject = GetUsageEntry(PdfName.View).GetName(PdfName.ViewState);
+                var viewableObject = GetUsageEntry(PdfName.View).GetString(PdfName.ViewState);
                 return viewableObject != null ? StateEnumExtension.Get(viewableObject).IsEnabled() : (bool?)null;
             }
             set
@@ -514,7 +519,7 @@ namespace PdfClown.Documents.Contents.Layers
 
         public UILayers Children
         {
-            get => FindLayersLocation() is LayersLocation location ? Wrap<UILayers>(location.ParentLayersObject.Get<PdfArray>(location.Index)) : null;
+            get => FindLayersLocation() is LayersLocation location ? Wrap<UILayers>(location.ParentLayersObject.GetOrCreate<PdfArray>(location.Index)) : null;
         }
 
         public string Title
@@ -596,18 +601,20 @@ namespace PdfClown.Documents.Contents.Layers
 
     internal static class PageElementTypeEnumExtension
     {
-        private static readonly BiDictionary<Layer.PageElementTypeEnum, PdfName> codes;
+        private static readonly BiDictionary<Layer.PageElementTypeEnum, string> codes;
 
         static PageElementTypeEnumExtension()
         {
-            codes = new BiDictionary<Layer.PageElementTypeEnum, PdfName>();
-            codes[Layer.PageElementTypeEnum.Background] = PdfName.BG;
-            codes[Layer.PageElementTypeEnum.Foreground] = PdfName.FG;
-            codes[Layer.PageElementTypeEnum.HeaderFooter] = PdfName.HF;
-            codes[Layer.PageElementTypeEnum.Logo] = PdfName.L;
+            codes = new BiDictionary<Layer.PageElementTypeEnum, string>
+            {
+                [Layer.PageElementTypeEnum.Background] = PdfName.BG.StringValue,
+                [Layer.PageElementTypeEnum.Foreground] = PdfName.FG.StringValue,
+                [Layer.PageElementTypeEnum.HeaderFooter] = PdfName.HF.StringValue,
+                [Layer.PageElementTypeEnum.Logo] = PdfName.L.StringValue
+            };
         }
 
-        public static Layer.PageElementTypeEnum? Get(PdfName name)
+        public static Layer.PageElementTypeEnum? Get(string name)
         {
             if (name == null)
                 return null;
@@ -619,21 +626,23 @@ namespace PdfClown.Documents.Contents.Layers
             return pageElementType;
         }
 
-        public static PdfName GetName(this Layer.PageElementTypeEnum pageElementType) => codes[pageElementType];
+        public static PdfName GetName(this Layer.PageElementTypeEnum pageElementType) => PdfName.Get(codes[pageElementType], true);
     }
 
     internal static class StateEnumExtension
     {
-        private static readonly BiDictionary<Layer.StateEnum, PdfName> codes;
+        private static readonly BiDictionary<Layer.StateEnum, string> codes;
 
         static StateEnumExtension()
         {
-            codes = new BiDictionary<Layer.StateEnum, PdfName>();
-            codes[Layer.StateEnum.On] = PdfName.ON;
-            codes[Layer.StateEnum.Off] = PdfName.OFF;
+            codes = new BiDictionary<Layer.StateEnum, string>
+            {
+                [Layer.StateEnum.On] = PdfName.ON.StringValue,
+                [Layer.StateEnum.Off] = PdfName.OFF.StringValue
+            };
         }
 
-        public static Layer.StateEnum Get(PdfName name)
+        public static Layer.StateEnum Get(string name)
         {
             if (name == null)
                 return Layer.StateEnum.On;
@@ -647,24 +656,26 @@ namespace PdfClown.Documents.Contents.Layers
 
         public static Layer.StateEnum Get(bool? enabled) => !enabled.HasValue || enabled.Value ? Layer.StateEnum.On : Layer.StateEnum.Off;
 
-        public static PdfName GetName(this Layer.StateEnum state) => codes[state];
+        public static PdfName GetName(this Layer.StateEnum state) => PdfName.Get(codes[state], true);
 
         public static bool IsEnabled(this Layer.StateEnum state) => state == Layer.StateEnum.On;
     }
 
     internal static class UserTypeEnumExtension
     {
-        private static readonly BiDictionary<Layer.UserTypeEnum, PdfName> codes;
+        private static readonly BiDictionary<Layer.UserTypeEnum, string> codes;
 
         static UserTypeEnumExtension()
         {
-            codes = new BiDictionary<Layer.UserTypeEnum, PdfName>();
-            codes[Layer.UserTypeEnum.Individual] = PdfName.Ind;
-            codes[Layer.UserTypeEnum.Organization] = PdfName.Org;
-            codes[Layer.UserTypeEnum.Title] = PdfName.Ttl;
+            codes = new BiDictionary<Layer.UserTypeEnum, string>
+            {
+                [Layer.UserTypeEnum.Individual] = PdfName.Ind.StringValue,
+                [Layer.UserTypeEnum.Organization] = PdfName.Org.StringValue,
+                [Layer.UserTypeEnum.Title] = PdfName.Ttl.StringValue
+            };
         }
 
-        public static Layer.UserTypeEnum? Get(PdfName name)
+        public static Layer.UserTypeEnum? Get(string name)
         {
             if (name == null)
                 return null;
@@ -676,7 +687,6 @@ namespace PdfClown.Documents.Contents.Layers
             return userType;
         }
 
-        public static PdfName GetName(this Layer.UserTypeEnum userType)
-        { return codes[userType]; }
+        public static PdfName GetName(this Layer.UserTypeEnum userType) => PdfName.Get(codes[userType], true);
     }
 }

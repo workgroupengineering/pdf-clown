@@ -73,7 +73,7 @@ namespace PdfClown.Documents.Contents.XObjects
         /**
           <summary>Gets the color space in which samples are specified.</summary>
         */
-        public ColorSpace ColorSpace => colorSpace ?? (colorSpace = ColorSpace.Wrap(BaseDataObject.Header[PdfName.ColorSpace]));
+        public ColorSpace ColorSpace => colorSpace ??= ColorSpace.Wrap(BaseDataObject.Header[PdfName.ColorSpace]);
 
         public IByteStream Data => Stream.GetBody(false);
 
@@ -119,7 +119,6 @@ namespace PdfClown.Documents.Contents.XObjects
             {
                 return (SKBitmap)existingBitmap;
             }
-            var stream = BaseDataObject as PdfStream;
 
             SKBitmap image = BitmapLoader.Load(this, state);
             Document.Cache[(PdfReference)BaseObject] = image;
@@ -128,20 +127,16 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public IImageObject SMask
         {
-            get
-            {
-                var maskData = BaseDataObject.Header[PdfName.SMask];
-                return maskData == null ? null : (smask ?? (smask = Wrap<ImageXObject>(maskData)));
-            }
+            get => smask ??= Wrap<ImageXObject>(BaseDataObject.Header[PdfName.SMask]);
         }
 
         public PdfStream Stream => BaseDataObject as PdfStream;
 
-        public PdfArray Matte => (PdfArray)BaseDataObject.Header.Resolve(PdfName.Matte);
+        public PdfArray Matte => BaseDataObject.Header.Get<PdfArray>(PdfName.Matte);
 
         public float[] Decode
         {
-            get => decode ??= ((PdfArray)BaseDataObject.Header[PdfName.Decode])?.Select(p => ((IPdfNumber)p).FloatValue).ToArray();
+            get => decode ??= BaseDataObject.Header.Get<PdfArray>(PdfName.Decode)?.ToFloatArray();
             set => BaseDataObject.Header[PdfName.Decode] = new PdfArray(value.Select(p => PdfInteger.Get((int)p)));
         }
 

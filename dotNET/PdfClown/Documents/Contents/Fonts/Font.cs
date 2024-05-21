@@ -120,25 +120,25 @@ namespace PdfClown.Documents.Contents.Fonts
             { return (Font)cache; }
 
 
-            PdfDictionary dictionary = (PdfDictionary)baseObject.Resolve();
+            var dictionary = (PdfDictionary)baseObject.Resolve();
 
-            var type = dictionary.GetName(PdfName.Type, PdfName.Font);
+            var type = dictionary.Get<PdfName>(PdfName.Type, PdfName.Font);
             if (!PdfName.Font.Equals(type))
             {
                 Debug.WriteLine($"error: Expected 'Font' dictionary but found '{type}'");
             }
 
-            PdfName subType = dictionary.GetName(PdfName.Subtype);
+            var subType = dictionary.Get<PdfName>(PdfName.Subtype);
             if (PdfName.Type1.Equals(subType))
             {
-                PdfDictionary fd = dictionary.GetDictionary(PdfName.FontDescriptor);
+                var fd = dictionary.Get<PdfDictionary>(PdfName.FontDescriptor);
                 return fd != null && fd.ContainsKey(PdfName.FontFile3)
                     ? new FontType1C(dictionary)
                     : new FontType1(dictionary);
             }
             else if (PdfName.MMType1.Equals(subType))
             {
-                PdfDictionary fd = dictionary.GetDictionary(PdfName.FontDescriptor);
+                var fd = dictionary.Get<PdfDictionary>(PdfName.FontDescriptor);
                 if (fd != null && fd.ContainsKey(PdfName.FontFile3))
                 {
                     return new FontType1C(dictionary);
@@ -170,7 +170,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 // assuming Type 1 font (see PDFBOX-1988) because it seems that Adobe Reader does this
                 // however, we may need more sophisticated logic perhaps looking at the FontFile
                 Debug.WriteLine("warn: Invalid font subtype '" + subType + "'");
-                PdfDictionary fd = dictionary.GetDictionary(PdfName.FontDescriptor);
+                var fd = dictionary.Get<PdfDictionary>(PdfName.FontDescriptor);
                 if (fd != null && fd.ContainsKey(PdfName.FontFile3))
                 {
                     return new FontType1C(dictionary);
@@ -274,7 +274,7 @@ namespace PdfClown.Documents.Contents.Fonts
          */
         public Rectangle FontBBox
         {
-            get => Wrap<Rectangle>(Dictionary[PdfName.FontBBox]);
+            get => Wrap<Rectangle>(Dictionary.Get<PdfArray>(PdfName.FontBBox));
             set => Dictionary[PdfName.FontBBox] = value?.BaseObject;
         }
 
@@ -307,13 +307,13 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public virtual PdfArray Widths
         {
-            get => BaseDataObject.GetArray(PdfName.Widths);
+            get => BaseDataObject.Get<PdfArray>(PdfName.Widths);
             set => BaseDataObject[PdfName.Widths] = value;
         }
 
         public virtual FontDescriptor FontDescriptor
         {
-            get => fontDescriptor ?? (fontDescriptor = Wrap<FontDescriptor>((PdfDictionary)BaseDataObject.Resolve(PdfName.FontDescriptor)));
+            get => fontDescriptor ??= Wrap<FontDescriptor>(BaseDataObject.Get<PdfDictionary>(PdfName.FontDescriptor));
             set => BaseDataObject[PdfName.FontDescriptor] = (fontDescriptor = value)?.BaseObject;
         }
 

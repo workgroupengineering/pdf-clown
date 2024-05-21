@@ -69,7 +69,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         public Information Information
         {
-            get => Wrap<Information>(BaseDataObject.Get<PdfDictionary>(PdfName.I));
+            get => Wrap<Information>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.I));
             set => BaseDataObject[PdfName.I] = PdfObjectWrapper.GetBaseObject(value);
         }
     }

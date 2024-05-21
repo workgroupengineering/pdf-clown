@@ -110,7 +110,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF17)]
         public LineCaptionPosition? CaptionPosition
         {
-            get => CaptionPositionExtension.Get((PdfName)BaseDataObject[PdfName.CP]);
+            get => CaptionPositionExtension.Get(BaseDataObject.Get<PdfName>(PdfName.CP));
             set
             {
                 var oldValue = CaptionPosition;
@@ -256,11 +256,11 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public PdfArray LineData
         {
-            get => (PdfArray)BaseDataObject[PdfName.L];
+            get => BaseDataObject.Get<PdfArray>(PdfName.L);
             set
             {
                 var oldValue = LineData;
-                if (oldValue != value)
+                if (!PdfArray.SequenceEquals(oldValue, value))
                 {
                     BaseDataObject[PdfName.L] = value;
                     if (startPoint != null)
@@ -338,13 +338,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         private PdfArray EnsureLineEndStylesObject()
         {
-            PdfArray endStylesObject = (PdfArray)BaseDataObject[PdfName.LE];
+            var endStylesObject = BaseDataObject.Get<PdfArray>(PdfName.LE);
             if (endStylesObject == null)
             {
                 BaseDataObject[PdfName.LE] = endStylesObject = new PdfArray(2)
                 {
-                      PdfName.Get(DefaultLineEndStyle.GetName()),
-                      PdfName.Get(DefaultLineEndStyle.GetName())
+                      PdfName.Get(DefaultLineEndStyle.GetName(), true),
+                      PdfName.Get(DefaultLineEndStyle.GetName(), true)
                 };
             }
             return endStylesObject;

@@ -43,7 +43,6 @@ namespace PdfClown.Documents.Multimedia
     public sealed class MediaClipData
       : MediaClip
     {
-        #region types
         /**
           <summary>Circumstance under which it is acceptable to write a temporary file in order to play
           a media clip.</summary>
@@ -85,16 +84,13 @@ namespace PdfClown.Documents.Multimedia
             {
                 get
                 {
-                    PdfString baseURLObject = (PdfString)BaseDataObject[PdfName.BU];
-                    return baseURLObject != null ? new Uri(baseURLObject.StringValue) : null;
+                    var baseURLObject = BaseDataObject.GetString(PdfName.BU);
+                    return baseURLObject != null ? new Uri(baseURLObject) : null;
                 }
-                set => BaseDataObject[PdfName.BU] = (value != null ? new PdfString(value.ToString()) : null);
+                set => BaseDataObject.SetString(PdfName.BU, value?.ToString());
             }
         }
-        #endregion
 
-        #region dynamic
-        #region constructors
         public MediaClipData(PdfObjectWrapper data, string mimeType) : base(data.Document, PdfName.MCD)
         {
             Data = data;
@@ -102,12 +98,9 @@ namespace PdfClown.Documents.Multimedia
             TempFilePermission = TempFilePermissionEnum.Always;
         }
 
-        internal MediaClipData(PdfDirectObject baseObject) : base(baseObject)
+        public MediaClipData(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override PdfObjectWrapper Data
         {
             get
@@ -138,7 +131,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public MediaPlayers Players
         {
-            get => Wrap<MediaPlayers>(BaseDataObject.Get<PdfDictionary>(PdfName.PL));
+            get => Wrap<MediaPlayers>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PL));
             set => BaseDataObject[PdfName.PL] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -148,7 +141,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Viability Preferences
         {
-            get => Wrap<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.BE));
             set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -158,7 +151,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Viability Requirements
         {
-            get => Wrap<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.MH));
+            get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MH));
             set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -171,9 +164,6 @@ namespace PdfClown.Documents.Multimedia
             get => TempFilePermissionEnumExtension.Get((PdfString)BaseDataObject.Resolve<PdfDictionary>(PdfName.P)[PdfName.TF]);
             set => BaseDataObject.Resolve<PdfDictionary>(PdfName.P)[PdfName.TF] = (value.HasValue ? value.Value.GetCode() : null);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 
     internal static class TempFilePermissionEnumExtension

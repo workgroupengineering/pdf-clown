@@ -62,7 +62,7 @@ namespace PdfClown.Tools
                       && ((flags & AnnotationFlagsEnum.Print) > 0 || nonPrintableRendered))
                     {
                         // Stamping the current state appearance of the widget...
-                        PdfName widgetCurrentState = (PdfName)widget.BaseDataObject[PdfName.AS];
+                        var widgetCurrentState = widget.BaseDataObject.Get<PdfName>(PdfName.AS);
                         FormXObject widgetCurrentAppearance = widget.Appearance.Normal[widgetCurrentState];
                         if (widgetCurrentAppearance != null)
                         {
@@ -88,11 +88,11 @@ namespace PdfClown.Tools
                     PdfDictionary fieldPartDictionary = widget.BaseDataObject;
                     while (fieldPartDictionary != null)
                     {
-                        PdfDictionary parentFieldPartDictionary = (PdfDictionary)fieldPartDictionary.Resolve(PdfName.Parent);
+                        var parentFieldPartDictionary = fieldPartDictionary.Get<PdfDictionary>(PdfName.Parent);
 
                         PdfArray kidsArray;
                         if (parentFieldPartDictionary != null)
-                        { kidsArray = (PdfArray)parentFieldPartDictionary.Resolve(PdfName.Kids); }
+                        { kidsArray = parentFieldPartDictionary.Get<PdfArray>(PdfName.Kids); }
                         else
                         { kidsArray = formFields.BaseDataObject; }
 

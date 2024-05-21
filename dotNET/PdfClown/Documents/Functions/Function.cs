@@ -166,7 +166,7 @@ namespace PdfClown.Documents.Functions
         protected IList<Interval<T>> GetIntervals<T>(PdfName key, DefaultIntervalsCallback<T> defaultIntervalsCallback)
             where T : struct, IComparable<T>
         {
-            return Dictionary.GetArray(key).GetIntervals(defaultIntervalsCallback);
+            return Dictionary.Get<PdfArray>(key).GetIntervals(defaultIntervalsCallback);
         }
 
         //https://stackoverflow.com/questions/12838007/c-sharp-linear-interpolation

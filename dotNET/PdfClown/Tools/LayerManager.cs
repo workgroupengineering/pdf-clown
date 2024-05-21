@@ -231,7 +231,7 @@ namespace PdfClown.Tools
                 return;
 
             var layerConfigurationDictionary = layerConfiguration.BaseDataObject;
-            var usageArrayObject = (PdfArray)layerConfigurationDictionary.Resolve(PdfName.AS);
+            var usageArrayObject = layerConfigurationDictionary.Get<PdfArray>(PdfName.AS);
             if (usageArrayObject != null)
             {
                 foreach (var usageItemObject in usageArrayObject)
@@ -249,7 +249,7 @@ namespace PdfClown.Tools
             if (dictionaryObject == null)
                 return;
 
-            RemoveLayerReferences((PdfArray)dictionaryObject.Resolve(key), layerReferences);
+            RemoveLayerReferences(dictionaryObject.Get<PdfArray>(key), layerReferences);
         }
 
         private void RemoveLayerReferences(PdfArray arrayObject, ICollection<PdfReference> layerReferences)

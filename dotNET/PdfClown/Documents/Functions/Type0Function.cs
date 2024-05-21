@@ -136,7 +136,7 @@ namespace PdfClown.Documents.Functions
         */
         public int[] Sizes
         {
-            get => sizes ??= Dictionary.GetArray(PdfName.Size).ToIntArray();
+            get => sizes ??= Dictionary.Get<PdfArray>(PdfName.Size).ToIntArray();
         }
 
         public int[,] GetSamples()

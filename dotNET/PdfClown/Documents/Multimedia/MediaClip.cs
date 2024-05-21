@@ -50,7 +50,7 @@ namespace PdfClown.Documents.Multimedia
             if (baseObject.Wrapper is MediaClip clip)
                 return clip;
             
-            var subtype = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.S];
+            var subtype = ((PdfDictionary)baseObject.Resolve()).Get<PdfName>(PdfName.S);
             if (PdfName.MCD.Equals(subtype))
                 return new MediaClipData(baseObject);
             else if (PdfName.MCS.Equals(subtype))

@@ -179,7 +179,7 @@ namespace PdfClown.Documents.Contents.Layers
 
         public override VisibilityPolicyEnum VisibilityPolicy
         {
-            get => VisibilityPolicyEnumExtension.Get((PdfName)BaseDataObject[PdfName.P]);
+            get => VisibilityPolicyEnumExtension.Get(BaseDataObject.GetString(PdfName.P));
             set => BaseDataObject[PdfName.P] = value.GetName();
         }
     }

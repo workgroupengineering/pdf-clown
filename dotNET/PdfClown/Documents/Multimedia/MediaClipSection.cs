@@ -40,24 +40,16 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaClipSection : MediaClip
     {
-        #region dynamic
-        #region constructors
         public MediaClipSection(PdfDocument context) : base(context, PdfName.MCS)
         { }
 
         internal MediaClipSection(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override PdfObjectWrapper Data
         {
             get => MediaClip.Wrap(BaseDataObject[PdfName.D]).Data;
             set => throw new NotImplementedException();
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

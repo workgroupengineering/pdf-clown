@@ -40,17 +40,12 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaRendition : Rendition
     {
-        #region dynamic
-        #region constructors
         public MediaRendition(MediaClip clip) : base(clip.Document, PdfName.MR)
         { Clip = clip; }
 
         internal MediaRendition(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets the content to be played.</summary>
         */
@@ -66,7 +61,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public MediaPlayParameters PlayParameters
         {
-            get => Wrap<MediaPlayParameters>(BaseDataObject.Get<PdfDictionary>(PdfName.P));
+            get => Wrap<MediaPlayParameters>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.P));
             set => BaseDataObject[PdfName.P] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -76,11 +71,8 @@ namespace PdfClown.Documents.Multimedia
         */
         public MediaScreenParameters ScreenParameters
         {
-            get => Wrap<MediaScreenParameters>(BaseDataObject.Get<PdfDictionary>(PdfName.SP));
+            get => Wrap<MediaScreenParameters>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.SP));
             set => BaseDataObject[PdfName.SP] = PdfObjectWrapper.GetBaseObject(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

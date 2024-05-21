@@ -181,7 +181,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
             public PdfArray Alignment
             {
-                get => (PdfArray)BaseDataObject.Resolve(PdfName.A);
+                get => BaseDataObject.Get<PdfArray>(PdfName.A);
                 set => BaseDataObject[PdfName.A] = value;
             }
             /**
@@ -392,7 +392,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => BaseDataObject[PdfName.RI] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        private DeviceColor GetColor(PdfName key) => DeviceColor.Get((PdfArray)BaseDataObject.Resolve(key));
+        private DeviceColor GetColor(PdfName key) => DeviceColor.Get(BaseDataObject.Get<PdfArray>(key));
 
         private void SetColor(PdfName key, DeviceColor value) => BaseDataObject[key] = PdfObjectWrapper.GetBaseObject(value);
     }

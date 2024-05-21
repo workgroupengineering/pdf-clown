@@ -236,7 +236,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         private PdfDictionary FirstBead
         {
-            get => (PdfDictionary)BaseDataObject.Resolve(PdfName.F);
+            get => BaseDataObject.Get<PdfDictionary>(PdfName.F);
             set
             {
                 PdfDictionary oldValue = FirstBead;
@@ -257,7 +257,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                 if (predicate.Evaluate(bead))
                     break;
 
-                bead = (PdfDictionary)bead.Resolve(PdfName.N);
+                bead = bead.Get<PdfDictionary>(PdfName.N);
                 if (bead == firstBead)
                     break;
             }
@@ -268,7 +268,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         private void Link(PdfDictionary item, PdfDictionary next)
         {
-            PdfDictionary previous = (PdfDictionary)next.Resolve(PdfName.V);
+            var previous = next.Get<PdfDictionary>(PdfName.V);
             if (previous == null)
             { previous = next; }
 
@@ -287,9 +287,9 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         private void Unlink(PdfDictionary item)
         {
-            PdfDictionary prevBead = (PdfDictionary)item.Resolve(PdfName.V);
+            var prevBead = item.Get<PdfDictionary>(PdfName.V);
             item.Remove(PdfName.V);
-            PdfDictionary nextBead = (PdfDictionary)item.Resolve(PdfName.N);
+            var nextBead = item.Get<PdfDictionary>(PdfName.N);
             item.Remove(PdfName.N);
             if (prevBead != item) // Still some elements.
             {

@@ -58,7 +58,7 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public PdfArray BackColor
         {
-            get => (PdfArray)BaseDataObject.Resolve(PdfName.BC);
+            get => BaseDataObject.Get<PdfArray>(PdfName.BC);
             set => BaseDataObject[PdfName.BC] = value;
         }
 

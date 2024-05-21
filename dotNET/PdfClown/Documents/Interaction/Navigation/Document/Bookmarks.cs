@@ -64,10 +64,10 @@ namespace PdfClown.Documents.Interaction.Navigation
         {
             get
             {
-                PdfReference bookmarkObject = (PdfReference)BaseDataObject[PdfName.First];
+                var bookmarkObject = BaseDataObject.Get<PdfReference>(PdfName.First);
                 while (index > 0)
                 {
-                    bookmarkObject = (PdfReference)((PdfDictionary)bookmarkObject.DataObject)[PdfName.Next];
+                    bookmarkObject = ((PdfDictionary)bookmarkObject.DataObject).Get<PdfReference>(PdfName.Next);
                     // Did we go past the collection range?
                     if (bookmarkObject == null)
                         throw new ArgumentOutOfRangeException();
@@ -99,7 +99,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
             else // Non-first bookmark.
             {
-                PdfReference oldLastBookmarkReference = (PdfReference)BaseDataObject[PdfName.Last];
+                var oldLastBookmarkReference = BaseDataObject.Get<PdfReference>(PdfName.Last);
                 BaseDataObject[PdfName.Last] // Added bookmark is the last in the collection...
                   = ((PdfDictionary)oldLastBookmarkReference.DataObject)[PdfName.Next] // ...and the next of the previously-last bookmark.
                   = bookmark.BaseObject;
@@ -158,7 +158,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             /*
               NOTE: The Count entry may be absent [PDF:1.6:8.2.2].
             */
-            PdfInteger countObject = (PdfInteger)BaseDataObject[PdfName.Count];
+            PdfInteger countObject = BaseDataObject.Get<PdfInteger>(PdfName.Count);
             if (countObject == null)
             { BaseDataObject[PdfName.Count] = countObject = PdfInteger.Default; }
 

@@ -116,7 +116,7 @@ namespace PdfClown.Documents
                 if (entry != null)
                     return entry;
 
-                dictionary = (PdfDictionary)dictionary.Resolve(PdfName.Parent);
+                dictionary = dictionary.Get<PdfDictionary>(PdfName.Parent);
                 if (dictionary == null)
                 {
                     // Isn't the page attached to the page tree?
@@ -140,13 +140,13 @@ namespace PdfClown.Documents
         /**
           <summary>Gets the tab order corresponding to the given value.</summary>
         */
-        private static TabOrderEnum ToTabOrderEnum(IPdfString value)
+        private static TabOrderEnum ToTabOrderEnum(string value)
         {
             if (value == null)
                 return TabOrderEnum.Row;
             foreach (KeyValuePair<TabOrderEnum, PdfName> tabOrder in TabOrderEnumCodes)
             {
-                if (string.Equals(tabOrder.Value.StringValue, value.StringValue, StringComparison.Ordinal))
+                if (string.Equals(tabOrder.Value.StringValue, value, StringComparison.Ordinal))
                     return tabOrder.Key;
             }
             return TabOrderEnum.Row;
@@ -185,7 +185,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF12)]
         public PageActions Actions
         {
-            get => Wrap<PageActions>(BaseDataObject.Get<PdfDictionary>(PdfName.AA));
+            get => Wrap<PageActions>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.AA));
             set => BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -194,7 +194,7 @@ namespace PdfClown.Documents
         */
         public PageAnnotations Annotations
         {
-            get => PageAnnotations.Wrap(BaseDataObject.Get<PdfArray>(PdfName.Annots), this);
+            get => PageAnnotations.Wrap(BaseDataObject.GetOrCreate<PdfArray>(PdfName.Annots), this);
             set => BaseDataObject[PdfName.Annots] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -220,7 +220,7 @@ namespace PdfClown.Documents
         /**
           <summary>Gets the page article beads.</summary>
         */
-        public PageArticleElements ArticleElements => PageArticleElements.Wrap(BaseDataObject.Get<PdfArray>(PdfName.B), this);
+        public PageArticleElements ArticleElements => PageArticleElements.Wrap(BaseDataObject.GetOrCreate<PdfArray>(PdfName.B), this);
 
         /**
           <summary>Gets/Sets the region to which the contents of the page should be clipped when output
@@ -300,8 +300,8 @@ namespace PdfClown.Documents
               lower-indexed item to the ancestor of this page object at that level.
             */
             var ancestorKidReference = (PdfReference)BaseObject;
-            var parent = BaseDataObject.GetDictionary(PdfName.Parent);
-            var kids = parent.GetArray(PdfName.Kids);
+            var parent = BaseDataObject.Get<PdfDictionary>(PdfName.Parent);
+            var kids = parent.Get<PdfArray>(PdfName.Kids);
             if (kids == null)
                 return 0;
             int index = 0;
@@ -321,14 +321,14 @@ namespace PdfClown.Documents
                     // Set the ancestor at the next level!
                     ancestorKidReference = parent.Reference;
                     // Move up one level!
-                    parent = parent.GetDictionary(PdfName.Parent);
-                    kids = parent.GetArray(PdfName.Kids);
+                    parent = parent.Get<PdfDictionary>(PdfName.Parent);
+                    kids = parent.Get<PdfArray>(PdfName.Kids);
                     i = -1;
                 }
                 else // Intermediate node.
                 {
                     PdfDictionary kid = (PdfDictionary)kidReference.DataObject;
-                    if (PdfName.Page.Equals(kid.GetName(PdfName.Type)))
+                    if (PdfName.Page.Equals(kid.Get<PdfName>(PdfName.Type)))
                         index++;
                     else
                         index += kid.GetInt(PdfName.Count);
@@ -367,7 +367,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF15)]
         public TabOrderEnum TabOrder
         {
-            get => ToTabOrderEnum((IPdfString)BaseDataObject[PdfName.Tabs]);
+            get => ToTabOrderEnum(BaseDataObject.GetString(PdfName.Tabs));
             set => BaseDataObject[PdfName.Tabs] = ToCode(value);
         }
 
@@ -446,7 +446,7 @@ namespace PdfClown.Documents
             get
             {
                 Resources resources = Wrap<Resources>(GetInheritableAttribute(PdfName.Resources));
-                return resources != null ? resources : Wrap<Resources>(BaseDataObject.Get<PdfDictionary>(PdfName.Resources));
+                return resources != null ? resources : Wrap<Resources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Resources));
             }
         }
 
@@ -485,7 +485,7 @@ namespace PdfClown.Documents
             }
         }
 
-        public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this);
+        public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PieceInfo), this);
 
         public DateTime? ModificationDate => BaseDataObject.GetDate(PdfName.LastModified);
 

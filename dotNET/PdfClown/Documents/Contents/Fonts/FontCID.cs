@@ -48,13 +48,13 @@ namespace PdfClown.Documents.Contents.Fonts
             }
 
             var dictionary = (PdfDictionary)baseObject.Resolve();
-            PdfName type = dictionary.GetName(PdfName.Type, PdfName.Font);
+            var type = dictionary.Get<PdfName>(PdfName.Type, PdfName.Font);
             if (!PdfName.Font.Equals(type))
             {
                 throw new IOException("Expected 'Font' dictionary but found '" + type.StringValue + "'");
             }
 
-            PdfName subType = dictionary.GetName(PdfName.Subtype);
+            var subType = dictionary.Get<PdfName>(PdfName.Subtype);
             if (PdfName.CIDFontType0.Equals(subType))
             {
                 try
@@ -129,25 +129,25 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public int DefaultWidth
         {
-            get => defaultWidth ?? (defaultWidth = Dictionary.GetInt(PdfName.DW, 1000)).Value;
-            set => Dictionary[PdfName.DW] = new PdfInteger(value);
+            get => defaultWidth ??= Dictionary.GetInt(PdfName.DW, 1000);
+            set => Dictionary.SetInt(PdfName.DW, defaultWidth = value);
         }
 
         public override PdfArray Widths
         {
-            get => (PdfArray)Dictionary.Resolve(PdfName.W);
+            get => Dictionary.Get<PdfArray>(PdfName.W);
             set => Dictionary[PdfName.W] = value;
         }
 
         public PdfArray VerticalDefaultWidth
         {
-            get => (PdfArray)Dictionary.Resolve(PdfName.DW2);
+            get => Dictionary.Get<PdfArray>(PdfName.DW2);
             set => Dictionary[PdfName.DW2] = value;
         }
 
         public PdfArray VerticaltWidths
         {
-            get => (PdfArray)Dictionary.Resolve(PdfName.W2);
+            get => Dictionary.Get<PdfArray>(PdfName.W2);
             set => Dictionary[PdfName.W2] = value;
         }
 
@@ -226,9 +226,9 @@ namespace PdfClown.Documents.Contents.Fonts
             var dw2Array = VerticalDefaultWidth;
             if (dw2Array != null)
             {
-                PdfObject base0 = dw2Array.Resolve(0);
-                PdfObject base1 = dw2Array.Resolve(1);
-                if (base0 is IPdfNumber number0 && base1 is IPdfNumber number1)
+                var number0 = dw2Array.GetNumber(0);
+                var number1 = dw2Array.GetNumber(1);
+                if (number0 != null && number1 != null)
                 {
                     dw2[0] = number0.FloatValue;
                     dw2[1] = number1.FloatValue;

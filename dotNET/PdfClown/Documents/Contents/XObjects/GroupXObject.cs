@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Contents.XObjects
             if (baseObject.Wrapper is GroupXObject groupObject)
                 return groupObject;
             
-            var subtype = (PdfName)((PdfDictionary)baseObject)[PdfName.S];
+            var subtype = ((PdfDictionary)baseObject).Get<PdfName>(PdfName.S);
             if (subtype.Equals(PdfName.Transparency))
             {
                 return new TransparencyXObject(baseObject);
@@ -60,13 +60,13 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public PdfName Type
         {
-            get => (PdfName)BaseDataObject[PdfName.Type];
+            get => BaseDataObject.Get<PdfName>(PdfName.Type);
             set => BaseDataObject[PdfName.Type] = value;
         }
 
         public PdfName SubType
         {
-            get => (PdfName)BaseDataObject[PdfName.S];
+            get => BaseDataObject.Get<PdfName>(PdfName.S);
             set => BaseDataObject[PdfName.S] = value;
         }
     }

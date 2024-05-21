@@ -119,7 +119,7 @@ configuration is applied.</summary>
             return intents;
         }
 
-        public Array<OptionGroup> OptionGroups => Wrap<Array<OptionGroup>>(BaseDataObject.Get<PdfArray>(PdfName.RBGroups));
+        public Array<OptionGroup> OptionGroups => Wrap<Array<OptionGroup>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.RBGroups));
 
         public string Title
         {
@@ -127,17 +127,17 @@ configuration is applied.</summary>
             set => BaseDataObject.SetText(PdfName.Name, value);
         }
 
-        public UILayers UILayers => Wrap<UILayers>(BaseDataObject.Get<PdfArray>(PdfName.Order));
+        public UILayers UILayers => Wrap<UILayers>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.Order));
 
         public UIModeEnum UIMode
         {
-            get => UIModeEnumExtension.Get((PdfName)BaseDataObject[PdfName.ListMode]);
+            get => UIModeEnumExtension.Get(BaseDataObject.GetString(PdfName.ListMode));
             set => BaseDataObject[PdfName.ListMode] = value.GetName();
         }
 
         public bool? Visible
         {
-            get => BaseStateEnumExtension.Get((PdfName)BaseDataObject[PdfName.BaseState]).IsEnabled();
+            get => BaseStateEnumExtension.Get(BaseDataObject.GetString(PdfName.BaseState)).IsEnabled();
             set
             {
                 /*
@@ -177,7 +177,7 @@ configuration is applied.</summary>
             {
                 PdfDictionary usageDictionary = (PdfDictionary)usage;
                 if (usageDictionary[PdfName.Event].Equals(@event)
-                  && ((PdfArray)usageDictionary[PdfName.Category]).Contains(category))
+                  && usageDictionary.Get<PdfArray>(PdfName.Category).Contains(category))
                 {
                     PdfArray usageLayers = usageDictionary.Resolve<PdfArray>(PdfName.OCGs);
                     if (usageLayers.Contains(layer.BaseObject))
@@ -249,19 +249,19 @@ configuration is applied.</summary>
 
     internal static class BaseStateEnumExtension
     {
-        private static readonly BiDictionary<LayerConfiguration.BaseStateEnum, PdfName> codes;
+        private static readonly BiDictionary<LayerConfiguration.BaseStateEnum, string> codes;
 
         static BaseStateEnumExtension()
         {
-            codes = new BiDictionary<LayerConfiguration.BaseStateEnum, PdfName>
+            codes = new BiDictionary<LayerConfiguration.BaseStateEnum, string>
             {
-                [LayerConfiguration.BaseStateEnum.On] = PdfName.ON,
-                [LayerConfiguration.BaseStateEnum.Off] = PdfName.OFF,
-                [LayerConfiguration.BaseStateEnum.Unchanged] = PdfName.Unchanged
+                [LayerConfiguration.BaseStateEnum.On] = PdfName.ON.StringValue,
+                [LayerConfiguration.BaseStateEnum.Off] = PdfName.OFF.StringValue,
+                [LayerConfiguration.BaseStateEnum.Unchanged] = PdfName.Unchanged.StringValue
             };
         }
 
-        public static LayerConfiguration.BaseStateEnum Get(PdfName name)
+        public static LayerConfiguration.BaseStateEnum Get(string name)
         {
             if (name == null)
                 return LayerConfiguration.BaseStateEnum.On;
@@ -276,8 +276,7 @@ configuration is applied.</summary>
         public static LayerConfiguration.BaseStateEnum Get(bool? enabled)
         { return enabled.HasValue ? (enabled.Value ? LayerConfiguration.BaseStateEnum.On : LayerConfiguration.BaseStateEnum.Off) : LayerConfiguration.BaseStateEnum.Unchanged; }
 
-        public static PdfName GetName(this LayerConfiguration.BaseStateEnum baseState)
-        { return codes[baseState]; }
+        public static PdfName GetName(this LayerConfiguration.BaseStateEnum baseState) => PdfName.Get(codes[baseState], true);
 
         public static bool? IsEnabled(this LayerConfiguration.BaseStateEnum baseState)
         {

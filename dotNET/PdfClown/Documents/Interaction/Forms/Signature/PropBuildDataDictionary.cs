@@ -70,11 +70,13 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
 
         public string OS
         {
-            get => BaseDataObject.Resolve(PdfName.REx) is PdfArray array 
-                ? array.GetString(0) 
-                : BaseDataObject.Resolve(PdfName.REx) is PdfString pdfString 
-                    ? pdfString.StringValue 
-                    : null;
+            get => BaseDataObject.Resolve(PdfName.REx) is PdfDirectObject directObject
+                ? directObject is PdfArray array 
+                    ? array.GetString(0) 
+                    : directObject is IPdfString pdfString 
+                        ? pdfString.StringValue 
+                        : null
+                : null;
             set
             {
                 var array = BaseDataObject.Resolve<PdfArray>(PdfName.REx);

@@ -40,13 +40,6 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             })
         { }
 
-        public SignatureDictionary(PdfDocument doc)
-            : base(doc, new PdfDictionary {
-                { PdfName.Type, PdfName.Sig },
-                //{ PdfName.Filter, PdfName.AdobePPKLite }
-            })
-        { }
-
         public SignatureDictionary(PdfDirectObject baseObject)
             : base(baseObject)
         {

@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 return action;
             
             PdfDictionary dataObject = (PdfDictionary)baseObject.Resolve();
-            PdfName actionType = (PdfName)dataObject[PdfName.S];
+            var actionType = dataObject.Get<PdfName>(PdfName.S);
             if (actionType == null
               || (dataObject.ContainsKey(PdfName.Type)
                   && !dataObject[PdfName.Type].Equals(PdfName.Action)))
@@ -77,7 +77,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 return new ToggleVisibility(baseObject);
             else if (actionType.Equals(PdfName.Named))
             {
-                PdfName actionName = (PdfName)dataObject[PdfName.N];
+                var actionName = dataObject.Get<PdfName>(PdfName.N);
                 if (actionName.Equals(PdfName.NextPage))
                     return new GoToNextPage(baseObject);
                 else if (actionName.Equals(PdfName.PrevPage))

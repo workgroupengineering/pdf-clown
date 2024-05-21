@@ -317,12 +317,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public void SetRecipients(byte[][] recipients)
         {
-            PdfArray array = new PdfArray();
-            foreach (byte[] recipient in recipients)
-            {
-                array.Add(new PdfString(recipient));
-            }
-            Dictionary[PdfName.Recipients] = array;
+            Dictionary[PdfName.Recipients] = PdfArray.FromStrings(recipients);
             //array.setDirect(true);
         }
 
@@ -333,11 +328,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public int RecipientsLength
         {
-            get
-            {
-                PdfArray array = (PdfArray)Dictionary.Resolve(PdfName.Recipients);
-                return array.Count;
-            }
+            get => Dictionary.Get<PdfArray>(PdfName.Recipients).Count;
         }
         /**
 		 * returns the PdfString contained in the Recipients field at position i.
@@ -348,8 +339,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public PdfString GetRecipientStringAt(int i)
         {
-            PdfArray array = (PdfArray)Dictionary.Resolve(PdfName.Recipients);
-            return (PdfString)array.Resolve(i);
+            return Dictionary.Get<PdfArray>(PdfName.Recipients).Get<PdfString>(i);
         }
 
         /**
@@ -398,10 +388,10 @@ namespace PdfClown.Documents.Encryption
         public PdfCryptFilterDictionary GetCryptFilterDictionary(PdfName cryptFilterName)
         {
             // See CF in "Table 20 – Entries common to all encryption dictionaries"
-            var baseObj = Dictionary.GetDictionary(PdfName.CF);
+            var baseObj = Dictionary.Get<PdfDictionary>(PdfName.CF);
             if (baseObj != null)
             {
-                var base2 = baseObj.GetDictionary(cryptFilterName);
+                var base2 = baseObj.Get<PdfDictionary>(cryptFilterName);
                 if (base2 != null)
                 {
                     return Wrap<PdfCryptFilterDictionary>(base2);
@@ -418,7 +408,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public void SetCryptFilterDictionary(PdfName cryptFilterName, PdfCryptFilterDictionary cryptFilterDictionary)
         {
-            PdfDictionary cfDictionary = (PdfDictionary)Dictionary.Resolve(PdfName.CF);
+            var cfDictionary = Dictionary.Get<PdfDictionary>(PdfName.CF);
             if (cfDictionary == null)
             {
                 cfDictionary = new PdfDictionary();
@@ -441,7 +431,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public PdfName StreamFilterName
         {
-            get => Dictionary.GetName(PdfName.StmF, PdfName.Identity);
+            get => Dictionary.Get<PdfName>(PdfName.StmF, PdfName.Identity);
             set => Dictionary[PdfName.StmF] = value;
         }
 
@@ -458,7 +448,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public PdfName StringFilterName
         {
-            get => Dictionary.GetName(PdfName.StrF, PdfName.Identity);
+            get => Dictionary.Get<PdfName>(PdfName.StrF, PdfName.Identity);
             set => Dictionary[PdfName.StrF] = value;
         }
 

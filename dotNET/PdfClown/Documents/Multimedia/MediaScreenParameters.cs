@@ -117,7 +117,7 @@ namespace PdfClown.Documents.Multimedia
                 */
                 public LocationEnum? Location
                 {
-                    get => LocationEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.P]);
+                    get => LocationEnumExtension.Get(BaseDataObject.Get<PdfInteger>(PdfName.P));
                     set => BaseDataObject[PdfName.P] = (value.HasValue ? value.Value.GetCode() : null);
                 }
 
@@ -127,7 +127,7 @@ namespace PdfClown.Documents.Multimedia
                 */
                 public OffscreenBehaviorEnum? OffscreenBehavior
                 {
-                    get => OffscreenBehaviorEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.O]);
+                    get => OffscreenBehaviorEnumExtension.Get(BaseDataObject.Get<PdfInteger>(PdfName.O));
                     set => BaseDataObject[PdfName.O] = (value.HasValue ? value.Value.GetCode() : null);
                 }
 
@@ -137,7 +137,7 @@ namespace PdfClown.Documents.Multimedia
                 */
                 public RelatedWindowEnum? RelatedWindow
                 {
-                    get => RelatedWindowEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.RT]);
+                    get => RelatedWindowEnumExtension.Get(BaseDataObject.Get<PdfInteger>(PdfName.RT));
                     set => BaseDataObject[PdfName.RT] = (value.HasValue ? value.Value.GetCode() : null);
                 }
 
@@ -146,7 +146,7 @@ namespace PdfClown.Documents.Multimedia
                 */
                 public ResizeBehaviorEnum? ResizeBehavior
                 {
-                    get => ResizeBehaviorEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.R]);
+                    get => ResizeBehaviorEnumExtension.Get(BaseDataObject.Get<PdfInteger>(PdfName.R));
                     set => BaseDataObject[PdfName.R] = (value.HasValue ? value.Value.GetCode() : null);
                 }
 
@@ -159,7 +159,7 @@ namespace PdfClown.Documents.Multimedia
                 {
                     get
                     {
-                        var sizeObject = (PdfArray)BaseDataObject[PdfName.D];
+                        var sizeObject = BaseDataObject.Get<PdfArray>(PdfName.D);
                         return new SKSize(sizeObject.GetInt(0), sizeObject.GetInt(1));
                     }
                     set => BaseDataObject[PdfName.D] = new PdfArray(2) { PdfInteger.Get((int)value.Width), PdfInteger.Get((int)value.Height) };
@@ -212,7 +212,7 @@ namespace PdfClown.Documents.Multimedia
             */
             public DeviceRGBColor BackgroundColor
             {
-                get => DeviceRGBColor.Get(BaseDataObject.GetArray(PdfName.B));
+                get => DeviceRGBColor.Get(BaseDataObject.Get<PdfArray>(PdfName.B));
                 set => BaseDataObject[PdfName.B] = PdfObjectWrapper.GetBaseObject(value);
             }
 
@@ -239,7 +239,7 @@ namespace PdfClown.Documents.Multimedia
             */
             public FloatingWindowParametersObject FloatingWindowParameters
             {
-                get => new FloatingWindowParametersObject(BaseDataObject.Get<PdfDictionary>(PdfName.F));
+                get => new FloatingWindowParametersObject(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.F));
                 set => BaseDataObject[PdfName.F] = PdfObjectWrapper.GetBaseObject(value);
             }
 
@@ -249,7 +249,7 @@ namespace PdfClown.Documents.Multimedia
             */
             public MonitorSpecifierEnum? MonitorSpecifier
             {
-                get => MonitorSpecifierEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.M]);
+                get => MonitorSpecifierEnumExtension.Get(BaseDataObject.Get<PdfInteger>(PdfName.M));
                 set => BaseDataObject[PdfName.M] = (value.HasValue ? value.Value.GetCode() : null);
             }
 
@@ -276,7 +276,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Viability Preferences
         {
-            get => Wrap2<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            get => Wrap2<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.BE));
             set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -286,7 +286,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Viability Requirements
         {
-            get => Wrap2<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.MH));
+            get => Wrap2<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MH));
             set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
         }
     }

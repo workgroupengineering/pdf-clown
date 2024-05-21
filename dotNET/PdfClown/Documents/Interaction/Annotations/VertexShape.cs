@@ -96,11 +96,11 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public PdfArray Vertices
         {
-            get => (PdfArray)BaseDataObject.Get<PdfArray>(PdfName.Vertices);
+            get => (PdfArray)BaseDataObject.GetOrCreate<PdfArray>(PdfName.Vertices);
             set
             {
                 var oldValue = Vertices;
-                //if (oldValue != value)
+                if (!PdfArray.SequenceEquals(oldValue, value))
                 {
                     BaseDataObject[PdfName.Vertices] = value;
                     OnPropertyChanged(oldValue, value);

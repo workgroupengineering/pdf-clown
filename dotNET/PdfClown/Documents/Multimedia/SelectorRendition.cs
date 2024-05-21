@@ -53,7 +53,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Renditions Renditions
         {
-            get => Wrap<Renditions>(BaseDataObject.Get<PdfArray>(PdfName.R));
+            get => Wrap<Renditions>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.R));
             set => BaseDataObject[PdfName.R] = value.BaseObject;
         }
     }

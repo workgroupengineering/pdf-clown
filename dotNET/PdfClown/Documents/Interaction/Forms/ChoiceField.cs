@@ -54,7 +54,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public ChoiceItems Items
         {
-            get => Wrap<ChoiceItems>(BaseDataObject.Get<PdfArray>(PdfName.Opt));
+            get => Wrap<ChoiceItems>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.Opt));
             set => BaseDataObject[PdfName.Opt] = value.BaseObject;
         }
 

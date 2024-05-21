@@ -62,8 +62,7 @@ namespace PdfClown.Documents
         internal ConcurrentDictionary<FontName, FontType1> Type1FontCache = new();
         internal ConcurrentDictionary<TrueTypeFont, FontType0> Type0FontCache = new();
 
-        private DocumentConfiguration configuration;
-        public readonly ManualResetEventSlim LockObject = new(true);
+        private DocumentConfiguration configuration;        
 
         internal PdfDocument(PdfFile context) :
             base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Catalog } })
@@ -83,7 +82,7 @@ namespace PdfClown.Documents
             Resources = new Resources(this);
         }
 
-        internal PdfDocument(PdfDirectObject baseObject)// Catalog.
+        public PdfDocument(PdfDirectObject baseObject)// Catalog.
             : base(baseObject)
         { configuration = new DocumentConfiguration(this); }
 
@@ -93,7 +92,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF14)]
         public DocumentActions Actions
         {
-            get => Wrap<DocumentActions>(BaseDataObject.Get<PdfDictionary>(PdfName.AA));
+            get => Wrap<DocumentActions>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.AA));
             set => BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -103,7 +102,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF11)]
         public Articles Articles
         {
-            get => Wrap<Articles>(BaseDataObject.Get<PdfArray>(PdfName.Threads, false));
+            get => Wrap<Articles>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.Threads, false));
             set => BaseDataObject[PdfName.Threads] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -112,7 +111,7 @@ namespace PdfClown.Documents
         */
         public Bookmarks Bookmarks
         {
-            get => Wrap<Bookmarks>(BaseDataObject.Get<PdfDictionary>(PdfName.Outlines, false));
+            get => Wrap<Bookmarks>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Outlines, false));
             set => BaseDataObject[PdfName.Outlines] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -158,7 +157,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF12)]
         public Form Form
         {
-            get => Wrap<Form>(BaseDataObject.Get<PdfDictionary>(PdfName.AcroForm));
+            get => Wrap<Form>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.AcroForm));
             set => BaseDataObject[PdfName.AcroForm] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -167,7 +166,7 @@ namespace PdfClown.Documents
         */
         public Information Information
         {
-            get => Wrap<Information>(File.Trailer.Get<PdfDictionary>(PdfName.Info, false));
+            get => Wrap<Information>(File.Trailer.GetOrCreate<PdfDictionary>(PdfName.Info, false));
             set => File.Trailer[PdfName.Info] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -177,7 +176,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF15)]
         public LayerDefinition Layer
         {
-            get => Wrap<LayerDefinition>(BaseDataObject.Get<PdfDictionary>(PdfName.OCProperties));
+            get => Wrap<LayerDefinition>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.OCProperties));
             set
             {
                 CheckCompatibility("Layer");
@@ -191,7 +190,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF12)]
         public Names Names
         {
-            get => Wrap<Names>(BaseDataObject.Get<PdfDictionary>(PdfName.Names));
+            get => Wrap<Names>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Names));
             set => BaseDataObject[PdfName.Names] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -201,7 +200,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF13)]
         public PageLabels PageLabels
         {
-            get => PageLabels.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PageLabels));
+            get => PageLabels.Wrap(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PageLabels));
             set
             {
                 CheckCompatibility("PageLabels");
@@ -238,9 +237,9 @@ namespace PdfClown.Documents
                 if (mediaBox == null)
                 {
                     // Create default media box!
-                    mediaBox = new PdfClown.Objects.Rectangle(0, 0, 0, 0).BaseDataObject;
+                    mediaBox = new Objects.Rectangle(0, 0, 0, 0).BaseDataObject;
                     // Assign the media box to the document!
-                    ((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages))[PdfName.MediaBox] = mediaBox;
+                    BaseDataObject.Get<PdfDictionary>(PdfName.Pages)[PdfName.MediaBox] = mediaBox;
                 }
                 mediaBox[2] = PdfReal.Get(value.Value.Width);
                 mediaBox[3] = PdfReal.Get(value.Value.Height);
@@ -306,8 +305,8 @@ namespace PdfClown.Documents
         */
         public T ResolveName<T>(PdfDirectObject namedBaseObject) where T : PdfObjectWrapper
         {
-            if (namedBaseObject is PdfString) // Named object.
-                return Names.Get<T>((PdfString)namedBaseObject);
+            if (namedBaseObject is PdfString name) // Named object.
+                return Names.Get<T>(name);
             else // Explicit object.
                 return Resolve<T>(namedBaseObject);
         }
@@ -333,8 +332,8 @@ namespace PdfClown.Documents
         */
         public Resources Resources
         {
-            get => Wrap<Resources>(((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages)).Get<PdfDictionary>(PdfName.Resources));
-            set => ((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages))[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value);
+            get => Wrap<Resources>(BaseDataObject.Get<PdfDictionary>(PdfName.Pages).GetOrCreate<PdfDictionary>(PdfName.Resources));
+            set => BaseDataObject.Get<PdfDictionary>(PdfName.Pages)[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value);
         }
 
         /**
@@ -351,7 +350,7 @@ namespace PdfClown.Documents
                 */
                 PdfVersion fileVersion = File.Version;
 
-                PdfName versionObject = (PdfName)BaseDataObject[PdfName.Version];
+                var versionObject = BaseDataObject.Get<PdfName>(PdfName.Version);
                 if (versionObject == null)
                     return fileVersion;
 
@@ -369,11 +368,11 @@ namespace PdfClown.Documents
         */
         public ViewerPreferences ViewerPreferences
         {
-            get => Wrap<ViewerPreferences>(BaseDataObject.Get<PdfDictionary>(PdfName.ViewerPreferences));
+            get => Wrap<ViewerPreferences>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.ViewerPreferences));
             set => BaseDataObject[PdfName.ViewerPreferences] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.PieceInfo), this);
+        public AppDataCollection AppData => AppDataCollection.Wrap(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PieceInfo), this);
 
         /**
           <summary>Gets the default media box.</summary>
@@ -381,7 +380,7 @@ namespace PdfClown.Documents
         private PdfArray MediaBox =>
                 //NOTE: Document media box MUST be associated with the page-tree root node in order to be
                 //inheritable by all the pages.
-                (PdfArray)((PdfDictionary)BaseDataObject.Resolve(PdfName.Pages)).Resolve(PdfName.MediaBox);
+                BaseDataObject.Get<PdfDictionary>(PdfName.Pages).Get<PdfArray>(PdfName.MediaBox);
 
 
 

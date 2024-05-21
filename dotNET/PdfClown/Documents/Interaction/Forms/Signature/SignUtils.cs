@@ -66,29 +66,25 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
          */
         public static int GetMDPPermission(PdfDocument doc)
         {
-            PdfDictionary permsDict = doc.BaseDataObject.GetDictionary(PdfName.Perms);
-            if (permsDict != null)
+            PdfDictionary permsDict = doc.BaseDataObject.Get<PdfDictionary>(PdfName.Perms);
+            if (permsDict != null
+                && permsDict.Resolve(PdfName.DocMDP) is PdfDictionary signatureDict 
+                && signatureDict.Resolve(PdfName.Reference) is PdfArray refArray)
             {
-                if (permsDict.GetDictionary(PdfName.DocMDP) is PdfDictionary signatureDict)
+                for (int i = 0; i < refArray.Count; ++i)
                 {
-                    if (signatureDict.GetArray(PdfName.Reference) is PdfArray refArray)
+                    if (refArray.Resolve(i) is PdfDictionary sigRefDict)
                     {
-                        for (int i = 0; i < refArray.Count; ++i)
+                        if (PdfName.DocMDP.Equals(sigRefDict.Resolve(PdfName.TransformMethod)))
                         {
-                            if (refArray.Resolve(i) is PdfDictionary sigRefDict)
+                            if (sigRefDict.Resolve(PdfName.TransformParams) is PdfDictionary transformDict)
                             {
-                                if (PdfName.DocMDP.Equals(sigRefDict.Resolve(PdfName.TransformMethod)))
+                                int accessPermissions = transformDict.GetInt(PdfName.P, 2);
+                                if (accessPermissions < 1 || accessPermissions > 3)
                                 {
-                                    if (sigRefDict.Resolve(PdfName.TransformParams) is PdfDictionary transformDict)
-                                    {
-                                        int accessPermissions = transformDict.GetInt(PdfName.P, 2);
-                                        if (accessPermissions < 1 || accessPermissions > 3)
-                                        {
-                                            accessPermissions = 2;
-                                        }
-                                        return accessPermissions;
-                                    }
+                                    accessPermissions = 2;
                                 }
+                                return accessPermissions;
                             }
                         }
                     }

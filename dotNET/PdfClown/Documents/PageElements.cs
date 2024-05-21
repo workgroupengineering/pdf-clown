@@ -55,7 +55,7 @@ namespace PdfClown.Documents
 
         public override void Add(TItem item)
         {
-            DoAdd(item);
+            LinkPage(item);
             base.Add(item);
         }
 
@@ -66,7 +66,7 @@ namespace PdfClown.Documents
 
         public override void Insert(int index, TItem item)
         {
-            DoAdd(item);
+            LinkPage(item);
             base.Insert(index, item);
         }
 
@@ -79,7 +79,7 @@ namespace PdfClown.Documents
         {
             TItem @object = this[index];
             base.RemoveAt(index);
-            DoRemove(@object);
+            UnlinkPage(@object);
         }
 
         public override bool Remove(TItem item)
@@ -87,17 +87,17 @@ namespace PdfClown.Documents
             if (!base.Remove(item))
                 return false;
 
-            DoRemove((TItem)item);
+            UnlinkPage(item);
             return true;
         }
 
-        protected internal virtual void DoAdd(TItem item)
+        protected internal virtual void LinkPage(TItem item)
         {
             // Link the element to its page!
             item.BaseDataObject[PdfName.P] = page.BaseObject;
         }
 
-        protected virtual void DoRemove(TItem item)
+        protected virtual void UnlinkPage(TItem item)
         {
             // Unlink the element from its page!
             item?.BaseDataObject.Remove(PdfName.P);

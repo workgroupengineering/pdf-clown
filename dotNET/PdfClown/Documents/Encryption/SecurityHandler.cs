@@ -632,7 +632,7 @@ namespace PdfClown.Documents.Encryption
                 // PDFBOX-2936: avoid orphan /CF dictionaries found in US govt "I-" files
                 return;
             }
-            var type = dictionary.GetName(PdfName.Type);
+            var type = dictionary.Get<PdfName>(PdfName.Type);
             bool isSignature = PdfName.Sig.Equals(type) || PdfName.DocTimeStamp.Equals(type) ||
                     // PDFBOX-4466: /Type is optional, see
                     // https://ec.europa.eu/cefdigital/tracker/browse/DSS-1538

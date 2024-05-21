@@ -223,11 +223,11 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public PdfArray Callout
         {
-            get => (PdfArray)BaseDataObject[PdfName.CL];
+            get => BaseDataObject.Get<PdfArray>(PdfName.CL);
             set
             {
                 var oldValue = Callout;
-                if (oldValue != value)
+                if (!PdfArray.SequenceEquals(oldValue, value))
                 {
                     BaseDataObject[PdfName.CL] = value;
                     OnPropertyChanged(oldValue, value);

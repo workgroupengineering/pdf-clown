@@ -130,8 +130,8 @@ namespace PdfClown.Documents.Encryption
                 byte[] envelopedData = null;
 
                 // the bytes of each recipient in the recipients array
-                PdfArray array = (PdfArray)encryption.BaseDataObject.Resolve(PdfName.Recipients)
-                    ?? (PdfArray)defaultCryptFilterDictionary?.BaseDataObject.Resolve(PdfName.Recipients)
+                var array = encryption.BaseDataObject.Get<PdfArray>(PdfName.Recipients)
+                    ?? defaultCryptFilterDictionary?.BaseDataObject.Get<PdfArray>(PdfName.Recipients)
                     ?? throw new IOException("/Recipients entry is missing in encryption dictionary");
 
                 Memory<byte>[] recipientFieldsBytes = new Memory<byte>[array.Count];
@@ -237,7 +237,7 @@ namespace PdfClown.Documents.Encryption
                     // However, crypt filters are used only when V is 4 or 5.
                     if (defaultCryptFilterDictionary != null)
                     {
-                        PdfName cryptFilterMethod = defaultCryptFilterDictionary.CryptFilterMethod;
+                        var cryptFilterMethod = defaultCryptFilterDictionary.CryptFilterMethod;
                         IsAES = PdfName.AESV2.Equals(cryptFilterMethod) || PdfName.AESV3.Equals(cryptFilterMethod);
                     }
                 }
@@ -379,15 +379,12 @@ namespace PdfClown.Documents.Encryption
 
         private void PrepareEncryptionDictAES(PdfEncryption encryptionDictionary, PdfName aesVName, byte[][] recipients)
         {
-            PdfCryptFilterDictionary cryptFilterDictionary = new PdfCryptFilterDictionary(encryptionDictionary.File);
-            cryptFilterDictionary.CryptFilterMethod = aesVName;
-            cryptFilterDictionary.Length = KeyLength;
-            PdfArray array = new PdfArray();
-            foreach (byte[] recipient in recipients)
+            var cryptFilterDictionary = new PdfCryptFilterDictionary(encryptionDictionary.File)
             {
-                array.Add(new PdfString(recipient));
-            }
-            cryptFilterDictionary.BaseDataObject[PdfName.Recipients] = array;
+                CryptFilterMethod = aesVName,
+                Length = KeyLength,
+                Recipients = PdfArray.FromStrings(recipients)
+            };
             //array.setDirect(true);
             encryptionDictionary.DefaultCryptFilterDictionary = cryptFilterDictionary;
             encryptionDictionary.StreamFilterName = PdfName.DefaultCryptFilter;

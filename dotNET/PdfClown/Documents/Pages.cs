@@ -79,7 +79,7 @@ namespace PdfClown.Documents
             {
                 count = pages.Count;
                 parent = pages.BaseDataObject;
-                kids = (PdfArray)parent.Resolve(PdfName.Kids);
+                kids = parent.Get<PdfArray>(PdfName.Kids);
             }
 
             PdfPage IEnumerator<PdfPage>.Current => current;
@@ -116,8 +116,8 @@ namespace PdfClown.Documents
                         // Restore node index at the current level!
                         levelIndex = levelIndexes.Pop() + 1; // Next node (partially scanned level).
                                                              // Move upward!
-                        parent = (PdfDictionary)parent.Resolve(PdfName.Parent);
-                        kids = (PdfArray)parent.Resolve(PdfName.Kids);
+                        parent = parent.Get<PdfDictionary>(PdfName.Parent);
+                        kids = parent.Get<PdfArray>(PdfName.Kids);
                     }
                     else // Page subtree incomplete.
                     {
@@ -142,7 +142,7 @@ namespace PdfClown.Documents
                                 levelIndexes.Push(levelIndex);
                                 // Move downward!
                                 parent = kid;
-                                kids = (PdfArray)parent.Resolve(PdfName.Kids);
+                                kids = parent.Get<PdfArray>(PdfName.Kids);
                                 if (containers.Contains(kids))
                                     return false;
                                 containers.Add(kids);
@@ -268,10 +268,10 @@ namespace PdfClown.Documents
                 */
                 int pageOffset = 0;
                 PdfDictionary parent = BaseDataObject;
-                PdfArray kids = (PdfArray)parent.Resolve(PdfName.Kids);
+                var kids = parent.Get<PdfArray>(PdfName.Kids);
                 for (int i = 0; i < kids.Count; i++)
                 {
-                    PdfReference kidReference = (PdfReference)kids[i];
+                    PdfReference kidReference = kids.Get<PdfReference>(i);
                     PdfDictionary kid = (PdfDictionary)kidReference.DataObject;
                     // Is current kid a page object?
                     if (kid[PdfName.Type].Equals(PdfName.Page)) // Page object.
@@ -292,7 +292,7 @@ namespace PdfClown.Documents
                         {
                             // Go down one level!
                             parent = kid;
-                            kids = (PdfArray)parent.Resolve(PdfName.Kids);
+                            kids = parent.Get<PdfArray>(PdfName.Kids);
                             i = -1;
                         }
                         else // Horizontal scan (go past).

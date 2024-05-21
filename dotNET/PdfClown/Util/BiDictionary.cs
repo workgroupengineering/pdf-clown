@@ -35,13 +35,25 @@ namespace PdfClown.Util
     */
     public class BiDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
+        private static IEqualityComparer<T> GetEqualityComparer<T>()
+        {
+            if(typeof(T) == typeof(string)) 
+                return (IEqualityComparer<T>)(object)StringComparer.Ordinal;
+            return EqualityComparer<T>.Default;
+        }
+
         private readonly Dictionary<TKey, TValue> dictionary;
         private readonly Dictionary<TValue, TKey> inverseDictionary;
 
         public BiDictionary()
+            :this(GetEqualityComparer<TKey>(), GetEqualityComparer<TValue>())
         {
             dictionary = new Dictionary<TKey, TValue>();
             inverseDictionary = new Dictionary<TValue, TKey>();
+        }
+
+        public BiDictionary(IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer)
+        {            
         }
 
         public BiDictionary(int capacity)

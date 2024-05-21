@@ -80,7 +80,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         [PDF(VersionEnum.PDF14)]
         public DeviceRGBColor Color
         {
-            get => DeviceRGBColor.Get((PdfArray)BaseDataObject[PdfName.C]);
+            get => DeviceRGBColor.Get(BaseDataObject.Get<PdfArray>(PdfName.C));
             set
             {
                 if (value == null)
@@ -137,7 +137,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         {
             get
             {
-                PdfReference reference = (PdfReference)BaseDataObject[PdfName.Parent];
+                PdfReference reference = BaseDataObject.Get<PdfReference>(PdfName.Parent);
                 // Is its parent a bookmark?
                 /*
                   NOTE: the Title entry can be used as a flag to distinguish bookmark

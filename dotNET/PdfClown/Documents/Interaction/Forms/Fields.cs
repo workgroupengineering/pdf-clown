@@ -68,18 +68,10 @@ namespace PdfClown.Documents.Interaction.Forms
         private Dictionary<string, Field> RefreshCache()
         {
             var cache = new Dictionary<string, Field>();
-            Document.LockObject.Wait();
-            Document.LockObject.Reset();
-            try
+
+            foreach (var field in RetrieveValues(BaseDataObject))
             {
-                foreach (var field in RetrieveValues(BaseDataObject))
-                {
-                    cache[field.FullName] = field;
-                }
-            }
-            finally
-            {
-                Document.LockObject.Set();
+                cache[field.FullName] = field;
             }
             return cache;
         }
@@ -108,11 +100,11 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             PdfArray fieldObjects;
             {
-                var fieldParentReference = (PdfReference)field.BaseDataObject[PdfName.Parent];
+                var fieldParentReference = field.BaseDataObject.Get<PdfReference>(PdfName.Parent);
                 if (fieldParentReference == null)
                 { fieldObjects = BaseDataObject; }
                 else
-                { fieldObjects = (PdfArray)((PdfDictionary)fieldParentReference.DataObject).Resolve(PdfName.Kids); }
+                { fieldObjects = ((PdfDictionary)fieldParentReference.DataObject).Get<PdfArray>(PdfName.Kids); }
             }
 
             return fieldObjects;
@@ -152,7 +144,7 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             foreach (PdfReference fieldReference in fieldObjects)
             {
-                var kidReferences = ((PdfDictionary)fieldReference.DataObject).GetArray(PdfName.Kids);
+                var kidReferences = ((PdfDictionary)fieldReference.DataObject).Get<PdfArray>(PdfName.Kids);
                 PdfDictionary kidObject;
                 if (kidReferences == null)
                 { kidObject = null; }
@@ -167,6 +159,6 @@ namespace PdfClown.Documents.Interaction.Forms
                 else // Non-terminal field.
                 { RetrieveValues(kidReferences, values); }
             }
-        }        
+        }
     }
 }

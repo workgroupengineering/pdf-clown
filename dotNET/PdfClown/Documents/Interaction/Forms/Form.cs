@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Interaction.Forms
         */
         public Fields Fields
         {
-            get => Wrap<Fields>(BaseDataObject.Get<PdfArray>(PdfName.Fields));
+            get => Wrap<Fields>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.Fields));
             set => BaseDataObject[PdfName.Fields] = value.BaseObject;
         }
 
@@ -60,7 +60,7 @@ namespace PdfClown.Documents.Interaction.Forms
         */
         public Resources Resources
         {
-            get => Wrap<Resources>(BaseDataObject.Get<PdfDictionary>(PdfName.DR));
+            get => Wrap<Resources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.DR));
             set => BaseDataObject[PdfName.DR] = value.BaseObject;
         }
 

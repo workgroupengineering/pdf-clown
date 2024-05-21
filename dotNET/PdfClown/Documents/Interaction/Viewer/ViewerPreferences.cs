@@ -167,7 +167,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF13)]
         public DirectionEnum Direction
         {
-            get => ViewerPreferencesDirectionEnumExtension.Get((PdfName)BaseDataObject[PdfName.Direction], DefaultDirection).Value;
+            get => ViewerPreferencesDirectionEnumExtension.Get(BaseDataObject.GetString(PdfName.Direction), DefaultDirection).Value;
             set => BaseDataObject[PdfName.Direction] = (value != DefaultDirection ? value.Code() : null);
         }
 
@@ -198,7 +198,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         */
         public PageModeEnum NormalPageMode
         {
-            get => ViewerPreferencesPageModeEnumExtension.Get((PdfName)BaseDataObject[PdfName.NonFullScreenPageMode], DefaultPageMode).Value;
+            get => ViewerPreferencesPageModeEnumExtension.Get(BaseDataObject.GetString(PdfName.NonFullScreenPageMode), DefaultPageMode).Value;
             set => BaseDataObject[PdfName.NonFullScreenPageMode] = (value != DefaultPageMode ? value.Code() : null);
         }
 
@@ -209,7 +209,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF10)]
         public PageLayoutEnum PageLayout
         {
-            get => ViewerPreferencesPageLayoutEnumExtension.Get((PdfName)Document.BaseDataObject[PdfName.PageLayout], DefaultPageLayout).Value;
+            get => ViewerPreferencesPageLayoutEnumExtension.Get(Document.BaseDataObject.GetString(PdfName.PageLayout), DefaultPageLayout).Value;
             set => Document.BaseDataObject[PdfName.PageLayout] = (value != DefaultPageLayout ? value.Code() : null);
         }
 
@@ -220,7 +220,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF10)]
         public PageModeEnum PageMode
         {
-            get => ViewerPreferencesPageModeEnumExtension.Get((PdfName)Document.BaseDataObject[PdfName.PageMode], DefaultPageMode).Value;
+            get => ViewerPreferencesPageModeEnumExtension.Get(Document.BaseDataObject.GetString(PdfName.PageMode), DefaultPageMode).Value;
             set => Document.BaseDataObject[PdfName.PageMode] = (value != DefaultPageMode ? value.Code() : null);
         }
 
@@ -231,7 +231,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF17)]
         public PaperModeEnum? PaperMode
         {
-            get => ViewerPreferencesPaperModeEnumExtension.Get((PdfName)BaseDataObject[PdfName.Duplex]);
+            get => ViewerPreferencesPaperModeEnumExtension.Get(BaseDataObject.GetString(PdfName.Duplex));
             set => BaseDataObject[PdfName.Duplex] = (value.HasValue ? value.Value.Code() : null);
         }
 
@@ -277,7 +277,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         {
             get
             {
-                var printPageRangesObject = BaseDataObject.GetArray(PdfName.PrintPageRange);
+                var printPageRangesObject = BaseDataObject.Get<PdfArray>(PdfName.PrintPageRange);
                 if (printPageRangesObject == null
                   || printPageRangesObject.Count == 0
                   || printPageRangesObject.Count % 2 != 0)
@@ -378,21 +378,20 @@ namespace PdfClown.Documents.Interaction.Viewer
 
     internal static class ViewerPreferencesDirectionEnumExtension
     {
-        private static readonly BiDictionary<ViewerPreferences.DirectionEnum, PdfName> codes;
+        private static readonly BiDictionary<ViewerPreferences.DirectionEnum, string> codes;
 
         static ViewerPreferencesDirectionEnumExtension()
         {
-            codes = new BiDictionary<ViewerPreferences.DirectionEnum, PdfName>
+            codes = new BiDictionary<ViewerPreferences.DirectionEnum, string>
             {
-                [ViewerPreferences.DirectionEnum.LeftToRight] = PdfName.L2R,
-                [ViewerPreferences.DirectionEnum.RightToLeft] = PdfName.R2L
+                [ViewerPreferences.DirectionEnum.LeftToRight] = PdfName.L2R.StringValue,
+                [ViewerPreferences.DirectionEnum.RightToLeft] = PdfName.R2L.StringValue
             };
         }
 
-        public static ViewerPreferences.DirectionEnum? Get(PdfName code)
-        { return Get(code, null); }
+        public static ViewerPreferences.DirectionEnum? Get(string code) => Get(code, null);
 
-        public static ViewerPreferences.DirectionEnum? Get(PdfName code, ViewerPreferences.DirectionEnum? defaultValue)
+        public static ViewerPreferences.DirectionEnum? Get(string code, ViewerPreferences.DirectionEnum? defaultValue)
         {
             if (code == null)
                 return defaultValue;
@@ -404,31 +403,29 @@ namespace PdfClown.Documents.Interaction.Viewer
             return value.Value;
         }
 
-        public static PdfName Code(this ViewerPreferences.DirectionEnum value)
-        { return codes[value]; }
+        public static PdfName Code(this ViewerPreferences.DirectionEnum value) => PdfName.Get(codes[value], true);
     }
 
     internal static class ViewerPreferencesPageLayoutEnumExtension
     {
-        private static readonly BiDictionary<ViewerPreferences.PageLayoutEnum, PdfName> codes;
+        private static readonly BiDictionary<ViewerPreferences.PageLayoutEnum, string> codes;
 
         static ViewerPreferencesPageLayoutEnumExtension()
         {
-            codes = new BiDictionary<ViewerPreferences.PageLayoutEnum, PdfName>
+            codes = new BiDictionary<ViewerPreferences.PageLayoutEnum, string>
             {
-                [ViewerPreferences.PageLayoutEnum.SinglePage] = PdfName.SinglePage,
-                [ViewerPreferences.PageLayoutEnum.OneColumn] = PdfName.OneColumn,
-                [ViewerPreferences.PageLayoutEnum.TwoColumnLeft] = PdfName.TwoColumnLeft,
-                [ViewerPreferences.PageLayoutEnum.TwoColumnRight] = PdfName.TwoColumnRight,
-                [ViewerPreferences.PageLayoutEnum.TwoPageLeft] = PdfName.TwoPageLeft,
-                [ViewerPreferences.PageLayoutEnum.TwoPageRight] = PdfName.TwoPageRight
+                [ViewerPreferences.PageLayoutEnum.SinglePage] = PdfName.SinglePage.StringValue,
+                [ViewerPreferences.PageLayoutEnum.OneColumn] = PdfName.OneColumn.StringValue,
+                [ViewerPreferences.PageLayoutEnum.TwoColumnLeft] = PdfName.TwoColumnLeft.StringValue,
+                [ViewerPreferences.PageLayoutEnum.TwoColumnRight] = PdfName.TwoColumnRight.StringValue,
+                [ViewerPreferences.PageLayoutEnum.TwoPageLeft] = PdfName.TwoPageLeft.StringValue,
+                [ViewerPreferences.PageLayoutEnum.TwoPageRight] = PdfName.TwoPageRight.StringValue
             };
         }
 
-        public static ViewerPreferences.PageLayoutEnum? Get(PdfName code)
-        { return Get(code, null); }
+        public static ViewerPreferences.PageLayoutEnum? Get(string code) => Get(code, null);
 
-        public static ViewerPreferences.PageLayoutEnum? Get(PdfName code, ViewerPreferences.PageLayoutEnum? defaultValue)
+        public static ViewerPreferences.PageLayoutEnum? Get(string code, ViewerPreferences.PageLayoutEnum? defaultValue)
         {
             if (code == null)
                 return defaultValue;
@@ -440,31 +437,29 @@ namespace PdfClown.Documents.Interaction.Viewer
             return value.Value;
         }
 
-        public static PdfName Code(this ViewerPreferences.PageLayoutEnum value)
-        { return codes[value]; }
+        public static PdfName Code(this ViewerPreferences.PageLayoutEnum value) => PdfName.Get(codes[value], true);
     }
 
     internal static class ViewerPreferencesPageModeEnumExtension
     {
-        private static readonly BiDictionary<ViewerPreferences.PageModeEnum, PdfName> codes;
+        private static readonly BiDictionary<ViewerPreferences.PageModeEnum, string> codes;
 
         static ViewerPreferencesPageModeEnumExtension()
         {
-            codes = new BiDictionary<ViewerPreferences.PageModeEnum, PdfName>
+            codes = new BiDictionary<ViewerPreferences.PageModeEnum, string>
             {
-                [ViewerPreferences.PageModeEnum.Simple] = PdfName.UseNone,
-                [ViewerPreferences.PageModeEnum.Bookmarks] = PdfName.UseOutlines,
-                [ViewerPreferences.PageModeEnum.Thumbnails] = PdfName.UseThumbs,
-                [ViewerPreferences.PageModeEnum.FullScreen] = PdfName.FullScreen,
-                [ViewerPreferences.PageModeEnum.Layers] = PdfName.UseOC,
-                [ViewerPreferences.PageModeEnum.Attachments] = PdfName.UseAttachments
+                [ViewerPreferences.PageModeEnum.Simple] = PdfName.UseNone.StringValue,
+                [ViewerPreferences.PageModeEnum.Bookmarks] = PdfName.UseOutlines.StringValue,
+                [ViewerPreferences.PageModeEnum.Thumbnails] = PdfName.UseThumbs.StringValue,
+                [ViewerPreferences.PageModeEnum.FullScreen] = PdfName.FullScreen.StringValue,
+                [ViewerPreferences.PageModeEnum.Layers] = PdfName.UseOC.StringValue,
+                [ViewerPreferences.PageModeEnum.Attachments] = PdfName.UseAttachments.StringValue
             };
         }
 
-        public static ViewerPreferences.PageModeEnum? Get(PdfName code)
-        { return Get(code, null); }
+        public static ViewerPreferences.PageModeEnum? Get(string code) => Get(code, null);
 
-        public static ViewerPreferences.PageModeEnum? Get(PdfName code, ViewerPreferences.PageModeEnum? defaultValue)
+        public static ViewerPreferences.PageModeEnum? Get(string code, ViewerPreferences.PageModeEnum? defaultValue)
         {
             if (code == null)
                 return defaultValue;
@@ -476,28 +471,26 @@ namespace PdfClown.Documents.Interaction.Viewer
             return value.Value;
         }
 
-        public static PdfName Code(this ViewerPreferences.PageModeEnum value)
-        { return codes[value]; }
+        public static PdfName Code(this ViewerPreferences.PageModeEnum value) => PdfName.Get(codes[value], true);
     }
 
     internal static class ViewerPreferencesPaperModeEnumExtension
     {
-        private static readonly BiDictionary<ViewerPreferences.PaperModeEnum, PdfName> codes;
+        private static readonly BiDictionary<ViewerPreferences.PaperModeEnum, string> codes;
 
         static ViewerPreferencesPaperModeEnumExtension()
         {
-            codes = new BiDictionary<ViewerPreferences.PaperModeEnum, PdfName>
+            codes = new BiDictionary<ViewerPreferences.PaperModeEnum, string>()
             {
-                [ViewerPreferences.PaperModeEnum.Simplex] = PdfName.Simplex,
-                [ViewerPreferences.PaperModeEnum.DuplexShortEdge] = PdfName.DuplexFlipShortEdge,
-                [ViewerPreferences.PaperModeEnum.DuplexLongEdge] = PdfName.DuplexFlipLongEdge
+                [ViewerPreferences.PaperModeEnum.Simplex] = PdfName.Simplex.StringValue,
+                [ViewerPreferences.PaperModeEnum.DuplexShortEdge] = PdfName.DuplexFlipShortEdge.StringValue,
+                [ViewerPreferences.PaperModeEnum.DuplexLongEdge] = PdfName.DuplexFlipLongEdge.StringValue
             };
         }
 
-        public static ViewerPreferences.PaperModeEnum? Get(PdfName code)
-        { return Get(code, null); }
+        public static ViewerPreferences.PaperModeEnum? Get(string code) => Get(code, null);
 
-        public static ViewerPreferences.PaperModeEnum? Get(PdfName code, ViewerPreferences.PaperModeEnum? defaultValue)
+        public static ViewerPreferences.PaperModeEnum? Get(string code, ViewerPreferences.PaperModeEnum? defaultValue)
         {
             if (code == null)
                 return defaultValue;
@@ -509,7 +502,6 @@ namespace PdfClown.Documents.Interaction.Viewer
             return value.Value;
         }
 
-        public static PdfName Code(this ViewerPreferences.PaperModeEnum value)
-        { return codes[value]; }
+        public static PdfName Code(this ViewerPreferences.PaperModeEnum value) => PdfName.Get(codes[value], true);
     }
 }

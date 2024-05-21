@@ -58,9 +58,9 @@ namespace PdfClown.Documents.Interaction.Navigation
             get
             {
                 PdfDictionary bead = BaseDataObject;
-                Article article = null;
+                Article article;
                 while ((article = Wrap<Article>(bead[PdfName.T])) == null)
-                { bead = (PdfDictionary)bead.Resolve(PdfName.V); }
+                { bead = bead.Get<PdfDictionary>(PdfName.V); }
                 return article;
             }
         }
@@ -109,7 +109,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         public bool IsHead()
         {
-            PdfDictionary thread = (PdfDictionary)BaseDataObject.Resolve(PdfName.T);
+            PdfDictionary thread = BaseDataObject.Get<PdfDictionary>(PdfName.T);
             return thread != null && BaseObject.Equals(thread[PdfName.F]);
         }
 

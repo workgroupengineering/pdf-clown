@@ -82,7 +82,7 @@ namespace PdfClown.Documents.Interaction.Forms
         */
         public JustificationEnum Justification
         {
-            get => JustificationEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.Q]);
+            get => JustificationEnumExtension.Get(BaseDataObject.Get<PdfInteger>(PdfName.Q));
             set => BaseDataObject[PdfName.Q] = value.GetCode();
         }
 

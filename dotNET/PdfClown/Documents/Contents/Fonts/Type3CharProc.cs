@@ -73,7 +73,7 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             get
             {
-                if (BaseDataObject.Header.GetDictionary(PdfName.Resources) is PdfDictionary resourceDictionary)
+                if (BaseDataObject.Header.Resolve(PdfName.Resources) is PdfDictionary resourceDictionary)
                 {
                     // PDFBOX-5294
                     Debug.WriteLine("warn: Using resources dictionary found in charproc entry");

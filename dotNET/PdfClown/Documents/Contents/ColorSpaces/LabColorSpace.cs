@@ -111,7 +111,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                         // 1. L* component.
                         range.Add(new Interval<float>(0F, 100F));
 
-                        PdfArray rangesObject = (PdfArray)Dictionary[PdfName.Range];
+                        var rangesObject = Dictionary.Get<PdfArray>(PdfName.Range);
                         if (rangesObject == null)
                         {
                             // 2. a* component.

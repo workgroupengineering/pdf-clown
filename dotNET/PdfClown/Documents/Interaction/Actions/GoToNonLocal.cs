@@ -54,7 +54,7 @@ namespace PdfClown.Documents.Interaction.Actions
         public virtual FileSpecification DestinationFile
         {
             get => FileSpecification.Wrap(BaseDataObject[PdfName.F]);
-            set => BaseDataObject[PdfName.F] = (value != null ? value.BaseObject : null);
+            set => BaseDataObject[PdfName.F] = value?.BaseObject;
         }
 
         /**

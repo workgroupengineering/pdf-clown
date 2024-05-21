@@ -109,7 +109,7 @@ namespace PdfClown.Documents.Functions
         */
         public float[] Bounds
         {
-            get => bounds ??= Dictionary.GetArray(PdfName.Bounds).ToFloatArray();
+            get => bounds ??= Dictionary.Get<PdfArray>(PdfName.Bounds).ToFloatArray();
             set => Dictionary[PdfName.Bounds] = PdfArray.FromFloats(bounds = value);
         }
 

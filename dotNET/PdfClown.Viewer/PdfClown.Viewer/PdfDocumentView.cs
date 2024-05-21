@@ -13,7 +13,7 @@ namespace PdfClown.Viewer
 {
     public class PdfDocumentView : IDisposable
     {
-        public ManualResetEventSlim LockObject => Document?.LockObject;
+        public ManualResetEventSlim LockObject => Document?.File.LockObject;
 
         public bool IsPaintComplete => LockObject?.IsSet ?? true;
 

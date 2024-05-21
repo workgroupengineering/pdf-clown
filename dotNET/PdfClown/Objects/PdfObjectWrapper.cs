@@ -126,7 +126,7 @@ namespace PdfClown.Objects
                 if (dictionary == null)
                     return null;
 
-                return Metadata.Wrap(dictionary.Get<PdfStream>(PdfName.Metadata, false));
+                return Metadata.Wrap(dictionary.GetOrCreate<PdfStream>(PdfName.Metadata, false));
             }
             set
             {
@@ -392,6 +392,6 @@ namespace PdfClown.Objects
         { }
 
         ///<summary>Gets the underlying data object.</summary>
-        public new TDataObject BaseDataObject => (TDataObject)PdfObject.Resolve(BaseObject);
+        public new TDataObject BaseDataObject => (TDataObject)BaseObject?.Resolve();
     }
 }

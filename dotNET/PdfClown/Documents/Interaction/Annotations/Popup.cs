@@ -56,17 +56,17 @@ namespace PdfClown.Documents.Interaction.Annotations
         { }
 
 
-        public override PdfPage Page
-        {
-            get => Parent?.Page ?? base.Page;
-            set
-            {
-                if (Parent != null)
-                { parent.Page = value; }
-                else
-                { base.Page = value; }
-            }
-        }
+        //public override PdfPage Page
+        //{
+        //    get => Parent?.Page ?? base.Page;
+        //    set
+        //    {
+        //        if (Parent != null)
+        //        { parent.Page = value; }
+        //        else
+        //        { base.Page = value; }
+        //    }
+        //}
 
         public override DeviceColor Color
         {
@@ -102,7 +102,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         */
         public Markup Parent
         {
-            get => parent ?? (parent = (Markup)Annotation.Wrap(BaseDataObject[PdfName.Parent]));
+            get => parent ??= (Markup)Annotation.Wrap(BaseDataObject[PdfName.Parent]);
             set
             {
 

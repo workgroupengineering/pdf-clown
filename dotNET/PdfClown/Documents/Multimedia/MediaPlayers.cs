@@ -40,17 +40,12 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaPlayers : PdfObjectWrapper<PdfDictionary>
     {
-        #region dynamic
-        #region constructors
         public MediaPlayers(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public MediaPlayers(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         /**
           <summary>Gets/Sets a set of players, any of which may be used in playing the associated media object.
           </summary>
@@ -58,7 +53,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Array<MediaPlayer> AllowedPlayers
         {
-            get => Wrap<Array<MediaPlayer>>(BaseDataObject.Get<PdfArray>(PdfName.A));
+            get => Wrap<Array<MediaPlayer>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.A));
             set => BaseDataObject[PdfName.A] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -69,7 +64,7 @@ namespace PdfClown.Documents.Multimedia
         */
         public Array<MediaPlayer> ForbiddenPlayers
         {
-            get => Wrap<Array<MediaPlayer>>(BaseDataObject.Get<PdfArray>(PdfName.NU));
+            get => Wrap<Array<MediaPlayer>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.NU));
             set => BaseDataObject[PdfName.NU] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -79,11 +74,8 @@ namespace PdfClown.Documents.Multimedia
         */
         public Array<MediaPlayer> RequiredPlayers
         {
-            get => Wrap<Array<MediaPlayer>>(BaseDataObject.Get<PdfArray>(PdfName.MU));
+            get => Wrap<Array<MediaPlayer>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.MU));
             set => BaseDataObject[PdfName.MU] = PdfObjectWrapper.GetBaseObject(value);
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

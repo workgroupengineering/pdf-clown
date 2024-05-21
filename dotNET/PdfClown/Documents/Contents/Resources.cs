@@ -53,32 +53,32 @@ namespace PdfClown.Documents.Contents
 
         public ColorSpaceResources ColorSpaces
         {
-            get => Wrap<ColorSpaceResources>(BaseDataObject.Get<PdfDictionary>(PdfName.ColorSpace));
+            get => Wrap<ColorSpaceResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.ColorSpace));
             set => BaseDataObject[PdfName.ColorSpace] = value.BaseObject;
         }
 
         public ExtGStateResources ExtGStates
         {
-            get => Wrap<ExtGStateResources>(BaseDataObject.Get<PdfDictionary>(PdfName.ExtGState));
+            get => Wrap<ExtGStateResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.ExtGState));
             set => BaseDataObject[PdfName.ExtGState] = value.BaseObject;
         }
 
         public FontResources Fonts
         {
-            get => Wrap<FontResources>(BaseDataObject.Get<PdfDictionary>(PdfName.Font));
+            get => Wrap<FontResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Font));
             set => BaseDataObject[PdfName.Font] = value.BaseObject;
         }
 
         public PatternResources Patterns
         {
-            get => Wrap<PatternResources>(BaseDataObject.Get<PdfDictionary>(PdfName.Pattern));
+            get => Wrap<PatternResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Pattern));
             set => BaseDataObject[PdfName.Pattern] = value.BaseObject;
         }
 
         [PDF(VersionEnum.PDF12)]
         public PropertyListResources PropertyLists
         {
-            get => Wrap<PropertyListResources>(BaseDataObject.Get<PdfDictionary>(PdfName.Properties));
+            get => Wrap<PropertyListResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Properties));
             set
             {
                 CheckCompatibility("PropertyLists");
@@ -89,13 +89,13 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF13)]
         public ShadingResources Shadings
         {
-            get => Wrap<ShadingResources>(BaseDataObject.Get<PdfDictionary>(PdfName.Shading));
+            get => Wrap<ShadingResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Shading));
             set => BaseDataObject[PdfName.Shading] = value.BaseObject;
         }
 
         public XObjectResources XObjects
         {
-            get => Wrap<XObjectResources>(BaseDataObject.Get<PdfDictionary>(PdfName.XObject));
+            get => Wrap<XObjectResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.XObject));
             set => BaseDataObject[PdfName.XObject] = value.BaseObject;
         }
 

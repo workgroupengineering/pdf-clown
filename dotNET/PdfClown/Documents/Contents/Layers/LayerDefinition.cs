@@ -47,7 +47,7 @@ namespace PdfClown.Documents.Contents.Layers
         */
         public Array<LayerConfiguration> AlternateConfigurations
         {
-            get => Wrap<Array<LayerConfiguration>>(BaseDataObject.Get<PdfArray>(PdfName.Configs));
+            get => Wrap<Array<LayerConfiguration>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.Configs));
             set => BaseDataObject[PdfName.Configs] = value.BaseObject;
         }
 
@@ -57,14 +57,14 @@ namespace PdfClown.Documents.Contents.Layers
         */
         public LayerConfiguration DefaultConfiguration
         {
-            get => Wrap<LayerConfiguration>(BaseDataObject.Get<PdfDictionary>(PdfName.D));
+            get => Wrap<LayerConfiguration>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.D));
             set => BaseDataObject[PdfName.D] = value.BaseObject;
         }
 
         /**
           <summary>Gets the collection of all the layers existing in the document.</summary>
         */
-        public Layers Layers => Wrap<Layers>(BaseDataObject.Get<PdfArray>(PdfName.OCGs));
+        public Layers Layers => Wrap<Layers>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.OCGs));
 
         public string Creator
         {

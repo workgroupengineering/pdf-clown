@@ -128,7 +128,7 @@ namespace PdfClown.Documents.Files
         {
             get
             {
-                PdfName fileSystemObject = (PdfName)BaseDictionary[PdfName.FS];
+                var fileSystemObject = BaseDictionary.Get<PdfName>(PdfName.FS);
                 StandardFileSystemEnum? standardFileSystem = StandardFileSystemEnumExtension.Get(fileSystemObject);
                 return standardFileSystem.HasValue ? standardFileSystem.Value : fileSystemObject.Value;
             }
@@ -157,7 +157,7 @@ namespace PdfClown.Documents.Files
 
         public override IInputStream GetInputStream()
         {
-            if (PdfName.URL.Equals(BaseDictionary[PdfName.FS])) // Remote resource [PDF:1.7:3.10.4].
+            if (PdfName.URL.Equals(BaseDictionary.GetString(PdfName.FS))) // Remote resource [PDF:1.7:3.10.4].
             {
                 Uri fileUrl;
                 try
@@ -176,7 +176,7 @@ namespace PdfClown.Documents.Files
 
         public override IOutputStream GetOutputStream()
         {
-            if (PdfName.URL.Equals(BaseDictionary[PdfName.FS])) // Remote resource [PDF:1.7:3.10.4].
+            if (PdfName.URL.Equals(BaseDictionary.GetString(PdfName.FS))) // Remote resource [PDF:1.7:3.10.4].
             {
                 Uri fileUrl;
                 try
@@ -201,7 +201,7 @@ namespace PdfClown.Documents.Files
         */
         private RelatedFiles GetDependencies(PdfName key)
         {
-            PdfDictionary dependenciesObject = (PdfDictionary)BaseDictionary[PdfName.RF];
+            var dependenciesObject = BaseDictionary.Get<PdfDictionary>(PdfName.RF);
             if (dependenciesObject == null)
                 return null;
 
@@ -213,7 +213,7 @@ namespace PdfClown.Documents.Files
         */
         private void SetDependencies(PdfName key, RelatedFiles value)
         {
-            PdfDictionary dependenciesObject = BaseDictionary.Resolve<PdfDictionary>(PdfName.RF);
+            var dependenciesObject = BaseDictionary.Resolve<PdfDictionary>(PdfName.RF);
 
             dependenciesObject[key] = value.BaseObject;
         }
@@ -222,7 +222,7 @@ namespace PdfClown.Documents.Files
         */
         private EmbeddedFile GetEmbeddedFile(PdfName key)
         {
-            PdfDictionary embeddedFilesObject = (PdfDictionary)BaseDictionary[PdfName.EF];
+            var embeddedFilesObject = BaseDictionary.Get<PdfDictionary>(PdfName.EF);
             if (embeddedFilesObject == null)
                 return null;
 
@@ -234,7 +234,7 @@ namespace PdfClown.Documents.Files
         */
         private void SetEmbeddedFile(PdfName key, EmbeddedFile value)
         {
-            PdfDictionary embeddedFilesObject = BaseDictionary.Resolve<PdfDictionary>(PdfName.EF);
+            var embeddedFilesObject = BaseDictionary.Resolve<PdfDictionary>(PdfName.EF);
 
             embeddedFilesObject[key] = value.BaseObject;
         }

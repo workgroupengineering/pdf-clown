@@ -84,7 +84,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             var dictionary = baseObject.Resolve() as PdfDictionary;
             if (dictionary == null)
                 return null;
-            PdfName annotationType = (PdfName)dictionary[PdfName.Subtype];
+            var annotationType = dictionary.Get<PdfName>(PdfName.Subtype);
             if (annotationType.Equals(PdfName.Text))
                 return new StickyNote(baseObject);
             else if (annotationType.Equals(PdfName.Link))
@@ -135,14 +135,14 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         protected Annotation(PdfPage page, PdfName subtype, SKRect box, string text)
             : base(page.Document,
-                  new PdfDictionary(3)
+                  new PdfDictionary(10)
                   {
                       { PdfName.Type, PdfName.Annot },
                       { PdfName.Subtype, subtype }, // NOTE: Hide border by default.
                   })
         {
             GenerateName();
-            Page = page;
+            page?.Annotations.LinkPage(this);
             Box = Page.InvertRotateMatrix.MapRect(box);
             Contents = text;
             Printable = true;
@@ -188,7 +188,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF12)]
         public virtual AnnotationActions Actions
         {
-            get => CommonAnnotationActions.Wrap(this, BaseDataObject.Get<PdfDictionary>(PdfName.AA));
+            get => CommonAnnotationActions.Wrap(this, BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.AA));
             set
             {
                 var oldValue = Actions;
@@ -226,7 +226,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF12)]
         public virtual Appearance Appearance
         {
-            get => Wrap<Appearance>(BaseDataObject.Get<PdfDictionary>(PdfName.AP));
+            get => Wrap<Appearance>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.AP));
             set
             {
                 var oldValue = (Appearance)null;
@@ -360,7 +360,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = ModificationDate;
-                if (oldValue != value)
+                if (oldValue != PdfDate.Trimm(value))
                 {
                     BaseDataObject.SetDate(PdfName.M, value);
                     OnPropertyChanged(oldValue, value);
@@ -397,34 +397,38 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => page ??= Wrap<PdfPage>(BaseDataObject[PdfName.P]);
             set
             {
-                page = null;
                 var oldPage = Page;
-                if (oldPage == value)
+                if (oldPage != value)                
                 {
-                    return;
-                }
-                box = null;
-                oldPage?.Annotations.Remove(this);
-                page = value;
-                if (page != null)
-                {
-                    if (!page.Annotations.Contains(this))
-                    {
-                        page.Annotations.Add(this);
-                    }
-                    else if (BaseDataObject[PdfName.P] == null)
-                    {
-                        page.Annotations.DoAdd(this);
-                    }
-                    //Debug.WriteLine($"Move to page {page}");
-                }
-                OnPropertyChanged(oldPage, value);
+                    box = null;
+                    oldPage?.Annotations.Remove(this);
+                    page = value;
+                    OnPropertyChanged(oldPage, value);
+                }                
+                AddToPage(value);
             }
+        }
+
+        private void AddToPage(PdfPage page)
+        {
+            if (page == null)
+            {
+                return;
+            }
+            if (!page.Annotations.Contains(this))
+            {
+                page.Annotations.Add(this);
+            }
+            else if (BaseDataObject[PdfName.P] != page.BaseObject)
+            {
+                page.Annotations.LinkPage(this);
+            }
+            //Debug.WriteLine($"Move to page {page}");
         }
 
         /**
           <summary>Gets/Sets whether to print the annotation when the page is printed.</summary>
-        */
+*/
         [PDF(VersionEnum.PDF11)]
         public virtual bool Printable
         {
@@ -444,7 +448,7 @@ namespace PdfClown.Documents.Interaction.Annotations
           <summary>Gets/Sets the annotation text.</summary>
           <remarks>Depending on the annotation type, the text may be either directly displayed
           or (in case of non-textual annotations) used as alternate description.</remarks>
-        */
+*/
         public virtual string Contents
         {
             get => BaseDataObject.GetString(PdfName.Contents);
@@ -461,7 +465,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         /**
          <summary>Gets/Sets the annotation subject.</summary>
-       */
+*/
         [PDF(VersionEnum.PDF15)]
         public virtual string Subject
         {
@@ -479,7 +483,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         /**
           <summary>Gets/Sets whether the annotation is visible.</summary>
-        */
+*/
         [PDF(VersionEnum.PDF11)]
         public virtual bool Visible
         {
@@ -616,7 +620,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         /**
           <summary>Deletes this annotation removing also its reference on the page.</summary>
-        */
+*/
         public override bool Delete()
         {
             Remove();
@@ -786,7 +790,10 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public string GenerateExistingName(string key = null)
         {
-            return Name = $"{GetType().Name}{Subject}{Page?.Index}{BaseObject.Reference?.ObjectNumber}{BaseObject.Reference?.GenerationNumber}{Author}{key}";
+            BaseDataObject.Updateable = false;
+            Name = $"{GetType().Name}{Subject}{Page?.Index}{BaseObject.Reference?.ObjectNumber}{BaseObject.Reference?.GenerationNumber}{Author}{key}";
+            BaseDataObject.Updateable = true;
+            return Name;
         }
 
 

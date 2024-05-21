@@ -105,7 +105,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         */
         public NumberStyleEnum NumberStyle
         {
-            get => NumberStyleEnumExtension.Get((PdfName)BaseDataObject[PdfName.S]);
+            get => NumberStyleEnumExtension.Get(BaseDataObject.GetString(PdfName.S));
             set => BaseDataObject[PdfName.S] = value.GetCode();
         }
 
@@ -121,21 +121,21 @@ namespace PdfClown.Documents.Interaction.Navigation
 
     internal static class NumberStyleEnumExtension
     {
-        private static readonly BiDictionary<PageLabel.NumberStyleEnum, PdfName> codes;
+        private static readonly BiDictionary<PageLabel.NumberStyleEnum, string> codes;
 
         static NumberStyleEnumExtension()
         {
-            codes = new BiDictionary<PageLabel.NumberStyleEnum, PdfName>
+            codes = new BiDictionary<PageLabel.NumberStyleEnum, string>
             {
-                [PageLabel.NumberStyleEnum.ArabicNumber] = PdfName.D,
-                [PageLabel.NumberStyleEnum.UCaseRomanNumber] = PdfName.R,
-                [PageLabel.NumberStyleEnum.LCaseRomanNumber] = PdfName.r,
-                [PageLabel.NumberStyleEnum.UCaseLetter] = PdfName.A,
-                [PageLabel.NumberStyleEnum.LCaseLetter] = PdfName.a
+                [PageLabel.NumberStyleEnum.ArabicNumber] = PdfName.D.StringValue,
+                [PageLabel.NumberStyleEnum.UCaseRomanNumber] = PdfName.R.StringValue,
+                [PageLabel.NumberStyleEnum.LCaseRomanNumber] = PdfName.r.StringValue,
+                [PageLabel.NumberStyleEnum.UCaseLetter] = PdfName.A.StringValue,
+                [PageLabel.NumberStyleEnum.LCaseLetter] = PdfName.a.StringValue
             };
         }
 
-        public static PageLabel.NumberStyleEnum Get(PdfName name)
+        public static PageLabel.NumberStyleEnum Get(string name)
         {
             if (name == null)
                 throw new ArgumentNullException();
@@ -147,7 +147,6 @@ namespace PdfClown.Documents.Interaction.Navigation
             return numberStyle.Value;
         }
 
-        public static PdfName GetCode(this PageLabel.NumberStyleEnum numberStyle)
-        { return codes[numberStyle]; }
+        public static PdfName GetCode(this PageLabel.NumberStyleEnum numberStyle) => PdfName.Get(codes[numberStyle], true);
     }
 }

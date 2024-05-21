@@ -185,18 +185,12 @@ namespace PdfClown.Objects
 
             public override bool Matches(Cloner cloner, PdfObject source)
             {
-                if (source is PdfArray)
+                if (source is PdfArray array 
+                    && array.Count > 0 
+                    && array.Resolve(0) is PdfDictionary arrayItemDictionary)
                 {
-                    PdfArray array = (PdfArray)source;
-                    if (array.Count > 0)
-                    {
-                        PdfDataObject arrayItem = array.Resolve(0);
-                        if (arrayItem is PdfDictionary arrayItemDictionary)
-                        {
-                            return arrayItemDictionary.ContainsKey(PdfName.Subtype)
-                              && arrayItemDictionary.ContainsKey(PdfName.Rect);
-                        }
-                    }
+                    return arrayItemDictionary.ContainsKey(PdfName.Subtype)
+                      && arrayItemDictionary.ContainsKey(PdfName.Rect);
                 }
                 return false;
             }

@@ -196,7 +196,7 @@ namespace PdfClown.Documents.Interaction.Forms
                 if (entry != null)
                     return entry;
 
-                dictionary = dictionary.GetDictionary(PdfName.Parent);
+                dictionary = dictionary.Get<PdfDictionary>(PdfName.Parent);
             } while (dictionary != null);
             // Default.
             if (key.Equals(PdfName.Ff))
@@ -279,7 +279,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public Field Parent
         {
-            get => Wrap((PdfReference)BaseDataObject[PdfName.Parent]);
+            get => Wrap(BaseDataObject.Get<PdfReference>(PdfName.Parent));
             set
             {
                 BaseDataObject[PdfName.Parent] = value?.BaseObject;
@@ -312,7 +312,11 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             var name = Name;
             if (name == null)
+            {
+                BaseDataObject.Updateable = false;
                 name = Name = GetType().Name + Guid.NewGuid().ToString();
+                BaseDataObject.Updateable = true;
+            }
             return name;
         }
 

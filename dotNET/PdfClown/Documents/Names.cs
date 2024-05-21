@@ -54,7 +54,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF12)]
         public NamedDestinations Destinations
         {
-            get => Wrap<NamedDestinations>(BaseDataObject.Get<PdfDictionary>(PdfName.Dests, false));
+            get => Wrap<NamedDestinations>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Dests, false));
             set => BaseDataObject[PdfName.Dests] = value.BaseObject;
         }
 
@@ -64,7 +64,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF14)]
         public NamedEmbeddedFiles EmbeddedFiles
         {
-            get => Wrap<NamedEmbeddedFiles>(BaseDataObject.Get<PdfDictionary>(PdfName.EmbeddedFiles, false));
+            get => Wrap<NamedEmbeddedFiles>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.EmbeddedFiles, false));
             set => BaseDataObject[PdfName.EmbeddedFiles] = value.BaseObject;
         }
 
@@ -74,7 +74,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF13)]
         public NamedJavaScripts JavaScripts
         {
-            get => Wrap<NamedJavaScripts>(BaseDataObject.Get<PdfDictionary>(PdfName.JavaScript, false));
+            get => Wrap<NamedJavaScripts>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.JavaScript, false));
             set => BaseDataObject[PdfName.JavaScript] = value.BaseObject;
         }
 
@@ -84,7 +84,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF13)]
         public NamedPages Pages
         {
-            get => Wrap<NamedPages>(BaseDataObject.Get<PdfDictionary>(PdfName.Pages, false));
+            get => Wrap<NamedPages>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Pages, false));
             set => BaseDataObject[PdfName.Pages] = value.BaseObject;
         }
 
@@ -94,7 +94,7 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF15)]
         public NamedRenditions Renditions
         {
-            get => Wrap<NamedRenditions>(BaseDataObject.Get<PdfDictionary>(PdfName.Renditions, false));
+            get => Wrap<NamedRenditions>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Renditions, false));
             set => BaseDataObject[PdfName.Renditions] = value.BaseObject;
         }
 

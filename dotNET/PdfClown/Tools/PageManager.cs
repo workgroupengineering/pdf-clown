@@ -99,7 +99,7 @@ namespace PdfClown.Tools
                         return 0; // Avoids circular references.
 
                     if (dataObject is PdfDictionary dictionary
-                      && PdfName.Page.Equals(dictionary.GetName(PdfName.Type))
+                      && PdfName.Page.Equals(dictionary.Get<PdfName>(PdfName.Type))
                       && !isRoot)
                         return 0; // Avoids references to other pages.
 

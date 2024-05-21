@@ -96,7 +96,7 @@ namespace PdfClown.Documents.Multimedia
             /**
               <summary>Gets the list of supported viewer applications.</summary>
             */
-            public Array<SoftwareIdentifier> Renderers => Wrap<Array<SoftwareIdentifier>>(MediaCriteria.Get<PdfArray>(PdfName.V));
+            public Array<SoftwareIdentifier> Renderers => Wrap<Array<SoftwareIdentifier>>(MediaCriteria.GetOrCreate<PdfArray>(PdfName.V));
 
             /**
               <summary>Gets the PDF version range supported by the viewer application.</summary>
@@ -217,7 +217,7 @@ namespace PdfClown.Documents.Multimedia
 */
         public Viability Preferences
         {
-            get => Wrap<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.BE));
+            get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.BE));
             set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
         }
 
@@ -227,7 +227,7 @@ namespace PdfClown.Documents.Multimedia
 */
         public Viability Requirements
         {
-            get => Wrap<Viability>(BaseDataObject.Get<PdfDictionary>(PdfName.MH));
+            get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MH));
             set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
         }
 

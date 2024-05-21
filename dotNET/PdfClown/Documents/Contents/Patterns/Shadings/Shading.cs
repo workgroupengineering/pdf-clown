@@ -90,7 +90,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
 
         public PdfArray Background
         {
-            get => Dictionary.GetArray(PdfName.Background);
+            get => Dictionary.Get<PdfArray>(PdfName.Background);
             set => Dictionary[PdfName.Background] = value;
         }
 

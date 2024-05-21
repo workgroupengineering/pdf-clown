@@ -48,18 +48,18 @@ namespace PdfClown.Documents.Contents.Layers
 
     internal static class UIModeEnumExtension
     {
-        private static readonly BiDictionary<UIModeEnum, PdfName> codes;
+        private static readonly BiDictionary<UIModeEnum, string> codes;
 
         static UIModeEnumExtension()
         {
-            codes = new BiDictionary<UIModeEnum, PdfName>();
-            codes[UIModeEnum.AllPages] = PdfName.AllPages;
-            codes[UIModeEnum.VisiblePages] = PdfName.VisiblePages;
+            codes = new BiDictionary<UIModeEnum, string>
+            {
+                [UIModeEnum.AllPages] = PdfName.AllPages.StringValue,
+                [UIModeEnum.VisiblePages] = PdfName.VisiblePages.StringValue
+            };
         }
 
-        public static UIModeEnum Get(
-          PdfName name
-          )
+        public static UIModeEnum Get(string name)
         {
             if (name == null)
                 return UIModeEnum.AllPages;
@@ -71,9 +71,6 @@ namespace PdfClown.Documents.Contents.Layers
             return uiMode.Value;
         }
 
-        public static PdfName GetName(
-          this UIModeEnum uiMode
-          )
-        { return codes[uiMode]; }
+        public static PdfName GetName(this UIModeEnum uiMode) => PdfName.Get(codes[uiMode], true);
     }
 }

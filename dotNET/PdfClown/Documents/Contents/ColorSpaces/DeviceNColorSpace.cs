@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         private PdfArray ComponentArray
         {
-            get => ((PdfArray)BaseDataObject).GetArray(1);
+            get => ((PdfArray)BaseDataObject).Get<PdfArray>(1);
         }
 
         public override IList<string> ComponentNames => componentNames ??= GetComponentNames();

@@ -33,7 +33,7 @@ namespace PdfClown.Documents.Encryption
 		 * creates a new empty crypt filter dictionary.
 		 */
         public PdfCryptFilterDictionary(PdfFile context)
-            : base(context, new PdfDictionary())
+            : base((PdfFile)null, new PdfDictionary())
         {
         }
 
@@ -78,7 +78,7 @@ namespace PdfClown.Documents.Encryption
 		*/
         public PdfName CryptFilterMethod
         {
-            get => BaseDataObject.GetName(PdfName.CFM);
+            get => BaseDataObject.Get<PdfName>(PdfName.CFM);
             set => BaseDataObject[PdfName.CFM] = value;
         }
 
@@ -98,5 +98,10 @@ namespace PdfClown.Documents.Encryption
             set => BaseDataObject.SetBool(PdfName.EncryptMetadata, value);
         }
 
+        public PdfArray Recipients
+        {
+            get => BaseDataObject.Get<PdfArray>(PdfName.Recipients);
+            set => BaseDataObject[PdfName.Recipients] = value;
+        }
     }
 }
