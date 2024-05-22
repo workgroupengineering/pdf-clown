@@ -1332,7 +1332,8 @@ namespace PdfClown.Viewer
                             state.AnnotationBounds.Right,
                             state.AnnotationBounds.Bottom);
                         if (rect.Contains(state.PointerLocation)
-                           && !(state.Annotation is Widget))
+                           && state.Annotation is Markup markup
+                           && markup.AllowSize)
                         {
                             Cursor = CursorType.SizeNWSE;
                         }

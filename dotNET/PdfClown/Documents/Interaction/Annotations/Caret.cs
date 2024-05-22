@@ -105,6 +105,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => BaseDataObject[PdfName.Sy] = value != DefaultSymbolType ? ToCode(value) : null;
         }
 
+        public override bool AllowSize => false;
+
         protected override FormXObject GenerateAppearance()
         {
             return null;

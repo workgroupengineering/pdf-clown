@@ -318,6 +318,8 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override bool ShowToolTip => !CaptionVisible;
 
+        public override bool AllowSize => false;
+
         public override void MoveTo(SKRect newBox)
         {
             var oldBox = Box;

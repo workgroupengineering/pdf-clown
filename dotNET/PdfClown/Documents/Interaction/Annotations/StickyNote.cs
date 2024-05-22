@@ -162,6 +162,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public override bool AllowSize => false;
+
         protected override FormXObject GenerateAppearance()
         {
             SKRect bound = GetBound();

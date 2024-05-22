@@ -24,6 +24,7 @@ namespace PdfClown
         event EventHandler<AnnotationEventArgs> AnnotationRemoved;
         event EventHandler<AnnotationEventArgs> SelectedAnnotationChanged;
         event EventHandler<EventArgs> TextSelectionChanged;
+        event EventHandler<EventArgs> DocumentChanged;
 
         IEnumerable<Annotation> RemoveAnnotation(Annotation annotation);
         void InvalidateSurface();

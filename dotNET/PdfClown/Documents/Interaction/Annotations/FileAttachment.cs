@@ -123,6 +123,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+        public override bool AllowSize => false;
+
         public override SKRect RefreshAppearance(SKCanvas canvas)
         {
             var bounds = Box;
