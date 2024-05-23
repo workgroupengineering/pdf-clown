@@ -229,7 +229,7 @@ namespace PdfClown.Util.Math.Geom
             return path;
         }
 
-        public static SKRect Round(SKRect value, int precision = 4)
+        public static SKRect Round(SKRect value, int precision = 5)
         {
             return new SKRect((float)System.Math.Round(value.Left, precision),
                 (float)System.Math.Round(value.Top, precision),

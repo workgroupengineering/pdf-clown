@@ -48,7 +48,7 @@ namespace PdfClown.Objects
         /**
           <summary>Gets the object equivalent to the given value.</summary>
         */
-        public static PdfReal Get(double? value)
+        public static PdfReal Get(double? value, int roundDigit = 5)
         {
             if (!value.HasValue)
                 return null;
@@ -57,7 +57,7 @@ namespace PdfClown.Objects
             if (Double.IsNaN(doubleValue))
                 return null;
 
-            return new PdfReal(doubleValue);
+            return new PdfReal(Math.Round(doubleValue, roundDigit));
         }
 
         public PdfReal(double value) => RawValue = value;

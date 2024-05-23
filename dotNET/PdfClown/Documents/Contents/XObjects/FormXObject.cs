@@ -36,6 +36,7 @@ using SkiaSharp;
 using System.Collections.Generic;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
@@ -155,9 +156,10 @@ namespace PdfClown.Documents.Contents.XObjects
             get => Wrap<Rectangle>(BaseDataObject.Header[PdfName.BBox])?.ToRect() ?? SKRect.Empty;
             set
             {
-                if (Box != value)
+                var newValue = PrimitiveExtensions.Round(value);
+                if (Box != newValue)
                 {
-                    BaseDataObject.Header[PdfName.BBox] = new Rectangle(value).BaseDataObject;
+                    BaseDataObject.Header[PdfName.BBox] = new Rectangle(newValue).BaseDataObject;
                 }
             }
         }

@@ -48,10 +48,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         protected static double NormalizeComponent(double value)
         {
-            if (value < 0)
-                return 0;
-            else if (value > 1)
-                return 1;
+            if (value < 0D)
+                return 0D;
+            else if (value > 1D)
+                return 1D;
             else
                 return value;
         }

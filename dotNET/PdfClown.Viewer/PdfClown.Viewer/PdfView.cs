@@ -462,7 +462,12 @@ namespace PdfClown.Viewer
         {
             if (!handlePropertyChanged)
                 return;
+            
             var annotation = (Annotation)sender;
+            if (!string.Equals(e.PropertyName, nameof(Annotation.ModificationDate), StringComparison.Ordinal))
+            {
+                UpdateModificationDate(annotation);
+            }
             var details = (DetailedPropertyChangedEventArgs)e;
             var invoker = Invoker.GetPropertyInvoker(annotation.GetType(), e.PropertyName);
             switch (e.PropertyName)
@@ -505,6 +510,19 @@ namespace PdfClown.Viewer
                     break;
             }
             Device.BeginInvokeOnMainThread(() => InvalidateSurface());
+        }
+
+        private void UpdateModificationDate(Annotation annotation)
+        {
+            try
+            {
+                handlePropertyChanged = false;
+                annotation.ModificationDate = DateTime.UtcNow;
+            }
+            finally
+            {
+                handlePropertyChanged = true;
+            }
         }
 
         private void OnSelectedMarkupChanged(Markup oldValue, Markup newValue)
@@ -1596,7 +1614,7 @@ namespace PdfClown.Viewer
         }
 
         private AnnotationOperation BeginOperation(Annotation annotation, OperationType type, object property = null, object begin = null, object end = null)
-        {
+        {            
             var operation = new AnnotationOperation
             {
                 Document = document,

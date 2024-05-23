@@ -765,11 +765,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             if ((queueRefresh & RefreshAppearanceState.Suspend) == RefreshAppearanceState.Suspend)
                 return;
-            PropertyChanged?.Invoke(this, new DetailedPropertyChangedEventArgs<T>(oldValue, newValue, propertyName));
-            if (!string.Equals(propertyName, nameof(ModificationDate), StringComparison.Ordinal))
-            {
-                ModificationDate = DateTime.UtcNow;
-            }
+            PropertyChanged?.Invoke(this, new DetailedPropertyChangedEventArgs<T>(oldValue, newValue, propertyName));            
         }
 
         public override object Clone(Cloner cloner)
