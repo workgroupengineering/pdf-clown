@@ -20,7 +20,7 @@ namespace PdfClown.Samples.CLI
     */
     public class PageCoordinatesSample : Sample
     {
-        private static readonly PdfName ResourceName_DefaultFont = new PdfName("default");
+        private static readonly PdfName ResourceName_DefaultFont = PdfName.Get("default");
 
         private static float Max(params float[] values)
         {

@@ -18,7 +18,7 @@ namespace PdfClown.Samples.CLI
     public class AppDataCreationSample
       : Sample
     {
-        private static PdfName MyAppName = new PdfName(typeof(AppDataCreationSample).Name);
+        private static PdfName MyAppName = PdfName.Get(typeof(AppDataCreationSample).Name);
 
         public override void Run(
           )
@@ -41,8 +41,8 @@ namespace PdfClown.Samples.CLI
                 var myStream = new PdfStream(new ByteStream("This is just some random characters to feed the stream..."));
                 myAppData.Data = new PdfDictionary(2)
                 {
-                    { new PdfName("MyPrivateEntry"), PdfBoolean.True },
-                    { new PdfName("MyStreamEntry"), file.Register(myStream)}
+                    { PdfName.Get("MyPrivateEntry"), PdfBoolean.True },
+                    { PdfName.Get("MyStreamEntry"), file.Register(myStream)}
                 };
 
                 // Add some (arbitrary) graphics content on the page!
@@ -64,11 +64,11 @@ namespace PdfClown.Samples.CLI
                 */
                 myAppData.Data = new PdfDictionary()
                 {
-                    { new PdfName("MyPrivateDocEntry"), new PdfTextString("This is an arbitrary value") },
-                    { new PdfName("AnotherPrivateEntry"), new PdfDictionary
+                    { PdfName.Get("MyPrivateDocEntry"), new PdfTextString("This is an arbitrary value") },
+                    { PdfName.Get("AnotherPrivateEntry"), new PdfDictionary
                     {
-                        { new PdfName("SubEntry"), new PdfInteger(1287) },
-                        { new PdfName("SomeData"), new PdfArray(2) { new PdfReal(282.773), new PdfReal(14.28378)} }
+                        { PdfName.Get("SubEntry"), new PdfInteger(1287) },
+                        { PdfName.Get("SomeData"), new PdfArray(2) { new PdfReal(282.773), new PdfReal(14.28378)} }
                     }}
                 };
             }
