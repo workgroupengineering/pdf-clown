@@ -304,6 +304,8 @@ namespace PdfClown.Documents.Contents
 
         public bool StrokeAdjustment { get; internal set; }
 
+        public float Flatness { get; internal set; }
+
         /**
   <summary>Gets the initial current transformation matrix.</summary>
 */

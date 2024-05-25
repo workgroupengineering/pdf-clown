@@ -238,7 +238,7 @@ namespace PdfClown.Documents.Contents.Composition
         public void DrawCurve(SKPoint endPoint, SKPoint startControl, SKPoint endControl)
         {
             double contextHeight = Scanner.ContextSize.Height;
-            Add(new DrawCurve(endPoint.X, contextHeight - endPoint.Y,
+            Add(new DrawFullCurve(endPoint.X, contextHeight - endPoint.Y,
                 startControl.X, contextHeight - startControl.Y,
                 endControl.X, contextHeight - endControl.Y));
         }
@@ -1074,7 +1074,7 @@ namespace PdfClown.Documents.Contents.Composition
         private void ApplyState_(PdfName name) => Add(new ApplyExtGState(name));
 
         private MarkedContent BeginMarkedContent_(PdfName tag, PdfName propertyListName)
-            => (MarkedContent)Begin(new MarkedContent(new BeginMarkedContent(tag, propertyListName)));
+            => (MarkedContent)Begin(new MarkedContent(new BeginPropertyListMarkedContent(tag, propertyListName)));
 
         /**
           <summary>Begins a text object [PDF:1.6:5.3].</summary>
@@ -1267,7 +1267,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="offsetX">Horizontal offset.</param>
           <param name="offsetY">Vertical offset.</param>
         */
-        private void TranslateTextRelative(double offsetX, double offsetY) => Add(new TranslateTextRelative(offsetX, -offsetY));
+        private void TranslateTextRelative(double offsetX, double offsetY) => Add(new TranslateTextRelativeNoLead(offsetX, -offsetY));
 
         /**
           <summary>Applies a translation to the coordinate system from text space to user space,

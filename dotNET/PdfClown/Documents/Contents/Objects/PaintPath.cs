@@ -36,7 +36,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>Path-painting operation [PDF:1.6:4.4.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class PaintPath : Operation
+    public abstract class PaintPath : Operation
     {
         public const string CloseFillStrokeEvenOddOperatorKeyword = "b*";
         public const string CloseFillStrokeOperatorKeyword = "b";
@@ -53,75 +53,73 @@ namespace PdfClown.Documents.Contents.Objects
           <summary>'Close, fill, and then stroke the path, using the nonzero winding number rule to determine
           the region to fill' operation.</summary>
         */
-        public static readonly PaintPath CloseFillStroke = new PaintPath(CloseFillStrokeOperatorKeyword, true, true, true, WindModeEnum.NonZero);
+        public static readonly PaintPath CloseFillStroke = new PaintCloseFillStrokePath();
         /**
           <summary>'Close, fill, and then stroke the path, using the even-odd rule to determine the region
           to fill' operation.</summary>
         */
-        public static readonly PaintPath CloseFillStrokeEvenOdd = new PaintPath(CloseFillStrokeEvenOddOperatorKeyword, true, true, true, WindModeEnum.EvenOdd);
+        public static readonly PaintPath CloseFillStrokeEvenOdd = new PaintCloseFillStrokeEvenOddPath();
         /**
           <summary>'Close and stroke the path' operation.</summary>
         */
-        public static readonly PaintPath CloseStroke = new PaintPath(CloseStrokeOperatorKeyword, true, true, false, null);
+        public static readonly PaintPath CloseStroke = new PaintCloseStrokePath();
         /**
           <summary>'End the path object without filling or stroking it' operation.</summary>
         */
-        public static readonly PaintPath EndPathNoOp = new PaintPath(EndPathNoOpOperatorKeyword, false, false, false, null);
+        public static readonly PaintPath EndPathNoOp = new PaintEndPathNoOp();
         /**
           <summary>'Fill the path, using the nonzero winding number rule to determine the region to fill' operation.</summary>
         */
-        public static readonly PaintPath Fill = new PaintPath(FillOperatorKeyword, false, false, true, WindModeEnum.NonZero);
+        public static readonly PaintPath Fill = new PaintFillPath();
         /**
           <summary>'Fill the path, using the even-odd rule to determine the region to fill' operation.</summary>
         */
-        public static readonly PaintPath FillEvenOdd = new PaintPath(FillEvenOddOperatorKeyword, false, false, true, WindModeEnum.EvenOdd);
+        public static readonly PaintPath FillEvenOdd = new PaintFillEvenOddPath();
         /**
           <summary>'Fill and then stroke the path, using the nonzero winding number rule to determine the region to
           fill' operation.</summary>
         */
-        public static readonly PaintPath FillStroke = new PaintPath(FillStrokeOperatorKeyword, false, true, true, WindModeEnum.NonZero);
+        public static readonly PaintPath FillStroke = new PaintFillStrokePath();
         /**
           <summary>'Fill and then stroke the path, using the even-odd rule to determine the region to fill' operation.</summary>
         */
-        public static readonly PaintPath FillStrokeEvenOdd = new PaintPath(FillStrokeEvenOddOperatorKeyword, false, true, true, WindModeEnum.EvenOdd);
+        public static readonly PaintPath FillStrokeEvenOdd = new PaintFillStrokeEvenOddPath();
         /**
           <summary>'Stroke the path' operation.</summary>
         */
-        public static readonly PaintPath Stroke = new PaintPath(StrokeOperatorKeyword, false, true, false, null);
+        public static readonly PaintPath Stroke = new PaintStrokePath();
 
-        private readonly bool closed;
-        private readonly bool filled;
-        private readonly WindModeEnum fillMode;
-        private readonly bool stroked;
+        public PaintPath(string @operator) : base(@operator)
+        { }
 
-        private PaintPath(string @operator, bool closed, bool stroked, bool filled, WindModeEnum? fillMode) : base(@operator)
+        ///<summary>Gets the filling rule.</summary>
+        public abstract WindModeEnum FillMode { get; }
+
+        ///<summary>Gets whether the current path has to be closed.</summary>
+        public abstract bool Closed { get; }
+
+        ///<summary>Gets whether the current path has to be filled.</summary>
+        public abstract bool Filled { get; }
+
+        ///<summary>Gets whether the current path has to be stroked.</summary>
+        public abstract bool Stroked { get; }
+
+
+    }
+
+    public sealed class PaintCloseFillStrokePath : PaintPath
+    {
+        public PaintCloseFillStrokePath() : base(PaintPath.CloseFillStrokeOperatorKeyword)
         {
-            this.closed = closed;
-            this.stroked = stroked;
-            this.filled = filled;
-            this.fillMode = (fillMode.HasValue ? fillMode.Value : WindModeEnum.EvenOdd);
         }
 
-        /**
-          <summary>Gets the filling rule.</summary>
-        */
-        public WindModeEnum FillMode => fillMode;
+        public override WindModeEnum FillMode => WindModeEnum.NonZero;
 
-        /**
-          <summary>Gets whether the current path has to be closed.</summary>
-        */
-        public bool Closed => closed;
+        public override bool Closed => true;
 
-        /**
-          <summary>Gets whether the current path has to be filled.</summary>
-        */
-        public bool Filled => filled;
+        public override bool Filled => true;
 
-        /**
-          <summary>Gets whether the current path has to be stroked.</summary>
-        */
-        public bool Stroked => stroked;
-
+        public override bool Stroked => true;
 
         public override void Scan(GraphicsState state)
         {
@@ -130,27 +128,262 @@ namespace PdfClown.Documents.Contents.Objects
             var context = scanner.RenderContext;
             if (pathObject != null)
             {
-                if (closed)
+                pathObject.Close();
+                pathObject.FillType = SKPathFillType.Winding;
+                using (var paint = state.CreateFillPaint())
                 {
-                    pathObject.Close();
+                    context.DrawPath(pathObject, paint);
                 }
-                if (context != null)
+
+                using (var paint = state.CreateStrokePaint())
                 {
-                    if (filled)
-                    {
-                        pathObject.FillType = fillMode.ToSkia();
-                        using (var paint = state.CreateFillPaint())
-                        {
-                            context.DrawPath(pathObject, paint);
-                        }
-                    }
-                    if (stroked)
-                    {
-                        using (var paint = state.CreateStrokePaint())
-                        {
-                            context.DrawPath(pathObject, paint);
-                        }
-                    }
+                    context.DrawPath(pathObject, paint);
+                }
+            }
+        }
+    }
+
+    public sealed class PaintCloseFillStrokeEvenOddPath : PaintPath
+    {
+        public PaintCloseFillStrokeEvenOddPath() : base(PaintPath.CloseFillStrokeEvenOddOperatorKeyword)
+        {
+        }
+
+        public override WindModeEnum FillMode => WindModeEnum.EvenOdd;
+
+        public override bool Closed => true;
+
+        public override bool Filled => true;
+
+        public override bool Stroked => true;
+
+        public override void Scan(GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            var pathObject = scanner.RenderObject;
+            var context = scanner.RenderContext;
+            if (pathObject != null)
+            {
+                pathObject.Close();
+                pathObject.FillType = SKPathFillType.EvenOdd;
+                using (var paint = state.CreateFillPaint())
+                {
+                    context.DrawPath(pathObject, paint);
+                }
+
+                using (var paint = state.CreateStrokePaint())
+                {
+                    context.DrawPath(pathObject, paint);
+                }
+            }
+        }
+    }
+
+    public sealed class PaintCloseStrokePath : PaintPath
+    {
+        public PaintCloseStrokePath() : base(PaintPath.CloseStrokeOperatorKeyword)
+        {
+        }
+
+        public override WindModeEnum FillMode => (WindModeEnum)(-1);
+
+        public override bool Closed => true;
+
+        public override bool Filled => false;
+
+        public override bool Stroked => true;
+
+        public override void Scan(GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            var pathObject = scanner.RenderObject;
+            var context = scanner.RenderContext;
+            if (pathObject != null)
+            {
+                pathObject.Close();
+
+                using (var paint = state.CreateStrokePaint())
+                {
+                    context.DrawPath(pathObject, paint);
+                }
+            }
+        }
+    }
+
+    public sealed class PaintEndPathNoOp : PaintPath
+    {
+        public PaintEndPathNoOp() : base(PaintPath.EndPathNoOpOperatorKeyword)
+        {
+        }
+
+        public override WindModeEnum FillMode => (WindModeEnum)(-1);
+
+        public override bool Closed => false;
+
+        public override bool Filled => false;
+
+        public override bool Stroked => false;
+
+        public override void Scan(GraphicsState state)
+        {
+
+        }
+    }
+
+    public sealed class PaintFillPath : PaintPath
+    {
+        public PaintFillPath() : base(PaintPath.FillOperatorKeyword)
+        {
+        }
+
+        public override WindModeEnum FillMode => WindModeEnum.NonZero;
+
+        public override bool Closed => false;
+
+        public override bool Filled => true;
+
+        public override bool Stroked => false;
+
+        public override void Scan(GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            var pathObject = scanner.RenderObject;
+            var context = scanner.RenderContext;
+            if (pathObject != null)
+            {
+                pathObject.FillType = SKPathFillType.Winding;
+                using (var paint = state.CreateFillPaint())
+                {
+                    context.DrawPath(pathObject, paint);
+                }
+            }
+        }
+    }
+
+    public sealed class PaintFillEvenOddPath : PaintPath
+    {
+        public PaintFillEvenOddPath() : base(PaintPath.FillEvenOddOperatorKeyword)
+        {
+        }
+
+        public override WindModeEnum FillMode => WindModeEnum.EvenOdd;
+
+        public override bool Closed => false;
+
+        public override bool Filled => true;
+
+        public override bool Stroked => false;
+
+        public override void Scan(GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            var pathObject = scanner.RenderObject;
+            var context = scanner.RenderContext;
+            if (pathObject != null)
+            {
+                pathObject.FillType = SKPathFillType.EvenOdd;
+                using (var paint = state.CreateFillPaint())
+                {
+                    context.DrawPath(pathObject, paint);
+                }
+            }
+        }
+    }
+
+    public sealed class PaintFillStrokePath : PaintPath
+    {
+        public PaintFillStrokePath() : base(PaintPath.FillStrokeOperatorKeyword)
+        {
+        }
+
+        public override WindModeEnum FillMode => WindModeEnum.NonZero;
+
+        public override bool Closed => false;
+
+        public override bool Filled => true;
+
+        public override bool Stroked => true;
+
+        public override void Scan(GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            var pathObject = scanner.RenderObject;
+            var context = scanner.RenderContext;
+            if (pathObject != null)
+            {
+                pathObject.FillType = SKPathFillType.Winding;
+                using (var paint = state.CreateFillPaint())
+                {
+                    context.DrawPath(pathObject, paint);
+                }
+
+                using (var paint = state.CreateStrokePaint())
+                {
+                    context.DrawPath(pathObject, paint);
+                }
+            }
+        }
+    }
+
+    public sealed class PaintFillStrokeEvenOddPath : PaintPath
+    {
+        public PaintFillStrokeEvenOddPath() : base(PaintPath.FillStrokeEvenOddOperatorKeyword)
+        {
+        }
+
+        public override WindModeEnum FillMode => WindModeEnum.EvenOdd;
+
+        public override bool Closed => false;
+
+        public override bool Filled => true;
+
+        public override bool Stroked => true;
+
+        public override void Scan(GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            var pathObject = scanner.RenderObject;
+            var context = scanner.RenderContext;
+            if (pathObject != null)
+            {
+                pathObject.FillType = SKPathFillType.EvenOdd;
+                using (var paint = state.CreateFillPaint())
+                {
+                    context.DrawPath(pathObject, paint);
+                }
+
+                using (var paint = state.CreateStrokePaint())
+                {
+                    context.DrawPath(pathObject, paint);
+                }
+            }
+        }
+    }
+
+    public sealed class PaintStrokePath : PaintPath
+    {
+        public PaintStrokePath() : base(PaintPath.StrokeOperatorKeyword)
+        {
+        }
+
+        public override WindModeEnum FillMode => (WindModeEnum)(-1);
+
+        public override bool Closed => false;
+
+        public override bool Filled => false;
+
+        public override bool Stroked => true;
+
+        public override void Scan(GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            var pathObject = scanner.RenderObject;
+            var context = scanner.RenderContext;
+            if (pathObject != null)
+            {
+                using (var paint = state.CreateStrokePaint())
+                {
+                    context.DrawPath(pathObject, paint);
                 }
             }
         }

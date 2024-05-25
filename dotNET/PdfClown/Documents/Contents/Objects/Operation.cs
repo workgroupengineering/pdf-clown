@@ -109,14 +109,16 @@ namespace PdfClown.Documents.Contents.Objects
                 return TranslateTextToNextLine.Value;
             else if (@operator.Equals(ShowSimpleText.OperatorKeyword, StringComparison.Ordinal))
                 return new ShowSimpleText(operands);
-            else if (@operator.Equals(ShowTextToNextLine.SimpleOperatorKeyword, StringComparison.Ordinal)
-              || @operator.Equals(ShowTextToNextLine.SpaceOperatorKeyword, StringComparison.Ordinal))
-                return new ShowTextToNextLine(new string(@operator.ToArray()), operands);
+            else if (@operator.Equals(ShowTextToNextLineNoSpace.OperatorKeyword, StringComparison.Ordinal))
+                return new ShowTextToNextLineNoSpace(operands);
+            else if (@operator.Equals(ShowTextToNextLineWithSpace.OperatorKeyword, StringComparison.Ordinal))
+                return new ShowTextToNextLineWithSpace(operands);
             else if (@operator.Equals(ShowAdjustedText.OperatorKeyword, StringComparison.Ordinal))
                 return new ShowAdjustedText(operands);
-            else if (@operator.Equals(TranslateTextRelative.SimpleOperatorKeyword, StringComparison.Ordinal)
-              || @operator.Equals(TranslateTextRelative.LeadOperatorKeyword, StringComparison.Ordinal))
-                return new TranslateTextRelative(new string(@operator.ToArray()), operands);
+            else if (@operator.Equals(TranslateTextRelativeNoLead.OperatorKeyword, StringComparison.Ordinal))
+                return new TranslateTextRelativeNoLead(operands);
+            else if (@operator.Equals(TranslateTextRelativeWithLead.OperatorKeyword, StringComparison.Ordinal))
+                return new TranslateTextRelativeWithLead(operands);
             else if (@operator.Equals(SetTextMatrix.OperatorKeyword, StringComparison.Ordinal))
                 return new SetTextMatrix(operands);
             else if (@operator.Equals(ModifyCTM.OperatorKeyword, StringComparison.Ordinal))
@@ -151,24 +153,28 @@ namespace PdfClown.Documents.Contents.Objects
                 return new DrawLine(operands);
             else if (@operator.Equals(DrawRectangle.OperatorKeyword, StringComparison.Ordinal))
                 return new DrawRectangle(operands);
-            else if (@operator.Equals(DrawCurve.FinalOperatorKeyword, StringComparison.Ordinal)
-              || @operator.Equals(DrawCurve.FullOperatorKeyword, StringComparison.Ordinal)
-              || @operator.Equals(DrawCurve.InitialOperatorKeyword, StringComparison.Ordinal))
-                return new DrawCurve(new string(@operator.ToArray()), operands);
+            else if (@operator.Equals(DrawCurve.InitialOperatorKeyword, StringComparison.Ordinal))
+                return new DrawInitialCurve(operands);
+            else if (@operator.Equals(DrawCurve.FullOperatorKeyword, StringComparison.Ordinal))
+                return new DrawFullCurve(operands);
+            else if (@operator.Equals(DrawCurve.FinalOperatorKeyword, StringComparison.Ordinal))
+                return new DrawFinalCurve(operands);
             else if (@operator.Equals(EndInlineImage.OperatorKeyword, StringComparison.Ordinal))
                 return EndInlineImage.Value;
             else if (@operator.Equals(BeginText.OperatorKeyword, StringComparison.Ordinal))
                 return BeginText.Value;
             else if (@operator.Equals(EndText.OperatorKeyword, StringComparison.Ordinal))
                 return EndText.Value;
-            else if (@operator.Equals(BeginMarkedContent.SimpleOperatorKeyword, StringComparison.Ordinal)
-              || @operator.Equals(BeginMarkedContent.PropertyListOperatorKeyword, StringComparison.Ordinal))
-                return new BeginMarkedContent(new string(@operator.ToArray()), operands);
+            else if (@operator.Equals(BeginSimpleMarkedContent.SimpleOperatorKeyword, StringComparison.Ordinal))
+                return new BeginSimpleMarkedContent(operands);
+            else if (@operator.Equals(BeginPropertyListMarkedContent.PropertyListOperatorKeyword, StringComparison.Ordinal))
+                return new BeginPropertyListMarkedContent(operands);
             else if (@operator.Equals(EndMarkedContent.OperatorKeyword, StringComparison.Ordinal))
                 return EndMarkedContent.Value;
-            else if (@operator.Equals(MarkedContentPoint.SimpleOperatorKeyword, StringComparison.Ordinal)
-              || @operator.Equals(MarkedContentPoint.PropertyListOperatorKeyword, StringComparison.Ordinal))
-                return new MarkedContentPoint(new string(@operator.ToArray()), operands);
+            else if (@operator.Equals(MarkedSimpleContentPoint.SimpleOperatorKeyword, StringComparison.Ordinal))
+                return new MarkedSimpleContentPoint(operands);
+            else if (@operator.Equals(MarkedPropertyListContentPoint.PropertyListOperatorKeyword, StringComparison.Ordinal))
+                return new MarkedPropertyListContentPoint(operands);
             else if (@operator.Equals(BeginInlineImage.OperatorKeyword, StringComparison.Ordinal))
                 return BeginInlineImage.Value;
             else if (@operator.Equals(EndInlineImage.OperatorKeyword, StringComparison.Ordinal))
@@ -179,6 +185,8 @@ namespace PdfClown.Documents.Contents.Objects
                 return new CharProcWidth(operands);
             else if (@operator.Equals(CharProcBBox.OperatorKeyword, StringComparison.Ordinal))
                 return new CharProcBBox(operands);
+            else if (@operator.Equals(Flatness.OperatorKeyword, StringComparison.Ordinal))
+                return new Flatness(operands);
             else // No explicit operation implementation available.
                 return new GenericOperation(new string(@operator.ToArray()), operands);
         }

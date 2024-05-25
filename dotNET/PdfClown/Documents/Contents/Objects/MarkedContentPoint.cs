@@ -34,10 +34,8 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Marked-content point' operation [PDF:1.6:10.5].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class MarkedContentPoint : ContentMarker
+    public abstract class MarkedContentPoint : ContentMarker
     {
-        public static readonly string PropertyListOperatorKeyword = "DP";
-        public static readonly string SimpleOperatorKeyword = "MP";
 
         public MarkedContentPoint(PdfName tag)
             : base(tag)
@@ -51,8 +49,44 @@ namespace PdfClown.Documents.Contents.Objects
             : base(@operator, operands)
         { }
 
-        protected override string PropertyListOperator => PropertyListOperatorKeyword;
+        protected override string PropertyListOperator => MarkedPropertyListContentPoint.PropertyListOperatorKeyword;
 
-        protected override string SimpleOperator => SimpleOperatorKeyword;
+        protected override string SimpleOperator => MarkedSimpleContentPoint.SimpleOperatorKeyword;
+    }
+
+    public sealed class MarkedPropertyListContentPoint : MarkedContentPoint
+    {
+        public static readonly string PropertyListOperatorKeyword = "DP";
+
+        public MarkedPropertyListContentPoint(PdfName tag)
+            : base(tag)
+        { }
+
+        public MarkedPropertyListContentPoint(PdfName tag, PdfDirectObject properties)
+            : base(tag, properties)
+        { }
+
+        internal MarkedPropertyListContentPoint(IList<PdfDirectObject> operands)
+            : base(PropertyListOperatorKeyword, operands)
+        { }
+        
+    }
+
+    public sealed class MarkedSimpleContentPoint : MarkedContentPoint
+    {
+        public static readonly string SimpleOperatorKeyword = "MP";
+
+        public MarkedSimpleContentPoint(PdfName tag)
+            : base(tag)
+        { }
+
+        public MarkedSimpleContentPoint(PdfName tag, PdfDirectObject properties)
+            : base(tag, properties)
+        { }
+
+        internal MarkedSimpleContentPoint(IList<PdfDirectObject> operands)
+            : base(SimpleOperatorKeyword, operands)
+        { }
+
     }
 }

@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.Objects;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -36,23 +37,10 @@ namespace PdfClown.Documents.Contents.Objects
       [PDF:1.6:5.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class TranslateTextRelative : Operation
+    public abstract class TranslateTextRelative : Operation
     {
-        /**
-          <summary>No side effect.</summary>
-        */
-        public static readonly string SimpleOperatorKeyword = "Td";
-        /**
-          <summary>Lead parameter setting.</summary>
-        */
-        public static readonly string LeadOperatorKeyword = "TD";
-
-        public TranslateTextRelative(double offsetX, double offsetY)
-            : this(offsetX, offsetY, false)
-        { }
-
-        public TranslateTextRelative(double offsetX, double offsetY, bool leadSet)
-            : base(leadSet ? LeadOperatorKeyword : SimpleOperatorKeyword, PdfReal.Get(offsetX), PdfReal.Get(offsetY))
+        public TranslateTextRelative(string @operator, double offsetX, double offsetY)
+            : base(@operator, PdfReal.Get(offsetX), PdfReal.Get(offsetY))
         { }
 
         public TranslateTextRelative(string @operator, IList<PdfDirectObject> operands)
@@ -62,11 +50,7 @@ namespace PdfClown.Documents.Contents.Objects
         /**
           <summary>Gets/Sets whether this operation, as a side effect, sets the leading parameter in the text state.</summary>
         */
-        public bool LeadSet
-        {
-            get => @operator.Equals(LeadOperatorKeyword, StringComparison.Ordinal);
-            set => @operator = (value ? LeadOperatorKeyword : SimpleOperatorKeyword);
-        }
+        public abstract bool LeadSet { get; }
 
         public float OffsetX
         {
@@ -78,6 +62,30 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get => ((IPdfNumber)operands[1]).FloatValue;
             set => operands[1] = PdfReal.Get(value);
+        }        
+    }
+
+    public sealed class TranslateTextRelativeNoLead : TranslateTextRelative
+    {
+        /**
+          <summary>No side effect.</summary>
+        */
+        public static readonly string OperatorKeyword = "Td";
+
+        public TranslateTextRelativeNoLead(double offsetX, double offsetY)
+            : base(OperatorKeyword, offsetX, offsetY)
+        { }
+
+        public TranslateTextRelativeNoLead(IList<PdfDirectObject> operands)
+            : base(OperatorKeyword, operands)
+        { }
+
+        /**
+          <summary>Gets/Sets whether this operation, as a side effect, sets the leading parameter in the text state.</summary>
+        */
+        public override bool LeadSet
+        {
+            get => false;
         }
 
         public override void Scan(GraphicsState state)
@@ -86,8 +94,40 @@ namespace PdfClown.Documents.Contents.Objects
             tlm = tlm.PreConcat(SKMatrix.CreateTranslation(OffsetX, OffsetY));
             state.TextState.Tlm =
                 state.TextState.Tm = tlm;
-            if (LeadSet)
-            { state.Lead = -OffsetY; }
+
+        }
+    }
+
+    public sealed class TranslateTextRelativeWithLead : TranslateTextRelative
+    {
+        /**
+          <summary>Lead parameter setting.</summary>
+        */
+        public static readonly string OperatorKeyword = "TD";
+
+        public TranslateTextRelativeWithLead(double offsetX, double offsetY)
+            : base(OperatorKeyword, offsetX, offsetY)
+        { }
+
+        public TranslateTextRelativeWithLead(IList<PdfDirectObject> operands)
+            : base(OperatorKeyword, operands)
+        { }
+
+        /**
+          <summary>Gets/Sets whether this operation, as a side effect, sets the leading parameter in the text state.</summary>
+        */
+        public override bool LeadSet
+        {
+            get => true;
+        }
+
+        public override void Scan(GraphicsState state)
+        {
+            var tlm = state.TextState.Tlm;
+            tlm = tlm.PreConcat(SKMatrix.CreateTranslation(OffsetX, OffsetY));
+            state.TextState.Tlm =
+                state.TextState.Tm = tlm;
+            state.Lead = -OffsetY;
         }
     }
 }

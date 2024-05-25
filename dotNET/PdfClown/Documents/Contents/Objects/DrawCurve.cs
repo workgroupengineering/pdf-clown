@@ -40,13 +40,13 @@ namespace PdfClown.Documents.Contents.Objects
       and the second control point, associated to the final point).</remarks>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class DrawCurve : Operation
+    public abstract class DrawCurve : Operation
     {
         /**
           <summary>Specifies only the second control point
           (the first control point coincides with the initial point of the curve).</summary>
         */
-        public static readonly string FinalOperatorKeyword = "v";
+        public static readonly string InitialOperatorKeyword = "v";
         /**
           <summary>Specifies both control points explicitly.</summary>
         */
@@ -55,7 +55,7 @@ namespace PdfClown.Documents.Contents.Objects
           <summary>Specifies only the first control point
           (the second control point coincides with the final point of the curve).</summary>
         */
-        public static readonly string InitialOperatorKeyword = "y";
+        public static readonly string FinalOperatorKeyword = "y";
 
         /**
           <summary>Creates a fully-explicit curve.</summary>
@@ -89,10 +89,8 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="operator">Operator (either <code>InitialOperator</code> or <code>FinalOperator</code>).
           It defines how to interpret the <code>control</code> parameter.</param>
         */
-        public DrawCurve(SKPoint point, SKPoint control, string @operator)
-            : base(@operator.Equals(InitialOperatorKeyword, StringComparison.Ordinal)
-                  ? InitialOperatorKeyword
-                  : FinalOperatorKeyword, new List<PdfDirectObject>(4)
+        public DrawCurve(string @operator, SKPoint point, SKPoint control)
+            : base(@operator, new List<PdfDirectObject>(4)
               {
                   PdfReal.Get(control.X),
                   PdfReal.Get(control.Y),
@@ -107,89 +105,66 @@ namespace PdfClown.Documents.Contents.Objects
         /**
           <summary>Gets/Sets the first control point.</summary>
         */
-        public SKPoint? Control1
-        {
-            get
-            {
-                return @operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal)
-                    ? null
-                    : new SKPoint(
-                      ((IPdfNumber)operands[0]).FloatValue,
-                      ((IPdfNumber)operands[1]).FloatValue);
-            }
-            set
-            {
-                if (@operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal))
-                {
-                    @operator = FullOperatorKeyword;
-                    operands.Insert(0, PdfReal.Get(value.Value.X));
-                    operands.Insert(1, PdfReal.Get(value.Value.Y));
-                }
-                else
-                {
-                    operands[0] = PdfReal.Get(value.Value.X);
-                    operands[1] = PdfReal.Get(value.Value.Y);
-                }
-            }
-        }
+        public abstract SKPoint Control1 { get; set; }
 
         /**
           <summary>Gets/Sets the second control point.</summary>
         */
-        public SKPoint? Control2
-        {
-            get
-            {
-                return @operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal)
-                    ? new SKPoint(
-                      ((IPdfNumber)operands[0]).FloatValue,
-                      ((IPdfNumber)operands[1]).FloatValue)
-                    : new SKPoint(
-                      ((IPdfNumber)operands[2]).FloatValue,
-                      ((IPdfNumber)operands[3]).FloatValue);
-            }
-            set
-            {
-                if (@operator.Equals(FinalOperatorKeyword, StringComparison.Ordinal))
-                {
-                    operands[0] = PdfReal.Get(value.Value.X);
-                    operands[1] = PdfReal.Get(value.Value.Y);
-                }
-                else
-                {
-                    operands[2] = PdfReal.Get(value.Value.X);
-                    operands[3] = PdfReal.Get(value.Value.Y);
-                }
-            }
-        }
+        public abstract SKPoint Control2 { get; set; }
 
         /**
           <summary>Gets/Sets the final endpoint.</summary>
         */
-        public SKPoint Point
+        public abstract SKPoint Point { get; set; }
+
+       
+    }
+
+    public sealed class DrawFinalCurve : DrawCurve
+    {
+        /**
+          <summary>Creates a partially-explicit curve.</summary>
+          <param name="point">Final endpoint.</param>
+          <param name="control">Explicit control point.</param>
+          <param name="operator">Operator (either <code>InitialOperator</code> or <code>FinalOperator</code>).
+          It defines how to interpret the <code>control</code> parameter.</param>
+        */
+        public DrawFinalCurve(SKPoint point, SKPoint control)
+            : base(FinalOperatorKeyword, point, control)
+        { }
+
+        public DrawFinalCurve(IList<PdfDirectObject> operands) 
+            : base(FinalOperatorKeyword, operands)
+        { }
+
+        public override SKPoint Control1
         {
-            get
-            {
-                return @operator.Equals(FullOperatorKeyword, StringComparison.Ordinal)
-                    ? new SKPoint(
-                      ((IPdfNumber)operands[4]).FloatValue,
-                      ((IPdfNumber)operands[5]).FloatValue)
-                    : new SKPoint(
-                      ((IPdfNumber)operands[2]).FloatValue,
-                      ((IPdfNumber)operands[3]).FloatValue);
-            }
+            get => new SKPoint(
+                      ((IPdfNumber)operands[0]).FloatValue,
+                      ((IPdfNumber)operands[1]).FloatValue);
             set
             {
-                if (@operator.Equals(FullOperatorKeyword, StringComparison.Ordinal))
-                {
-                    operands[4] = PdfReal.Get(value.X);
-                    operands[5] = PdfReal.Get(value.Y);
-                }
-                else
-                {
-                    operands[2] = PdfReal.Get(value.X);
-                    operands[3] = PdfReal.Get(value.Y);
-                }
+                operands[0] = PdfReal.Get(value.X);
+                operands[1] = PdfReal.Get(value.Y);
+            }
+        }
+
+        public override SKPoint Control2
+        {
+            get => SKPoint.Empty;
+            set { }
+        }
+
+        public override SKPoint Point
+        {
+            get => new SKPoint(
+                      ((IPdfNumber)operands[2]).FloatValue,
+                      ((IPdfNumber)operands[3]).FloatValue);
+            set
+            {
+                operands[2] = PdfReal.Get(value.X);
+                operands[3] = PdfReal.Get(value.Y);
+
             }
         }
 
@@ -198,10 +173,148 @@ namespace PdfClown.Documents.Contents.Objects
             var pathObject = state.Scanner.RenderObject;
             if (pathObject != null)
             {
-                SKPoint controlPoint1 = Control1 ?? pathObject.LastPoint;
-                SKPoint finalPoint = Point;
-                SKPoint controlPoint2 = Control2 ?? finalPoint;
-                pathObject.CubicTo(controlPoint1, controlPoint2, finalPoint);
+                pathObject.CubicTo(Control1, Point, Point);
+            }
+        }
+    }
+
+    public sealed class DrawInitialCurve : DrawCurve
+    {
+        /**
+          <summary>Creates a partially-explicit curve.</summary>
+          <param name="point">Final endpoint.</param>
+          <param name="control">Explicit control point.</param>
+          <param name="operator">Operator (either <code>InitialOperator</code> or <code>FinalOperator</code>).
+          It defines how to interpret the <code>control</code> parameter.</param>
+        */
+        public DrawInitialCurve(SKPoint point, SKPoint control)
+            : base(InitialOperatorKeyword, point, control)
+        { }
+
+        public DrawInitialCurve(IList<PdfDirectObject> operands) : base(InitialOperatorKeyword, operands)
+        { }
+
+        public override SKPoint Control1
+        {
+            get => SKPoint.Empty;
+            set { }
+        }
+
+        public override SKPoint Control2
+        {
+            get => new SKPoint(
+                      ((IPdfNumber)operands[0]).FloatValue,
+                      ((IPdfNumber)operands[1]).FloatValue);
+            set
+            {
+                operands[0] = PdfReal.Get(value.X);
+                operands[1] = PdfReal.Get(value.Y);
+            }
+        }
+
+        public override SKPoint Point
+        {
+            get => new SKPoint(
+                      ((IPdfNumber)operands[2]).FloatValue,
+                      ((IPdfNumber)operands[3]).FloatValue);
+            set
+            {
+                operands[2] = PdfReal.Get(value.X);
+                operands[3] = PdfReal.Get(value.Y);
+            }
+        }
+
+        public override void Scan(GraphicsState state)
+        {
+            var pathObject = state.Scanner.RenderObject;
+            if (pathObject != null)
+            {
+                pathObject.CubicTo(pathObject.LastPoint, Control2, Point);
+            }
+        }
+    }
+
+    public sealed class DrawFullCurve : DrawCurve
+    {
+        /**
+          <summary>Creates a fully-explicit curve.</summary>
+          <param name="point">Final endpoint.</param>
+          <param name="control1">First control point.</param>
+          <param name="control2">Second control point.</param>
+        */
+        public DrawFullCurve(SKPoint point, SKPoint control1, SKPoint control2)
+            : this(point.X, point.Y, control1.X, control1.Y, control2.X, control2.Y)
+        { }
+
+        /**
+          <summary>Creates a fully-explicit curve.</summary>
+        */
+        public DrawFullCurve(double pointX, double pointY, double control1X, double control1Y, double control2X, double control2Y)
+            : base(FullOperatorKeyword, new List<PdfDirectObject>(6)
+              {
+                  PdfReal.Get(control1X),
+                  PdfReal.Get(control1Y),
+                  PdfReal.Get(control2X),
+                  PdfReal.Get(control2Y),
+                  PdfReal.Get(pointX),
+                  PdfReal.Get(pointY)
+              })
+        { }       
+
+        public DrawFullCurve(IList<PdfDirectObject> operands) : base(FullOperatorKeyword, operands)
+        { }
+
+        /**
+          <summary>Gets/Sets the first control point.</summary>
+        */
+        public override SKPoint Control1
+        {
+            get => new SKPoint(
+                      ((IPdfNumber)operands[0]).FloatValue,
+                      ((IPdfNumber)operands[1]).FloatValue);
+            set
+            {
+                operands[0] = PdfReal.Get(value.X);
+                operands[1] = PdfReal.Get(value.Y);
+            }
+        }
+
+        /**
+          <summary>Gets/Sets the second control point.</summary>
+        */
+        public override SKPoint Control2
+        {
+            get => new SKPoint(
+                      ((IPdfNumber)operands[2]).FloatValue,
+                      ((IPdfNumber)operands[3]).FloatValue);
+            set
+            {
+                operands[2] = PdfReal.Get(value.X);
+                operands[3] = PdfReal.Get(value.Y);
+            }
+        }
+
+        /**
+          <summary>Gets/Sets the final endpoint.</summary>
+        */
+        public override SKPoint Point
+        {
+            get => new SKPoint(
+                      ((IPdfNumber)operands[4]).FloatValue,
+                      ((IPdfNumber)operands[5]).FloatValue);
+            set
+            {
+                operands[4] = PdfReal.Get(value.X);
+                operands[5] = PdfReal.Get(value.Y);
+            }
+        }
+
+        public override void Scan(GraphicsState state)
+        {
+            var pathObject = state.Scanner.RenderObject;
+            if (pathObject != null)
+            {
+                pathObject.CubicTo(Control1, Control2, Point);
             }
         }
     }

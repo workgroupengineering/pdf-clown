@@ -35,11 +35,8 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Begin marked-content sequence' operation [PDF:1.6:10.5].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public sealed class BeginMarkedContent : ContentMarker
+    public abstract class BeginMarkedContent : ContentMarker
     {
-        public static readonly string PropertyListOperatorKeyword = "BDC";
-        public static readonly string SimpleOperatorKeyword = "BMC";
-
         public BeginMarkedContent(PdfName tag) : base(tag)
         { }
 
@@ -49,9 +46,9 @@ namespace PdfClown.Documents.Contents.Objects
         internal BeginMarkedContent(string @operator, IList<PdfDirectObject> operands) : base(@operator, operands)
         { }
 
-        protected override string PropertyListOperator => PropertyListOperatorKeyword;
+        protected override string PropertyListOperator => BeginPropertyListMarkedContent.PropertyListOperatorKeyword;
 
-        protected override string SimpleOperator => SimpleOperatorKeyword;
+        protected override string SimpleOperator => BeginSimpleMarkedContent.SimpleOperatorKeyword;
 
         public override void Scan(GraphicsState state)
         {
@@ -62,6 +59,34 @@ namespace PdfClown.Documents.Contents.Objects
                //state.Scanner.ContentContext.HiddenLayer++;
             }
         }
+    }
+
+    public sealed class BeginSimpleMarkedContent : BeginMarkedContent
+    {
+        public static readonly string SimpleOperatorKeyword = "BMC";
+
+        public BeginSimpleMarkedContent(PdfName tag) : base(tag)
+        { }
+
+        public BeginSimpleMarkedContent(PdfName tag, PdfDirectObject properties) : base(tag, properties)
+        { }
+
+        internal BeginSimpleMarkedContent(IList<PdfDirectObject> operands) : base(SimpleOperatorKeyword, operands)
+        { }       
+    }
+
+    public sealed class BeginPropertyListMarkedContent : BeginMarkedContent
+    {
+        public static readonly string PropertyListOperatorKeyword = "BDC";
+
+        public BeginPropertyListMarkedContent(PdfName tag) : base(tag)
+        { }
+
+        public BeginPropertyListMarkedContent(PdfName tag, PdfDirectObject properties) : base(tag, properties)
+        { }
+
+        internal BeginPropertyListMarkedContent(IList<PdfDirectObject> operands) : base(PropertyListOperatorKeyword, operands)
+        { }        
     }
 
 
