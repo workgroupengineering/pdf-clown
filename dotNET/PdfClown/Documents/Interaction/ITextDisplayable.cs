@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright 2008-2012 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
@@ -23,43 +23,10 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Objects;
-
-using System;
-
-namespace PdfClown.Documents.Interaction.Navigation
+namespace PdfClown.Documents.Interaction
 {
-    /**
-      <summary>Local interaction target [PDF:1.6:8.2.1].</summary>
-    */
-    [PDF(VersionEnum.PDF10)]
-    public sealed class LocalDestination : Destination
+    public interface ITextDisplayable
     {
-        public LocalDestination(PdfPage page)
-            : this(page, ModeEnum.Fit, null, null)
-        { }
-
-        public LocalDestination(PdfPage page, ModeEnum mode, object location, double? zoom)
-            : base(page.Document, page, mode, location, zoom)
-        { }
-
-        internal LocalDestination(PdfDirectObject baseObject) : base(baseObject)
-        { }
-
-        /**
-          <summary>Gets/Sets the target page.</summary>
-        */
-        public override object Page
-        {
-            get => Wrap<PdfPage>(BaseDataObject[0]);
-            set
-            {
-                if (value is not PdfPage page)
-                    throw new ArgumentException("It MUST be a Page object.");
-
-                BaseDataObject[0] = page.BaseObject;
-            }
-        }        
+        string GetDisplayName();
     }
 }

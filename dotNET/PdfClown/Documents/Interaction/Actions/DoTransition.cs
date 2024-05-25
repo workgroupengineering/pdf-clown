@@ -57,5 +57,7 @@ namespace PdfClown.Documents.Interaction.Actions
             get => Wrap<Transition>(BaseDataObject[PdfName.Trans]);
             set => BaseDataObject[PdfName.Trans] = value.BaseObject;
         }
+
+        public override string GetDisplayName() => "Do Transition";
     }
 }

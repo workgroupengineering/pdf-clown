@@ -49,5 +49,6 @@ namespace PdfClown.Documents.Interaction.Actions
             : base(baseObject)
         { }
 
+        public override string GetDisplayName() => "Reset Form";
     }
 }

@@ -62,5 +62,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 base.DestinationFile = value;
             }
         }
+
+        public override string GetDisplayName() => "Go To " + DestinationFile?.Path;
     }
 }

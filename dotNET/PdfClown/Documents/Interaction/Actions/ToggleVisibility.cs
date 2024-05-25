@@ -129,5 +129,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 }
             }
         }
+
+        public override string GetDisplayName() => "Toggle Visibility";
     }
 }

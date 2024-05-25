@@ -290,5 +290,7 @@ namespace PdfClown.Documents.Interaction.Actions
             get => Wrap<PathElement>(BaseDataObject[PdfName.T]);
             set => BaseDataObject[PdfName.T] = value?.BaseObject;
         }
+
+        public override string GetDisplayName() => "Go To Embedded";
     }
 }

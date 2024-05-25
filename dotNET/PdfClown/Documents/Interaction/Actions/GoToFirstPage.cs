@@ -47,5 +47,7 @@ namespace PdfClown.Documents.Interaction.Actions
         internal GoToFirstPage(PdfDirectObject baseObject)
             : base(baseObject)
         { }
+
+        public override string GetDisplayName() => "Go To First Page";
     }
 }

@@ -58,5 +58,7 @@ namespace PdfClown.Documents.Interaction.Actions
             get => new Uri(BaseDataObject.GetString(PdfName.URI));
             set => BaseDataObject.SetString(PdfName.URI, value.ToString());
         }
+
+        public override string GetDisplayName() => "Go To " + URI;
     }
 }

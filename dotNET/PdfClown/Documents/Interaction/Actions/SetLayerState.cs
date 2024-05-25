@@ -412,6 +412,8 @@ namespace PdfClown.Documents.Interaction.Actions
             get => new LayerStates(BaseDataObject[PdfName.State]);
             set => BaseDataObject[PdfName.State] = value.BaseObject;
         }
+
+        public override string GetDisplayName() => "Set Layer State";
     }
 
     internal static class StateModeEnumExtension

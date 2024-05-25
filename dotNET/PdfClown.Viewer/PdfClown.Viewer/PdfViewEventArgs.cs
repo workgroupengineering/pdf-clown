@@ -1,5 +1,6 @@
 ﻿using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
+using PdfClown.Viewer.ToolTip;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
@@ -8,15 +9,46 @@ namespace PdfClown.Viewer
 {
     public class PdfViewEventArgs : EventArgs
     {
+        private PdfPageView pageView;
+        private SKPoint pointerLocation;
+        private SKMatrix navigationMatrix = SKMatrix.Identity;
+        private SKMatrix windowScaleMatrix = SKMatrix.Identity;
+        private Annotation toolTipAnnotation;
+        private MarkupToolTipRenderer markupToolTipRenderer;
+        private LinkToolTipRenderer linkToolTipRenderer;
+
         //Common
         public PdfView Viewer;
-        public SKMatrix WindowScaleMatrix = SKMatrix.Identity;
-        public SKMatrix NavigationMatrix = SKMatrix.Identity;
+        public SKMatrix WindowScaleMatrix
+        {
+            get => windowScaleMatrix;
+            set
+            {
+                if (windowScaleMatrix != value)
+                {
+                    windowScaleMatrix = value;
+                    windowScaleMatrix.TryInvert(out InvertWindowScaleMatrix);
+                }
+            }
+        }
+
+        public SKMatrix InvertWindowScaleMatrix;
+
+        public SKMatrix NavigationMatrix
+        {
+            get => navigationMatrix;
+            set
+            {
+                if (navigationMatrix != value)
+                {
+                    navigationMatrix = value;
+                    NavigationMatrix.TryInvert(out InvertNavigationMatrix);
+                    ViewMatrix = NavigationMatrix.PostConcat(windowScaleMatrix);
+                    ViewMatrix.TryInvert(out InvertViewMatrix);
+                }
+            }
+        }
         public SKMatrix InvertNavigationMatrix = SKMatrix.Identity;
-        public SKMatrix PageViewMatrix = SKMatrix.Identity;
-        public SKMatrix InvertPageViewMatrix = SKMatrix.Identity;
-        public SKMatrix PageMatrix = SKMatrix.Identity;
-        public SKMatrix InvertPageMatrix = SKMatrix.Identity;
         public SKMatrix ViewMatrix = SKMatrix.Identity;
         public SKMatrix InvertViewMatrix = SKMatrix.Identity;
 
@@ -40,48 +72,75 @@ namespace PdfClown.Viewer
             }
         }
 
+        public SKMatrix PageViewMatrix = SKMatrix.Identity;
+        public SKMatrix InvertPageViewMatrix = SKMatrix.Identity;
+        public SKMatrix PageMatrix = SKMatrix.Identity;
+        public SKMatrix InvertPageMatrix = SKMatrix.Identity;
+
+
         public PdfPage Page => PageView.Page;
 
         //Touch
         public SKTouchEventArgs TouchEvent;
-        public SKPoint PointerLocation;
+
+        public SKPoint PointerLocation
+        {
+            get => pointerLocation;
+            set
+            {
+                if (pointerLocation != value)
+                {
+                    pointerLocation = value;
+                    ViewPointerLocation = InvertViewMatrix.MapPoint(pointerLocation);
+                }
+            }
+        }
         public SKPoint ViewPointerLocation;
+
         public SKPoint MoveLocation;
         public SKPoint PagePointerLocation;
         public SKPoint? PressedLocation;
+
         public Annotation Annotation;
-        public SKRect AnnotationBounds;
-        public SKRect AnnotationTextBounds;
-        //Draw
-        public SKCanvas Canvas;
+        public SKRect AnnotationBound;
         public Annotation DrawAnnotation;
         public SKRect DrawAnnotationBound;
-        private string annotationText;
-        private PdfPageView pageView;
 
-        public string AnnotationText
+        public SKRect ToolTipBounds;       
+
+        public Annotation ToolTipAnnotation
         {
-            get => annotationText;
+            get => toolTipAnnotation;
             set
             {
-                if (annotationText != value)
+                if (toolTipAnnotation != value)
                 {
-                    annotationText = value;
-                    if (!string.IsNullOrEmpty(annotationText))
+                    toolTipAnnotation = value;
+                    if (toolTipAnnotation is Markup markup)
                     {
-                        var temp = new SKRect();
-                        Viewer.paintText.MeasureText(annotationText, ref temp);
-                        temp.Inflate(10, 5);
-                        AnnotationTextBounds = SKRect.Create(
-                            AnnotationBounds.Left / Viewer.XScaleFactor,
-                            AnnotationBounds.Bottom / Viewer.YScaleFactor,
-                            temp.Width, temp.Height);
+                        ToolTipRenderer = markupToolTipRenderer ??= new MarkupToolTipRenderer();
+                        markupToolTipRenderer.Markup = markup;
+                        ToolTipBounds = markupToolTipRenderer.GetWindowBound(this);
+                    }
+                    else if (toolTipAnnotation is Link link)
+                    {
+                        ToolTipRenderer = linkToolTipRenderer ??= new LinkToolTipRenderer();
+                        linkToolTipRenderer.Link = link;
+                        ToolTipBounds = linkToolTipRenderer.GetWindowBound(this);
+                    }
+                    else
+                    {
+                        ToolTipRenderer = null;
                     }
                     Viewer.InvalidateSurface();
                 }
             }
         }
 
+        public ToolTipRenderer ToolTipRenderer;
+
+        //Draw
+        public SKCanvas Canvas;
 
     }
 }

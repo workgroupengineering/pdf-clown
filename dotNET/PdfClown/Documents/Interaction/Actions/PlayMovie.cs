@@ -74,5 +74,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 BaseDataObject[PdfName.Annotation] = value.BaseObject;
             }
         }
+
+        public override string GetDisplayName() => "Play Movie";
     }
 }

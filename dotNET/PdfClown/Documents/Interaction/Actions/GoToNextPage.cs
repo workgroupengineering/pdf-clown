@@ -25,6 +25,7 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents;
+using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
 
 using System;
@@ -48,5 +49,6 @@ namespace PdfClown.Documents.Interaction.Actions
             : base(baseObject)
         { }
 
+        public override string GetDisplayName() => "Go To Next Page";
     }
 }

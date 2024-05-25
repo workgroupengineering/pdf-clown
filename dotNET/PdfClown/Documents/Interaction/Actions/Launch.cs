@@ -210,5 +210,14 @@ namespace PdfClown.Documents.Interaction.Actions
                 { throw new ArgumentException("MUST be either FileSpecification or WinTarget"); }
             }
         }
+
+        public override string GetDisplayName()
+        {
+            return "Launch " + (Target is FileSpecification fileSpec 
+                ? fileSpec.Path
+                : Target is WinTarget winTarget
+                    ? $"{winTarget.Operation} {winTarget.ParameterString} {winTarget.FileName}"
+                    : string.Empty);
+        }
     }
 }

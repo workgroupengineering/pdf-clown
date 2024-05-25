@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Interaction.Navigation
       </remarks>
     */
     [PDF(VersionEnum.PDF10)]
-    public abstract class Destination : PdfObjectWrapper<PdfArray>, IPdfNamedObjectWrapper
+    public abstract class Destination : PdfObjectWrapper<PdfArray>, IPdfNamedObjectWrapper, ITextDisplayable
     {
         /**
           <summary>Destination mode [PDF:1.6:8.2.1].</summary>
@@ -334,6 +334,11 @@ namespace PdfClown.Documents.Interaction.Navigation
         public PdfString Name => RetrieveName();
 
         public PdfDirectObject NamedBaseObject => RetrieveNamedBaseObject();
+
+        public virtual string GetDisplayName()
+        {
+            return Page is PdfPage page ? "Page " + page.Number : string.Empty;
+        }
     }
 
     internal static class ModeEnumExtension

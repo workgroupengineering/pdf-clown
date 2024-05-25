@@ -64,5 +64,7 @@ namespace PdfClown.Documents.Interaction.Actions
                 BaseDataObject[PdfName.Sound] = value.BaseObject;
             }
         }
+
+        public override string GetDisplayName() => "Play Sound";
     }
 }

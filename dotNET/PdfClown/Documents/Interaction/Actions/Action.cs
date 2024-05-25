@@ -36,7 +36,7 @@ namespace PdfClown.Documents.Interaction.Actions
       <summary>Action to be performed by the viewer application [PDF:1.6:8.5].</summary>
     */
     [PDF(VersionEnum.PDF11)]
-    public class Action : PdfObjectWrapper<PdfDictionary>
+    public class Action : PdfObjectWrapper<PdfDictionary>, ITextDisplayable
     {
         /**
           <summary>Wraps an action base object into an action object.</summary>
@@ -50,7 +50,7 @@ namespace PdfClown.Documents.Interaction.Actions
             if (baseObject.Wrapper is Action action)
                 return action;
             
-            PdfDictionary dataObject = (PdfDictionary)baseObject.Resolve();
+            var dataObject = (PdfDictionary)baseObject.Resolve();
             var actionType = dataObject.Get<PdfName>(PdfName.S);
             if (actionType == null
               || (dataObject.ContainsKey(PdfName.Type)
@@ -137,5 +137,7 @@ namespace PdfClown.Documents.Interaction.Actions
             }
             set => BaseDataObject[PdfName.Next] = value.BaseObject;
         }
+
+        public virtual string GetDisplayName() => string.Empty;
     }
 }

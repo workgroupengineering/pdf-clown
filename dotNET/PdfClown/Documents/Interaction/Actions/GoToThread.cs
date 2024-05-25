@@ -48,5 +48,6 @@ namespace PdfClown.Documents.Interaction.Actions
             : base(baseObject)
         { }
 
+        public override string GetDisplayName() => "Go To Thread";
     }
 }

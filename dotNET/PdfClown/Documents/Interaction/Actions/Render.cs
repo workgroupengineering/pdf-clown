@@ -163,6 +163,8 @@ namespace PdfClown.Documents.Interaction.Actions
                 JavaScript.SetScript(baseDataObject, PdfName.JS, value);
             }
         }
+
+        public override string GetDisplayName() => "Render";
     }
 
     internal static class OperationEnumExtension
