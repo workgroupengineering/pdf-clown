@@ -51,7 +51,7 @@ namespace PdfClown.Objects
             var clone = (PdfObjectWrapper2)base.MemberwiseClone();
             clone.BaseObject = (PdfDirectObject)BaseObject.Clone(cloner);
             if (clone.BaseObject != null)
-                clone.BaseObject.Wrapper2 = clone;
+                clone.BaseObject.wrapper2 = clone;
 
             return clone;
         }

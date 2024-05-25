@@ -195,8 +195,9 @@ namespace PdfClown.Objects
             PdfObjectWrapper clone = (PdfObjectWrapper)base.MemberwiseClone();
             clone.BaseObject = (PdfDirectObject)BaseObject.Clone(cloner);
             if (clone.BaseObject != null)
-                clone.BaseObject.Wrapper = clone;
-
+            {
+                clone.BaseObject.wrapper = clone;
+            }
             return clone;
         }
 
