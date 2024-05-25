@@ -581,7 +581,7 @@ namespace PdfClown.Viewer
 
         public virtual void OnScrolled(int delta, KeyModifiers keyModifiers)
         {
-            VerticalValue = VerticalValue - step * 2 * Math.Sign(delta);
+            VerticalValue = VerticalValue - delta;
             verticalScrolledHandler?.Invoke(this, new ScrollEventArgs(delta, keyModifiers));
         }
 
