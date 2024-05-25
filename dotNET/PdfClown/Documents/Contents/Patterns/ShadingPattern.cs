@@ -57,7 +57,7 @@ namespace PdfClown.Documents.Contents.Patterns
         */
         public Shading Shading => Shading.Wrap(((PdfDictionary)BaseDataObject)[PdfName.Shading]);
 
-        public SKShader GetShader(GraphicsState state)
+        public override SKShader GetShader(GraphicsState state)
         {
             var skMatrix = Shading.CalculateMatrix(SKMatrix, state);
 

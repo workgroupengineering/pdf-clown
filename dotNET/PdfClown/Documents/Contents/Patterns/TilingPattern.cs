@@ -47,68 +47,7 @@ namespace PdfClown.Documents.Contents.Patterns
         private SKPicture picture;
         private Stack<GraphicsState> states;
 
-        /**
-<summary>Uncolored tiling pattern ("stencil") associated to a color.</summary>
-*/
-        public sealed class Colorized : TilingPattern
-        {
-            private Color color;
-
-            internal Colorized(TilingPattern uncoloredPattern, Color color)
-                : base((PatternColorSpace)uncoloredPattern.ColorSpace, uncoloredPattern.BaseObject)
-            { this.color = color; }
-
-            /**
-              <summary>Gets the color applied to the stencil.</summary>
-            */
-            public Color Color => color;
-        }
-
-        /**
-          <summary>Pattern cell color mode.</summary>
-        */
-        public enum PaintTypeEnum
-        {
-            /**
-              <summary>The pattern's content stream specifies the colors used to paint the pattern cell.</summary>
-              <remarks>When the content stream begins execution, the current color is the one
-              that was initially in effect in the pattern's parent content stream.</remarks>
-            */
-            Colored = 1,
-            /**
-              <summary>The pattern's content stream does NOT specify any color information.</summary>
-              <remarks>
-                <para>Instead, the entire pattern cell is painted with a separately specified color
-                each time the pattern is used; essentially, the content stream describes a stencil
-                through which the current color is to be poured.</para>
-                <para>The content stream must not invoke operators that specify colors
-                or other color-related parameters in the graphics state.</para>
-              </remarks>
-            */
-            Uncolored = 2
-        }
-
-        /**
-          Spacing adjustment of tiles relative to the device pixel grid.
-        */
-        public enum TilingTypeEnum
-        {
-            /**
-              <summary>Pattern cells are spaced consistently, that is by a multiple of a device pixel.</summary>
-            */
-            ConstantSpacing = 1,
-            /**
-              <summary>The pattern cell is not distorted, but the spacing between pattern cells
-              may vary by as much as 1 device pixel, both horizontally and vertically,
-              when the pattern is painted.</summary>
-            */
-            VariableSpacing = 2,
-            /**
-              <summary>Pattern cells are spaced consistently as in tiling type 1
-              but with additional distortion permitted to enable a more efficient implementation.</summary>
-            */
-            FasterConstantSpacing = 3
-        }
+       
 
         internal TilingPattern(PatternColorSpace colorSpace, PdfDirectObject baseObject)
             : base(colorSpace, baseObject)
@@ -122,12 +61,12 @@ namespace PdfClown.Documents.Contents.Patterns
           <summary>Gets the colorized representation of this pattern.</summary>
           <param name="color">Color to be applied to the pattern.</param>
         */
-        public Colorized Colorize(Color color)
+        public ColorizedTilingPattern Colorize(Color color)
         {
-            if (PaintType != PaintTypeEnum.Uncolored)
+            if (PaintType != TilingPaintTypeEnum.Uncolored)
                 throw new NotSupportedException("Only uncolored tiling patterns can be colorized.");
 
-            return new Colorized(this, color);
+            return new ColorizedTilingPattern(this, color);
         }
 
         /**
@@ -145,7 +84,7 @@ namespace PdfClown.Documents.Contents.Patterns
         /**
           <summary>Gets how the color of the pattern cell is to be specified.</summary>
         */
-        public PaintTypeEnum PaintType => (PaintTypeEnum)BaseHeader.GetInt(PdfName.PaintType);
+        public TilingPaintTypeEnum PaintType => (TilingPaintTypeEnum)BaseHeader.GetInt(PdfName.PaintType);
 
         /**
           <summary>Gets the named resources required by the pattern's content stream.</summary>
@@ -182,7 +121,7 @@ namespace PdfClown.Documents.Contents.Patterns
             }
         }
 
-        public SKShader GetShader(GraphicsState state)
+        public override SKShader GetShader(GraphicsState state)
         {
             var rect = SKRect.Create(Math.Abs(XStep), Math.Abs(YStep));
             return SKShader.CreatePicture(GetPicture(), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, SKMatrix, rect);

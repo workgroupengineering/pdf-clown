@@ -63,10 +63,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             //TODO
 
-            Pattern pattern = context.Resources.Patterns[(PdfName)components[components.Count - 1]];
+            Color pattern = context.Resources.Patterns[(PdfName)components[components.Count - 1]];
             if (pattern is TilingPattern tilingPattern)
             {
-                if (tilingPattern.PaintType == TilingPattern.PaintTypeEnum.Uncolored)
+                if (tilingPattern.PaintType == TilingPaintTypeEnum.Uncolored)
                 {
                     ColorSpace underlyingColorSpace = UnderlyingColorSpace;
                     if (underlyingColorSpace == null)
@@ -101,20 +101,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public override SKPaint GetPaint(Color color, float? alpha = null, GraphicsState state = null)
         {
             // FIXME: Auto-generated method stub
-            if (color is TilingPattern pattern)
+            if (color is IPattern pattern)
             {
                 return new SKPaint
                 {
                     Shader = pattern.GetShader(state),
-                    Style = SKPaintStyle.Fill,
-                    IsAntialias = true
-                };
-            }
-            if (color is ShadingPattern shading)
-            {
-                return new SKPaint
-                {
-                    Shader = shading.GetShader(state),
                     Style = SKPaintStyle.Fill,
                     IsAntialias = true
                 };

@@ -74,9 +74,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override SKColor GetSKColor(Color color, float? alpha)
         {
-            Span<float> components = stackalloc float[color.Components.Count];
-            color.CopyTo(components);
-            return GetSKColor(components, alpha);
+            return GetSKColor(color.Floats, alpha);
         }
 
         public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)

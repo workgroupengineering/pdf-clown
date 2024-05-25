@@ -37,13 +37,14 @@ namespace PdfClown.Documents.Contents.Patterns
       instead of a simple color [PDF:1.6:4.6].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public abstract class Pattern : Color
+    public abstract class Pattern : Color, IPattern
     {
         //TODO:verify!
         public static readonly Pattern Default = new TilingPattern(null);
         private const int PatternType1 = 1;
         private const int PatternType2 = 2;
         private float[] matrix;
+        private IList<PdfDirectObject> components = new List<PdfDirectObject>();
 
         /**
           <summary>Wraps the specified base object into a pattern object.</summary>
@@ -63,7 +64,7 @@ namespace PdfClown.Documents.Contents.Patterns
             switch (patternType)
             {
                 case PatternType1:
-                    return new TilingPattern(baseObject);
+                        return new TilingPattern(baseObject);
                 case PatternType2:
                     return new ShadingPattern(baseObject);
                 default:
@@ -79,10 +80,7 @@ namespace PdfClown.Documents.Contents.Patterns
         protected Pattern(PatternColorSpace colorSpace, PdfDirectObject baseObject) : base(colorSpace, baseObject)
         { }
 
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
-
-        public override IList<PdfDirectObject> Components => new List<PdfDirectObject>();
+        public override IList<PdfDirectObject> Components => components;
 
         /**
           <summary>Gets the pattern matrix, a transformation matrix that maps the pattern's
@@ -151,9 +149,10 @@ namespace PdfClown.Documents.Contents.Patterns
                 };
         }
 
-        /**
-          <summary>Gets this pattern's dictionary.</summary>
-        */
+        public override object Clone(PdfDocument context)
+        { throw new NotImplementedException(); }
+
+        public abstract SKShader GetShader(GraphicsState state);
 
     }
 }

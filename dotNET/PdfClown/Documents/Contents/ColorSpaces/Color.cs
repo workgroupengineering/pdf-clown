@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Objects;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -57,6 +57,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         }
 
         private ColorSpace colorSpace;
+        private float[] floats;
 
         //TODO:verify whether to remove the colorSpace argument (should be agnostic?)!
         protected Color(ColorSpace colorSpace, PdfDirectObject baseObject) : base(baseObject)
@@ -68,7 +69,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         { }
 
         //TODO:remove? - one dependency
-        public ColorSpace ColorSpace => colorSpace;
+        public virtual ColorSpace ColorSpace => colorSpace;
 
         /**
           <summary>Gets the components defining this color value.</summary>
@@ -78,21 +79,23 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             get;
         }
 
-        public void CopyTo(Span<float> to)
+        public float[] Floats => floats ??= GetFloats();
+
+        public float[] GetFloats()
         {
             var components = Components;
+            var floats = new float[components.Count];
             for (int i = 0; i < components.Count; i++)
             {
-                to[i] = ((IPdfNumber)components[i]).FloatValue;
+                floats[i] = ((IPdfNumber)components[i]).FloatValue;
             }
+            return floats;
         }
 
-        public Span<float> AsSpan()
-        {
-            Span<float> components = new float[Components.Count];
-            CopyTo(components);
-            return components;
-        }
+        public void CopyTo(Span<float> to) => Floats.CopyTo(to);
 
+        public Span<float> AsSpan() => Floats;
+
+        public SKColor GetSkColor() => colorSpace.GetSKColor(this);
     }
 }
