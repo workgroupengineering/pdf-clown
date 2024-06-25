@@ -25,7 +25,6 @@
 
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Patterns;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Functions;
@@ -34,9 +33,7 @@ using System;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Graphics state [PDF:1.6:4.3].</summary>
-    */
+    /// <summary>Graphics state [PDF:1.6:4.3].</summary>
     public sealed class GraphicsState : ICloneable
     {
         private BlendModeEnum? blendMode;
@@ -77,72 +74,56 @@ namespace PdfClown.Documents.Contents
             Initialize();
         }
 
-        /**
-         <summary>Gets/Sets the current font [PDF:1.6:5.2].</summary>
-       */
+        /// <summary>Gets/Sets the current font [PDF:1.6:5.2].</summary>
         public Font Font
         {
             get => font;
             set => font = value;
         }
 
-        /**
-          <summary>Gets/Sets the current font size [PDF:1.6:5.2].</summary>
-        */
+        /// <summary>Gets/Sets the current font size [PDF:1.6:5.2].</summary>
         public float FontSize
         {
             get => fontSize;
             set => fontSize = value;
         }
 
-        /**
-          <summary>Gets/Sets the current text rendering mode [PDF:1.6:5.2.5].</summary>
-        */
+        /// <summary>Gets/Sets the current text rendering mode [PDF:1.6:5.2.5].</summary>
         public TextRenderModeEnum RenderMode
         {
             get => renderMode;
             set => renderMode = value;
         }
 
-        /**
-          <summary>Gets/Sets the current text rise [PDF:1.6:5.2.6].</summary>
-        */
+        /// <summary>Gets/Sets the current text rise [PDF:1.6:5.2.6].</summary>
         public float Rise
         {
             get => rise;
             set => rise = value;
         }
 
-        /**
-          <summary>Gets/Sets the current horizontal scaling [PDF:1.6:5.2.3], normalized to 1.</summary>
-        */
+        /// <summary>Gets/Sets the current horizontal scaling [PDF:1.6:5.2.3], normalized to 1.</summary>
         public float Scale
         {
             get => scale;
             set => scale = value;
         }
 
-        /**
-          <summary>Gets/Sets the current character spacing [PDF:1.6:5.2.1].</summary>
-        */
+        /// <summary>Gets/Sets the current character spacing [PDF:1.6:5.2.1].</summary>
         public float CharSpace
         {
             get => charSpace;
             set => charSpace = value;
         }
 
-        /**
-          <summary>Gets/Sets the current word spacing [PDF:1.6:5.2.2].</summary>
-        */
+        /// <summary>Gets/Sets the current word spacing [PDF:1.6:5.2.2].</summary>
         public float WordSpace
         {
             get => wordSpace;
             set => wordSpace = value;
         }
 
-        /**
-         <summary>Gets/Sets the current leading [PDF:1.6:5.2.4].</summary>
-       */
+        /// <summary>Gets/Sets the current leading [PDF:1.6:5.2.4].</summary>
         public float Lead
         {
             get => lead;
@@ -170,19 +151,17 @@ namespace PdfClown.Documents.Contents
             set => textState = value;
         }
 
-        /**
-          <summary>Gets/Sets the current blend mode to be used in the transparent imaging model
-          [PDF:1.6:5.2.1].</summary>
-          <remarks>The application should use the first blend mode in the list that it recognizes.
-          </remarks>
-        */
+        /// <summary>Gets/Sets the current blend mode to be used in the transparent imaging model
+        /// [PDF:1.6:5.2.1].</summary>
+        /// <remarks>The application should use the first blend mode in the list that it recognizes.
+        /// </remarks>
         public BlendModeEnum? BlendMode
         {
             get => blendMode;
             set => blendMode = value;
         }
 
-        ///<summary>Gets/Sets the current transformation matrix.</summary>
+        /// <summary>Gets/Sets the current transformation matrix.</summary>
         public SKMatrix Ctm
         {
             get => ctm;
@@ -193,7 +172,7 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        ///<summary>Gets/Sets the local transformation matrix.</summary>
+        /// <summary>Gets/Sets the local transformation matrix.</summary>
         public SKMatrix Ltm
         {
             get => ltm;
@@ -204,86 +183,66 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        /**
-          <summary>Gets/Sets the current color for nonstroking operations [PDF:1.6:4.5.1].</summary>
-        */
+        /// <summary>Gets/Sets the current color for nonstroking operations [PDF:1.6:4.5.1].</summary>
         public Color FillColor
         {
             get => fillColor;
             set => fillColor = value;
         }
 
-        /**
-          <summary>Gets/Sets the current color space for nonstroking operations [PDF:1.6:4.5.1].</summary>
-        */
+        /// <summary>Gets/Sets the current color space for nonstroking operations [PDF:1.6:4.5.1].</summary>
         public ColorSpace FillColorSpace
         {
             get => fillColorSpace;
             set => fillColorSpace = value;
         }
 
-        /**
-          <summary>Gets/Sets the current line cap style [PDF:1.6:4.3.2].</summary>
-        */
+        /// <summary>Gets/Sets the current line cap style [PDF:1.6:4.3.2].</summary>
         public LineCapEnum LineCap
         {
             get => lineCap;
             set => lineCap = value;
         }
 
-        /**
-          <summary>Gets/Sets the current line dash pattern [PDF:1.6:4.3.2].</summary>
-        */
+        /// <summary>Gets/Sets the current line dash pattern [PDF:1.6:4.3.2].</summary>
         public LineDash LineDash
         {
             get => lineDash;
             set => lineDash = value;
         }
 
-        /**
-          <summary>Gets/Sets the current line join style [PDF:1.6:4.3.2].</summary>
-        */
+        /// <summary>Gets/Sets the current line join style [PDF:1.6:4.3.2].</summary>
         public LineJoinEnum LineJoin
         {
             get => lineJoin;
             set => lineJoin = value;
         }
 
-        /**
-          <summary>Gets/Sets the current line width [PDF:1.6:4.3.2].</summary>
-        */
+        /// <summary>Gets/Sets the current line width [PDF:1.6:4.3.2].</summary>
         public float LineWidth
         {
             get => lineWidth;
             set => lineWidth = value;
         }
 
-        /**
-          <summary>Gets/Sets the current miter limit [PDF:1.6:4.3.2].</summary>
-        */
+        /// <summary>Gets/Sets the current miter limit [PDF:1.6:4.3.2].</summary>
         public float MiterLimit
         {
             get => miterLimit;
             set => miterLimit = value;
         }
 
-        /**
-          <summary>Gets the scanner associated to this state.</summary>
-        */
+        /// <summary>Gets the scanner associated to this state.</summary>
         public ContentScanner Scanner => scanner;
 
-        /**
-          <summary>Gets/Sets the current color for stroking operations [PDF:1.6:4.5.1].</summary>
-        */
+        /// <summary>Gets/Sets the current color for stroking operations [PDF:1.6:4.5.1].</summary>
         public Color StrokeColor
         {
             get => strokeColor;
             set => strokeColor = value;
         }
 
-        /**
-          <summary>Gets/Sets the current color space for stroking operations [PDF:1.6:4.5.1].</summary>
-        */
+        /// <summary>Gets/Sets the current color space for stroking operations [PDF:1.6:4.5.1].</summary>
         public ColorSpace StrokeColorSpace
         {
             get => strokeColorSpace;
@@ -323,11 +282,8 @@ namespace PdfClown.Documents.Contents
 
         public float Flatness { get; internal set; }
 
-        public ModifyClipPath ModifyClipPath { get; internal set; }
 
-        /**
-  <summary>Gets the initial current transformation matrix.</summary>
-*/
+        /// <summary>Gets the initial current transformation matrix.</summary>
         public SKMatrix GetInitialCtm()
         {
             return GetInitialMatrix(Scanner.Context, Scanner.CanvasBox.Size);
@@ -526,11 +482,9 @@ namespace PdfClown.Documents.Contents
             return matrix;
         }
 
-        /**
-          <summary>Gets the text-to-device space transformation matrix [PDF:1.6:5.3.3].</summary>
-          <param name="topDown">Whether the y-axis orientation has to be adjusted to common top-down
-          orientation rather than standard PDF coordinate system (bottom-up).</param>
-        */
+        /// <summary>Gets the text-to-device space transformation matrix [PDF:1.6:5.3.3].</summary>
+        /// <param name="topDown">Whether the y-axis orientation has to be adjusted to common top-down
+        /// orientation rather than standard PDF coordinate system (bottom-up).</param>
         public SKMatrix GetTextToDeviceMatrix(IContentContext context)
         {
             /*
@@ -541,11 +495,9 @@ namespace PdfClown.Documents.Contents
             return matrix.PostConcat(textState.Tm);
         }
 
-        /**
-          <summary>Gets the user-to-device space transformation matrix [PDF:1.6:4.2.3].</summary>
-          <param name="topDown">Whether the y-axis orientation has to be adjusted to common top-down
-          orientation rather than standard PDF coordinate system (bottom-up).</param>
-        */
+        /// <summary>Gets the user-to-device space transformation matrix [PDF:1.6:4.2.3].</summary>
+        /// <param name="topDown">Whether the y-axis orientation has to be adjusted to common top-down
+        /// orientation rather than standard PDF coordinate system (bottom-up).</param>
         public SKMatrix GetUserToDeviceMatrix(IContentContext context)
         {
             var matrix = context.RotateMatrix;
@@ -608,9 +560,7 @@ namespace PdfClown.Documents.Contents
             FillAlpha = null;
         }
 
-        /**
-          <summary>Gets a deep copy of the graphics state object.</summary>
-        */
+        /// <summary>Gets a deep copy of the graphics state object.</summary>
         public object Clone()
         {
             var clone = new GraphicsState
@@ -646,7 +596,6 @@ namespace PdfClown.Documents.Contents
                 StrokeOverprint = StrokeOverprint,
                 OverprintMode = OverprintMode,
                 Flatness = Flatness,
-                ModifyClipPath = ModifyClipPath,
                 TextState = new TextGraphicsState
                 {
                     Tm = textState.Tm,
@@ -656,10 +605,8 @@ namespace PdfClown.Documents.Contents
             return clone;
         }
 
-        /**
-          <summary>Copies this graphics state into the specified one.</summary>
-          <param name="state">Target graphics state object.</param>
-        */
+        /// <summary>Copies this graphics state into the specified one.</summary>
+        /// <param name="state">Target graphics state object.</param>
         public void CopyTo(GraphicsState state)
         {
             state.ctm = ctm;
@@ -693,14 +640,12 @@ namespace PdfClown.Documents.Contents
             state.StrokeOverprint = StrokeOverprint;
             state.OverprintMode = OverprintMode;
             state.Flatness = Flatness;
-            state.ModifyClipPath = ModifyClipPath;
-
         }
 
         internal void SetFont(ExtGState eState)
         {
-             Font = eState.Font;
-             FontSize = eState.FontSize.Value;
+            Font = eState.Font;
+            FontSize = eState.FontSize.Value;
         }
     }
 }

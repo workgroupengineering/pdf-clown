@@ -23,32 +23,24 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Begin a new subpath by moving the current point' operation [PDF:1.6:4.4.1].</summary>
-    */
+    /// <summary>'Begin a new subpath by moving the current point' operation [PDF:1.6:4.4.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class BeginSubpath : Operation
     {
         public static readonly string OperatorKeyword = "m";
 
-        /**
-          <param name="point">Current point.</param>
-        */
+        /// <param name="point">Current point.</param>
         public BeginSubpath(SKPoint point) : this(point.X, point.Y)
         { }
 
-        /**
-          <param name="pointX">Current point X.</param>
-          <param name="pointY">Current point Y.</param>
-        */
+        /// <param name="pointX">Current point X.</param>
+        /// <param name="pointY">Current point Y.</param>
         public BeginSubpath(double pointX, double pointY)
             : base(OperatorKeyword, new PdfArray
               {
@@ -60,12 +52,10 @@ namespace PdfClown.Documents.Contents.Objects
         public BeginSubpath(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        /**
-          <summary>Gets/Sets the current point.</summary>
-        */
+        /// <summary>Gets/Sets the current point.</summary>
         public SKPoint Point
         {
-            get => new SKPoint(operands.GetFloat(0), operands.GetFloat(1));
+            get => operands.ToSKPoint();
             set
             {
                 operands.Set(0, value.X);

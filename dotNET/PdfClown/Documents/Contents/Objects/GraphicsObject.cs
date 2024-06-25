@@ -23,15 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Graphics object [PDF:1.6:4.1].</summary>
-    */
+    /// <summary>Graphics object [PDF:1.6:4.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class GraphicsObject : CompositeObject
     {

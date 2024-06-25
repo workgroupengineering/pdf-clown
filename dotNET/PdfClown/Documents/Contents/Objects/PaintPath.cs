@@ -28,20 +28,17 @@ using PdfClown.Documents.Contents;
 using PdfClown.Util;
 
 using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Path-painting operation [PDF:1.6:4.4.2].</summary>
-    */
+    /// <summary>Path-painting operation [PDF:1.6:4.4.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class PaintPath : Operation
     {
         public const string CloseFillStrokeEvenOddOperatorKeyword = "b*";
         public const string CloseFillStrokeOperatorKeyword = "b";
         public const string CloseStrokeOperatorKeyword = "s";
-        public const string EndPathNoOpOperatorKeyword = "n";
+        public const string EndNoOpOperatorKeyword = "n";
         public const string FillEvenOddOperatorKeyword = "f*";
         public const string FillCompatibleOperatorKeyword = "F";
         public const string FillOperatorKeyword = "f";
@@ -49,260 +46,37 @@ namespace PdfClown.Documents.Contents.Objects
         public const string FillStrokeOperatorKeyword = "B";
         public const string StrokeOperatorKeyword = "S";
 
-        /**
-          <summary>'Close, fill, and then stroke the path, using the nonzero winding number rule to determine
-          the region to fill' operation.</summary>
-        */
-        public static readonly PaintPath CloseFillStroke = new PaintCloseFillStrokePath();
-        /**
-          <summary>'Close, fill, and then stroke the path, using the even-odd rule to determine the region
-          to fill' operation.</summary>
-        */
-        public static readonly PaintPath CloseFillStrokeEvenOdd = new PaintCloseFillStrokeEvenOddPath();
-        /**
-          <summary>'Close and stroke the path' operation.</summary>
-        */
-        public static readonly PaintPath CloseStroke = new PaintCloseStrokePath();
-        /**
-          <summary>'End the path object without filling or stroking it' operation.</summary>
-        */
-        public static readonly PaintPath EndPathNoOp = new PaintEndPathNoOp();
-        /**
-          <summary>'Fill the path, using the nonzero winding number rule to determine the region to fill' operation.</summary>
-        */
-        public static readonly PaintPath Fill = new PaintFillPath();
-        /**
-          <summary>'Fill the path, using the even-odd rule to determine the region to fill' operation.</summary>
-        */
-        public static readonly PaintPath FillEvenOdd = new PaintFillEvenOddPath();
-        /**
-          <summary>'Fill and then stroke the path, using the nonzero winding number rule to determine the region to
-          fill' operation.</summary>
-        */
-        public static readonly PaintPath FillStroke = new PaintFillStrokePath();
-        /**
-          <summary>'Fill and then stroke the path, using the even-odd rule to determine the region to fill' operation.</summary>
-        */
-        public static readonly PaintPath FillStrokeEvenOdd = new PaintFillStrokeEvenOddPath();
-        /**
-          <summary>'Stroke the path' operation.</summary>
-        */
-        public static readonly PaintPath Stroke = new PaintStrokePath();
+        /// <summary>'Close, fill, and then stroke the path, using the nonzero winding number rule to determine
+        /// the region to fill' operation.</summary>
+        public static readonly PaintPath CloseFillStroke = new PaintPathCloseFillStroke();
+
+        /// <summary>'Close, fill, and then stroke the path, using the even-odd rule to determine the region
+        /// to fill' operation.</summary>
+        public static readonly PaintPath CloseFillStrokeEvenOdd = new PaintPathCloseFillStrokeEvenOdd();
+        
+        /// <summary>'Close and stroke the path' operation.</summary>
+        public static readonly PaintPath CloseStroke = new PaintPathCloseStroke();
+        
+        /// <summary>'End the path object without filling or stroking it' operation.</summary>
+        public static readonly PaintPath EndNoOp = new PaintPathEndNoOp();
+        
+        /// <summary>'Fill the path, using the nonzero winding number rule to determine the region to fill' operation.</summary>
+        public static readonly PaintPath Fill = new PaintPathFill();
+        
+        /// <summary>'Fill the path, using the even-odd rule to determine the region to fill' operation.</summary>
+        public static readonly PaintPath FillEvenOdd = new PaintPathFillEvenOdd();
+        
+        /// <summary>'Fill and then stroke the path, using the nonzero winding number rule to determine the region to
+        /// fill' operation.</summary>
+        public static readonly PaintPath FillStroke = new PaintPathFillStroke();
+        
+        /// <summary>'Fill and then stroke the path, using the even-odd rule to determine the region to fill' operation.</summary>
+        public static readonly PaintPath FillStrokeEvenOdd = new PaintPathFillStrokeEvenOdd();
+        
+        /// <summary>'Stroke the path' operation.</summary>
+        public static readonly PaintPath Stroke = new PaintPathStroke();
 
         public PaintPath(string @operator) : base(@operator)
-        { }
-
-        public override void Scan(GraphicsState state)
-        {
-            state.ModifyClipPath?.Scan(state);
-            state.ModifyClipPath = null;
-        }
-    }
-
-    public sealed class PaintCloseFillStrokePath : PaintPath
-    {
-        public PaintCloseFillStrokePath() : base(PaintPath.CloseFillStrokeOperatorKeyword)
-        {
-        }
-
-        public override void Scan(GraphicsState state)
-        {
-            var scanner = state.Scanner;
-            if (scanner.Canvas is SKCanvas canvas)
-            {
-                var pathObject = scanner.Path;
-                pathObject.Close();
-                using (var paint = state.CreateFillPaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-
-                using (var paint = state.CreateStrokePaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-            }
-            base.Scan(state);
-        }
-    }
-
-    public sealed class PaintCloseFillStrokeEvenOddPath : PaintPath
-    {
-        public PaintCloseFillStrokeEvenOddPath() : base(PaintPath.CloseFillStrokeEvenOddOperatorKeyword)
-        {
-        }
-
-        public override void Scan(GraphicsState state)
-        {
-            var scanner = state.Scanner;
-            if (scanner.Canvas is SKCanvas canvas)
-            {
-                var pathObject = scanner.Path;
-                pathObject.Close();
-                pathObject.FillType = SKPathFillType.EvenOdd;
-                using (var paint = state.CreateFillPaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-
-                using (var paint = state.CreateStrokePaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-            }
-            base.Scan(state);
-        }
-    }
-
-    public sealed class PaintCloseStrokePath : PaintPath
-    {
-        public PaintCloseStrokePath() : base(PaintPath.CloseStrokeOperatorKeyword)
-        {
-        }
-
-        public override void Scan(GraphicsState state)
-        {
-            var scanner = state.Scanner;
-            if (scanner.Canvas is SKCanvas canvas)
-            {
-                var pathObject = scanner.Path;
-                pathObject.Close();
-
-                using (var paint = state.CreateStrokePaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-            }
-            base.Scan(state);
-        }
-    }
-
-    public sealed class PaintEndPathNoOp : PaintPath
-    {
-        public PaintEndPathNoOp() : base(PaintPath.EndPathNoOpOperatorKeyword)
-        {
-        }
-
-        public override void Scan(GraphicsState state)
-        {
-            base.Scan(state);
-        }
-    }
-
-    public sealed class PaintFillPath : PaintPath
-    {
-        public PaintFillPath() : base(PaintPath.FillOperatorKeyword)
-        {
-        }
-
-        public override void Scan(GraphicsState state)
-        {
-            var scanner = state.Scanner;
-            if (scanner.Canvas is SKCanvas canvas)
-            {
-                var pathObject = scanner.Path;
-                using (var paint = state.CreateFillPaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-            }
-            base.Scan(state);
-        }
-    }
-
-    public sealed class PaintFillEvenOddPath : PaintPath
-    {
-        public PaintFillEvenOddPath() : base(PaintPath.FillEvenOddOperatorKeyword)
-        {
-        }
-
-        public override void Scan(GraphicsState state)
-        {
-            var scanner = state.Scanner;
-            if (scanner.Canvas is SKCanvas canvas)
-            {
-                var pathObject = scanner.Path;
-                pathObject.FillType = SKPathFillType.EvenOdd;
-                using (var paint = state.CreateFillPaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-            }
-            base.Scan(state);
-        }
-    }
-
-    public sealed class PaintFillStrokePath : PaintPath
-    {
-        public PaintFillStrokePath() : base(PaintPath.FillStrokeOperatorKeyword)
-        {
-        }
-
-        public override void Scan(GraphicsState state)
-        {
-            var scanner = state.Scanner;
-            if (scanner.Canvas is SKCanvas canvas)
-            {
-                var pathObject = scanner.Path;
-                using (var paint = state.CreateFillPaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-
-                using (var paint = state.CreateStrokePaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-            }
-            base.Scan(state);
-        }
-    }
-
-    public sealed class PaintFillStrokeEvenOddPath : PaintPath
-    {
-        public PaintFillStrokeEvenOddPath() : base(PaintPath.FillStrokeEvenOddOperatorKeyword)
-        {
-        }
-
-        public override void Scan(GraphicsState state)
-        {
-            var scanner = state.Scanner;
-            if (scanner.Canvas is SKCanvas canvas)
-            {
-                var pathObject = scanner.Path;
-                pathObject.FillType = SKPathFillType.EvenOdd;
-                using (var paint = state.CreateFillPaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-
-                using (var paint = state.CreateStrokePaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-            }
-            base.Scan(state);
-        }
-    }
-
-    public sealed class PaintStrokePath : PaintPath
-    {
-        public PaintStrokePath() : base(PaintPath.StrokeOperatorKeyword)
-        {
-        }
-
-        public override void Scan(GraphicsState state)
-        {
-            var scanner = state.Scanner;
-            if (scanner.Canvas is SKCanvas canvas)
-            {
-                var pathObject = scanner.Path;
-                using (var paint = state.CreateStrokePaint())
-                {
-                    canvas.DrawPath(pathObject, paint);
-                }
-            }
-            base.Scan(state);
-        }
+        { }        
     }
 }

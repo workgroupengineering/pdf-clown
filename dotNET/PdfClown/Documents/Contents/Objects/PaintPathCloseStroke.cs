@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright 2008-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
@@ -23,25 +23,30 @@
   this list of conditions.
 */
 
+using SkiaSharp;
+
 namespace PdfClown.Documents.Contents.Objects
 {
-    /// <summary>Clipping path operation [PDF:1.6:4.4.2].</summary>
-    [PDF(VersionEnum.PDF10)]
-    public abstract class ModifyClipPath : Operation
+    public sealed class PaintPathCloseStroke : PaintPath
     {
-        /// <summary>'Modify the current clipping path by intersecting it with the current path,
-        /// using the even-odd rule to determine which regions lie inside the clipping path'
-        /// operation.</summary>
-        public static readonly ModifyClipPathEvenOdd EvenOdd = new();
-
-        /// <summary>'Modify the current clipping path by intersecting it with the current path,
-        /// using the nonzero winding number rule to determine which regions lie inside
-        /// the clipping path' operation.</summary>
-        public static readonly ModifyClipPathNonZero NonZero = new();
-
-        protected ModifyClipPath(string @operator) : base(@operator)
+        public PaintPathCloseStroke() 
+            : base(CloseStrokeOperatorKeyword)
         {
+        }
 
+        public override void Scan(GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            if (scanner.Canvas is SKCanvas canvas)
+            {
+                var pathObject = scanner.Path;
+                pathObject.Close();
+
+                using (var paint = state.CreateStrokePaint())
+                {
+                    canvas.DrawPath(pathObject, paint);
+                }
+            }
         }
     }
 }

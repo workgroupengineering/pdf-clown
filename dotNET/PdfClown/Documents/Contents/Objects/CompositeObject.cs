@@ -27,13 +27,10 @@ using PdfClown.Bytes;
 
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Composite object. It is made up of multiple content objects.</summary>
-    */
+    /// <summary>Composite object. It is made up of multiple content objects.</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class CompositeObject : ContentObject
     {
@@ -41,7 +38,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected CompositeObject()
         {
-            this.objects = new List<ContentObject>();
+            objects = new List<ContentObject>();
         }
 
         protected CompositeObject(ContentObject obj) : this()
@@ -62,18 +59,14 @@ namespace PdfClown.Documents.Contents.Objects
             this.objects = objects;
         }
 
-        /**
-          <summary>Gets/Sets the object header.</summary>
-        */
+        /// <summary>Gets/Sets the object header.</summary>
         public virtual Operation Header
         {
             get => null;
             set => throw new NotSupportedException();
         }
 
-        /**
-          <summary>Gets the list of inner objects.</summary>
-        */
+        /// <summary>Gets the list of inner objects.</summary>
         public IList<ContentObject> Objects => objects;
 
         public override void Scan(GraphicsState state)
@@ -99,12 +92,9 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        
-        /**
-          <summary>Renders this container.</summary>
-          <param name="state">Graphics state.</param>
-          <returns>Whether the rendering has been executed.</returns>
-         */
+        /// <summary>Renders this container.</summary>
+        /// <param name="state">Graphics state.</param>
+        /// <returns>Whether the rendering has been executed.</returns>
         protected virtual bool Render(GraphicsState state)
         {
             var scanner = state.Scanner;

@@ -28,11 +28,9 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Path object [PDF:1.6:4.4].</summary>
-    */
+    /// <summary>Path object [PDF:1.6:4.4].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class GraphicsPath : GraphicsObject
+    public  class GraphicsPath : GraphicsObject
     {
         public GraphicsPath()
         { }
@@ -40,9 +38,7 @@ namespace PdfClown.Documents.Contents.Objects
         public GraphicsPath(IList<ContentObject> operations) : base(operations)
         { }
 
-        /**
-          <summary>Creates the rendering object corresponding to this container.</summary>
-        */
+        /// <summary>Creates the rendering object corresponding to this container.</summary>
         private SKPath CreatePath() => new SKPath();
 
         protected override bool Render(GraphicsState state)
@@ -53,7 +49,5 @@ namespace PdfClown.Documents.Contents.Objects
             scanner.ChildLevel.Render(path);
             return true;
         }
-
-        
     }
 }

@@ -1,5 +1,5 @@
-/*
-  Copyright 2008-2015 Stefano Chizzolini. http://www.pdfclown.org
+﻿/*
+  Copyright 2008-2010 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,25 +23,41 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
+using SkiaSharp;
+using System.Collections.Generic;
+
 namespace PdfClown.Documents.Contents.Objects
 {
-    /// <summary>Clipping path operation [PDF:1.6:4.4.2].</summary>
-    [PDF(VersionEnum.PDF10)]
-    public abstract class ModifyClipPath : Operation
+    public sealed class GraphicsPathPreClip : GraphicsPath
     {
-        /// <summary>'Modify the current clipping path by intersecting it with the current path,
-        /// using the even-odd rule to determine which regions lie inside the clipping path'
-        /// operation.</summary>
-        public static readonly ModifyClipPathEvenOdd EvenOdd = new();
+        public ModifyClipPath ClipPathOperator { get; }
 
-        /// <summary>'Modify the current clipping path by intersecting it with the current path,
-        /// using the nonzero winding number rule to determine which regions lie inside
-        /// the clipping path' operation.</summary>
-        public static readonly ModifyClipPathNonZero NonZero = new();
+        public GraphicsPathPreClip()
+        { }
 
-        protected ModifyClipPath(string @operator) : base(@operator)
+        public GraphicsPathPreClip(ModifyClipPath clipPathOperator, IList<ContentObject> operations) : base(operations)
         {
+            ClipPathOperator = clipPathOperator;
+        }
 
+        /// <summary>Creates the rendering object corresponding to this container.</summary>
+        private SKPath CreatePath() => new SKPath();
+
+        protected override bool Render(GraphicsState state)
+        {
+            var scanner = state.Scanner;
+            // Render the inner elements!
+            using var path = CreatePath();
+            scanner.ChildLevel.Render(path);
+            ClipPathOperator.Scan(scanner.ChildLevel.State);
+            return true;
+        }
+
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
+        {
+            ClipPathOperator.WriteTo(stream, context);
+            base.WriteTo(stream, context);
         }
     }
 }

@@ -33,9 +33,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Tokens
 {
-    /**
-      <summary>Content stream parser [PDF:1.6:3.7.1].</summary>
-    */
+    /// <summary>Content stream parser [PDF:1.6:3.7.1].</summary>
     public sealed class ContentParser : BaseParser
     {
         internal ContentParser(IInputStream stream) : base(stream)
@@ -44,7 +42,7 @@ namespace PdfClown.Documents.Contents.Tokens
         public ContentParser(Memory<byte> data) : base(data)
         { }
 
-        ///<summary>Parses the next content object [PDF:1.6:4.1].</summary>
+        /// <summary>Parses the next content object [PDF:1.6:4.1].</summary>
         public ContentObject ParseContentObject()
         {
             Operation operation = ParseOperation();
@@ -56,13 +54,14 @@ namespace PdfClown.Documents.Contents.Tokens
                     return new GraphicsShading(paintShading);
                 case BeginSubpath:
                 case DrawRectangle:
+                case ModifyClipPath:
                     return ParsePath(operation);
                 case BeginText:
                     return new GraphicsText(ParseContentObjects());
                 case SaveGraphicsState:
                     return new GraphicsLocalState(ParseContentObjects());
                 case BeginMarkedContent beginMarkedContent:
-                    return new GraphicsMarkedContent(beginMarkedContent, ParseContentObjects());
+                    return new GraphicsMarkedContent(beginMarkedContent, ParseContentObjects(new List<ContentObject> { beginMarkedContent }));
                 case BeginCompatibilityState:
                     return new GraphicsCompatibilityState(ParseContentObjects());
                 case BeginInlineImage:
@@ -72,10 +71,15 @@ namespace PdfClown.Documents.Contents.Tokens
             }
         }
 
-        ///<summary>Parses the next content objects.</summary>
+        /// <summary>Parses the next content objects.</summary>
         public List<ContentObject> ParseContentObjects()
         {
             var contentObjects = new List<ContentObject>();
+            return ParseContentObjects(contentObjects);
+        }
+
+        private List<ContentObject> ParseContentObjects(List<ContentObject> contentObjects)
+        {
             while (MoveNext())
             {
                 ContentObject contentObject = ParseContentObject();
@@ -93,7 +97,7 @@ namespace PdfClown.Documents.Contents.Tokens
             return contentObjects;
         }
 
-        ///<summary>Parses the next operation.</summary>
+        /// <summary>Parses the next operation.</summary>
         public Operation ParseOperation()
         {
             string @operator = null;
@@ -168,29 +172,30 @@ namespace PdfClown.Documents.Contents.Tokens
         {
             //NOTE: Paths do not have an explicit end operation, so we must infer it
             //looking for the first non-painting operation.
-            IList<ContentObject> operations = new List<ContentObject>();
-            {
+            var operations = new List<ContentObject>();
+            if (beginOperation is not ModifyClipPath)
                 operations.Add(beginOperation);
-                long position = Position;
-                bool closeable = false;
-                while (MoveNext())
+            long position = Position;
+            bool closeable = false;
+            while (MoveNext())
+            {
+                var operation = ParseOperation();
+                // Multiple-operation graphics object closeable?
+                if (operation is PaintPath) // Painting operation.
+                { closeable = true; }
+                else if (closeable) // Past end (first non-painting operation).
                 {
-                    var operation = ParseOperation();
-                    // Multiple-operation graphics object closeable?
-                    if (operation is PaintPath) // Painting operation.
-                    { closeable = true; }
-                    else if (closeable) // Past end (first non-painting operation).
-                    {
-                        Seek(position); // Rolls back to the last path-related operation.
+                    Seek(position); // Rolls back to the last path-related operation.
 
-                        break;
-                    }
-
-                    operations.Add(operation);
-                    position = Position;
+                    break;
                 }
+
+                operations.Add(operation);
+                position = Position;
             }
-            return new GraphicsPath(operations);
+            return beginOperation is ModifyClipPath modifyClipPath
+                ? new GraphicsPathPreClip(modifyClipPath, operations)
+                : new GraphicsPath(operations);
         }
 
         public override bool MoveNextComplex() => base.MoveNext();

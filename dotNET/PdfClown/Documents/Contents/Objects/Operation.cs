@@ -68,7 +68,7 @@ namespace PdfClown.Documents.Contents.Objects
             { PaintPath.FillStrokeEvenOddOperatorKeyword, (operands) => PaintPath.FillStrokeEvenOdd },
             { PaintPath.CloseFillStrokeOperatorKeyword, (operands) => PaintPath.CloseFillStroke },
             { PaintPath.CloseFillStrokeEvenOddOperatorKeyword, (operands) => PaintPath.CloseFillStrokeEvenOdd },
-            { PaintPath.EndPathNoOpOperatorKeyword, (operands) => PaintPath.EndPathNoOp },
+            { PaintPath.EndNoOpOperatorKeyword, (operands) => PaintPath.EndNoOp },
             { ModifyClipPathNonZero.OperatorKeyword, (operands) => ModifyClipPath.NonZero },
             { ModifyClipPathEvenOdd.OperatorKeyword, (operands) => ModifyClipPath.EvenOdd },
             { TranslateTextToNextLine.OperatorKeyword, (operands) => TranslateTextToNextLine.Value },

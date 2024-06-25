@@ -52,7 +52,7 @@ namespace PdfClown.Util.Math.Geom
             return new SKRect(array.GetFloat(0), array.GetFloat(1), array.GetFloat(2), array.GetFloat(3));
         }
 
-        public static SKPoint? ToSKPoint(this PdfArray array)
+        public static SKPoint ToSKPoint(this PdfArray array)
         {
             return new SKPoint(array.GetFloat(0), array.GetFloat(1));
         }
