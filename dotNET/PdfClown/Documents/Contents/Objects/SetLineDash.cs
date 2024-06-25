@@ -31,9 +31,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the line dash pattern' operation [PDF:1.6:4.3.3].</summary>
-    */
+    ///<summary>'Set the line dash pattern' operation [PDF:1.6:4.3.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetLineDash : Operation
     {
@@ -42,26 +40,23 @@ namespace PdfClown.Documents.Contents.Objects
         public SetLineDash(LineDash lineDash) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
         { Value = lineDash; }
 
-        public SetLineDash(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public SetLineDash(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state)
-        { state.LineDash = Value; }
+        public override void Scan(GraphicsState state) => state.LineDash = Value;
 
         public LineDash Value
         {
-            get => LineDash.Get((PdfArray)operands[0], (IPdfNumber)operands[1]);
+            get => LineDash.Get(operands.Get<PdfArray>(0), operands.GetNumber(1));
             set
             {
                 operands.Clear();
                 // 1. Dash array.
                 var dashArray = value.DashArray;
-                var baseDashArray = new PdfArray(dashArray.Length);
-                foreach (double dashItem in dashArray)
-                { baseDashArray.Add(PdfReal.Get(dashItem)); }
+                var baseDashArray = new PdfArray(dashArray);
                 operands.Add(baseDashArray);
                 // 2. Dash phase.
-                operands.Add(PdfReal.Get(value.DashPhase));
+                operands.Add(value.DashPhase);
             }
         }
     }

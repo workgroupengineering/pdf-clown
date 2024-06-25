@@ -19,6 +19,7 @@ using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.CCF;
 using PdfClown.Documents.Contents.Fonts.Type1;
 using PdfClown.Objects;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -208,7 +209,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     bbox.Right.CompareTo(0) != 0 ||
                     bbox.Top.CompareTo(0) != 0))
                 {
-                    return bbox.ToRect();
+                    return bbox.ToSKRect();
                 }
             }
             try

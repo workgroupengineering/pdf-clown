@@ -37,21 +37,18 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF12)]
     public abstract class ContentMarker : Operation, IResourceReference<PropertyList>
     {
-        protected ContentMarker(PdfName tag) : this(tag, null)
+        protected ContentMarker(string @operator, PdfName tag) : this(@operator, tag, null)
         { }
 
-        protected ContentMarker(PdfName tag, PdfDirectObject properties) : base(null, tag)
+        protected ContentMarker(string @operator, PdfName tag, PdfDirectObject properties) : base(@operator, tag)
         {
             if (properties != null)
             {
                 operands.Add(properties);
-                @operator = PropertyListOperator;
-            }
-            else
-            { @operator = SimpleOperator; }
+            }            
         }
 
-        protected ContentMarker(string @operator, IList<PdfDirectObject> operands) : base(@operator, operands)
+        protected ContentMarker(string @operator, PdfArray operands) : base(@operator, operands)
         { }
 
         public PropertyList GetResource(ContentScanner scanner) => GetProperties(scanner);
@@ -71,8 +68,8 @@ namespace PdfClown.Documents.Contents.Objects
             var name = (PdfName)properties;
             var pscanner = scanner;
 
-            while ((list = pscanner.ContentContext.Resources.PropertyLists[name]) == null
-                && (pscanner = pscanner.ParentLevel) != null)
+            while ((list = pscanner.Context.Resources.PropertyLists[name]) == null
+                && (pscanner = pscanner.ResourceParent) != null)
             { }
             return list;
         }
@@ -100,21 +97,19 @@ namespace PdfClown.Documents.Contents.Objects
             {
                 if (value == null)
                 {
-                    @operator = SimpleOperator;
                     if (operands.Count > 1)
                     { operands.RemoveAt(1); }
                 }
                 else
                 {
                     PdfDirectObject operand;
-                    if (value is PdfName)
-                    { operand = (PdfName)value; }
-                    else if (value is PropertyList)
-                    { operand = ((PropertyList)value).BaseDataObject; }
+                    if (value is PdfName pdfName)
+                    { operand = pdfName; }
+                    else if (value is PropertyList propertyList)
+                    { operand = propertyList.BaseDataObject; }
                     else
                         throw new ArgumentException("value MUST be a PdfName or a PropertyList.");
 
-                    @operator = PropertyListOperator;
                     if (operands.Count > 1)
                     { operands[1] = operand; }
                     else
@@ -137,12 +132,6 @@ namespace PdfClown.Documents.Contents.Objects
             get => Properties is PdfName name ? name : null;
             set => Properties = value;
         }
-
-        protected abstract string PropertyListOperator
-        { get; }
-
-        protected abstract string SimpleOperator
-        { get; }
 
         public override void Scan(GraphicsState state)
         {

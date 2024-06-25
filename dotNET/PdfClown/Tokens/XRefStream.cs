@@ -25,7 +25,6 @@
 
 using PdfClown.Bytes;
 using PdfClown.Objects;
-using PdfClown.Util;
 using PdfClown.Util.IO;
 using PdfClown.Util.Parsers;
 
@@ -35,10 +34,8 @@ using System.Collections.Generic;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>Cross-reference stream containing cross-reference information [PDF:1.6:3.4.7].</summary>
-      <remarks>It is alternative to the classic cross-reference table.</remarks>
-    */
+    /// <summary>Cross-reference stream containing cross-reference information [PDF:1.6:3.4.7].</summary>
+    /// <remarks>It is alternative to the classic cross-reference table.</remarks>
     public sealed class XRefStream : PdfStream, IDictionary<int, XRefEntry>
     {
         private const int FreeEntryType = 0;
@@ -50,10 +47,8 @@ namespace PdfClown.Tokens
         private static readonly int EntryField0Size = 1;
         private static readonly int EntryField2Size = GetFieldSize(XRefEntry.GenerationUnreusable);
 
-        /**
-          <summary>Gets the number of bytes needed to store the specified value.</summary>
-          <param name="maxValue">Maximum storable value.</param>
-        */
+        /// <summary>Gets the number of bytes needed to store the specified value.</summary>
+        /// <param name="maxValue">Maximum storable value.</param>
         private static int GetFieldSize(int maxValue)
         { return (int)Math.Ceiling(Math.Log(maxValue) / ByteBaseLog); }
 
@@ -81,11 +76,9 @@ namespace PdfClown.Tokens
         public override PdfObject Accept(IVisitor visitor, object data)
         { return visitor.Visit(this, data); }
 
-        /**
-          <summary>Gets the byte offset from the beginning of the file
-          to the beginning of the previous cross-reference stream.</summary>
-          <returns>-1 in case no linked stream exists.</returns>
-        */
+        /// <summary>Gets the byte offset from the beginning of the file
+        /// to the beginning of the previous cross-reference stream.</summary>
+        /// <returns>-1 in case no linked stream exists.</returns>
         public int LinkedStreamOffset
         {
             get => Header.GetInt(PdfName.Prev, -1);
@@ -185,86 +178,80 @@ namespace PdfClown.Tokens
             return ((IEnumerable<KeyValuePair<int, XRefEntry>>)this).GetEnumerator();
         }
 
-        private SortedDictionary<int, XRefEntry> Entries
+        internal SortedDictionary<int, XRefEntry> Entries
         {
             get
             {
                 if (entries == null)
                 {
-                    entries = new SortedDictionary<int, XRefEntry>();
-
-                    IByteStream body = Body;
-                    if (body.Length > 0)
-                    {
-                        PdfDictionary header = Header;
-                        int size = header.GetInt(PdfName.Size);
-                        int[] entryFieldSizes;
-                        {
-                            var entryFieldSizesObject = header.Get<PdfArray>(PdfName.W);
-                            entryFieldSizes = new int[entryFieldSizesObject.Count];
-                            for (int index = 0, length = entryFieldSizes.Length; index < length; index++)
-                            { entryFieldSizes[index] = entryFieldSizesObject.GetInt(index); }
-                        }
-
-                        var subsectionBounds = header.Get<PdfArray>(PdfName.Index) ?? new PdfArray
-                            {
-                                PdfInteger.Get(0),
-                                PdfInteger.Get(size)
-                            };
-                        body.ByteOrder = ByteOrderEnum.BigEndian;
-                        body.Seek(0);
-
-                        IEnumerator<PdfDirectObject> subsectionBoundIterator = subsectionBounds.GetEnumerator();
-                        while (subsectionBoundIterator.MoveNext())
-                        {
-                            try
-                            {
-                                int start = ((PdfInteger)subsectionBoundIterator.Current).IntValue;
-                                subsectionBoundIterator.MoveNext();
-                                int count = ((PdfInteger)subsectionBoundIterator.Current).IntValue;
-                                for (int entryIndex = start, length = start + count; entryIndex < length; entryIndex++)
-                                {
-                                    int entryFieldType = (entryFieldSizes[0] == 0 ? 1 : body.ReadInt(entryFieldSizes[0]));
-                                    switch (entryFieldType)
-                                    {
-                                        case FreeEntryType:
-                                            {
-                                                int nextFreeObjectNumber = body.ReadInt(entryFieldSizes[1]);
-                                                int generation = body.ReadInt(entryFieldSizes[2]);
-                                                entries[entryIndex] = new XRefEntry(entryIndex, generation, nextFreeObjectNumber, XRefEntry.UsageEnum.Free);
-                                                break;
-                                            }
-                                        case InUseEntryType:
-                                            {
-                                                int offset = body.ReadInt(entryFieldSizes[1]);
-                                                int generation = body.ReadInt(entryFieldSizes[2]);
-                                                entries[entryIndex] = new XRefEntry(entryIndex, generation, offset, XRefEntry.UsageEnum.InUse);
-                                                break;
-                                            }
-                                        case InUseCompressedEntryType:
-                                            {
-                                                int streamNumber = body.ReadInt(entryFieldSizes[1]);
-                                                int innerNumber = body.ReadInt(entryFieldSizes[2]);
-                                                entries[entryIndex] = new XRefEntry(entryIndex, innerNumber, streamNumber);
-                                                break;
-                                            }
-                                        default:
-                                            throw new NotSupportedException("Unknown xref entry type '" + entryFieldType + "'.");
-                                    }
-                                }
-                            }
-                            catch (Exception e)
-                            { throw new ParseException("Malformed cross-reference stream object.", e); }
-                        }
-                    }
+                    ReadEntries();
                 }
                 return entries;
             }
         }
 
-        /**
-          <summary>Serializes the xref stream entries into the stream body.</summary>
-        */
+        internal void ReadEntries()
+        {
+            entries = new SortedDictionary<int, XRefEntry>();
+
+            IByteStream body = Body;
+            if (body.Length > 0)
+            {
+                PdfDictionary header = Header;
+                int size = header.GetInt(PdfName.Size);
+                int[] entryFieldSizes = header.Get<PdfArray>(PdfName.W).ToIntArray();
+                var subsectionBounds = header.Get<PdfArray>(PdfName.Index) ?? new PdfArray(2) { 0, size };
+                body.ByteOrder = ByteOrderEnum.BigEndian;
+                body.Seek(0);
+
+                using var subsectionBoundIterator = subsectionBounds.GetEnumerator();
+                while (subsectionBoundIterator.MoveNext())
+                {
+                    try
+                    {
+                        int start = ((PdfInteger)subsectionBoundIterator.Current).IntValue;
+                        subsectionBoundIterator.MoveNext();
+                        int count = ((PdfInteger)subsectionBoundIterator.Current).IntValue;
+                        for (int entryIndex = start, length = start + count; entryIndex < length; entryIndex++)
+                        {
+                            int entryFieldType = (entryFieldSizes[0] == 0 ? 1 : body.ReadInt(entryFieldSizes[0]));
+                            switch (entryFieldType)
+                            {
+                                case FreeEntryType:
+                                    {
+                                        int nextFreeObjectNumber = body.ReadInt(entryFieldSizes[1]);
+                                        int generation = body.ReadInt(entryFieldSizes[2]);
+                                        entries[entryIndex] = new XRefEntry(entryIndex, generation, nextFreeObjectNumber, XRefEntry.UsageEnum.Free);
+                                        break;
+                                    }
+                                case InUseEntryType:
+                                    {
+                                        int offset = body.ReadInt(entryFieldSizes[1]);
+                                        int generation = body.ReadInt(entryFieldSizes[2]);
+                                        entries[entryIndex] = new XRefEntry(entryIndex, generation, offset, XRefEntry.UsageEnum.InUse);
+                                        break;
+                                    }
+                                case InUseCompressedEntryType:
+                                    {
+                                        int streamNumber = body.ReadInt(entryFieldSizes[1]);
+                                        int innerNumber = body.ReadInt(entryFieldSizes[2]);
+                                        entries[entryIndex] = new XRefEntry(entryIndex, innerNumber, streamNumber);
+                                        break;
+                                    }
+                                default:
+                                    throw new NotSupportedException("Unknown xref entry type '" + entryFieldType + "'.");
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        throw new ParseException("Malformed cross-reference stream object.", e);
+                    }
+                }
+            }
+        }
+
+        /// <summary>Serializes the xref stream entries into the stream body.</summary>
         private void Flush(IOutputStream stream)
         {
             // 1. Body.
@@ -290,8 +277,8 @@ namespace PdfClown.Tokens
                     if (entryNumber - prevObjectNumber != 1) // Current subsection terminated.
                     {
                         if (indexArray.Count > 0)
-                        { indexArray.Add(PdfInteger.Get(prevObjectNumber - indexArray.GetInt(indexArray.Count - 1) + 1)); } // Number of entries in the previous subsection.
-                        indexArray.Add(PdfInteger.Get(entryNumber)); // First object number in the next subsection.
+                        { indexArray.Add(prevObjectNumber - indexArray.GetInt(indexArray.Count - 1) + 1); } // Number of entries in the previous subsection.
+                        indexArray.Add(entryNumber); // First object number in the next subsection.
                     }
                     prevObjectNumber = entryNumber;
 
@@ -316,19 +303,19 @@ namespace PdfClown.Tokens
                             throw new NotSupportedException();
                     }
                 }
-                indexArray.Add(PdfInteger.Get(prevObjectNumber - indexArray.GetInt(indexArray.Count - 1) + 1)); // Number of entries in the previous subsection.
+                indexArray.Add(prevObjectNumber - indexArray.GetInt(indexArray.Count - 1) + 1); // Number of entries in the previous subsection.
             }
 
             // 2. Header.
             {
                 PdfDictionary header = Header;
                 header[PdfName.Index] = indexArray;
-                header[PdfName.Size] = PdfInteger.Get(File.IndirectObjects.Count + 1);
+                header.Set(PdfName.Size, File.IndirectObjects.Count + 1);
                 header[PdfName.W] = new PdfArray(3)
                 {
-                  PdfInteger.Get(entryFieldSizes[0]),
-                  PdfInteger.Get(entryFieldSizes[1]),
-                  PdfInteger.Get(entryFieldSizes[2])
+                  entryFieldSizes[0],
+                  entryFieldSizes[1],
+                  entryFieldSizes[2]
                 };
             }
         }

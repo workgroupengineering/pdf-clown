@@ -23,20 +23,15 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 
 namespace PdfClown.Documents.Files
 {
-    /**
-      <summary>Embedded files referenced by another one (dependencies) [PDF:1.6:3.10.3].</summary>
-    */
+    /// <summary>Embedded files referenced by another one (dependencies) [PDF:1.6:3.10.3].</summary>
     [PDF(VersionEnum.PDF13)]
     public sealed class RelatedFiles : PdfObjectWrapper<PdfArray>, IDictionary<string, EmbeddedFile>
     {
@@ -46,9 +41,41 @@ namespace PdfClown.Documents.Files
         public RelatedFiles(PdfDirectObject baseObject) : base(baseObject)
         { }
 
+        public int Count => BaseDataObject.Count;
+
+        public bool IsReadOnly => false;
+
+        public ICollection<string> Keys
+        {
+            get
+            {
+                var keys = new List<string>();
+                var itemPairs = BaseDataObject;
+                for (int index = 0, length = itemPairs.Count; index < length; index += 2)
+                {
+                    keys.Add(itemPairs.GetString(index));
+                }
+                return keys;
+            }
+        }
+
+        public ICollection<EmbeddedFile> Values
+        {
+            get
+            {
+                var values = new List<EmbeddedFile>();
+                var itemPairs = BaseDataObject;
+                for (int index = 1, length = itemPairs.Count; index < length; index += 2)
+                {
+                    values.Add(Wrap<EmbeddedFile>(itemPairs[index]));
+                }
+                return values;
+            }
+        }
+
         public void Add(string key, EmbeddedFile value)
         {
-            PdfArray itemPairs = BaseDataObject;
+            var itemPairs = BaseDataObject;
             // New entry.
             itemPairs.Add(new PdfTextString(key));
             itemPairs.Add(value.BaseObject);
@@ -63,20 +90,6 @@ namespace PdfClown.Documents.Files
                     return true;
             }
             return false;
-        }
-
-        public ICollection<string> Keys
-        {
-            get
-            {
-                List<string> keys = new List<string>();
-                PdfArray itemPairs = BaseDataObject;
-                for (int index = 0, length = itemPairs.Count; index < length; index += 2)
-                {
-                    keys.Add(itemPairs.GetString(index));
-                }
-                return keys;
-            }
         }
 
         public bool Remove(string key)
@@ -133,20 +146,6 @@ namespace PdfClown.Documents.Files
                 return true;
         }
 
-        public ICollection<EmbeddedFile> Values
-        {
-            get
-            {
-                List<EmbeddedFile> values = new List<EmbeddedFile>();
-                PdfArray itemPairs = BaseDataObject;
-                for (int index = 1, length = itemPairs.Count; index < length; index += 2)
-                {
-                    values.Add(Wrap<EmbeddedFile>(itemPairs[index]));
-                }
-                return values;
-            }
-        }
-
         void ICollection<KeyValuePair<string, EmbeddedFile>>.Add(KeyValuePair<string, EmbeddedFile> entry)
         {
             Add(entry.Key, entry.Value);
@@ -164,12 +163,11 @@ namespace PdfClown.Documents.Files
 
         public void CopyTo(KeyValuePair<string, EmbeddedFile>[] entries, int index)
         {
-            throw new NotImplementedException();
+            foreach (var entry in this)
+            {
+                entries[index++] = entry;
+            }
         }
-
-        public int Count => BaseDataObject.Count;
-
-        public bool IsReadOnly => false;
 
         public bool Remove(KeyValuePair<string, EmbeddedFile> entry)
         {
@@ -179,11 +177,11 @@ namespace PdfClown.Documents.Files
         IEnumerator<KeyValuePair<string, EmbeddedFile>> IEnumerable<KeyValuePair<string, EmbeddedFile>>.GetEnumerator()
         {
             PdfArray itemPairs = BaseDataObject;
-            for (int index = 0, length = itemPairs.Count; index < length; index += 2)
+            for (int i = 0, c = itemPairs.Count; i < c; i += 2)
             {
                 yield return new KeyValuePair<string, EmbeddedFile>(
-                  itemPairs.GetString(index),
-                  Wrap<EmbeddedFile>(itemPairs[index + 1]));
+                  itemPairs.GetString(i),
+                  Wrap<EmbeddedFile>(itemPairs[i + 1]));
             }
         }
 

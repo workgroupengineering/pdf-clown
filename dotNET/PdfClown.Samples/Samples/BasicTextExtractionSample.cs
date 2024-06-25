@@ -2,20 +2,15 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Objects;
-using PdfClown.Files;
-using PdfClown.Tools;
 
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates the low-level way to extract text from a PDF document.</summary>
-      <remarks>In order to obtain richer information about the extracted text content,
-      see the other available samples (<see cref="TextInfoExtractionSample"/>,
-      <see cref="AdvancedTextExtractionSample"/>).</remarks>
-    */
+    /// <summary>This sample demonstrates the low-level way to extract text from a PDF document.</summary>
+    /// <remarks>In order to obtain richer information about the extracted text content,
+    /// see the other available samples (<see cref="TextInfoExtractionSample"/>,
+    /// <see cref="AdvancedTextExtractionSample"/>).</remarks>
     public class BasicTextExtractionSample : Sample
     {
         public override void Run()
@@ -35,20 +30,15 @@ namespace PdfClown.Samples.CLI
                         break;
                     }
 
-                    Extract(
-                      new ContentScanner(page) // Wraps the page contents into a scanner.
-                      );
+                    // Wraps the page contents into a scanner.
+                    Extract(new ContentScanner(page));
                 }
             }
         }
 
-        /**
-          <summary>Scans a content level looking for text.</summary>
-        */
-        /*
-          NOTE: Page contents are represented by a sequence of content objects,
-          possibly nested into multiple levels.
-        */
+        /// <summary>Scans a content level looking for text.</summary>
+        // NOTE: Page contents are represented by a sequence of content objects,
+        // possibly nested into multiple levels.
         private void Extract(ContentScanner level)
         {
             if (level == null)
@@ -63,7 +53,7 @@ namespace PdfClown.Samples.CLI
                     // Extract the current text chunk, decoding it!
                     Console.WriteLine(font.Decode(((ShowText)content).Text));
                 }
-                else if (content is Text || content is ContainerObject)
+                else if (content is GraphicsText || content is ContainerObject)
                 {
                     // Scan the inner level!
                     Extract(level.ChildLevel);

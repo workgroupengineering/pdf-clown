@@ -83,11 +83,11 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 var b0 = input.ReadUByte();
                 if (b0 == CALLSUBR && localSubroutineIndexProvided)
                 {
-                    ProcessCallSubr(globalSubrIndex, localSubrIndex);
+                    ProcessCallSubr(globalSubrIndex, localSubrIndex, localSubrIndex);
                 }
                 else if (b0 == CALLGSUBR && globalSubroutineIndexProvided)
                 {
-                    ProcessCallGSubr(globalSubrIndex, localSubrIndex);
+                    ProcessCallSubr(globalSubrIndex, localSubrIndex, globalSubrIndex);
                 }
                 else if ((b0 >= 0 && b0 <= 27) || (b0 >= 29 && b0 <= 31))
                 {
@@ -105,31 +105,13 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return sequence;
         }
 
-        private void ProcessCallSubr(Memory<byte>[] globalSubrIndex, Memory<byte>[] localSubrIndex)
+        private void ProcessCallSubr(Memory<byte>[] globalSubrIndex, Memory<byte>[] localSubrIndex, Memory<byte>[] subrIndex)
         {
             int subrNumber = CalculateSubrNumber((int)(float)sequence.RemoveAtValue(sequence.Count - 1),
-                    localSubrIndex.Length);
-            if (subrNumber < localSubrIndex.Length)
+                    subrIndex.Length);
+            if (subrNumber < subrIndex.Length)
             {
-                var subrBytes = localSubrIndex[subrNumber];
-                ParseSequence(subrBytes, globalSubrIndex, localSubrIndex);
-                var lastItem = sequence[sequence.Count - 1];
-                if (lastItem is CharStringCommand
-                            && Type2KeyWord.RET == ((CharStringCommand)lastItem).Type2KeyWord)
-                {
-                    // RemoveAt "return" command
-                    sequence.RemoveAt(sequence.Count - 1);
-                }
-            }
-        }
-
-        private void ProcessCallGSubr(Memory<byte>[] globalSubrIndex, Memory<byte>[] localSubrIndex)
-        {
-            int subrNumber = CalculateSubrNumber((int)(float)sequence.RemoveAtValue(sequence.Count - 1),
-                    globalSubrIndex.Length);
-            if (subrNumber < globalSubrIndex.Length)
-            {
-                var subrBytes = globalSubrIndex[subrNumber];
+                var subrBytes = subrIndex[subrNumber]; 
                 ParseSequence(subrBytes, globalSubrIndex, localSubrIndex);
                 var lastItem = sequence[sequence.Count - 1];
                 if (lastItem is CharStringCommand

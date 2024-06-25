@@ -40,10 +40,10 @@ namespace PdfClown.Documents.Contents.Objects
 
         public CharProcWidth(double wx, double wy)
             : base(OperatorKeyword,
-                  new List<PdfDirectObject>(2) { PdfReal.Get(wx), PdfReal.Get(wy) })
+                  new PdfArray(2) { wx, wy })
         { }
 
-        public CharProcWidth(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public CharProcWidth(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         public override void Scan(GraphicsState state)
@@ -52,14 +52,14 @@ namespace PdfClown.Documents.Contents.Objects
 
         public double WX
         {
-            get => ((IPdfNumber)operands[0]).RawValue;
-            set => operands[0] = PdfReal.Get(value);
+            get => operands.GetDouble(0);
+            set => operands.Set(0, value);
         }
 
         public double WY
         {
-            get => ((IPdfNumber)operands[1]).RawValue;
-            set => operands[1] = PdfReal.Get(value);
+            get => operands.GetDouble(1);
+            set => operands.Set(1, value);
         }
     }
 }

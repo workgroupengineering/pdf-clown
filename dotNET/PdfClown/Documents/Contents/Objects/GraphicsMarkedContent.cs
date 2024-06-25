@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2011 Stefano Chizzolini. http://www.pdfclown.org
+  Copyright 2008-2012 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -24,44 +24,52 @@
 */
 
 using PdfClown.Bytes;
-using xObjects = PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
+using PdfClown.Tokens;
 
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
     /**
-      <summary>External object shown in a content stream context [PDF:1.6:4.7].</summary>
+      <summary>Marked-content sequence [PDF:1.6:10.5].</summary>
     */
-    [PDF(VersionEnum.PDF10)]
-    public sealed class XObject : GraphicsObject, IResourceReference<xObjects::XObject>
+    [PDF(VersionEnum.PDF12)]
+    public sealed class GraphicsMarkedContent : GraphicsObject
     {
-        public static readonly string BeginOperatorKeyword = PaintXObject.OperatorKeyword;
-        public static readonly string EndOperatorKeyword = BeginOperatorKeyword;
+        private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndMarkedContent.OperatorKeyword + Symbol.LineFeed);
 
-        public XObject(PaintXObject operation) : base(operation)
+        private BeginMarkedContent header;
+
+        public GraphicsMarkedContent(BeginMarkedContent header)
+            : this(header, new List<ContentObject>())
         { }
 
+        public GraphicsMarkedContent(BeginMarkedContent header, IList<ContentObject> objects)
+            : base(objects)
+        { this.header = header; }
+
         /**
-          <summary>Gets the scanner for this object's contents.</summary>
-          <param name="context">Scanning context.</param>
+          <summary>Gets/Sets information about this marked-content sequence.</summary>
         */
-        public ContentScanner GetScanner(ContentScanner context) => Operation.GetScanner(context);
-
-        public xObjects::XObject GetResource(ContentScanner context) => Operation.GetResource(context);
-
-        public PdfName Name
+        public override Operation Header
         {
-            get => Operation.Name;
-            set => Operation.Name = value;
+            get => header;
+            set => header = (BeginMarkedContent)value;
         }
+
+        public string Type => header?.Operands.Count > 0 ? ((header.Operands[0] as PdfName)?.RawValue) : null;
 
         public override void Scan(GraphicsState state)
         {
             base.Scan(state);
         }
 
-        private PaintXObject Operation => (PaintXObject)Objects[0];
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
+        {
+            header.WriteTo(stream, context);
+            base.WriteTo(stream, context);
+            stream.Write(EndChunk);
+        }
     }
 }

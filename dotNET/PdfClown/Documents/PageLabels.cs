@@ -24,22 +24,17 @@
 */
 
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Page label ranges [PDF:1.6:3.6.1].</summary>
-    */
+    /// <summary>Page label ranges [PDF:1.6:3.6.1].</summary>
     [PDF(VersionEnum.PDF13)]
     public sealed class PageLabels : NumberTree<PageLabel>
     {
-        public static PageLabels Wrap(PdfDirectObject baseObject)
-        { return baseObject?.Wrapper as PageLabels ?? new PageLabels(baseObject); }
+        public static PageLabels Wrap(PdfDirectObject baseObject) => baseObject != null
+                ? baseObject.Wrapper as PageLabels ?? new PageLabels(baseObject)
+                : null;
 
         public PageLabels(PdfDocument context) : base(context)
         { }

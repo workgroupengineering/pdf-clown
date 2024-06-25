@@ -23,22 +23,18 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
-using PdfClown.Util;
-
-using System;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
-    /**
-      <summary>Article bead [PDF:1.7:8.3.2].</summary>
-    */
+    /// <summary>Article bead [PDF:1.7:8.3.2].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class ArticleElement : PdfObjectWrapper<PdfDictionary>
     {
+        private SKRect? box;
+
         public ArticleElement(PdfPage page, SKRect box) : base(
             page.Document,
             new PdfDictionary(1) { { PdfName.Type, PdfName.Bead } })
@@ -50,9 +46,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         public ArticleElement(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the thread article this bead belongs to.</summary>
-        */
+        /// <summary>Gets the thread article this bead belongs to.</summary>
         public Article Article
         {
             get
@@ -65,33 +59,26 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
         }
 
-        /**
-          <summary>Gets/Sets the location on the page in default user space units.</summary>
-        */
+        /// <summary>Gets/Sets the location on the page in default user space units.</summary>
         public SKRect Box
         {
-            get
+            get => box ??= GetUserSpaceBox();
+            set
             {
-                Rectangle box = Wrap<Rectangle>(BaseDataObject[PdfName.R]);
-                return SKRect.Create(
-                  (float)box.Left,
-                  (float)(Page.Box.Height - box.Top),
-                  (float)box.Width,
-                  (float)box.Height
-                  );
+                box = null;
+                var newValue = Page.InvertRotateMatrix.MapRect(value);
+                BaseDataObject[PdfName.R] = newValue.ToPdfArray();
             }
-            set => BaseDataObject[PdfName.R] = new Rectangle(
-                  value.Left,
-                  Page.Box.Height - value.Top,
-                  value.Width,
-                  value.Height
-                  ).BaseDataObject;
         }
 
-        /**
-          <summary>Deletes this bead removing also its references on the page and its article thread.
-          </summary>
-        */
+        private SKRect GetUserSpaceBox()
+        {
+            var box = BaseDataObject.Get<PdfArray>(PdfName.R)?.ToSKRect() ?? SKRect.Empty;
+            return Page.RotateMatrix.MapRect(box);
+        }
+
+        /// <summary>Deletes this bead removing also its references on the page and its article thread.
+        /// </summary>
         public override bool Delete()
         {
             // Shallow removal (references):
@@ -104,28 +91,20 @@ namespace PdfClown.Documents.Interaction.Navigation
             return base.Delete();
         }
 
-        /**
-          <summary>Gets whether this is the first bead in its thread.</summary>
-        */
+        /// <summary>Gets whether this is the first bead in its thread.</summary>
         public bool IsHead()
         {
             PdfDictionary thread = BaseDataObject.Get<PdfDictionary>(PdfName.T);
             return thread != null && BaseObject.Equals(thread[PdfName.F]);
         }
 
-        /**
-          <summary>Gets the next bead.</summary>
-        */
+        /// <summary>Gets the next bead.</summary>
         public ArticleElement Next => Wrap<ArticleElement>(BaseDataObject[PdfName.N]);
 
-        /**
-          <summary>Gets the location page.</summary>
-        */
+        /// <summary>Gets the location page.</summary>
         public PdfPage Page => Wrap<PdfPage>(BaseDataObject[PdfName.P]);
 
-        /**
-          <summary>Gets the previous bead.</summary>
-        */
+        /// <summary>Gets the previous bead.</summary>
         public ArticleElement Previous => Wrap<ArticleElement>(BaseDataObject[PdfName.V]);
     }
 }

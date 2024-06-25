@@ -1,15 +1,10 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
-using xObjects = PdfClown.Documents.Contents.XObjects;
-using PdfClown.Files;
-using PdfClown.Objects;
-
-using System;
-using System.Collections.Generic;
-using SkiaSharp;
 using PdfClown.Documents.Contents.Scanner;
+using SkiaSharp;
+using System;
+using xObjects = PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Samples.CLI
 {
@@ -86,7 +81,7 @@ namespace PdfClown.Samples.CLI
                     else if (objectWrapper is InlineImageWrapper)
                     {
                         Console.Write("Inline Image");
-                        InlineImage inlineImage = ((InlineImageWrapper)objectWrapper).InlineImage;
+                        GraphicsInlineImage inlineImage = ((InlineImageWrapper)objectWrapper).InlineImage;
                         imageSize = inlineImage.Size; // Image native size.
                     }
 

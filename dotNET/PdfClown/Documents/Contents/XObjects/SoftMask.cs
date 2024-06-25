@@ -23,10 +23,10 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Functions;
 using PdfClown.Objects;
 using SkiaSharp;
-using System;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
@@ -35,8 +35,11 @@ namespace PdfClown.Documents.Contents.XObjects
     {
         public static SoftMask WrapSoftMask(PdfDirectObject baseObject)
         {
-            if (baseObject is PdfName name && name.Equals(PdfName.None))
-                return null;
+            if (baseObject is PdfName name)
+            {
+                if(name.Equals(PdfName.None))
+                    return null;
+            }
             return Wrap<SoftMask>(baseObject);
         }
 
@@ -46,9 +49,7 @@ namespace PdfClown.Documents.Contents.XObjects
         }
 
         public SoftMask(PdfDirectObject baseObject) : base(baseObject)
-        {
-
-        }
+        { }
 
         public FormXObject Group
         {
@@ -69,5 +70,60 @@ namespace PdfClown.Documents.Contents.XObjects
         }
 
         public SKMatrix InitialMatrix { get; internal set; }
+
+        public void Apply(SKPaint paint, ContentScanner scanner)// , SKCanvas canvas, SKPicture picture)
+        {
+            var mObject = Group;
+            var tGroup = mObject.Group;
+            
+            var temp = scanner.State.SMask;
+            scanner.State.SMask = null;
+
+            if (PdfName.Luminosity.Equals(SubType))
+            {
+                var softMaskPicture = mObject.Render(scanner, GetBackgroundColor());
+                var pictureShader = SKShader.CreatePicture(softMaskPicture);
+                paint.Shader = paint.Shader == null
+                        ? pictureShader
+                        : SKShader.CreateCompose(paint.Shader, pictureShader);
+                paint.BlendMode = tGroup.Knockout ? SKBlendMode.SrcOver : tGroup.Isolated ? SKBlendMode.SrcATop : SKBlendMode.Luminosity;
+
+            }
+            else // alpha
+            {
+                var softMaskPicture = mObject.Render(scanner, SKColors.Transparent);//
+                //var box = softMaskPicture.CullRect;
+                //using var bitmap = new SKBitmap((int)box.Width, (int)box.Height, SKColorType.Rgba8888, SKAlphaType.Premul);
+                //using var bitmapCanvas = new SKCanvas(bitmap);
+                //bitmapCanvas.DrawPicture(softMaskPicture);
+                var pictureShader = SKShader.CreatePicture(softMaskPicture);
+                paint.Shader = paint.Shader == null
+                        ? pictureShader
+                        : SKShader.CreateCompose(paint.Shader, pictureShader);
+                paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                {
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 1, 0
+                });
+                paint.BlendMode = tGroup.Knockout ? SKBlendMode.SrcOver : tGroup.Isolated ? SKBlendMode.Overlay : SKBlendMode.Overlay;
+            }
+            scanner.State.SMask = temp;
+        }
+
+        private SKColor? GetBackgroundColor()
+        {
+            SKColor? skColor = null;
+            if (BackColor is PdfArray array
+                && Group?.Group?.ColorSpace is ColorSpace colorSpace
+                && colorSpace.ComponentCount <= array.Count
+                && colorSpace.GetColor(array, Group) is Color color)
+            {
+                skColor = colorSpace.GetSKColor(color);
+            }
+
+            return skColor;
+        }
     }
 }

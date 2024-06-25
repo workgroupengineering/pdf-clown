@@ -63,10 +63,10 @@ namespace PdfClown.Documents.Contents.Fonts
             var fd = BuildFontDescriptor(type1);
 
             var fontStream = new PdfStream(pfbParser.GetInputStream());
-            fontStream.Header.SetInt(PdfName.Length, pfbParser.Size);
+            fontStream.Header.Set(PdfName.Length, pfbParser.Size);
             for (int i = 0; i < pfbParser.Lengths.Length; i++)
             {
-                fontStream.Header[PdfName.Get("Length" + (i + 1), true)] = PdfInteger.Get(pfbParser.Lengths[i]);
+                fontStream.Header.Set(PdfName.Get("Length" + (i + 1), true), pfbParser.Lengths[i]);
             }
             fd.FontFile = new FontFile(doc, fontStream);
 
@@ -83,9 +83,9 @@ namespace PdfClown.Documents.Contents.Fonts
                 widths.Add(width);
             }
 
-            dict[PdfName.FirstChar] = PdfInteger.Get(0);
-            dict[PdfName.LastChar] = PdfInteger.Get(255);
-            dict[PdfName.Widths] = PdfArray.FromInts(widths);
+            dict.Set(PdfName.FirstChar, 0);
+            dict.Set(PdfName.LastChar, 255);
+            dict[PdfName.Widths] = new PdfArray(widths);
             dict[PdfName.Encoding] = encoding.GetPdfObject();
         }
 

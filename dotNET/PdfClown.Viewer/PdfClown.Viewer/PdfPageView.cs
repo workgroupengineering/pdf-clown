@@ -113,12 +113,13 @@ namespace PdfClown.Viewer
         {
             try
             {
+                var rect = SKRect.Create(Size);
                 using (var recorder = new SKPictureRecorder())
-                using (var canvas = recorder.BeginRecording(SKRect.Create(Size)))
+                using (var canvas = recorder.BeginRecording(rect))
                 {
                     try
                     {
-                        Page.Render(canvas, Size, false);
+                        Page.Render(canvas, rect);
                     }
                     catch (Exception ex)
                     {

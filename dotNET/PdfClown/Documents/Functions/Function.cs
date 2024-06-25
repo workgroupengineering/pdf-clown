@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.Collections;
 using PdfClown.Util.Math;
@@ -33,15 +32,11 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Functions
 {
-    /**
-      <summary>Function [PDF:1.6:3.9].</summary>
-    */
+    /// <summary>Function [PDF:1.6:3.9].</summary>
     [PDF(VersionEnum.PDF12)]
     public abstract class Function : PdfObjectWrapper<PdfDataObject>
     {
-        /**
-          <summary>Default intervals callback.</summary>
-        */
+        /// <summary>Default intervals callback.</summary>
 
         private const int FunctionType0 = 0;
         private const int FunctionType2 = 2;
@@ -50,18 +45,16 @@ namespace PdfClown.Documents.Functions
         private IList<Interval<float>> domains;
         private IList<Interval<float>> ranges;
 
-        /**
-          <summary>Wraps a function base object into a function object.</summary>
-          <param name="baseObject">Function base object.</param>
-          <returns>Function object associated to the base object.</returns>
-        */
+        /// <summary>Wraps a function base object into a function object.</summary>
+        /// <param name="baseObject">Function base object.</param>
+        /// <returns>Function object associated to the base object.</returns>
         public static Function Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
             if (baseObject.Wrapper is Function function)
                 return function;
-            
+
             var dataObject = baseObject.Resolve();
 
             if (dataObject is PdfName dataName
@@ -87,10 +80,8 @@ namespace PdfClown.Documents.Functions
             }
         }
 
-        /**
-          <summary>Gets a function's dictionary.</summary>
-          <param name="functionDataObject">Function data object.</param>
-        */
+        /// <summary>Gets a function's dictionary.</summary>
+        /// <param name="functionDataObject">Function data object.</param>
         private static PdfDictionary GetDictionary(PdfDataObject functionDataObject)
         {
             if (functionDataObject is PdfDictionary)
@@ -107,18 +98,14 @@ namespace PdfClown.Documents.Functions
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the result of the calculation applied by this function
-          to the specified input values.</summary>
-          <param name="inputs">Input values.</param>
-         */
+        /// <summary>Gets the result of the calculation applied by this function
+        /// to the specified input values.</summary>
+        /// <param name="inputs">Input values.</param>
         public abstract ReadOnlySpan<float> Calculate(ReadOnlySpan<float> inputs);
 
-        /**
-          <summary>Gets the result of the calculation applied by this function
-          to the specified input values.</summary>
-          <param name="inputs">Input values.</param>
-         */
+        /// <summary>Gets the result of the calculation applied by this function
+        /// to the specified input values.</summary>
+        /// <param name="inputs">Input values.</param>
         public IList<PdfDirectObject> Calculate(IList<PdfDirectObject> inputs)
         {
             IList<PdfDirectObject> outputs = new List<PdfDirectObject>();
@@ -133,36 +120,23 @@ namespace PdfClown.Documents.Functions
             return outputs;
         }
 
-        /**
-          <summary>Gets the (inclusive) domains of the input values.</summary>
-          <remarks>Input values outside the declared domains are clipped to the nearest boundary value.</remarks>
-        */
+        /// <summary>Gets the (inclusive) domains of the input values.</summary>
+        /// <remarks>Input values outside the declared domains are clipped to the nearest boundary value.</remarks>
         public IList<Interval<float>> Domains => domains ??= GetIntervals<float>(PdfName.Domain, null);
 
-        /**
-          <summary>Gets the number of input values (parameters) of this function.</summary>
-        */
+        /// <summary>Gets the number of input values (parameters) of this function.</summary>
         public int InputCount => Domains?.Count ?? 1;
 
-        /**
-          <summary>Gets the number of output values (results) of this function.</summary>
-        */
+        /// <summary>Gets the number of output values (results) of this function.</summary>
         public int OutputCount => Ranges?.Count ?? 1;
 
-        /**
-          <summary>Gets the (inclusive) ranges of the output values.</summary>
-          <remarks>Output values outside the declared ranges are clipped to the nearest boundary value;
-          if this entry is absent, no clipping is done.</remarks>
-          <returns><code>null</code> in case of unbounded ranges.</returns>
-        */
+        /// <summary>Gets the (inclusive) ranges of the output values.</summary>
+        /// <remarks>Output values outside the declared ranges are clipped to the nearest boundary value;
+        /// if this entry is absent, no clipping is done.</remarks>
+        /// <returns><code>null</code> in case of unbounded ranges.</returns>
         public IList<Interval<float>> Ranges => ranges ??= GetIntervals<float>(PdfName.Range, null);
 
-        /**
-          <summary>Gets this function's dictionary.</summary>
-        */
-        /**
-          <summary>Gets the intervals corresponding to the specified key.</summary>
-        */
+        /// <summary>Gets the intervals corresponding to the specified key.</summary>
         protected IList<Interval<T>> GetIntervals<T>(PdfName key, DefaultIntervalsCallback<T> defaultIntervalsCallback)
             where T : struct, IComparable<T>
         {
@@ -181,26 +155,18 @@ namespace PdfClown.Documents.Functions
 
         static public float Exponential(float c0, float c1, float inputN) => c0 + inputN * (c1 - c0);
 
-        /**
-     * Clip the given input value to the given range.
-     * 
-     * @param x the input value
-     * @param rangeMin the min value of the range
-     * @param rangeMax the max value of the range
-
-     * @return the clipped value
-     */
+        /// <summary>Clip the given input value to the given range.</summary>
+        /// <param name="x">the input value</param>
+        /// <param name="rangeMin">the min value of the range</param>
+        /// <param name="rangeMax">max value of the range</param>
+        /// <returns>the clipped value</returns>
         protected float ClipToRange(float x, float rangeMin, float rangeMax)
         {
             return Math.Min(Math.Max(x, rangeMin), rangeMax);
         }
 
-        /**
-     * Clip the given input values to the ranges.
-     * 
-     * @param inputValues the input values
-     * @return the clipped values
-     */
+        /// <summary>Clip the given input values to the ranges.</summary>
+        /// <param name="inputValues">the input values</param>
         protected void ClipToRange(Span<float> inputValues) => ClipToRange(inputValues, Ranges);
 
         protected void ClipToDomain(Span<float> inputValues) => ClipToRange(inputValues, Domains);

@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Files;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
@@ -34,30 +32,20 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Change the view to a specified destination in a PDF file embedded in another PDF file'
-      action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Change the view to a specified destination in a PDF file embedded in another PDF file'
+    /// action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class GoToEmbedded : GotoNonLocal<Destination>
     {
-        /**
-          <summary>Path information to the target document [PDF:1.6:8.5.3].</summary>
-        */
+        /// <summary>Path information to the target document [PDF:1.6:8.5.3].</summary>
         public class PathElement : PdfObjectWrapper<PdfDictionary>
         {
-            /**
-              <summary>Relationship between the target and the current document [PDF:1.6:8.5.3].</summary>
-            */
+            /// <summary>Relationship between the target and the current document [PDF:1.6:8.5.3].</summary>
             public enum RelationEnum
             {
-                /**
-                  <summary>Parent.</summary>
-                */
+                ///<summary>Parent.</summary>
                 Parent,
-                /**
-                  <summary>Child.</summary>
-                */
+                ///<summary>Child.</summary>
                 Child
             };
 
@@ -72,15 +60,11 @@ namespace PdfClown.Documents.Interaction.Actions
                 };
             }
 
-            /**
-              <summary>Gets the code corresponding to the given value.</summary>
-            */
+            /// <summary>Gets the code corresponding to the given value.</summary>
             private static PdfName ToCode(RelationEnum value)
             { return RelationEnumCodes[value]; }
 
-            /**
-              <summary>Gets the relation corresponding to the given value.</summary>
-            */
+            /// <summary>Gets the relation corresponding to the given value.</summary>
             private static RelationEnum ToRelationEnum(IPdfString value)
             {
                 if (value == null)
@@ -93,30 +77,22 @@ namespace PdfClown.Documents.Interaction.Actions
                 throw new Exception("'" + value?.StringValue + "' doesn't represent a valid relation.");
             }
 
-            /**
-              <summary>Creates a new path element representing the parent of the document.</summary>
-            */
+            /// <summary>Creates a new path element representing the parent of the document.</summary>
             public PathElement(PdfDocument context, PathElement next)
                 : this(context, RelationEnum.Parent, null, null, null, next)
             { }
 
-            /**
-              <summary>Creates a new path element located in the embedded files collection of the document.</summary>
-            */
+            /// <summary>Creates a new path element located in the embedded files collection of the document.</summary>
             public PathElement(PdfDocument context, string embeddedFileName, PathElement next)
                 : this(context, RelationEnum.Child, embeddedFileName, null, null, next)
             { }
 
-            /**
-              <summary>Creates a new path element associated with a file attachment annotation.</summary>
-            */
+            /// <summary>Creates a new path element associated with a file attachment annotation.</summary>
             public PathElement(PdfDocument context, object annotationPageRef, object annotationRef, PathElement next)
                 : this(context, RelationEnum.Child, null, annotationPageRef, annotationRef, next)
             { }
 
-            /**
-              <summary>Creates a new path element.</summary>
-            */
+            /// <summary>Creates a new path element.</summary>
             private PathElement(PdfDocument context, RelationEnum relation, string embeddedFileName, object annotationPageRef, object annotationRef, PathElement next)
                 : base(context, new PdfDictionary())
             {
@@ -127,20 +103,16 @@ namespace PdfClown.Documents.Interaction.Actions
                 Next = next;
             }
 
-            /**
-              <summary>Instantiates an existing path element.</summary>
-            */
+            /// <summary>Instantiates an existing path element.</summary>
             public PathElement(PdfDirectObject baseObject) : base(baseObject)
             { }
 
             public override object Clone(PdfDocument context)
             { throw new NotImplementedException(); }
 
-            /**
-              <summary>Gets/Sets the page reference to the file attachment annotation.</summary>
-              <returns>Either the (zero-based) number of the page in the current document containing the file attachment annotation,
-              or the name of a destination in the current document that provides the page number of the file attachment annotation.</returns>
-            */
+            /// <summary>Gets/Sets the page reference to the file attachment annotation.</summary>
+            /// <returns>Either the (zero-based) number of the page in the current document containing the file attachment annotation,
+            /// or the name of a destination in the current document that provides the page number of the file attachment annotation.</returns>
             public object AnnotationPageRef
             {
                 get
@@ -161,10 +133,10 @@ namespace PdfClown.Documents.Interaction.Actions
                     else
                     {
                         PdfDirectObject pageRefObject;
-                        if (value is int)
-                        { pageRefObject = PdfInteger.Get((int)value); }
-                        else if (value is string)
-                        { pageRefObject = new PdfString((string)value); }
+                        if (value is int intValue)
+                        { pageRefObject = PdfInteger.Get(intValue); }
+                        else if (value is string stringValue)
+                        { pageRefObject = new PdfString(stringValue); }
                         else
                             throw new ArgumentException("Wrong argument type: it MUST be either a page number Integer or a named destination String.");
 
@@ -173,11 +145,9 @@ namespace PdfClown.Documents.Interaction.Actions
                 }
             }
 
-            /**
-              <summary>Gets/Sets the reference to the file attachment annotation.</summary>
-              <returns>Either the (zero-based) index of the annotation in the list of annotations
-              associated to the page specified by the annotationPageRef property, or the name of the annotation.</returns>
-            */
+            /// <summary>Gets/Sets the reference to the file attachment annotation.</summary>
+            /// <returns>Either the (zero-based) index of the annotation in the list of annotations
+            /// associated to the page specified by the annotationPageRef property, or the name of the annotation.</returns>
             public object AnnotationRef
             {
                 get
@@ -198,10 +168,10 @@ namespace PdfClown.Documents.Interaction.Actions
                     else
                     {
                         PdfDirectObject annotationRefObject;
-                        if (value is int)
-                        { annotationRefObject = PdfInteger.Get((int)value); }
-                        else if (value is string)
-                        { annotationRefObject = new PdfTextString((string)value); }
+                        if (value is int intValue)
+                        { annotationRefObject = PdfInteger.Get(intValue); }
+                        else if (value is string stringValue)
+                        { annotationRefObject = new PdfTextString(stringValue); }
                         else
                             throw new ArgumentException("Wrong argument type: it MUST be either an annotation index Integer or an annotation name String.");
 
@@ -210,33 +180,21 @@ namespace PdfClown.Documents.Interaction.Actions
                 }
             }
 
-            /**
-              <summary>Gets/Sets the embedded file name.</summary>
-            */
+            /// <summary>Gets/Sets the embedded file name.</summary>
             public string EmbeddedFileName
             {
                 get => BaseDataObject.GetString(PdfName.N);
-                set
-                {
-                    if (value == null)
-                    { BaseDataObject.Remove(PdfName.N); }
-                    else
-                    { BaseDataObject[PdfName.N] = new PdfString(value); }
-                }
+                set => BaseDataObject.Set(PdfName.N, value);
             }
 
-            /**
-              <summary>Gets/Sets the relationship between the target and the current document.</summary>
-            */
+            /// <summary>Gets/Sets the relationship between the target and the current document.</summary>
             public RelationEnum Relation
             {
                 get => ToRelationEnum((IPdfString)BaseDataObject[PdfName.R]);
                 set => BaseDataObject[PdfName.R] = ToCode(value);
             }
 
-            /**
-              <summary>Gets/Sets a further path information to the target document.</summary>
-            */
+            /// <summary>Gets/Sets a further path information to the target document.</summary>
             public PathElement Next
             {
                 get => Wrap<PathElement>(BaseDataObject[PdfName.T]);
@@ -244,37 +202,31 @@ namespace PdfClown.Documents.Interaction.Actions
             }
         }
 
-        /**
-          <summary>Creates a new instance within the specified document context, pointing to a
-          destination within an embedded document.</summary>
-          <param name="context">Document context.</param>
-          <param name="destinationPath">Path information to the target document within the destination
-          file.</param>
-          <param name="destination">Destination within the target document.</param>
-        */
+        /// <summary>Creates a new instance within the specified document context, pointing to a
+        /// destination within an embedded document.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="destinationPath">Path information to the target document within the destination
+        /// file.</param>
+        /// <param name="destination">Destination within the target document.</param>
         public GoToEmbedded(PdfDocument context, PathElement destinationPath, Destination destination)
             : this(context, null, destinationPath, destination)
         { }
 
-        /**
-          <summary>Creates a new instance within the specified document context, pointing to a
-          destination within another document.</summary>
-          <param name="context">Document context.</param>
-          <param name="destinationFile">File in which the destination is located.</param>
-          <param name="destination">Destination within the target document.</param>
-        */
+        /// <summary>Creates a new instance within the specified document context, pointing to a
+        /// destination within another document.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="destinationFile">File in which the destination is located.</param>
+        /// <param name="destination">Destination within the target document.</param>
         public GoToEmbedded(PdfDocument context, FileSpecification destinationFile, Destination destination)
             : this(context, destinationFile, null, destination)
         { }
 
-        /**
-          <summary>Creates a new instance within the specified document context.</summary>
-          <param name="context">Document context.</param>
-          <param name="destinationFile">File in which the destination is located.</param>
-          <param name="destinationPath">Path information to the target document within the destination
-          file.</param>
-          <param name="destination">Destination within the target document.</param>
-        */
+        /// <summary>Creates a new instance within the specified document context.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="destinationFile">File in which the destination is located.</param>
+        /// <param name="destinationPath">Path information to the target document within the destination
+        /// file.</param>
+        /// <param name="destination">Destination within the target document.</param>
         public GoToEmbedded(PdfDocument context, FileSpecification destinationFile, PathElement destinationPath, Destination destination)
             : base(context, PdfName.GoToE, destinationFile, destination)
         { DestinationPath = destinationPath; }
@@ -282,9 +234,7 @@ namespace PdfClown.Documents.Interaction.Actions
         internal GoToEmbedded(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the path information to the target document.</summary>
-        */
+        /// <summary>Gets/Sets the path information to the target document.</summary>
         public PathElement DestinationPath
         {
             get => Wrap<PathElement>(BaseDataObject[PdfName.T]);

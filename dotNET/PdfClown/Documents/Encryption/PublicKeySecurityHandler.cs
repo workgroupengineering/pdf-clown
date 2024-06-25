@@ -24,13 +24,9 @@ using Org.BouncyCastle.Cms;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.IO;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Crypto.Utilities;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.X509;
 using PdfClown.Bytes;
 using PdfClown.Objects;
@@ -383,7 +379,7 @@ namespace PdfClown.Documents.Encryption
             {
                 CryptFilterMethod = aesVName,
                 Length = KeyLength,
-                Recipients = PdfArray.FromStrings(recipients)
+                Recipients = new PdfArray(recipients)
             };
             //array.setDirect(true);
             encryptionDictionary.DefaultCryptFilterDictionary = cryptFilterDictionary;

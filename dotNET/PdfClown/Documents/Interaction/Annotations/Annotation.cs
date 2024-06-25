@@ -24,38 +24,54 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Layers;
-using PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
-using PdfClown.Objects;
-using PdfClown.Util;
-
-using System;
-using SkiaSharp;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Util.Math.Geom;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using System.Globalization;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Tokens;
-using Org.BouncyCastle.Bcpg.OpenPgp;
+using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Objects;
+using PdfClown.Util;
+using PdfClown.Util.Math.Geom;
+using SkiaSharp;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
 //using System.Diagnostics;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Annotation [PDF:1.6:8.4].</summary>
-    */
+    ///<summary>Annotation [PDF:1.6:8.4].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class Annotation : PdfObjectWrapper<PdfDictionary>, ILayerable, INotifyPropertyChanged
     {
+        private static readonly Dictionary<PdfName, Func<PdfDirectObject, Annotation>> cache = new(24)
+        {
+            { PdfName.Text, (baseObject) => new StickyNote(baseObject) },
+            { PdfName.Link, (baseObject) => new Link(baseObject) },
+            { PdfName.FreeText, (baseObject) => new FreeText(baseObject) },
+            { PdfName.Line, (baseObject) => new Line(baseObject) },
+            { PdfName.Square, (baseObject) => new Rectangle(baseObject) },
+            { PdfName.Circle, (baseObject) => new Ellipse(baseObject) },
+            { PdfName.Polygon, (baseObject) => new Polygon(baseObject) },
+            { PdfName.PolyLine, (baseObject) => new Polyline(baseObject) },
+            { PdfName.Highlight, (baseObject) => new TextMarkup(baseObject) },
+            { PdfName.Underline, (baseObject) => new TextMarkup(baseObject) },
+            { PdfName.Squiggly, (baseObject) => new TextMarkup(baseObject) },
+            { PdfName.StrikeOut, (baseObject) => new TextMarkup(baseObject) },
+            { PdfName.Stamp, (baseObject) => new Stamp(baseObject) },
+            { PdfName.Caret, (baseObject) => new Caret(baseObject) },
+            { PdfName.Ink, (baseObject) => new Scribble(baseObject) },
+            { PdfName.Popup, (baseObject) => new Popup(baseObject) },
+            { PdfName.FileAttachment, (baseObject) => new FileAttachment(baseObject) },
+            { PdfName.Sound, (baseObject) => new Sound(baseObject) },
+            { PdfName.Movie, (baseObject) => new Movie(baseObject) },
+            { PdfName.Widget, (baseObject) => new Widget(baseObject) },
+            { PdfName.Screen, (baseObject) => new Screen(baseObject) },
+        };
         private PdfPage page;
         private string name;
         private SKColor? color;
@@ -64,16 +80,14 @@ namespace PdfClown.Documents.Interaction.Annotations
         protected BottomLeftControlPoint cpBottomLeft;
         protected TopRightControlPoint cpTopRight;
         protected TopLeftControlPoint cpTopLeft;
-        private SetFont setFontOperation;
+        protected List<ContentObject> daOperation;
         internal RefreshAppearanceState queueRefresh;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        /**
-          <summary>Wraps an annotation base object into an annotation object.</summary>
-          <param name="baseObject">Annotation base object.</param>
-          <returns>Annotation object associated to the base object.</returns>
-        */
+        /// <summary>Wraps an annotation base object into an annotation object.</summary>
+        /// <param name="baseObject">Annotation base object.</param>
+        /// <returns>Annotation object associated to the base object.</returns>
         public static Annotation Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
@@ -85,45 +99,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (dictionary == null)
                 return null;
             var annotationType = dictionary.Get<PdfName>(PdfName.Subtype);
-            if (annotationType.Equals(PdfName.Text))
-                return new StickyNote(baseObject);
-            else if (annotationType.Equals(PdfName.Link))
-                return new Link(baseObject);
-            else if (annotationType.Equals(PdfName.FreeText))
-                return new FreeText(baseObject);
-            else if (annotationType.Equals(PdfName.Line))
-                return new Line(baseObject);
-            else if (annotationType.Equals(PdfName.Square))
-                return new Rectangle(baseObject);
-            else if (annotationType.Equals(PdfName.Circle))
-                return new Ellipse(baseObject);
-            else if (annotationType.Equals(PdfName.Polygon))
-                return new Polygon(baseObject);
-            else if (annotationType.Equals(PdfName.PolyLine))
-                return new Polyline(baseObject);
-            else if (annotationType.Equals(PdfName.Highlight)
-              || annotationType.Equals(PdfName.Underline)
-              || annotationType.Equals(PdfName.Squiggly)
-              || annotationType.Equals(PdfName.StrikeOut))
-                return new TextMarkup(baseObject);
-            else if (annotationType.Equals(PdfName.Stamp))
-                return new Stamp(baseObject);
-            else if (annotationType.Equals(PdfName.Caret))
-                return new Caret(baseObject);
-            else if (annotationType.Equals(PdfName.Ink))
-                return new Scribble(baseObject);
-            else if (annotationType.Equals(PdfName.Popup))
-                return new Popup(baseObject);
-            else if (annotationType.Equals(PdfName.FileAttachment))
-                return new FileAttachment(baseObject);
-            else if (annotationType.Equals(PdfName.Sound))
-                return new Sound(baseObject);
-            else if (annotationType.Equals(PdfName.Movie))
-                return new Movie(baseObject);
-            else if (annotationType.Equals(PdfName.Widget))
-                return new Widget(baseObject);
-            else if (annotationType.Equals(PdfName.Screen))
-                return new Screen(baseObject);
+            if (cache.TryGetValue(annotationType, out var func))
+                return func(baseObject);
             //TODO
             //     else if(annotationType.Equals(PdfName.PrinterMark)) return new PrinterMark(baseObject);
             //     else if(annotationType.Equals(PdfName.TrapNet)) return new TrapNet(baseObject);
@@ -164,9 +141,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set { }
         }
 
-        /**
-          <summary>Gets/Sets action to be performed when the annotation is activated.</summary>
-        */
+        /// <summary>Gets/Sets action to be performed when the annotation is activated.</summary>
         [PDF(VersionEnum.PDF11)]
         public virtual Actions.Action Action
         {
@@ -182,9 +157,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the annotation's behavior in response to various trigger events.</summary>
-        */
+        /// <summary>Gets/Sets the annotation's behavior in response to various trigger events.</summary>
         [PDF(VersionEnum.PDF12)]
         public virtual AnnotationActions Actions
         {
@@ -200,11 +173,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-         <summary>Gets/Sets the constant opacity value to be used in painting the annotation.</summary>
-         <remarks>This value applies to all visible elements of the annotation (including its background
-         and border) but not to the popup window that appears when the annotation is opened.</remarks>
-       */
+        /// <summary>Gets/Sets the constant opacity value to be used in painting the annotation.</summary>
+        /// <remarks>This value applies to all visible elements of the annotation (including its background
+        /// and border) but not to the popup window that appears when the annotation is opened.</remarks>
         [PDF(VersionEnum.PDF14)]
         public virtual float Alpha
         {
@@ -214,15 +185,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = Alpha;
                 if (oldValue != value)
                 {
-                    BaseDataObject.SetFloat(PdfName.CA, value);
+                    BaseDataObject.Set(PdfName.CA, value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
         }
 
-        /**
-          <summary>Gets/Sets the appearance specifying how the annotation is presented visually on the page.</summary>
-        */
+        /// <summary>Gets/Sets the appearance specifying how the annotation is presented visually on the page.</summary>
         [PDF(VersionEnum.PDF12)]
         public virtual Appearance Appearance
         {
@@ -238,9 +207,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the border style.</summary>
-        */
+        /// <summary>Gets/Sets the border style.</summary>
         [PDF(VersionEnum.PDF11)]
         public virtual Border Border
         {
@@ -259,17 +226,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the location of the annotation on the page.
-          </summary>
-        */
+        /// <summary>Gets/Sets the location of the annotation on the page.</summary>
         public virtual SKRect Box
         {
-            get => box ??= Rect?.ToRect() ?? SKRect.Empty;
+            get => box ??= Rect?.ToSKRect() ?? SKRect.Empty;
             set
             {
                 var oldValue = Box;
-                var newValue = PrimitiveExtensions.Round(value);
+                var newValue = value.Round();
                 if (oldValue != newValue)
                 {
                     Rect = new Objects.Rectangle(box.Value);
@@ -294,9 +258,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the annotation color.</summary>
-        */
+        /// <summary>Gets/Sets the annotation color.</summary>
         [PDF(VersionEnum.PDF11)]
         public virtual DeviceColor Color
         {
@@ -331,9 +293,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the annotation flags.</summary>
-        */
+        /// <summary>Gets/Sets the annotation flags.</summary>
         [PDF(VersionEnum.PDF11)]
         public virtual AnnotationFlagsEnum Flags
         {
@@ -343,15 +303,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = Flags;
                 if (oldValue != value)
                 {
-                    BaseDataObject.SetInt(PdfName.F, (int)value);
+                    BaseDataObject.Set(PdfName.F, (int)value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
         }
 
-        /**
-          <summary>Gets/Sets the date and time when the annotation was most recently modified.</summary>
-        */
+        /// <summary>Gets/Sets the date and time when the annotation was most recently modified.</summary>
         [PDF(VersionEnum.PDF11)]
         public virtual DateTime? ModificationDate
         {
@@ -362,16 +320,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = ModificationDate;
                 if (oldValue != PdfDate.Trimm(value))
                 {
-                    BaseDataObject.SetDate(PdfName.M, value);
+                    BaseDataObject.Set(PdfName.M, value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
         }
 
-        /**
-          <summary>Gets/Sets the annotation name.</summary>
-          <remarks>The annotation name uniquely identifies the annotation among all the annotations on its page.</remarks>
-        */
+        /// <summary>Gets/Sets the annotation name.</summary>
+        /// <remarks>The annotation name uniquely identifies the annotation among all the annotations on its page.</remarks>
         [PDF(VersionEnum.PDF14)]
         public virtual string Name
         {
@@ -388,9 +344,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the associated page.</summary>
-        */
+        /// <summary>Gets/Sets the associated page.</summary>
         [PDF(VersionEnum.PDF13)]
         public virtual PdfPage Page
         {
@@ -398,13 +352,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldPage = Page;
-                if (oldPage != value)                
+                if (oldPage != value)
                 {
                     box = null;
                     oldPage?.Annotations.Remove(this);
                     page = value;
                     OnPropertyChanged(oldPage, value);
-                }                
+                }
                 AddToPage(value);
             }
         }
@@ -426,9 +380,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             //Debug.WriteLine($"Move to page {page}");
         }
 
-        /**
-          <summary>Gets/Sets whether to print the annotation when the page is printed.</summary>
-*/
+        /// <summary>Gets/Sets whether to print the annotation when the page is printed.</summary>
         [PDF(VersionEnum.PDF11)]
         public virtual bool Printable
         {
@@ -444,11 +396,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the annotation text.</summary>
-          <remarks>Depending on the annotation type, the text may be either directly displayed
-          or (in case of non-textual annotations) used as alternate description.</remarks>
-*/
+        /// <summary>Gets/Sets the annotation text.</summary>
+        /// <remarks>Depending on the annotation type, the text may be either directly displayed
+        /// or (in case of non-textual annotations) used as alternate description.</remarks>
         public virtual string Contents
         {
             get => BaseDataObject.GetString(PdfName.Contents);
@@ -463,9 +413,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-         <summary>Gets/Sets the annotation subject.</summary>
-*/
+        ///<summary>Gets/Sets the annotation subject.</summary>
         [PDF(VersionEnum.PDF15)]
         public virtual string Subject
         {
@@ -481,9 +429,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets whether the annotation is visible.</summary>
-*/
+        /// <summary>Gets/Sets whether the annotation is visible.</summary>
         [PDF(VersionEnum.PDF11)]
         public virtual bool Visible
         {
@@ -575,38 +521,38 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public List<Annotation> Replies { get; set; } = new List<Annotation>();
 
-        protected PdfString DAString
+        public string DefaultAppearence
         {
-            get => (PdfString)Dictionary[PdfName.DA];
-            set => Dictionary[PdfName.DA] = value;
+            get => Dictionary.GetString(PdfName.DA);
+            set => Dictionary.Set(PdfName.DA, value);
         }
 
-        protected SetFont DAOperation
+        protected SetFont DASetFont => DAOperations?.OfType<SetFont>().FirstOrDefault();
+
+        protected SetColor DASetColor => DAOperations?.OfType<SetColor>().FirstOrDefault();
+
+        protected virtual List<ContentObject> DAOperations
         {
             get
             {
-                if (setFontOperation != null)
-                    return setFontOperation;
-                if (DAString == null)
+                if (daOperation != null)
+                    return daOperation;
+                if (Dictionary.Get<PdfString>(PdfName.DA) is not PdfString daString)
                     return null;
-                var parser = new ContentParser(DAString.RawValue);
-                foreach (ContentObject content in parser.ParseContentObjects())
-                {
-                    if (content is SetFont setFont)
-                    {
-                        return setFontOperation = setFont;
-                    }
-                }
-                return null;
+                daOperation = new List<ContentObject>();
+                var parser = new ContentParser(daString.RawValue);
+                daOperation.AddRange(parser.ParseContentObjects());
+                return daOperation;
             }
             set
             {
-                setFontOperation = value;
-                if (setFontOperation != null)
+                daOperation = value;
+                if (daOperation != null)
                 {
                     var buffer = new ByteStream(64);
-                    value.WriteTo(buffer, Document);
-                    DAString = new PdfString(buffer.AsMemory());
+                    foreach (var item in value)
+                        item.WriteTo(buffer, Document);
+                    Dictionary[PdfName.DA] = new PdfString(buffer.AsMemory());
                 }
             }
         }
@@ -644,7 +590,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         public SKRect Draw(SKCanvas canvas)
         {
             if ((queueRefresh & RefreshAppearanceState.Queued) == RefreshAppearanceState.Queued
-                && (queueRefresh & RefreshAppearanceState.Suspend) != RefreshAppearanceState.Suspend)
+                && (queueRefresh & RefreshAppearanceState.Suspend) != RefreshAppearanceState.Suspend
+                || Box == SKRect.Empty)
             {
                 try
                 {
@@ -715,6 +662,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (normalAppearance != null)
             {
                 normalAppearance.Box = boxSize;
+                normalAppearance.Matrix = SKMatrix.Identity;
                 normalAppearance.BaseDataObject.Body.SetLength(0);
                 normalAppearance.ClearContents();
             }
@@ -765,7 +713,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             if ((queueRefresh & RefreshAppearanceState.Suspend) == RefreshAppearanceState.Suspend)
                 return;
-            PropertyChanged?.Invoke(this, new DetailedPropertyChangedEventArgs<T>(oldValue, newValue, propertyName));            
+            PropertyChanged?.Invoke(this, new DetailedPropertyChangedEventArgs<T>(oldValue, newValue, propertyName));
         }
 
         public override object Clone(Cloner cloner)

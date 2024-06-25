@@ -30,12 +30,9 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the miter limit' operation [PDF:1.6:4.3.3].</summary>
-    */
+    ///<summary>'Set the miter limit' operation [PDF:1.6:4.3.3].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetMiterLimit
-      : Operation
+    public sealed class SetMiterLimit : Operation
     {
         public static readonly string OperatorKeyword = "M";
 
@@ -43,17 +40,16 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetMiterLimit(IList<PdfDirectObject> operands)
+        public SetMiterLimit(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state)
-        { state.MiterLimit = Value; }
+        public override void Scan(GraphicsState state) => state.MiterLimit = Value;
 
         public float Value
         {
-            get => ((IPdfNumber)operands[0]).FloatValue;
-            set => operands[0] = PdfReal.Get(value);
+            get => operands.GetFloat(0);
+            set => operands.Set(0, value);
         }
     }
 }

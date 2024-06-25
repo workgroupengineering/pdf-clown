@@ -27,6 +27,7 @@ using PdfClown.Documents.Interchange.Access;
 using PdfClown.Objects;
 using PdfClown.Tools;
 using PdfClown.Util;
+using PdfClown.Util.Collections;
 using PdfClown.Util.Math;
 
 using System;
@@ -77,9 +78,9 @@ namespace PdfClown.Documents.Contents.Layers
             /**
               <summary>Upper levels.</summary>
             */
-            public Stack<Object[]> Levels;
+            public Stack<LayerLevel> Levels;
 
-            public LayersLocation(PdfDirectObject parentLayerObject, PdfArray parentLayersObject, int index, Stack<Object[]> levels)
+            public LayersLocation(PdfDirectObject parentLayerObject, PdfArray parentLayersObject, int index, Stack<LayerLevel> levels)
             {
                 ParentLayerObject = parentLayerObject;
                 ParentLayersObject = parentLayersObject;
@@ -218,7 +219,7 @@ namespace PdfClown.Documents.Contents.Layers
                     }
                     else // Multiple intents.
                     {
-                        PdfArray intentArray = new PdfArray();
+                        var intentArray = new PdfArray();
                         foreach (PdfName valueItem in value)
                         { intentArray.Add(valueItem); }
                     }
@@ -235,11 +236,12 @@ namespace PdfClown.Documents.Contents.Layers
             {
                 if (intentObject is PdfArray pdfArray) // Multiple intents.
                 {
-                    foreach (PdfName intentItem in pdfArray)
-                    { intents.Add(intentItem); }
+                    intents.AddRange(pdfArray.OfType<PdfName>());
                 }
                 else // Single intent.
-                { intents.Add((PdfName)intentObject); }
+                {
+                    intents.Add((PdfName)intentObject);
+                }
             }
             else
             { intents.Add(IntentEnum.View.Name()); }
@@ -304,9 +306,9 @@ namespace PdfClown.Documents.Contents.Layers
                         membership.VisibilityPolicy = VisibilityPolicyEnum.AllOn; // NOTE: Forces visibility to depend on all the ascendant layers.
                         membership.VisibilityMembers.Add(this);
                         membership.VisibilityMembers.Add(new Layer(location.ParentLayerObject));
-                        foreach (Object[] level in location.Levels)
+                        foreach (var level in location.Levels)
                         {
-                            PdfDirectObject layerObject = (PdfDirectObject)level[2];
+                            var layerObject = level.LayerObject;
                             if (layerObject != null)
                             { membership.VisibilityMembers.Add(new Layer(layerObject)); }
                         }
@@ -508,8 +510,8 @@ namespace PdfClown.Documents.Contents.Layers
                 if (value != null)
                 {
                     PdfDictionary zoomDictionary = GetUsageEntry(PdfName.Zoom);
-                    zoomDictionary[PdfName.min] = (value.Low != 0 ? PdfReal.Get(value.Low) : null);
-                    zoomDictionary[PdfName.max] = (value.High != double.PositiveInfinity ? PdfReal.Get(value.High) : null);
+                    zoomDictionary.Set(PdfName.min, value.Low != 0 ? value.Low : null);
+                    zoomDictionary.Set(PdfName.max, value.High != double.PositiveInfinity ? value.High : null);
                 }
                 else
                 { Usage.Remove(PdfName.Zoom); }
@@ -549,11 +551,11 @@ namespace PdfClown.Documents.Contents.Layers
               through the configuration structure tree.
             */
             PdfDirectObject levelLayerObject = null;
-            PdfArray levelObject = configuration.UILayers.BaseDataObject;
-            IEnumerator<PdfDirectObject> levelIterator = levelObject.GetEnumerator();
-            Stack<object[]> levelIterators = new Stack<object[]>();
-            PdfDirectObject thisObject = BaseObject;
             PdfDirectObject currentLayerObject = null;
+            var levelObject = configuration.UILayers.BaseDataObject;
+            var levelIterator = (IEnumerator<PdfDirectObject>)levelObject.GetEnumerator();
+            var levelIterators = new Stack<LayerLevel>();
+            var thisObject = BaseObject;
             while (true)
             {
                 if (!levelIterator.MoveNext())
@@ -561,10 +563,10 @@ namespace PdfClown.Documents.Contents.Layers
                     if (levelIterators.Count == 0)
                         break;
 
-                    object[] levelItems = levelIterators.Pop();
-                    levelObject = (PdfArray)levelItems[0];
-                    levelIterator = (IEnumerator<PdfDirectObject>)levelItems[1];
-                    levelLayerObject = (PdfDirectObject)levelItems[2];
+                    var levelItems = levelIterators.Pop();
+                    levelObject = levelItems.Object;
+                    levelIterator = levelItems.Iterator;
+                    levelLayerObject = levelItems.LayerObject;
                     currentLayerObject = null;
                 }
                 else
@@ -583,7 +585,7 @@ namespace PdfClown.Documents.Contents.Layers
                     }
                     else if (nodeDataObject is PdfArray)
                     {
-                        levelIterators.Push(new object[] { levelObject, levelIterator, levelLayerObject });
+                        levelIterators.Push(new LayerLevel(levelObject, levelIterator, levelLayerObject));
                         levelObject = (PdfArray)nodeDataObject;
                         levelIterator = levelObject.GetEnumerator();
                         levelLayerObject = currentLayerObject;
@@ -592,6 +594,20 @@ namespace PdfClown.Documents.Contents.Layers
                 }
             }
             return null;
+        }
+
+        private class LayerLevel
+        {
+            public LayerLevel(PdfArray levelObject, IEnumerator<PdfDirectObject> levelIterator, PdfDirectObject levelLayerObject)
+            {
+                Object = levelObject;
+                Iterator = levelIterator;
+                LayerObject = levelLayerObject;
+            }
+
+            public PdfArray Object { get; }
+            public IEnumerator<PdfDirectObject> Iterator { get; }
+            public PdfDirectObject LayerObject { get; }
         }
 
         private PdfDictionary GetUsageEntry(PdfName key) => Usage.Resolve<PdfDictionary>(key);

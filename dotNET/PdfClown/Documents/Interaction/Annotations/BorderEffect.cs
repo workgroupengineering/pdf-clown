@@ -23,9 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
 using SkiaSharp;
@@ -34,9 +31,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Border effect [PDF:1.6:8.4.3].</summary>
-    */
+    /// <summary>Border effect [PDF:1.6:8.4.3].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class BorderEffect : PdfObjectWrapper<PdfDictionary>, IEquatable<BorderEffect>
     {
@@ -54,17 +49,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             };
         }
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(BorderEffectType value)
         {
             return TypeEnumCodes[value];
         }
 
-        /**
-          <summary>Gets the style corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the style corresponding to the given value.</summary>
         private static BorderEffectType ToTypeEnum(IPdfString value)
         {
             if (value == null)
@@ -77,27 +68,19 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultType;
         }
 
-        /**
-          <summary>Creates a non-reusable instance.</summary>
-        */
+        /// <summary>Creates a non-reusable instance.</summary>
         public BorderEffect(BorderEffectType type) : this(null, type)
         { }
 
-        /**
-          <summary>Creates a non-reusable instance.</summary>
-        */
+        /// <summary>Creates a non-reusable instance.</summary>
         public BorderEffect(BorderEffectType type, double intensity) : this(null, type, intensity)
         { }
 
-        /**
-          <summary>Creates a reusable instance.</summary>
-        */
+        /// <summary>Creates a reusable instance.</summary>
         public BorderEffect(PdfDocument context, BorderEffectType type) : this(context, type, DefaultIntensity)
         { }
 
-        /**
-          <summary>Creates a reusable instance.</summary>
-        */
+        /// <summary>Creates a reusable instance.</summary>
         public BorderEffect(PdfDocument context, BorderEffectType type, double intensity) : base(context, new PdfDictionary())
         {
             Type = type;
@@ -106,19 +89,15 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public BorderEffect(PdfDirectObject baseObject) : base(baseObject) { }
 
-        /**
-          <summary>Gets/Sets the effect intensity.</summary>
-          <returns>Value in the range 0-2.</returns>
-        */
+        /// <summary>Gets/Sets the effect intensity.</summary>
+        /// <returns>Value in the range 0-2.</returns>
         public double Intensity
         {
             get => BaseDataObject.GetDouble(PdfName.I, DefaultIntensity);
-            set => BaseDataObject[PdfName.I] = value != DefaultIntensity ? PdfReal.Get(value) : null;
+            set => BaseDataObject.Set(PdfName.I, value != DefaultIntensity ? value : null);
         }
 
-        /**
-          <summary>Gets/Sets the effect type.</summary>
-        */
+        /// <summary>Gets/Sets the effect type.</summary>
         public BorderEffectType Type
         {
             get => ToTypeEnum((IPdfString)BaseDataObject[PdfName.S]);
@@ -187,7 +166,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             return targetPath;
         }
 
-        public void ApplyEffect(ref SKRect box)
+        public void Apply(ref SKRect box)
         {
             if (Type == BorderEffectType.Cloudy)
             {
@@ -196,7 +175,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public void InvertApplyEffect(ref SKRect box)
+        public void Invert(ref SKRect box)
         {
             if (Type == BorderEffectType.Cloudy)
             {
@@ -214,18 +193,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
     }
 
-    /**
-      <summary>Border effect type [PDF:1.6:8.4.3].</summary>
-    */
+    /// <summary>Border effect type [PDF:1.6:8.4.3].</summary>
     public enum BorderEffectType
     {
-        /**
-          No effect.
-        */
+        /// No effect.
         None,
-        /**
-          Cloudy.
-        */
+        /// Cloudy.
         Cloudy
     }
 

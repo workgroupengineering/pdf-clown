@@ -49,19 +49,17 @@ namespace PdfClown.Documents.Contents.Entities
         public override ContentObject ToInlineObject(PrimitiveComposer composer)
         {
             return composer.Add(
-              new InlineImage(
+              new GraphicsInlineImage(
                 new InlineImageHeader(
-                  new List<PdfDirectObject>
-                    {
-                PdfName.W, PdfInteger.Get(Width),
-                PdfName.H, PdfInteger.Get(Height),
-                PdfName.CS, PdfName.RGB,
-                PdfName.BPC, PdfInteger.Get(BitsPerComponent),
-                PdfName.F, PdfName.DCT
-                    }),
-                new InlineImageBody(
-                  new bytes::ByteStream(Stream)
-                  )));
+                  new PdfArray
+                  {
+                      PdfName.W, Width,
+                      PdfName.H, Height,
+                      PdfName.CS, PdfName.RGB,
+                      PdfName.BPC, BitsPerComponent,
+                      PdfName.F, PdfName.DCT
+                  }),
+                new InlineImageBody(new bytes::ByteStream(Stream))));
         }
 
         public override xObjects::XObject ToXObject(PdfDocument context)
@@ -71,9 +69,9 @@ namespace PdfClown.Documents.Contents.Entities
               new PdfStream(
                 new PdfDictionary(5)
                 {
-                  { PdfName.Width, PdfInteger.Get(Width) },
-                  { PdfName.Height, PdfInteger.Get(Height) },
-                  { PdfName.BitsPerComponent, PdfInteger.Get(BitsPerComponent) },
+                  { PdfName.Width, Width },
+                  { PdfName.Height, Height },
+                  { PdfName.BitsPerComponent, BitsPerComponent },
                   { PdfName.ColorSpace, PdfName.DeviceRGB },
                   { PdfName.Filter, PdfName.DCTDecode }
                },

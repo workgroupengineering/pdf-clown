@@ -23,29 +23,27 @@
   this list of conditions.
 */
 
-using PdfClown.Files;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>External object resources collection [PDF:1.6:3.7.2].</summary>
-    */
+    ///<summary>External object resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class XObjectResources : ResourceItems<XObject>
+    public sealed class XObjectResources : Dictionary<XObject>
     {
-        public XObjectResources(PdfDocument context) : base(context)
+        public class ValueWrapper : IEntryWrapper<XObject>
+        {
+            public XObject Wrap(PdfDirectObject baseObject) => XObject.Wrap(baseObject);
+        }
+
+        private static readonly ValueWrapper Wrapper = new ValueWrapper();
+
+        public XObjectResources(PdfDocument context) : base(context, Wrapper)
         { }
 
-        public XObjectResources(PdfDirectObject baseObject) : base(baseObject)
+        public XObjectResources(PdfDirectObject baseObject) : base(baseObject, Wrapper)
         { }
 
-        protected override XObject WrapItem(PdfDirectObject baseObject) => XObject.Wrap(baseObject);
     }
 }

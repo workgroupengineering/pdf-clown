@@ -20,10 +20,7 @@ using System;
 
 namespace PdfClown.Documents.Functions.Type4
 {
-    /**
-	 * Provides the arithmetic operators such as "add" and "sub".
-	 *
-	 */
+	 /// <summary>Provides the arithmetic operators such as "add" and "sub".</summary>
     public class ArithmeticOperators
     {
 
@@ -32,7 +29,7 @@ namespace PdfClown.Documents.Functions.Type4
             // Private constructor.
         }
 
-        /** Implements the "Abs" operator. */
+        /// <summary>Implements the "Abs" operator.</summary>
         internal sealed class Abs : Operator
         {
 
@@ -51,7 +48,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "add" operator. */
+        /// <summary>Implements the "add" operator.</summary>
         internal sealed class Add : Operator
         {
 
@@ -80,7 +77,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "atan" operator. */
+        /// <summary>Implements the "atan" operator.</summary>
         internal sealed class Atan : Operator
         {
 
@@ -99,7 +96,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "ceiling" operator. */
+        /// <summary>Implements the "ceiling" operator.</summary>
         internal sealed class Ceiling : Operator
         {
 
@@ -112,13 +109,13 @@ namespace PdfClown.Documents.Functions.Type4
                 }
                 else
                 {
-                    context.Stack.Push(new PdfReal((float)Math.Ceiling(num.DoubleValue)));
+                    context.Stack.Push(PdfReal.Get((float)Math.Ceiling(num.DoubleValue)));
                 }
             }
 
         }
 
-        /** Implements the "cos" operator. */
+        /// <summary>Implements the "cos" operator.</summary>
         internal sealed class Cos : Operator
         {
 
@@ -131,7 +128,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "cvi" operator. */
+        /// <summary>Implements the "cvi" operator.</summary>
         internal sealed class Cvi : Operator
         {
 
@@ -143,7 +140,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "cvr" operator. */
+        /// <summary>Implements the "cvr" operator.</summary>
         internal sealed class Cvr : Operator
         {
 
@@ -155,10 +152,9 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "div" operator. */
+        /// <summary>Implements the "div" operator.</summary>
         internal sealed class Div : Operator
         {
-
             public override void Execute(ExecutionContext context)
             {
                 IPdfNumber num2 = context.PopNumber();
@@ -168,10 +164,9 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "exp" operator. */
+        /// <summary>Implements the "exp" operator.</summary>
         internal sealed class Exp : Operator
         {
-
             public override void Execute(ExecutionContext context)
             {
                 IPdfNumber exp = context.PopNumber();
@@ -179,13 +174,11 @@ namespace PdfClown.Documents.Functions.Type4
                 double value = Math.Pow(@base.DoubleValue, exp.DoubleValue);
                 context.Push((float)value);
             }
-
         }
 
-        /** Implements the "Floor" operator. */
+        /// <summary>Implements the "Floor" operator.</summary>
         internal sealed class Floor : Operator
         {
-
             public override void Execute(ExecutionContext context)
             {
                 IPdfNumber num = context.PopNumber();
@@ -198,10 +191,9 @@ namespace PdfClown.Documents.Functions.Type4
                     context.Push((float)Math.Floor(num.DoubleValue));
                 }
             }
-
         }
 
-        /** Implements the "idiv" operator. */
+        /// <summary>Implements the "idiv" operator.</summary>
         internal sealed class IDiv : Operator
         {
 
@@ -339,7 +331,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "sqrt" operator. */
+        /// <summary>Implements the "sqrt" operator.</summary>
         internal sealed class Sqrt : Operator
         {
 
@@ -355,10 +347,9 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "sub" operator. */
+        /// <summary>Implements the "sub" operator.</summary>
         internal sealed class Sub : Operator
         {
-
             public override void Execute(ExecutionContext context)
             {
                 var stack = context.Stack;
@@ -369,26 +360,25 @@ namespace PdfClown.Documents.Functions.Type4
                     long result = int1.LongValue - int2.LongValue;
                     if (result < int.MinValue || result > int.MaxValue)
                     {
-                        stack.Push(new PdfReal(result));
+                        stack.Push(PdfReal.Get(result));
                     }
                     else
                     {
-                        stack.Push(new PdfInteger((int)result));
+                        stack.Push(PdfInteger.Get((int)result));
                     }
                 }
                 else
                 {
                     float result = num1.FloatValue - num2.FloatValue;
-                    stack.Push(new PdfReal(result));
+                    stack.Push(PdfReal.Get(result));
                 }
             }
 
         }
 
-        /** Implements the "truncate" operator. */
+        /// <summary>Implements the "truncate" operator.</summary>
         internal sealed class Truncate : Operator
         {
-
             public override void Execute(ExecutionContext context)
             {
                 IPdfNumber num = context.PopNumber();
@@ -398,10 +388,9 @@ namespace PdfClown.Documents.Functions.Type4
                 }
                 else
                 {
-                    context.Stack.Push(new PdfReal((int)num.FloatValue));
+                    context.Stack.Push(PdfReal.Get((int)num.FloatValue));
                 }
             }
-
         }
 
     }

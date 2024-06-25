@@ -32,15 +32,12 @@ using PdfClown.Util.Parsers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>CMap parser [PDF:1.6:5.6.4;CMAP].</summary>
-    */
+    ///<summary>CMap parser [PDF:1.6:5.6.4;CMAP].</summary>
     internal sealed class CMapParser : PostScriptParser
     {
         private static readonly string BeginCodeSpaceRangeOperator = "begincodespacerange";
@@ -50,6 +47,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private static readonly string BeginCIDRangeOperator = "begincidrange";
         private static readonly string DefOperator = "def";
         private static readonly string UseCMapOperator = "usecmap";
+        private static readonly string EndCMapOperator = "endcmap";
 
         private static readonly string CMapName = PdfName.CMapName.StringValue;
         private static readonly string CMapType = PdfName.CMapType.StringValue;
@@ -64,9 +62,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public CMapParser(IInputStream stream) : base(stream)
         { }
 
-        /**
-          <summary>Parses the character-code-to-unicode mapping [PDF:1.6:5.9.1].</summary>
-        */
+        ///<summary>Parses the character-code-to-unicode mapping [PDF:1.6:5.9.1].</summary>
         public CMap Parse()
         {
             Stream.Seek(0);
@@ -131,6 +127,10 @@ namespace PdfClown.Documents.Contents.Fonts
                                     {
                                         codes.WMode = (int)operands[1];
                                     }
+                                }
+                                else if (@operator.Equals(EndCMapOperator, StringComparison.Ordinal))
+                                {
+                                    return codes;
                                 }
                                 operands.Clear();
                                 break;
@@ -326,9 +326,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-          <summary>Converts the current token into its input code value.</summary>
-        */
+        ///<summary>Converts the current token into its input code value.</summary>
         private ReadOnlySpan<byte> ParseInputCode()
         {
             switch (TokenType)
@@ -346,9 +344,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-          <summary>Converts the current token into its Unicode value.</summary>
-        */
+        ///<summary>Converts the current token into its Unicode value.</summary>
         private int ParseUnicode()
         {
             switch (TokenType)

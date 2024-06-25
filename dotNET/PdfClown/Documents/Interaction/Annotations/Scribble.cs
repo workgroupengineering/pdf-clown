@@ -48,6 +48,8 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         private IList<SKPath> paths;
         private IList<SKPath> pagePaths;
+        private SKRect newbox;
+
         public Scribble(PdfPage page, IList<SKPath> paths, string text, DeviceColor color)
             : base(page, PdfName.Ink, new SKRect(), text)
         {
@@ -67,12 +69,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 var oldValue = InkList;
                 if (!PdfArray.SequenceEquals(oldValue, value))
-                {                    
+                {
                     BaseDataObject[PdfName.InkList] = value;
                     OnPropertyChanged(oldValue, value);
                 }
             }
         }
+
         public IList<SKPath> PagePaths
         {
             get => pagePaths ??= GetPagePaths();
@@ -81,22 +84,12 @@ namespace PdfClown.Documents.Interaction.Annotations
                 ClearPath(pagePaths);
                 pagePaths = value;
                 var pathsObject = new PdfArray();
-                SKRect box = SKRect.Empty;
+                newbox = SKRect.Empty;
                 foreach (var path in value)
                 {
-                    var pathObject = new PdfArray();
-                    foreach (SKPoint point in path.Points)
-                    {
-                        if (box == SKRect.Empty)
-                        { box = SKRect.Create(point.X, point.Y, 0, 0); }
-                        else
-                        { box.Add(point); }
-                        pathObject.Add(PdfReal.Get(point.X)); // x.
-                        pathObject.Add(PdfReal.Get(point.Y)); // y.
-                    }
-                    pathsObject.Add(pathObject);
+                    pathsObject.Add(path.Points.ToPdfArray(ref newbox));
                 }
-                Box = box;
+                QueueRefreshAppearance();
                 InkList = pathsObject;
                 ClearPath(paths);
             }
@@ -115,13 +108,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-
-        private static SKPoint GetPagePoint(PdfArray pathObject, int pointIndex)
-        {
-            return new SKPoint(
-                pathObject.GetFloat(pointIndex),
-                pathObject.GetFloat(pointIndex + 1));
-        }
 
         protected override FormXObject GenerateAppearance()
         {
@@ -147,6 +133,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override void MoveTo(SKRect newBox)
         {
             var oldBox = Box;
+            InvertBorderAndEffect(ref oldBox);
+            InvertBorderAndEffect(ref newBox);
             if (oldBox.Width != newBox.Width
                 || oldBox.Height != newBox.Height)
             {
@@ -164,6 +152,28 @@ namespace PdfClown.Documents.Interaction.Annotations
             ClearPath(oldPaths);
         }
 
+        public override void RefreshBox()
+        {
+            var box = newbox;
+            if (newbox == SKRect.Empty)
+            {
+                foreach (var path in PagePaths)
+                {
+                    if (box == default)
+                    {
+                        box = path.Bounds;
+                    }
+                    else
+                    {
+                        box.Add(path.Bounds);
+                    }
+                }
+            }
+            ApplyBorderAndEffect(ref box);
+            Box = box;
+            newbox = default;
+        }
+
         public override IEnumerable<ControlPoint> GetControlPoints()
         {
             foreach (var cpBase in GetDefaultControlPoint())
@@ -175,31 +185,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         private IList<SKPath> GetPagePaths()
         {
             var list = new List<SKPath>();
-            PdfArray pathsObject = InkList;
-            for (int pathIndex = 0, pathLength = pathsObject.Count; pathIndex < pathLength; pathIndex++)
+            var pathsObject = InkList;
+            for (int i = 0, c = pathsObject.Count; i < c; i++)
             {
-                var pathObject = (PdfArray)pathsObject[pathIndex];
-                var path = new SKPath();
-                var pointLength = pathObject.Count;
-                for (int pointIndex = 0; pointIndex < pointLength; pointIndex += 2)
-                {
-                    var point = GetPagePoint(pathObject, pointIndex);
-                    if (path.IsEmpty)
-                    {
-                        path.MoveTo(point);
-                    }
-                    //else if (pointIndex + 3 < pointLength)
-                    //{
-                    //    var nextPoint = GetPagePoint(pathObject, pointIndex + 2);                        
-                    //    path.QuadTo(, point);
-                    //}
-                    else
-                    {
-                        path.LineTo(point);
-                    }
-                }
-                //path.Close();
-                list.Add(path);
+                var pathObject = pathsObject.Get<PdfArray>(i);
+                list.Add(pathObject.ToSKPath());
             }
             return list;
         }

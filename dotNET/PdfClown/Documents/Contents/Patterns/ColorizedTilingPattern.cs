@@ -56,14 +56,14 @@ namespace PdfClown.Documents.Contents.Patterns
 
         public override ColorSpace ColorSpace => tiling.ColorSpace;
 
-        public override IList<PdfDirectObject> Components => tiling.Components;
+        public override PdfArray Components => tiling.Components;
 
         public override PdfDirectObject BaseObject { get => tiling.BaseObject; protected set => base.BaseObject = value; }
 
-        public SKMatrix SKMatrix
+        public SKMatrix Matrix
         {
-            get => tiling.SKMatrix;
-            set => tiling.SKMatrix = value;
+            get => tiling.Matrix;
+            set => tiling.Matrix = value;
         }        
 
         public SKShader GetShader(GraphicsState state)

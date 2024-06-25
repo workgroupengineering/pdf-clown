@@ -33,14 +33,14 @@ namespace PdfClown.Documents.Contents.Scanner
     /**
       <summary>Inline image information.</summary>
     */
-    public sealed class InlineImageWrapper : GraphicsObjectWrapper<InlineImage>
+    public sealed class InlineImageWrapper : GraphicsObjectWrapper<GraphicsInlineImage>
     {
-        internal InlineImageWrapper(ContentScanner scanner) : base((InlineImage)scanner.Current)
+        internal InlineImageWrapper(ContentScanner scanner) : base((GraphicsInlineImage)scanner.Current)
         {
             SKMatrix ctm = scanner.State.Ctm;
             this.box = SKRect.Create(
               ctm.TransX,
-              scanner.ContextSize.Height - ctm.TransY,
+              scanner.ContextBox.Height - ctm.TransY,
               ctm.ScaleX,
               Math.Abs(ctm.ScaleY)
               );
@@ -49,6 +49,6 @@ namespace PdfClown.Documents.Contents.Scanner
         /**
           <summary>Gets the inline image.</summary>
         */
-        public InlineImage InlineImage => BaseDataObject;
+        public GraphicsInlineImage InlineImage => BaseDataObject;
     }
 }

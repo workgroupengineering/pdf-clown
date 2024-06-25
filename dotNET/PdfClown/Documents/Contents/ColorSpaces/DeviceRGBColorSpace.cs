@@ -57,8 +57,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color DefaultColor => DeviceRGBColor.Default;
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
-        { return new DeviceRGBColor(components); }
+        public override Color GetColor(PdfArray components, IContentContext context = null)
+            => components == null ? DefaultColor : components.Wrapper as DeviceRGBColor ?? new DeviceRGBColor(this, components);
 
         public override bool IsSpaceColor(Color color)
         { return color is DeviceRGBColor; }

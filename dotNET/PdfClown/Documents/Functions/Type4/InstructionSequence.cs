@@ -22,64 +22,51 @@ using System.Collections.Generic;
 namespace PdfClown.Documents.Functions.Type4
 {
 
-    /**
-	 * Represents an instruction sequence, a combination of values, operands and nested procedures.
-	 *
-	 */
+    /// <summary>Represents an instruction sequence, a combination of values, operands and nested procedures.</summary>
     public class InstructionSequence : PdfSimpleObject<List<PdfDirectObject>>
     {
 
         private readonly List<PdfDirectObject> instructions = new();
 
-        /**
-         * Add a name (ex. an operator)
-         * @param name the name
-         */
+        /// <summary>Add a name (ex. an operator)</summary>
+        /// <param name="name">the name</param>
         public void AddName(string name)
         {
-            this.instructions.Add(PdfName.Get(name));
+            instructions.Add(PdfName.Get(name));
         }
 
-        /**
-         * Adds an int value.
-         * @param value the value
-         */
+        /// <summary>Adds an int value.</summary>
+        /// <param name="value">the value</param>
         public void AddInteger(int value)
         {
-            this.instructions.Add(new PdfInteger(value));
+            instructions.Add(PdfInteger.Get(value));
         }
 
-        /**
-         * Adds a real value.
-         * @param value the value
-         */
+        /// <summary>Adds a real value.
+        /// </summary>
+        /// <param name="value">the value</param>
         public void AddReal(float value)
         {
-            this.instructions.Add(new PdfReal(value));
+            instructions.Add(PdfReal.Get(value));
         }
 
-        /**
-         * Adds a bool value.
-         * @param value the value
-         */
+        /// <summary>Adds a bool value.</summary>
+        /// <param name="value">the value</param>
         public void AddBoolean(bool value)
         {
-            this.instructions.Add(PdfBoolean.Get(value));
+            instructions.Add(PdfBoolean.Get(value));
         }
 
-        /**
-         * Adds a proc (sub-sequence of instructions).
-         * @param child the child proc
-         */
+        /// <summary>Adds a proc (sub-sequence of instructions).</summary>
+        /// <param name="child">the child proc</param>
         public void AddProc(InstructionSequence child)
         {
-            this.instructions.Add(child);
+            instructions.Add(child);
         }
 
-        /**
-         * Executes the instruction sequence.
-         * @param context the execution context
-         */
+        /// <summary>Executes the instruction sequence.</summary>
+        /// <param name="context">the execution context</param>
+        /// <exception cref="NotSupportedException"></exception>
         public void Execute(ExecutionContext context)
         {
             var stack = context.Stack;

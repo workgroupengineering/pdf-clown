@@ -29,7 +29,7 @@ namespace PdfClown.Documents.Contents.Patterns
 {
     internal interface IPattern
     {
-        SKMatrix SKMatrix { get; set; }
+        SKMatrix Matrix { get; set; }
 
         SKShader GetShader(GraphicsState state);
     }

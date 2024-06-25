@@ -23,10 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -87,13 +83,20 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public bool ContainsKey(string key) => Cache.ContainsKey(key);
 
-        public bool Remove(string key) => TryGetValue(key, out var field) && Remove(field);
+        public bool Remove(string key) => Cache.Remove(key, out var field) && RemoveFromArray(field);
+
+        public bool Remove(string key, out Field field) => Cache.Remove(key, out field) && RemoveFromArray(field);
 
         public bool Remove(Field field)
         {
-            Cache.Remove(field.Name);
+            Cache.Remove(field.FullName);
+            return RemoveFromArray(field);
+        }
+
+        private bool RemoveFromArray(Field field)
+        {
             var fieldObjects = GetHolderArray(field);
-            return fieldObjects.Remove(field.BaseObject);
+            return fieldObjects?.Remove(field.BaseObject) ?? false;
         }
 
         private PdfArray GetHolderArray(Field field)
@@ -123,13 +126,20 @@ namespace PdfClown.Documents.Interaction.Forms
         bool ICollection<KeyValuePair<string, Field>>.Contains(KeyValuePair<string, Field> entry) => Cache.Contains(entry);
 
         public void CopyTo(KeyValuePair<string, Field>[] entries, int index)
-        { throw new NotImplementedException(); }
+        {
+            foreach (var entry in this)
+            {
+                entries[index++] = entry;
+            }
+        }
 
         public bool Remove(KeyValuePair<string, Field> entry) => throw new NotImplementedException();
 
-        IEnumerator<KeyValuePair<string, Field>> IEnumerable<KeyValuePair<string, Field>>.GetEnumerator() => Cache.GetEnumerator();
+        public Dictionary<string, Field>.Enumerator GetEnumerator() => Cache.GetEnumerator();
 
-        public IEnumerator<Field> GetEnumerator() => Values.GetEnumerator();
+        IEnumerator<KeyValuePair<string, Field>> IEnumerable<KeyValuePair<string, Field>>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator<Field> IEnumerable<Field>.GetEnumerator() => Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -142,19 +152,15 @@ namespace PdfClown.Documents.Interaction.Forms
 
         private void RetrieveValues(PdfArray fieldObjects, IList<Field> values)
         {
-            foreach (PdfReference fieldReference in fieldObjects)
+            foreach (var fieldReference in fieldObjects.OfType<PdfReference>())
             {
                 var kidReferences = ((PdfDictionary)fieldReference.DataObject).Get<PdfArray>(PdfName.Kids);
-                PdfDictionary kidObject;
-                if (kidReferences == null)
-                { kidObject = null; }
-                else
-                { kidObject = (PdfDictionary)((PdfReference)kidReferences[0]).DataObject; }
+                PdfDictionary kidObject = kidReferences == null ? null : (PdfDictionary)((PdfReference)kidReferences[0]).DataObject;
                 // Terminal field?
                 if (kidObject == null // Merged single widget annotation.
                   || (!kidObject.ContainsKey(PdfName.FT) // Multiple widget annotations.
                     && kidObject.ContainsKey(PdfName.Subtype)
-                    && kidObject[PdfName.Subtype].Equals(PdfName.Widget)))
+                    && PdfName.Widget.Equals(kidObject.Get<PdfName>(PdfName.Subtype))))
                 { values.Add(Field.Wrap(fieldReference)); }
                 else // Non-terminal field.
                 { RetrieveValues(kidReferences, values); }

@@ -23,17 +23,11 @@
   this list of conditions.
 */
 
-using Org.BouncyCastle.Utilities;
-using PdfClown.Bytes;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Functions;
 using PdfClown.Objects;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using static PdfClown.Documents.Contents.Fonts.CCF.CFFParser;
 
 namespace PdfClown.Documents.Contents.Patterns.Shadings
 {
@@ -50,7 +44,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                 return null;
             if (baseObject.Wrapper is Shading shading)
                 return shading;
-            
+
             var dataObject = baseObject.Resolve();
             var dictionary = TryGetDictionary(dataObject);
             var type = dictionary.GetInt(PdfName.ShadingType);
@@ -79,7 +73,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         public int ShadingType
         {
             get => Dictionary.GetInt(PdfName.ShadingType);
-            set => Dictionary.SetInt(PdfName.ShadingType, value);
+            set => Dictionary.Set(PdfName.ShadingType, value);
         }
 
         public ColorSpace ColorSpace
@@ -104,41 +98,47 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
 
         public virtual SKRect Box
         {
-            get
-            {
-                var box = Wrap<Rectangle>(Dictionary[PdfName.BBox]);
-                return box?.ToRect() ?? SKRect.Empty;
-            }
+            get => Dictionary.Get<PdfArray>(PdfName.BBox)?.ToSKRect() ?? SKRect.Empty;
+            set => Dictionary[PdfName.BBox] = value.ToPdfArray();
         }
 
         public bool AntiAlias
         {
             get => Dictionary.GetBool(PdfName.AntiAlias);
-            set => Dictionary.SetBool(PdfName.AntiAlias, value);
+            set => Dictionary.Set(PdfName.AntiAlias, value);
         }
 
         public abstract SKShader GetShader(SKMatrix sKMatrix, GraphicsState state);
 
-
         public virtual SKMatrix CalculateMatrix(SKMatrix skMatrix, GraphicsState state)
         {
             var box = Box;
-            var pathRect = state.Scanner.ContentContext.Box;
-            if (state.Scanner.RenderObject is SKPath path)
-            {
-                pathRect = state.Ctm.MapRect(path.Bounds);
-            }
-            else if (state.Scanner.RenderContext is SKCanvas canvas)
-            {
-                pathRect = canvas.LocalClipBounds;
-            }
-            if (skMatrix == SKMatrix.Identity && !pathRect.IntersectsWith(box))
-            {
-                //skMatrix = SKMatrix.CreateTranslation();
-            }
             box = skMatrix.MapRect(box);
-            var scale = Math.Min(pathRect.Height, pathRect.Width) / Math.Min(box.Height, box.Width);
-            return SKMatrix.CreateScale(scale, scale).PreConcat(skMatrix);
+            var pathRect = state.Scanner.Canvas.LocalClipBounds;
+            if (state.Scanner.Path is SKPath path)
+            {
+                pathRect = path.Bounds;
+            }
+            else
+            {
+                pathRect = state.Ltm.MapRect(pathRect);
+            }
+
+            var scale = box.Height > box.Width
+                ? pathRect.Height / box.Height
+                : pathRect.Width / box.Width;
+            var scaleMAtrix = SKMatrix.CreateScale(scale, scale);
+            var mBox = scaleMAtrix.MapRect(box);
+            if (!mBox.IntersectsWith(pathRect))
+            {
+                //    scaleMAtrix = scaleMAtrix.PostConcat(SKMatrix.CreateTranslation(pathRect.Left - mBox.Left, pathRect.Top - mBox.Top));
+            }
+            return scaleMAtrix.PreConcat(skMatrix);
+        }
+
+        public SKShader GetBackGroundShader()
+        {
+            return SKShader.CreateColor(BackgroundColor.GetSkColor());
         }
     }
 }

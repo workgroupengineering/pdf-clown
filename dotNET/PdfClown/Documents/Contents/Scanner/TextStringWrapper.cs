@@ -61,7 +61,7 @@ namespace PdfClown.Documents.Contents.Scanner
 
         internal TextStringWrapper(ContentScanner scanner, bool scan = true) : base((ShowText)scanner.Current)
         {
-            Context = scanner.ContentContext;
+            Context = scanner.Context;
             Context.Strings?.Add(this);
 
             textChars = new List<TextChar>();

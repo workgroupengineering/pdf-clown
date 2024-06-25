@@ -24,49 +24,43 @@
 */
 
 using PdfClown.Documents;
-using PdfClown.Files;
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Abstract tree [PDF:1.7:3.8.5].</summary>
-    */
+    /// <summary>Abstract tree [PDF:1.7:3.8.5].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class Tree<TKey, TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<TKey, TValue>, IDictionary
         where TKey : PdfDirectObject, IPdfSimpleObject
         where TValue : PdfObjectWrapper
     {
-        /*
-          NOTE: This implementation is an adaptation of the B-tree algorithm described in "Introduction
-          to Algorithms" [1], 2nd ed (Cormen, Leiserson, Rivest, Stein) published by MIT Press/McGraw-Hill.
-          PDF trees represent a special subset of B-trees whereas actual keys are concentrated in leaf
-          nodes and proxied by boundary limits across their paths. This simplifies some handling but
-          requires keeping node limits updated whenever a change occurs in the leaf nodes composition.
+        // NOTE: This implementation is an adaptation of the B-tree algorithm described in "Introduction
+        // to Algorithms" [1], 2nd ed (Cormen, Leiserson, Rivest, Stein) published by MIT Press/McGraw-Hill.
+        // PDF trees represent a special subset of B-trees whereas actual keys are concentrated in leaf
+        // nodes and proxied by boundary limits across their paths. This simplifies some handling but
+        // requires keeping node limits updated whenever a change occurs in the leaf nodes composition.
+        // [1] http://en.wikipedia.org/wiki/Introduction_to_Algorithms
 
-          [1] http://en.wikipedia.org/wiki/Introduction_to_Algorithms
-        */
-        /**
-          Node children.
-        */
+        /// <summary> Node children.</summary>
         private sealed class Children
         {
             public sealed class InfoImpl
             {
-                private static readonly InfoImpl KidsInfo = new InfoImpl(1, TreeLowOrder);
-                private static readonly InfoImpl PairsInfo = new InfoImpl(2, TreeLowOrder); // NOTE: Paired children are combinations of 2 contiguous items.
+                private static readonly InfoImpl KidsInfo = new(1, TreeLowOrder);
+                private static readonly InfoImpl PairsInfo = new(2, TreeLowOrder); // NOTE: Paired children are combinations of 2 contiguous items.
 
                 public static InfoImpl Get(PdfName typeName)
                 { return typeName.Equals(PdfName.Kids) ? KidsInfo : PairsInfo; }
 
-                /** Number of (contiguous) children defining an item. */
+                /// <summary> Number of (contiguous) children defining an item.</summary>
                 public int ItemCount;
-                /** Maximum number of children. */
+                /// <summary> Maximum number of children.</summary>
                 public int MaxCount;
-                /** Minimum number of children. */
+                /// <summary> Minimum number of children.</summary>
                 public int MinCount;
 
                 public InfoImpl(int itemCount, int lowOrder)
@@ -77,11 +71,9 @@ namespace PdfClown.Objects
                 }
             }
 
-            /**
-              <summary>Gets the given node's children.</summary>
-              <param name="node">Parent node.</param>
-              <param name="pairs">Pairs key.</param>
-            */
+            /// <summary>Gets the given node's children.</summary>
+            /// <param name="node">Parent node.</param>
+            /// <param name="pairs">Pairs key.</param>
             public static Children Get(PdfDictionary node, PdfName pairsKey)
             {
                 PdfName childrenTypeName;
@@ -106,49 +98,31 @@ namespace PdfClown.Objects
                 TypeName = typeName;
             }
 
-            /**
-              <summary>Gets the node's children info.</summary>
-            */
+            /// <summary>Gets the node's children info.</summary>
             public InfoImpl Info => info;
 
-            /**
-              <summary>Gets whether the collection size has reached its maximum.</summary>
-            */
+            /// <summary>Gets whether the collection size has reached its maximum.</summary>
             public bool IsFull() => Items.Count >= Info.MaxCount;
 
-            /**
-              <summary>Gets whether this collection represents a leaf node.</summary>
-            */
+            /// <summary>Gets whether this collection represents a leaf node.</summary>
             public bool IsLeaf() => !TypeName.Equals(PdfName.Kids);
 
-            /**
-              <summary>Gets whether the collection size is more than its maximum.</summary>
-            */
+            /// <summary>Gets whether the collection size is more than its maximum.</summary>
             public bool IsOversized() => Items.Count > Info.MaxCount;
 
-            /**
-              <summary>Gets whether the collection size is less than its minimum.</summary>
-            */
+            /// <summary>Gets whether the collection size is less than its minimum.</summary>
             public bool IsUndersized() => Items.Count < Info.MinCount;
 
-            /**
-              <summary>Gets whether the collection size is within the order limits.</summary>
-            */
+            /// <summary>Gets whether the collection size is within the order limits.</summary>
             public bool IsValid() => !(IsUndersized() || IsOversized());
 
-            /**
-              <summary>Gets the node's children collection.</summary>
-            */
+            /// <summary>Gets the node's children collection.</summary>
             public PdfArray Items => items;
 
-            /**
-              <summary>Gets the node.</summary>
-            */
+            /// <summary>Gets the node.</summary>
             public PdfDictionary Parent => parent;
 
-            /**
-              <summary>Gets/Sets the node's children type.</summary>
-            */
+            /// <summary>Gets/Sets the node's children type.</summary>
             public PdfName TypeName
             {
                 get => typeName;
@@ -159,54 +133,109 @@ namespace PdfClown.Objects
                     info = InfoImpl.Get(typeName);
                 }
             }
+
+            public PdfDictionary BinaySearch(TKey key)
+            {
+                int low = 0, high = Items.Count - Info.ItemCount;
+                while (true)
+                {
+                    if (low > high)
+                        return null;
+
+                    int mid = (low + high) / 2;
+                    var kid = Items.Get<PdfDictionary>(mid);
+                    var limits = kid.Get<PdfArray>(PdfName.Limits);
+                    if (key.CompareTo(limits[0]) < 0)
+                    { high = mid - 1; }
+                    else if (key.CompareTo(limits[1]) > 0)
+                    { low = mid + 1; }
+                    else
+                    {
+                        // Go down one level!
+                        return kid;
+                    }
+                }
+            }
+
+            public TValue BinarySearchLeaf(TKey key, Tree<TKey, TValue> tree)
+            {
+                int low = 0, high = Items.Count - Info.ItemCount;
+                while (true)
+                {
+                    if (low > high)
+                        return null;
+
+                    int mid = (mid = ((low + high) / 2)) - (mid % 2);
+                    int comparison = key.CompareTo(Items[mid]);
+                    if (comparison < 0)
+                    { high = mid - 2; }
+                    else if (comparison > 0)
+                    { low = mid + 2; }
+                    else
+                    {
+                        // We got it!
+                        return tree.WrapValue(Items[mid + 1]);
+                    }
+                }
+            }
         }
 
-        private class Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
+        public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
         {
-            /**
-              <summary>Current named object.</summary>
-            */
+            /// <summary>Current named object.</summary>
             private KeyValuePair<TKey, TValue>? current;
 
-            /**
-              <summary>Current level index.</summary>
-            */
-            private int levelIndex = 0;
-            /**
-              <summary>Stacked levels.</summary>
-            */
-            private Stack<object[]> levels = new Stack<object[]>();
+            /// <summary>Current level index.</summary>
+            private int levelIndex;
 
-            /**
-              <summary>Current child tree nodes.</summary>
-            */
+            /// <summary>Stacked levels.</summary>
+            private Stack<object[]> levels;
+
+            /// <summary>Current child tree nodes.</summary>
             private PdfArray kids;
-            /**
-              <summary>Current names.</summary>
-            */
+
+            /// <summary>Current names.</summary>
             private PdfArray names;
-            /**
-              <summary>Current container.</summary>
-            */
+
+            /// <summary>Current container.</summary>
             private PdfIndirectObject container;
 
-            /**
-              <summary>Name tree.</summary>
-            */
+            /// <summary>Name tree.</summary>
             private Tree<TKey, TValue> tree;
 
             internal Enumerator(Tree<TKey, TValue> tree)
             {
+                current = null;
+                names = null;
+                kids = null;
+                container = null;
+                levelIndex = 0;
+                levels = new Stack<object[]>();
                 this.tree = tree;
 
+                Reset();
+            }
+
+            KeyValuePair<TKey, TValue> IEnumerator<KeyValuePair<TKey, TValue>>.Current => current.Value;
+
+            public object Current => Current;
+
+            public bool MoveNext() => (current = GetNext()) != null;
+
+            public void Reset()
+            {
                 container = tree.Container;
-                PdfDictionary rootNode = tree.BaseDataObject;
-                PdfDirectObject kidsObject = rootNode[PdfName.Kids];
+                MoveNext(tree.BaseDataObject);
+            }
+
+            private void MoveNext(PdfDictionary node)
+            {
+                var kidsObject = node[PdfName.Kids];
                 if (kidsObject == null) // Leaf node.
                 {
-                    PdfDirectObject namesObject = rootNode[tree.pairsKey];
-                    if (namesObject is PdfReference)
-                    { container = ((PdfReference)namesObject).IndirectObject; }
+                    PdfDirectObject namesObject = node[tree.pairsKey];
+                    if (namesObject is PdfReference reference)
+                    { container = reference.IndirectObject; }
                     names = (PdfArray)namesObject.Resolve();
                 }
                 else // Intermediate node.
@@ -217,29 +246,17 @@ namespace PdfClown.Objects
                 }
             }
 
-            KeyValuePair<TKey, TValue> IEnumerator<KeyValuePair<TKey, TValue>>.Current => current.Value;
-
-            public object Current => ((IEnumerator<KeyValuePair<TKey, TValue>>)this).Current;
-
-            public bool MoveNext()
-            { return (current = GetNext()) != null; }
-
-            public void Reset()
-            { throw new NotSupportedException(); }
-
             public void Dispose()
             { }
 
             private KeyValuePair<TKey, TValue>? GetNext()
             {
-                /*
-                  NOTE: Algorithm:
-                  1. [Vertical, down] We have to go downward the name tree till we reach
-                  a names collection (leaf node).
-                  2. [Horizontal] Then we iterate across the names collection.
-                  3. [Vertical, up] When leaf-nodes scan is complete, we go upward solving
-                  parent nodes, repeating step 1.
-                */
+                // NOTE: Algorithm:
+                //  1. [Vertical, down] We have to go downward the name tree till we reach
+                //  a names collection (leaf node).
+                //  2. [Horizontal] Then we iterate across the names collection.
+                //  3. [Vertical, up] When leaf-nodes scan is complete, we go upward solving
+                //  parent nodes, repeating step 1.
                 while (true)
                 {
                     if (names == null)
@@ -264,24 +281,9 @@ namespace PdfClown.Objects
                             levels.Push(new object[] { container, kids, levelIndex });
 
                             // Move downward!
-                            PdfReference kidReference = (PdfReference)kids[levelIndex];
+                            var kidReference = (PdfReference)kids[levelIndex];
                             container = kidReference.IndirectObject;
-                            PdfDictionary kid = (PdfDictionary)kidReference.DataObject;
-                            PdfDirectObject kidsObject = kid[PdfName.Kids];
-                            if (kidsObject == null) // Leaf node.
-                            {
-                                PdfDirectObject namesObject = kid[tree.pairsKey];
-                                if (namesObject is PdfReference)
-                                { container = ((PdfReference)namesObject).IndirectObject; }
-                                names = (PdfArray)namesObject.Resolve();
-                                kids = null;
-                            }
-                            else // Intermediate node.
-                            {
-                                if (kidsObject is PdfReference)
-                                { container = ((PdfReference)kidsObject).IndirectObject; }
-                                kids = (PdfArray)kidsObject.Resolve();
-                            }
+                            MoveNext((PdfDictionary)kidReference.DataObject);
                             levelIndex = 0; // First node (new level).
                         }
                     }
@@ -334,10 +336,10 @@ namespace PdfClown.Objects
             public ICollection<TValue> Collection => values;
         }
 
-        /**
-          Minimum number of items in non-root nodes.
-          Note that the tree (high) order is assumed twice as much (<see cref="Children.Info.Info(int, int)"/>.
-        */
+        /// <summary>
+        /// Minimum number of items in non-root nodes.
+        /// Note that the tree (high) order is assumed twice as much (<see cref="Children.Info.Info(int, int)"/>.
+        /// </summary>
         private static readonly int TreeLowOrder = 5;
 
         private PdfName pairsKey;
@@ -348,16 +350,25 @@ namespace PdfClown.Objects
         public Tree(PdfDirectObject baseObject) : base(baseObject)
         { Initialize(); }
 
-        /**
-          Gets the key associated to the specified value.
-        */
+        ///<summary>Gets the name of the key-value pairs entries.</summary>
+        protected abstract PdfName PairsKey { get; }
+
+        public bool IsFixedSize => false;
+
+        ICollection IDictionary.Keys => (ICollection)Keys;
+
+        ICollection IDictionary.Values => (ICollection)Values;
+
+        public bool IsSynchronized => true;
+
+        public object SyncRoot => throw new NotImplementedException();
+
+        ///Gets the key associated to the specified value.
         public TKey GetKey(TValue value)
         {
-            /*
-              NOTE: Current implementation doesn't support bidirectional maps, to say that the only
-              currently-available way to retrieve a key from a value is to iterate the whole map (really
-              poor performance!).
-            */
+            ///  NOTE: Current implementation doesn't support bidirectional maps, to say that the only
+            ///  currently-available way to retrieve a key from a value is to iterate the whole map (really
+            ///  poor performance!).
             foreach (KeyValuePair<TKey, TValue> entry in this)
             {
                 if (entry.Value.Equals(value))
@@ -366,14 +377,11 @@ namespace PdfClown.Objects
             return null;
         }
 
-        public virtual void Add(TKey key, TValue value)
-        { Add(key, value, false); }
+        public virtual void Add(TKey key, TValue value) => Add(key, value, false);
 
         public virtual bool ContainsKey(TKey key)
         {
-            /*
-              NOTE: Here we assume that any named entry has a non-null value.
-            */
+            // NOTE: Here we assume that any named entry has a non-null value.
             return this[key] != null;
         }
 
@@ -391,7 +399,7 @@ namespace PdfClown.Objects
         public virtual bool Remove(TKey key)
         {
             PdfDictionary node = BaseDataObject;
-            Stack<PdfReference> nodeReferenceStack = new Stack<PdfReference>();
+            var nodeReferenceStack = new Stack<PdfReference>();
             while (true)
             {
                 Children nodeChildren = Children.Get(node, pairsKey);
@@ -578,54 +586,19 @@ namespace PdfClown.Objects
             get
             {
                 PdfDictionary parent = BaseDataObject;
-                while (true)
+                while (parent != null)
                 {
                     Children children = Children.Get(parent, pairsKey);
                     if (children.IsLeaf()) // Leaf node.
                     {
-                        int low = 0, high = children.Items.Count - children.Info.ItemCount;
-                        while (true)
-                        {
-                            if (low > high)
-                                return null;
-
-                            int mid = (mid = ((low + high) / 2)) - (mid % 2);
-                            int comparison = key.CompareTo(children.Items[mid]);
-                            if (comparison < 0)
-                            { high = mid - 2; }
-                            else if (comparison > 0)
-                            { low = mid + 2; }
-                            else
-                            {
-                                // We got it!
-                                return WrapValue(children.Items[mid + 1]);
-                            }
-                        }
+                        return children.BinarySearchLeaf(key, this);
                     }
                     else // Intermediate node.
                     {
-                        int low = 0, high = children.Items.Count - children.Info.ItemCount;
-                        while (true)
-                        {
-                            if (low > high)
-                                return null;
-
-                            int mid = (low + high) / 2;
-                            var kid = children.Items.Get<PdfDictionary>(mid);
-                            var limits = kid.Get<PdfArray>(PdfName.Limits);
-                            if (key.CompareTo(limits[0]) < 0)
-                            { high = mid - 1; }
-                            else if (key.CompareTo(limits[1]) > 0)
-                            { low = mid + 1; }
-                            else
-                            {
-                                // Go down one level!
-                                parent = kid;
-                                break;
-                            }
-                        }
+                        parent = children.BinaySearch(key);
                     }
                 }
+                return null;
             }
             set => Add(key, value, true);
         }
@@ -646,14 +619,13 @@ namespace PdfClown.Objects
             }
         }
 
-        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair)
-        { Add(keyValuePair.Key, keyValuePair.Value); }
+        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair) 
+            => Add(keyValuePair.Key, keyValuePair.Value);
 
-        public virtual void Clear()
-        { Clear(BaseDataObject); }
+        public virtual void Clear() => Clear(BaseDataObject);
 
-        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> keyValuePair)
-        { return keyValuePair.Value.Equals(this[keyValuePair.Key]); }
+        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> keyValuePair) => 
+            keyValuePair.Value.Equals(this[keyValuePair.Key]);
 
         public virtual void CopyTo(KeyValuePair<TKey, TValue>[] keyValuePairs, int index)
         { throw new NotImplementedException(); }
@@ -665,44 +637,22 @@ namespace PdfClown.Objects
         public virtual bool Remove(KeyValuePair<TKey, TValue> keyValuePair)
         { throw new NotSupportedException(); }
 
-        public virtual IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-        { return new Enumerator(this); }
+        public virtual Enumerator GetEnumerator() => new Enumerator(this);
 
-        IEnumerator IEnumerable.GetEnumerator()
-        { return this.GetEnumerator(); }
+        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator() => GetEnumerator();
 
-        /**
-          <summary>Gets the name of the key-value pairs entries.</summary>
-        */
-        protected abstract PdfName PairsKey
-        {
-            get;
-        }
-
-        public bool IsFixedSize => false;
-
-        ICollection IDictionary.Keys => (ICollection)Keys;
-
-        ICollection IDictionary.Values => (ICollection)Values;
-
-        public bool IsSynchronized => true;
-
-        public object SyncRoot => throw new NotImplementedException();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public object this[object key] { get => this[(TKey)key]; set => this[(TKey)key] = (TValue)value; }
 
-        /**
-          <summary>Wraps a base object within its corresponding high-level representation.</summary>
-        */
+        /// <summary>Wraps a base object within its corresponding high-level representation.</summary>
         protected abstract TValue WrapValue(PdfDirectObject baseObject);
 
-        /**
-          <summary>Adds an entry into the tree.</summary>
-          <param name="key">New entry's key.</param>
-          <param name="value">New entry's value.</param>
-          <param name="overwrite">Whether the entry is allowed to replace an existing one having the same
-          key.</param>
-        */
+        /// <summary>Adds an entry into the tree.</summary>
+        /// <param name="key">New entry's key.</param>
+        /// <param name="value">New entry's value.</param>
+        /// <param name="overwrite">Whether the entry is allowed to replace an existing one having the same
+        /// key.</param>
         private void Add(TKey key, TValue value, bool overwrite)
         {
             // Get the root node!
@@ -721,8 +671,7 @@ namespace PdfClown.Objects
                     SplitFullNode(
                       rootChildrenObject,
                       0, // Old root's position within new root's kids.
-                      rootChildren.TypeName
-                      );
+                      rootChildren.TypeName);
                 }
             }
 
@@ -730,14 +679,12 @@ namespace PdfClown.Objects
             Add(key, value, overwrite, root);
         }
 
-        /**
-          <summary>Adds an entry under the given tree node.</summary>
-          <param name="key">New entry's key.</param>
-          <param name="value">New entry's value.</param>
-          <param name="overwrite">Whether the entry is allowed to replace an existing one having the same
-          key.</param>
-          <param name="nodeReference">Current node reference.</param>
-        */
+        /// <summary>Adds an entry under the given tree node.</summary>
+        /// <param name="key">New entry's key.</param>
+        /// <param name="value">New entry's value.</param>
+        /// <param name="overwrite">Whether the entry is allowed to replace an existing one having the same
+        /// key.</param>
+        /// <param name="nodeReference">Current node reference.</param>
         private void Add(TKey key, TValue value, bool overwrite, PdfDictionary node)
         {
             Children children = Children.Get(node, pairsKey);
@@ -829,22 +776,20 @@ namespace PdfClown.Objects
             }
         }
 
-        /**
-          <summary>Removes all the given node's children.</summary>
-          <remarks>
-            <para>As this method doesn't apply balancing, it's suitable for clearing root nodes only.
-            </para>
-            <para>Removal affects only tree nodes: referenced objects are preserved to avoid inadvertently
-            breaking possible references to them from somewhere else.</para>
-          </remarks>
-          <param name="node">Current node.</param>
-        */
+        /// <summary>Removes all the given node's children.</summary>
+        /// <remarks>
+        ///   <para>As this method doesn't apply balancing, it's suitable for clearing root nodes only.
+        ///   </para>
+        ///   <para>Removal affects only tree nodes: referenced objects are preserved to avoid inadvertently
+        ///   breaking possible references to them from somewhere else.</para>
+        /// </remarks>
+        /// <param name="node">Current node.</param>
         private void Clear(PdfDictionary node)
         {
-            Children children = Children.Get(node, pairsKey);
+            var children = Children.Get(node, pairsKey);
             if (!children.IsLeaf())
             {
-                foreach (PdfDirectObject child in children.Items)
+                foreach (var child in children.Items)
                 {
                     Clear((PdfDictionary)child.Resolve());
                     File.Unregister((PdfReference)child);
@@ -868,15 +813,13 @@ namespace PdfClown.Objects
             }
             else // Intermediate node.
             {
-                foreach (PdfDirectObject kidObject in kidsObject)
+                foreach (var kidObject in kidsObject)
                 { Fill(filler, (PdfDictionary)kidObject.Resolve()); }
             }
         }
 
-        /**
-          <summary>Gets the given node's entries count.</summary>
-          <param name="node">Current node.</param>
-        */
+        /// <summary>Gets the given node's entries count.</summary>
+        /// <param name="node">Current node.</param>
         private int GetCount(PdfDictionary node)
         {
             var children = node.Get<PdfArray>(pairsKey);
@@ -886,7 +829,7 @@ namespace PdfClown.Objects
             {
                 children = node.Get<PdfArray>(PdfName.Kids);
                 int count = 0;
-                foreach (PdfDirectObject child in children)
+                foreach (var child in children)
                 { count += GetCount((PdfDictionary)child.Resolve()); }
                 return count;
             }
@@ -905,14 +848,12 @@ namespace PdfClown.Objects
             }
         }
 
-        /**
-          <summary>Splits a full node.</summary>
-          <remarks>A new node is inserted at the full node's position, receiving the lower half of its
-          children.</remarks>
-          <param name="nodes">Parent nodes.</param>
-          <param name="fullNodeIndex">Full node's position among the parent nodes.</param>
-          <param name="childrenTypeName">Full node's children type.</param>
-        */
+        /// <summary>Splits a full node.</summary>
+        /// <remarks>A new node is inserted at the full node's position, receiving the lower half of its
+        /// children.</remarks>
+        /// <param name="nodes">Parent nodes.</param>
+        /// <param name="fullNodeIndex">Full node's position among the parent nodes.</param>
+        /// <param name="childrenTypeName">Full node's children type.</param>
         private void SplitFullNode(PdfArray nodes, int fullNodeIndex, PdfName childrenTypeName)
         {
             // Get the full node!
@@ -939,19 +880,15 @@ namespace PdfClown.Objects
             UpdateNodeLimits(fullNode, fullNodeChildren, childrenTypeName);
         }
 
-        /**
-          <summary>Sets the key limits of the given node.</summary>
-          <param name="children">Node children.</param>
-        */
+        /// <summary>Sets the key limits of the given node.</summary>
+        /// <param name="children">Node children.</param>
         private void UpdateNodeLimits(Children children)
         { UpdateNodeLimits(children.Parent, children.Items, children.TypeName); }
 
-        /**
-          <summary>Sets the key limits of the given node.</summary>
-          <param name="node">Node to update.</param>
-          <param name="children">Node children.</param>
-          <param name="childrenTypeName">Node's children type.</param>
-        */
+        /// <summary>Sets the key limits of the given node.</summary>
+        /// <param name="node">Node to update.</param>
+        /// <param name="children">Node children.</param>
+        /// <param name="childrenTypeName">Node's children type.</param>
         private void UpdateNodeLimits(PdfDictionary node, PdfArray children, PdfName childrenTypeName)
         {
             // Root node?
@@ -984,25 +921,16 @@ namespace PdfClown.Objects
             }
         }
 
-        void IDictionary.Add(object key, object value)
-        {
-            Add((TKey)key, (TValue)value);
-        }
+        void IDictionary.Add(object key, object value) => Add((TKey)key, (TValue)value);
 
-        bool IDictionary.Contains(object key)
-        {
-            return ContainsKey((TKey)key);
-        }
+        bool IDictionary.Contains(object key) => ContainsKey((TKey)key);
 
         IDictionaryEnumerator IDictionary.GetEnumerator()
         {
             throw new NotImplementedException();
         }
 
-        void IDictionary.Remove(object key)
-        {
-            Remove((TKey)key);
-        }
+        void IDictionary.Remove(object key) => Remove((TKey)key);
 
         void ICollection.CopyTo(Array array, int index)
         {

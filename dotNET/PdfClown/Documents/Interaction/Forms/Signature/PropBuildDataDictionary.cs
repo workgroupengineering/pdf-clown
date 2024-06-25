@@ -47,7 +47,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         public DateTime? Date
         {
             get => BaseDataObject.GetDate(PdfName.Date);
-            set => BaseDataObject.SetDate(PdfName.Date, value);
+            set => BaseDataObject.Set(PdfName.Date, value);
         }
 
         public string Version
@@ -59,13 +59,13 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         public int Revision
         {
             get => BaseDataObject.GetInt(PdfName.R);
-            set => BaseDataObject.SetInt(PdfName.R, value);
+            set => BaseDataObject.Set(PdfName.R, value);
         }
 
         public bool PrePelease
         {
             get => BaseDataObject.GetBool(PdfName.PreRelease);
-            set => BaseDataObject.SetBool(PdfName.PreRelease, value);
+            set => BaseDataObject.Set(PdfName.PreRelease, value);
         }
 
         public string OS
@@ -87,13 +87,13 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         public bool NonEFontNoWarn
         {
             get => BaseDataObject.GetBool(PdfName.NonEFontNoWarn, true);
-            set => BaseDataObject.SetBool(PdfName.NonEFontNoWarn, value);
+            set => BaseDataObject.Set(PdfName.NonEFontNoWarn, value);
         }
 
         public bool TrustedMode
         {
             get => BaseDataObject.GetBool(PdfName.TrueType, false);
-            set => BaseDataObject.SetBool(PdfName.TrustedMode, value);
+            set => BaseDataObject.Set(PdfName.TrustedMode, value);
         }
     }
 }

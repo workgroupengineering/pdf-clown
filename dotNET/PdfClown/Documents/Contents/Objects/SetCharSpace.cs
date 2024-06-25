@@ -39,20 +39,19 @@ namespace PdfClown.Documents.Contents.Objects
         public static readonly string OperatorKeyword = "Tc";
 
         public SetCharSpace(double value)
-            : base(OperatorKeyword, new List<PdfDirectObject>(1) { PdfReal.Get(value) })
+            : base(OperatorKeyword, new PdfArray(1) { value })
         { }
 
-        public SetCharSpace(IList<PdfDirectObject> operands)
+        public SetCharSpace(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state)
-        { state.CharSpace = Value; }
+        public override void Scan(GraphicsState state) => state.CharSpace = Value;
 
         public float Value
         {
-            get => ((IPdfNumber)operands[0]).FloatValue;
-            set => operands[0] = PdfReal.Get(value);
+            get => operands.GetFloat(0);
+            set => operands.Set(0, value);
         }
     }
 }

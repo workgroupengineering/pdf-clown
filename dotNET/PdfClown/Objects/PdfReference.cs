@@ -24,15 +24,14 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents;
 using PdfClown.Tokens;
 
 using System;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF indirect reference object [PDF:1.6:3.2.9].</summary>
-    */
+    /// <summary>PDF indirect reference object [PDF:1.6:3.2.9].</summary>
     public sealed class PdfReference : PdfDirectObject, IPdfIndirectObject
     {
         private const int DelegatedReferenceNumber = -1;
@@ -65,26 +64,18 @@ namespace PdfClown.Objects
 
         public override PdfFile File => file ?? base.File;
 
-        /**
-          <summary>Gets the generation number.</summary>
-        */
+        /// <summary>Gets the generation number.</summary>
         public int GenerationNumber => generationNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Generation : generationNumber;
 
-        /**
-          <summary>Gets the object identifier.</summary>
-          <remarks>This corresponds to the serialized representation of an object identifier within a PDF file.</remarks>
-        */
+        /// <summary>Gets the object identifier.</summary>
+        /// <remarks>This corresponds to the serialized representation of an object identifier within a PDF file.</remarks>
         public string Id => id ??= $"{ObjectNumber}{Symbol.Space}{GenerationNumber}";
 
-        /**
-          <summary>Gets the object reference.</summary>
-          <remarks>This corresponds to the serialized representation of a reference within a PDF file.</remarks>
-        */
+        /// <summary>Gets the object reference.</summary>
+        /// <remarks>This corresponds to the serialized representation of a reference within a PDF file.</remarks>
         public string IndirectReference => ($"{Id}{Symbol.Space}{Symbol.CapitalR}");
 
-        /**
-          <summary>Gets the object number.</summary>
-        */
+        /// <summary>Gets the object number.</summary>
         public int ObjectNumber => objectNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Number : objectNumber;
 
         public override PdfObject Parent
@@ -120,12 +111,16 @@ namespace PdfClown.Objects
             set => IndirectObject.DataObject = value;
         }
 
-        /**
-          <returns><code>null</code>, if the indirect object is undefined.</returns>
-        */
+        /// <returns><code>null</code>, if the indirect object is undefined.</returns>
         public override PdfIndirectObject IndirectObject => indirectObject ??= file.IndirectObjects[objectNumber];
 
         public override PdfReference Reference => this;
+
+        public override ContentWrapper ContentsWrapper
+        {
+            get => IndirectObject?.ContentsWrapper;
+            internal set => IndirectObject.ContentsWrapper = value;
+        }
 
         public override IPdfObjectWrapper Wrapper
         {
@@ -147,20 +142,13 @@ namespace PdfClown.Objects
 
         public override PdfObject Swap(PdfObject other)
         {
-            /*
-              NOTE: Fail fast if the referenced indirect object is undefined.
-            */
+            // NOTE: Fail fast if the referenced indirect object is undefined.
             return IndirectObject.Swap(((PdfReference)other).IndirectObject).Reference;
         }
 
-        public override int GetHashCode()
-        {
-            /*
-              NOTE: Uniqueness should be achieved XORring the (local) reference hash-code with the (global)
-              file hash-code.
-            */
-            return Id.GetHashCode() ^ File.GetHashCode();
-        }
+        //NOTE: Uniqueness should be achieved XORring the (local) reference hash-code with the (global)
+        //file hash-code.
+        public override int GetHashCode() => HashCode.Combine(File, ObjectNumber, GenerationNumber);
 
         public override string ToString() => IndirectReference;
 
@@ -177,26 +165,27 @@ namespace PdfClown.Objects
             if (ReferenceEquals(this, obj))
                 return 0;
             if (obj is PdfReference reference)
-                return string.Compare(Id, reference.Id, StringComparison.Ordinal);
+            {
+                var result = ObjectNumber.CompareTo(reference.ObjectNumber);
+                return result == 0 ? GenerationNumber.CompareTo(reference.GenerationNumber)
+                    : result;
+            }
             else
                 return GetHashCode().CompareTo(obj.GetHashCode());
         }
 
         public override bool Equals(object other)
         {
-            /*
-             * NOTE: References are evaluated as "equal" if they are either the same instance or they sport
-             * the same identifier within the same file instance.
-             */
-            if (base.Equals(other))
+            // NOTE: References are evaluated as "equal" if they are either the same instance or they sport
+            // the same identifier within the same file instance.
+            if (ReferenceEquals(this, other))
                 return true;
-            else if (other == null
-                || !other.GetType().Equals(GetType()))
-                return false;
+            else if (other is PdfReference otherReference)
+                return otherReference.File == File
+                && otherReference.ObjectNumber.Equals(ObjectNumber)
+                && otherReference.GenerationNumber.Equals(GenerationNumber);
 
-            PdfReference otherReference = (PdfReference)other;
-            return otherReference.File == File
-                && otherReference.Id.Equals(Id, StringComparison.Ordinal);
+            return false;
         }
     }
 }

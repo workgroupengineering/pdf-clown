@@ -216,6 +216,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private float MXC;
         private float MYC;
         private float MZC;
+        private CalRGBColor defaultColor;
 
         //TODO:IMPL new element constructor!
 
@@ -244,7 +245,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override int ComponentCount => 3;
 
-        public override Color DefaultColor => CalRGBColor.Default;
+        public override Color DefaultColor => defaultColor ??= new CalRGBColor(this, 0, 0, 0);
 
         public override float[] Gamma
         {
@@ -278,20 +279,20 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             set => Dictionary[PdfName.Matrix] =
                  new PdfArray(9)
                  {
-                    PdfReal.Get(value.ScaleX),
-                    PdfReal.Get(value.SkewY),
-                    PdfReal.Get(value.SkewX),
-                    PdfReal.Get(value.ScaleY),
-                    PdfReal.Get(value.TransX),
-                    PdfReal.Get(value.TransY),
-                    PdfReal.Get(value.Persp0),
-                    PdfReal.Get(value.Persp1),
-                    PdfReal.Get(value.Persp2)
+                    value.ScaleX,
+                    value.SkewY,
+                    value.SkewX,
+                    value.ScaleY,
+                    value.TransX,
+                    value.TransY,
+                    value.Persp0,
+                    value.Persp1,
+                    value.Persp2
                  };
         }
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
-        { return new CalRGBColor(components); }
+        public override Color GetColor(PdfArray components, IContentContext context)
+            => components == null ? DefaultColor : components.Wrapper as CalRGBColor ?? new CalRGBColor(this, components);
 
         public override bool IsSpaceColor(Color color)
         { return color is CalRGBColor; }

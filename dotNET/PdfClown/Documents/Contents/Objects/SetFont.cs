@@ -39,10 +39,12 @@ namespace PdfClown.Documents.Contents.Objects
     {
         public static readonly string OperatorKeyword = "Tf";
 
-        public SetFont(PdfName name, double size) : base(OperatorKeyword, name, PdfReal.Get(size))
+        public SetFont(PdfName name, double size)
+            : base(OperatorKeyword, new PdfArray(2) { name, size })
         { }
 
-        public SetFont(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public SetFont(PdfArray operands) 
+            : base(OperatorKeyword, operands)
         { }
 
         /**
@@ -55,8 +57,8 @@ namespace PdfClown.Documents.Contents.Objects
         {
             var pscanner = scanner;
             Font font;
-            while ((font = pscanner.ContentContext.Resources.Fonts[Name]) == null
-                && (pscanner = pscanner.ParentLevel) != null)
+            while ((font = pscanner.Context.Resources.Fonts[Name]) == null
+                && (pscanner = pscanner.ResourceParent) != null)
             { }
             return font;
         }
@@ -72,13 +74,13 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public float Size
         {
-            get => ((IPdfNumber)operands[1]).FloatValue;
-            set => operands[1] = PdfReal.Get(value);
+            get => operands.GetFloat(1);
+            set => operands.Set(1, value);
         }
 
         public PdfName Name
         {
-            get => (PdfName)operands[0];
+            get => operands.Get<PdfName>(0);
             set => operands[0] = value;
         }
     }

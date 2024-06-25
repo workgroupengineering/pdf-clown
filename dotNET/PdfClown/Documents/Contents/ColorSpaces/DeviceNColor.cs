@@ -36,30 +36,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF13)]
     public sealed class DeviceNColor : LeveledColor
     {
-        /**
-          <summary>Gets the color corresponding to the specified components.</summary>
-          <param name="components">Color components to convert.</param>
-        */
-        public static DeviceNColor Get(PdfArray components)
-        {
-            return components != null
-              ? components.Wrapper is DeviceNColor color ? color : new DeviceNColor(components)
-              : null;
-        }
-
-        private static IList<PdfDirectObject> GetComponentValues(params double[] components)
-        {// TODO:normalize parameters!
-            IList<PdfDirectObject> componentValues = new List<PdfDirectObject>();
-            foreach (double component in components)
-            { componentValues.Add(PdfReal.Get((component))); }
-            return componentValues;
-        }
-
-        public DeviceNColor(params double[] components) : this(GetComponentValues(components))
+        // TODO:normalize parameters!
+        public DeviceNColor(ColorSpace colorSpace, params double[] components) : this(colorSpace, new PdfArray(components))
         { }
 
-        internal DeviceNColor(IList<PdfDirectObject> components)//TODO:colorspace?
-            : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
+        internal DeviceNColor(ColorSpace colorSpace, PdfArray components)//TODO:colorspace?
+            : base(colorSpace, components)
         { }
 
         public override object Clone(PdfDocument context)

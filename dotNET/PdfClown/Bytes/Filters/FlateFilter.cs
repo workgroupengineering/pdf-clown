@@ -28,12 +28,9 @@
   this list of conditions.
 */
 
-using ICSharpCode.SharpZipLib.Zip.Compression;
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using PdfClown.Objects;
-using PdfClown.Util;
 using PdfClown.Util.IO;
-using SkiaSharp;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -42,9 +39,7 @@ using System.IO.Compression;
 
 namespace PdfClown.Bytes.Filters
 {
-    /**
-      <summary>zlib/deflate [RFC:1950,1951] filter [PDF:1.6:3.3.3].</summary>
-    */
+    ///<summary>zlib/deflate [RFC:1950,1951] filter [PDF:1.6:3.3.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public class FlateFilter : Filter
     {
@@ -61,8 +56,8 @@ namespace PdfClown.Bytes.Filters
                 Transform(inputFilter, outputStream);
                 inputFilter.Close();
             }
-            catch(ICSharpCode.SharpZipLib.SharpZipBaseException)
-            {               
+            catch (ICSharpCode.SharpZipLib.SharpZipBaseException)
+            {
                 outputStream.Reset();
                 inputStream.Position = 0;
                 using var inputFilter = new DeflateStream(inputStream, CompressionMode.Decompress);

@@ -25,23 +25,16 @@
 
 using Org.BouncyCastle.Pkcs;
 using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Encryption;
 using PdfClown.Objects;
-using PdfClown.Util;
 using PdfClown.Util.Parsers;
 
 using System;
-using System.Globalization;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>PDF file parser [PDF:1.7:3.2,3.4].</summary>
-    */
+    /// <summary>PDF file parser [PDF:1.7:3.2,3.4].</summary>
     public sealed class FileParser : BaseParser
     {
         // private static readonly int EOFMarkerChunkSize = 1024; // [PDF:1.6:H.3.18].
@@ -64,55 +57,6 @@ namespace PdfClown.Tokens
             this.keyStoreInputStream = keyStoreInputStream;
         }
 
-        public override bool MoveNext()
-        {
-            bool moved = base.MoveNext();
-            if (moved)
-            {
-                if (TokenType == TokenTypeEnum.Integer)
-                {
-                    /*
-                      NOTE: We need to verify whether indirect reference pattern is applicable:
-                      ref :=  { int int 'R' }
-                    */
-                    IInputStream stream = Stream;
-                    long baseOffset = stream.Position; // Backs up the recovery position.
-
-                    // 1. Object number.
-                    int objectNumber = IntegerToken;
-                    // 2. Generation number.
-                    base.MoveNext();
-                    if (TokenType == TokenTypeEnum.Integer)
-                    {
-                        int generationNumber = IntegerToken;
-                        // 3. Reference keyword.
-                        base.MoveNext();
-                        if (TokenType == TokenTypeEnum.Keyword)
-                        {
-                            var span = CharsToken;
-                            if (span.Equals(Keyword.Reference, StringComparison.Ordinal))
-                            {
-                                TokenType = TokenTypeEnum.Reference;
-                                ReferenceToken = new Reference(objectNumber, generationNumber);
-                                return moved;
-                            }
-                            else if (span.Equals(Keyword.BeginIndirectObject, StringComparison.Ordinal))
-                            {
-                                TokenType = TokenTypeEnum.InderectObject;
-                                ReferenceToken = new Reference(objectNumber, generationNumber);
-                                return moved;
-                            }
-                        }
-                    }
-                    // Rollback!
-                    stream.Seek(baseOffset);
-                    IntegerToken = objectNumber;
-                    TokenType = TokenTypeEnum.Integer;
-                }
-            }
-            return moved;
-        }
-
         public override PdfDataObject ParsePdfObject()
         {
             if (TokenType == TokenTypeEnum.Reference)
@@ -132,10 +76,8 @@ namespace PdfClown.Tokens
                     && CharsToken.Equals(Keyword.BeginStream, StringComparison.Ordinal))
                 {
                     // Keep track of current position!
-                    /*
-                      NOTE: Indirect reference resolution is an outbound call which affects the stream pointer position,
-                      so we need to recover our current position after it returns.
-                    */
+                    // NOTE: Indirect reference resolution is an outbound call which affects the stream pointer position,
+                    // so we need to recover our current position after it returns.
                     long position = stream.Position;
                     // Get the stream length!
                     int length = streamHeader.GetInt(PdfName.Length, 0);
@@ -151,7 +93,7 @@ namespace PdfClown.Tokens
                     var bytes = new ByteStream(data);
                     position = stream.Position;
                     MoveNext(); // Postcondition (last token should be 'endstream' keyword).
-                    var streamType = streamHeader[PdfName.Type];
+                    var streamType = streamHeader.Get<PdfName>(PdfName.Type);
                     if (PdfName.ObjStm.Equals(streamType)) // Object stream [PDF:1.6:3.4.6].
                         return new ObjectStream(streamHeader, bytes);
                     else if (PdfName.XRef.Equals(streamType)) // Cross-reference stream [PDF:1.6:3.4.7].
@@ -198,7 +140,7 @@ namespace PdfClown.Tokens
             if (SkipKey(Keyword.EndStream))
             {
                 length = (int)(stream.Position - position);
-                streamHeader[PdfName.Length] = PdfInteger.Get(length);
+                streamHeader.Set(PdfName.Length, length);
             }
             else
             {
@@ -216,45 +158,51 @@ namespace PdfClown.Tokens
             }
         }
 
-        /**
-          <summary>Parses the specified PDF indirect object [PDF:1.6:3.2.9].</summary>
-          <param name="xrefEntry">Cross-reference entry of the indirect object to parse.</param>
-        */
+        /// <summary>Parses the specified PDF indirect object [PDF:1.6:3.2.9].</summary>
+        /// <param name="xrefEntry">Cross-reference entry of the indirect object to parse.</param>
         public PdfDataObject ParsePdfObject(XRefEntry xrefEntry)
         {
             // Go to the beginning of the indirect object!
             Seek(xrefEntry.Offset);
-
-            // Skip the indirect-object header!
-            MoveNext();
-            // Empty indirect object?
-            if (IsInderectObjectEnd())
-                return null;
-
-            MoveNext();
-            // Empty indirect object?
-            if (IsInderectObjectEnd())
-                return null;
+            bool started = false;
+            while (MoveNextComplex() && !started)
+            {
+                if (IsInderectObjectEnd())
+                    return null;
+                else if (TokenType == TokenTypeEnum.InderectObject
+                    || IsInderectObjectBegin())
+                {
+                    // Skip the indirect-object header!
+                    started = true;
+                }
+                else if (TokenType == TokenTypeEnum.DictionaryBegin
+                    || TokenType == TokenTypeEnum.ArrayBegin)
+                {
+                    break;
+                }
+            }
 
             // Get the indirect data object!
             var dataObject = ParsePdfObject();
 
-            if (securityHandler != null)
-            {
-                securityHandler.Decrypt(dataObject, xrefEntry.Number, xrefEntry.Generation);
-            }
+            securityHandler?.Decrypt(dataObject, xrefEntry.Number, xrefEntry.Generation);
+
             return dataObject;
         }
 
         private bool IsInderectObjectEnd()
         {
             return TokenType == TokenTypeEnum.Keyword
-                            && CharsToken.Equals(Keyword.EndIndirectObject, StringComparison.Ordinal);
+                && CharsToken.Equals(Keyword.EndIndirectObject, StringComparison.Ordinal);
         }
 
-        /**
-          <summary>Retrieves the PDF version of the file [PDF:1.6:3.4.1].</summary>
-        */
+        private bool IsInderectObjectBegin()
+        {
+            return TokenType == TokenTypeEnum.Keyword
+                && CharsToken.Equals(Keyword.BeginIndirectObject, StringComparison.Ordinal);
+        }
+
+        /// <summary>Retrieves the PDF version of the file [PDF:1.6:3.4.1].</summary>
         public string RetrieveVersion()
         {
             IInputStream stream = Stream;
@@ -266,9 +214,7 @@ namespace PdfClown.Tokens
             return header.Substring(Keyword.BOF.Length, 3);
         }
 
-        /**
-          <summary>Retrieves the starting position of the last xref-table section [PDF:1.6:3.4.4].</summary>
-        */
+        /// <summary>Retrieves the starting position of the last xref-table section [PDF:1.6:3.4.4].</summary>
         public long RetrieveXRefOffset()
         {
             // [FIX:69] 'startxref' keyword not found (file was corrupted by alien data in the tail).
@@ -289,7 +235,7 @@ namespace PdfClown.Tokens
             long xrefPosition = IntegerToken;
 
             stream.Seek(xrefPosition);
-            MoveNext();
+            MoveNextComplex();
             //Repair 
             if (xrefPosition > streamLength
                 || (TokenType == TokenTypeEnum.Keyword && !CharsToken.Equals(Keyword.XRef, StringComparison.Ordinal))
@@ -330,12 +276,8 @@ namespace PdfClown.Tokens
             //return index < 0 ? -1 : position + index;
         }
 
-        /**
-         * Prepare for decryption.
-         * 
-         * @throws InvalidPasswordException If the password is incorrect.
-         * @throws IOException if something went wrong
-         */
+        /// <summary>Prepare for decryption.</summary>
+        /// <exception cref="IOException"></exception>
         public void PrepareDecryption()
         {
             if (encryption != null)

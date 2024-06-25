@@ -25,7 +25,6 @@
 
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.IO;
 
@@ -33,12 +32,11 @@ using System;
 using System.Collections.Generic;
 using io = System.IO;
 using System.Text.RegularExpressions;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Document configuration.</summary>
-    */
+    /// <summary>Document configuration.</summary>
     public sealed class DocumentConfiguration
     {
         private CompatibilityModeEnum compatibilityMode = CompatibilityModeEnum.Loose;
@@ -52,35 +50,27 @@ namespace PdfClown.Documents
         internal DocumentConfiguration(PdfDocument document)
         { this.document = document; }
 
-        /**
-          <summary>Gets/Sets the document's version compatibility mode.</summary>
-        */
+        /// <summary>Gets/Sets the document's version compatibility mode.</summary>
         public CompatibilityModeEnum CompatibilityMode
         {
             get => compatibilityMode;
             set => compatibilityMode = value;
         }
 
-        /**
-          <summary>Gets the document associated with this configuration.</summary>
-        */
+        /// <summary>Gets the document associated with this configuration.</summary>
         public PdfDocument Document => document;
 
-        /**
-          <summary>Gets/Sets the encoding behavior in case of missing character mapping.</summary>
-        */
+        /// <summary>Gets/Sets the encoding behavior in case of missing character mapping.</summary>
         public EncodingFallbackEnum EncodingFallback
         {
             get => encodingFallback;
             set => encodingFallback = value;
         }
 
-        /**
-          <summary>Gets the stamp appearance corresponding to the specified stamp type.</summary>
-          <remarks>The stamp appearance is retrieved from the <see cref="StampPath">standard stamps
-          path</see> and embedded in the document.</remarks>
-          <param name="type">Predefined stamp type whose appearance has to be retrieved.</param>
-        */
+        /// <summary>Gets the stamp appearance corresponding to the specified stamp type.</summary>
+        /// <remarks>The stamp appearance is retrieved from the <see cref="StampPath">standard stamps
+        /// path</see> and embedded in the document.</remarks>
+        /// <param name="type">Predefined stamp type whose appearance has to be retrieved.</param>
         public FormXObject GetStamp(StandardStampEnum? type)
         {
             if (!type.HasValue
@@ -144,7 +134,7 @@ namespace PdfClown.Documents
                         var stampPageKey = new PdfString(type.Value.GetName().StringValue + "=" + String.Join(" ", Regex.Split(type.Value.GetName().StringValue.Substring(2), "(?!^)(?=\\p{Lu})")));
                         var stampPage = stampFile.Document.ResolveName<PdfPage>(stampPageKey);
                         importedStamps[type.Value] = (stamp = (FormXObject)stampPage.ToXObject(Document));
-                        stamp.Box = stampPage.ArtBox.ToRect();
+                        stamp.Box = stampPage.ArtBox.ToSKRect();
                     }
                 }
                 else // Standard stamps template (std-stamps.pdf).
@@ -159,17 +149,15 @@ namespace PdfClown.Documents
             return stamp;
         }
 
-        /**
-          <summary>Gets/Sets the path (either Acrobat's standard stamps installation directory or PDF
-          Clown's standard stamps collection (std-stamps.pdf)) where standard stamp templates are
-          located.</summary>
-          <remarks>In order to ensure consistent and predictable rendering across the systems, the
-          <see cref="Stamp.#ctor(Page, SKRect, string,
-          PdfClown.Documents.Interaction.Annotations.Stamp.StandardTypeEnum)">standard stamp annotations
-          </see> require their appearance to be embedded from the corresponding standard stamp files
-          (Standard.pdf, StandardBusiness.pdf, SignHere.pdf, ...) shipped with Acrobat: defining this
-          property activates the automatic embedding of such appearances.</remarks>
-        */
+        /// <summary>Gets/Sets the path (either Acrobat's standard stamps installation directory or PDF
+        /// Clown's standard stamps collection (std-stamps.pdf)) where standard stamp templates are
+        /// located.</summary>
+        /// <remarks>In order to ensure consistent and predictable rendering across the systems, the
+        /// <see cref="Stamp.#ctor(Page, SKRect, string,
+        /// PdfClown.Documents.Interaction.Annotations.Stamp.StandardTypeEnum)">standard stamp annotations
+        /// </see> require their appearance to be embedded from the corresponding standard stamp files
+        /// (Standard.pdf, StandardBusiness.pdf, SignHere.pdf, ...) shipped with Acrobat: defining this
+        /// property activates the automatic embedding of such appearances.</remarks>
         public string StampPath
         {
             get => stampPath;

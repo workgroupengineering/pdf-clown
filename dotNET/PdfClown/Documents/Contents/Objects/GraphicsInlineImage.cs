@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>Inline image object [PDF:1.6:4.8.6].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class InlineImage : GraphicsObject, IImageObject
+    public sealed class GraphicsInlineImage : GraphicsObject, IImageObject
     {
         public static readonly string BeginOperatorKeyword = BeginInlineImage.OperatorKeyword;
         public static readonly string EndOperatorKeyword = EndInlineImage.OperatorKeyword;
@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Contents.Objects
         private SKBitmap image;
         private IContentContext Context;
 
-        public InlineImage(InlineImageHeader header, InlineImageBody body)
+        public GraphicsInlineImage(InlineImageHeader header, InlineImageBody body)
         {
             objects.Add(header);
             objects.Add(body);
@@ -77,6 +77,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         public IImageObject SMask => null;
 
+        public PdfDirectObject Mask => null;
+
         public bool ImageMask => bool.TryParse(ImageHeader.ImageMask, out var isMask) ? isMask : false;
 
         public IByteStream Data => ImageBody.Value;
@@ -98,10 +100,9 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override void Scan(GraphicsState state)
         {
-            Context = state.Scanner.ContentContext;
-            if (state.Scanner?.RenderContext != null)
+            Context = state.Scanner.Context;
+            if (state.Scanner?.Canvas is SKCanvas canvas)
             {
-                var canvas = state.Scanner.RenderContext;
                 var image = Load(state);
                 if (image != null)
                 {

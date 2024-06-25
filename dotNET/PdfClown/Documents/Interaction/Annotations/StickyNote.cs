@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
 
 using System;
@@ -36,14 +34,11 @@ using PdfClown.Util;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Text annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It represents a sticky note attached to a point in the PDF document.</remarks>
-    */
+    /// <summary>Text annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It represents a sticky note attached to a point in the PDF document.</remarks>
     [PDF(VersionEnum.PDF10)]
     public sealed class StickyNote : Markup
     {
@@ -67,17 +62,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             };
         }
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
-        private static PdfName ToCode(ImageNameEnum value)
-        {
-            return IconTypeEnumCodes[value];
-        }
+        /// <summary>Gets the code corresponding to the given value.</summary>
+        private static PdfName ToCode(ImageNameEnum value) => IconTypeEnumCodes[value];
 
-        /**
-          <summary>Gets the icon type corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the icon type corresponding to the given value.</summary>
         private static ImageNameEnum ToIconTypeEnum(string value)
         {
             if (value == null)
@@ -98,9 +86,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public StickyNote(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
-        */
+        /// <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
         public ImageNameEnum ImageName
         {
             get => ToIconTypeEnum(BaseDataObject.GetString(PdfName.Name));
@@ -116,9 +102,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets whether the annotation should initially be displayed open.</summary>
-        */
+        /// <summary>Gets/Sets whether the annotation should initially be displayed open.</summary>
         public bool IsOpen
         {
             get => BaseDataObject.GetBool(PdfName.Open, DefaultOpen);
@@ -127,7 +111,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = IsOpen;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.Open] = (value != DefaultOpen ? PdfBoolean.Get(value) : null);
+                    BaseDataObject.Set(PdfName.Open, value != DefaultOpen ? value : null);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -304,38 +288,23 @@ namespace PdfClown.Documents.Interaction.Annotations
             return intent == null ? null : codes[intent.Value];
         }
     }
-    /**
-         <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
-    */
+
+    /// <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
     public enum ImageNameEnum
     {
-        /**
-          <summary>Comment.</summary>
-        */
+        /// <summary>Comment.</summary>
         Comment,
-        /**
-          <summary>Help.</summary>
-        */
+        /// <summary>Help.</summary>
         Help,
-        /**
-          <summary>Insert.</summary>
-        */
+        /// <summary>Insert.</summary>
         Insert,
-        /**
-          <summary>Key.</summary>
-        */
+        /// <summary>Key.</summary>
         Key,
-        /**
-          <summary>New paragraph.</summary>
-        */
+        /// <summary>New paragraph.</summary>
         NewParagraph,
-        /**
-          <summary>Note.</summary>
-        */
+        /// <summary>Note.</summary>
         Note,
-        /**
-          <summary>Paragraph.</summary>
-        */
+        /// <summary>Paragraph.</summary>
         Paragraph
     };
 

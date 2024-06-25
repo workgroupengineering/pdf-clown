@@ -23,29 +23,26 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.Patterns.Shadings;
 using PdfClown.Objects;
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Shading resources collection [PDF:1.6:3.7.2].</summary>
-    */
+    ///<summary>Shading resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF13)]
-    public sealed class ShadingResources : ResourceItems<Shading>
+    public sealed class ShadingResources : Dictionary<Shading>
     {
-        public ShadingResources(PdfDocument context) : base(context)
+        public class ValueWrapper : IEntryWrapper<Shading>
+        {
+            public Shading Wrap(PdfDirectObject baseObject) => Shading.Wrap(baseObject);
+        }
+
+        private static readonly ValueWrapper Wrapper = new ValueWrapper();
+
+        public ShadingResources(PdfDocument context) : base(context, Wrapper)
         { }
 
-        public ShadingResources(PdfDirectObject baseObject) : base(baseObject)
+        public ShadingResources(PdfDirectObject baseObject) : base(baseObject, Wrapper)
         { }
-
-        protected override Shading WrapItem(PdfDirectObject baseObject)
-        { return Shading.Wrap(baseObject); }
     }
 }

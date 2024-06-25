@@ -91,7 +91,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (rendition is MediaRendition)
             {
                 PdfObjectWrapper data = ((MediaRendition)rendition).Clip.Data;
-                if (data is FileSpecification)
+                if (data is FileSpecification fileSpec)
                 {
                     // Adding fallback annotation...
                     /*
@@ -99,8 +99,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                       degrades to a file attachment that can be opened on the same location of the corresponding
                       screen annotation.
                     */
-                    FileAttachment attachment = new FileAttachment(page, box, text, (FileSpecification)data);
-                    BaseDataObject[PdfName.T] = PdfString.Get(((FileSpecification)data).Path);
+                    FileAttachment attachment = new FileAttachment(page, box, text, fileSpec);
+                    BaseDataObject.Set(PdfName.T, fileSpec.Path);
                     // Force empty appearance to ensure no default icon is drawn on the canvas!
                     attachment.BaseDataObject[PdfName.AP] = new PdfDictionary(3)
                     {

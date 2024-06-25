@@ -33,6 +33,7 @@ using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Contents.Patterns
 {
@@ -46,8 +47,7 @@ namespace PdfClown.Documents.Contents.Patterns
     {
         private SKPicture picture;
         private Stack<GraphicsState> states;
-
-       
+        private SKRect? box;
 
         internal TilingPattern(PatternColorSpace colorSpace, PdfDirectObject baseObject)
             : base(colorSpace, baseObject)
@@ -73,67 +73,92 @@ namespace PdfClown.Documents.Contents.Patterns
           <summary>Gets the pattern cell's bounding box (expressed in the pattern coordinate system)
           used to clip the pattern cell.</summary>
         */
-        public SKRect Box
+        public Rectangle BBox
         {
-            /*
-                  NOTE: 'BBox' entry MUST be defined.
-            */
-            get => Wrap<Rectangle>(BaseHeader[PdfName.BBox])?.ToRect() ?? SKRect.Empty;
+            get => Wrap<Rectangle>(BaseHeader.GetOrCreate<PdfArray>(PdfName.BBox));
+            set
+            {
+                BaseHeader[PdfName.BBox] = value?.BaseObject;
+                box = null;
+            }
         }
 
-        /**
-          <summary>Gets how the color of the pattern cell is to be specified.</summary>
-        */
-        public TilingPaintTypeEnum PaintType => (TilingPaintTypeEnum)BaseHeader.GetInt(PdfName.PaintType);
+        public SKRect Box
+        {
+            get => box ??= BBox.ToSKRect();
+            set
+            {
+                var newValue = value.Round();
+                if (Box != newValue)
+                {
+                    box = newValue;
+                    BBox.Update(newValue);
+                }
+            }
+        }
 
-        /**
-          <summary>Gets the named resources required by the pattern's content stream.</summary>
-        */
+        ///<summary>Gets how the color of the pattern cell is to be specified.</summary>
+        public TilingPaintTypeEnum PaintType
+        {
+            get => (TilingPaintTypeEnum)BaseHeader.GetInt(PdfName.PaintType);
+            set => BaseHeader.Set(PdfName.PaintType, (int)value);
+        }
+
+        ///<summary>Gets the named resources required by the pattern's content stream.</summary>
         public Resources Resources => Wrap<Resources>(BaseHeader[PdfName.Resources]);
 
-        /**
-          <summary>Gets how to adjust the spacing of tiles relative to the device pixel grid.</summary>
-        */
-        public TilingTypeEnum TilingType => (TilingTypeEnum)BaseHeader.GetInt(PdfName.TilingType);
+        ///<summary>Gets how to adjust the spacing of tiles relative to the device pixel grid.</summary>
+        public TilingTypeEnum TilingType
+        {
+            get => (TilingTypeEnum)BaseHeader.GetInt(PdfName.TilingType);
+            set => BaseHeader.Set(PdfName.TilingType, (int)value);
+        }
 
-        /**
-          <summary>Gets the horizontal spacing between pattern cells (expressed in the pattern coordinate system).</summary>
-        */
-        public float XStep => BaseHeader.GetFloat(PdfName.XStep);
+        ///<summary>Gets the horizontal spacing between pattern cells (expressed in the pattern coordinate system).</summary>
+        public float XStep
+        {
+            get => BaseHeader.GetFloat(PdfName.XStep);
+            set => BaseHeader.Set(PdfName.XStep, value);
+        }
 
-        /**
-          <summary>Gets the vertical spacing between pattern cells (expressed in the pattern coordinate system).</summary>
-        */
-        public float YStep => BaseHeader.GetFloat(PdfName.YStep);
+        ///<summary>Gets the vertical spacing between pattern cells (expressed in the pattern coordinate system).</summary>
+        public float YStep
+        {
+            get => BaseHeader.GetFloat(PdfName.YStep);
+            set => BaseHeader.Set(PdfName.YStep, value);
+        }
 
         public ContentWrapper Contents => ContentWrapper.Wrap(BaseObject, this);
 
-        public SKPicture GetPicture()
+        public SKPicture GetPicture(GraphicsState state)
         {
             if (picture != null)
                 return picture;
-            var box = Box;
-            using (var recorder = new SKPictureRecorder())// SKBitmap((int)box.Width, (int)box.Height);
-            using (var canvas = recorder.BeginRecording(box))
-            {
-                Render(canvas, box.Size, false);
-                return picture = recorder.EndRecording();
-            }
+            var box = Matrix.MapRect(Box);
+            using var recorder = new SKPictureRecorder();// SKBitmap((int)box.Width, (int)box.Height);
+            using var canvas = recorder.BeginRecording(box);
+            Render(canvas, box, null, state.Scanner);
+            return picture = recorder.EndRecording();
         }
 
         public override SKShader GetShader(GraphicsState state)
         {
-            var rect = SKRect.Create(Math.Abs(XStep), Math.Abs(YStep));
-            return SKShader.CreatePicture(GetPicture(), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, SKMatrix, rect);
+            //var tile = Matrix.MapRect(SKRect.Create(Math.Abs(XStep), Math.Abs(YStep)));
+            return SKShader.CreatePicture(GetPicture(state), SKShaderTileMode.Repeat, SKShaderTileMode.Repeat);//, tile);//, Matrix, rect);
         }
 
-        public void Render(SKCanvas context, SKSize size, bool clearContext = true)
+        public void Render(SKCanvas canvas, SKRect box, SKColor? clearColor = null)
         {
-            var scanner = new ContentScanner(Contents)
+            Render(canvas, box, clearColor, null);
+        }
+
+        public void Render(SKCanvas canvas, SKRect box, SKColor? clearColor, ContentScanner resurceScanner)
+        {
+            var scanner = new ContentScanner(this, canvas, box, clearColor)
             {
-                ClearContext = clearContext
+                ResourceParent = resurceScanner
             };
-            scanner.Render(context, size);
+            scanner.Render();
         }
 
         public AppData GetAppData(PdfName appName)
@@ -175,7 +200,7 @@ namespace PdfClown.Documents.Contents.Patterns
 
         public List<ITextString> Strings { get; } = new List<ITextString>();
 
-        public TransparencyXObject Group => throw new NotImplementedException();
+        public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseHeader[PdfName.Group]);
 
         public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
     }

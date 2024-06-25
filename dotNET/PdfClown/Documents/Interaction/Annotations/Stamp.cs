@@ -23,32 +23,24 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
-using PdfClown.Util;
 using PdfClown.Util.Math.Geom;
 
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
-using PdfClown.Documents.Contents;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Rubber stamp annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It displays text or graphics intended to look as if they were stamped
-      on the page with a rubber stamp.</remarks>
-    */
+    /// <summary>Rubber stamp annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It displays text or graphics intended to look as if they were stamped
+    /// on the page with a rubber stamp.</remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class Stamp : Markup
     {
-        /**
-          <summary>Predefined stamp type [PDF:1.6:8.4.5].</summary>
-        */
+        /// <summary>Predefined stamp type [PDF:1.6:8.4.5].</summary>
 
         private static readonly string CustomTypeName = "Custom";
         private static readonly StandardStampEnum DefaultType = StandardStampEnum.Draft;
@@ -82,13 +74,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             TypeName = type.GetName().StringValue;
         }
 
-        /**
-          <summary>Creates a new custom stamp on the specified page.</summary>
-          <param name="page">Page where this stamp has to be placed.</param>
-          <param name="location">Position where this stamp has to be centered.</param>
-          <param name="text">Annotation text.</param>
-          <param name="appearance">Custom appearance.</param>
-        */
+        /// <summary>Creates a new custom stamp on the specified page.</summary>
+        /// <param name="page">Page where this stamp has to be placed.</param>
+        /// <param name="location">Position where this stamp has to be centered.</param>
+        /// <param name="text">Annotation text.</param>
+        /// <param name="appearance">Custom appearance.</param>
         public Stamp(PdfPage page, SKPoint location, string text, FormXObject appearance)
             : base(page, PdfName.Stamp, GeomUtils.Align(appearance.Matrix.MapRect(appearance.Box), location, new SKPoint(0, 0)), text)
         {
@@ -99,12 +89,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Stamp(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the type name of this stamp.</summary>
-          <remarks>To ensure predictable rendering of the <see cref="StandardStampEnum">standard stamp
-          types</see> across the systems, <see cref="PdfDocument.Configuration.StampPath"/> must be defined
-          so as to embed the corresponding templates.</remarks>
-        */
+        /// <summary>Gets/Sets the type name of this stamp.</summary>
+        /// <remarks>To ensure predictable rendering of the <see cref="StandardStampEnum">standard stamp
+        /// types</see> across the systems, <see cref="PdfDocument.Configuration.StampPath"/> must be defined
+        /// so as to embed the corresponding templates.</remarks>
         public string TypeName
         {
             get
@@ -132,9 +120,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the rotation applied to the stamp.</summary>
-        */
+        /// <summary>Gets/Sets the rotation applied to the stamp.</summary>
         public int Rotation
         {
             get => BaseDataObject.GetInt(PdfName.Rotate, 0);
@@ -143,7 +129,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = Rotation;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.Rotate] = (value != 0 ? new PdfInteger(value) : null);
+                    BaseDataObject.Set(PdfName.Rotate, value != 0 ? value : null);
 
                     FormXObject appearance = Appearance.Normal[null];
                     // Custom appearance?
@@ -289,13 +275,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             return null;
         }
 
-        /**
-          <summary>Gets the aspect ratio of the original Acrobat standard stamp.</summary>
-        */
-        public static float GetAspect(this StandardStampEnum type)
-        { return codes[type].Aspect; }
+        /// <summary>Gets the aspect ratio of the original Acrobat standard stamp.</summary>
+        public static float GetAspect(this StandardStampEnum type) => codes[type].Aspect;
 
-        public static PdfName GetName(this StandardStampEnum type)
-        { return codes[type].Code; }
+        public static PdfName GetName(this StandardStampEnum type) => codes[type].Code;
     }
 }

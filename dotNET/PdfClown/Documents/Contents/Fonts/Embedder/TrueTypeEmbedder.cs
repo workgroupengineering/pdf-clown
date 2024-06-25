@@ -105,7 +105,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     fontDescriptor = CreateFontDescriptor(ttf);
                 }
             }
-            stream.Header[PdfName.Length1] = PdfInteger.Get(ttf.OriginalDataSize);
+            stream.Header.Set(PdfName.Length1, ttf.OriginalDataSize);
             fontDescriptor.FontFile2 = new FontFile(document, stream);
         }
 

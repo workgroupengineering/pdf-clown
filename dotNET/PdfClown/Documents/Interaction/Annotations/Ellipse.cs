@@ -23,19 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Circle annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It represents an ellipse to display on a page.</remarks>
-    */
+    /// <summary>Circle annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It represents an ellipse to display on a page.</remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class Ellipse : Shape
     {
@@ -61,7 +55,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override SKPath GetPath(SKMatrix sKMatrix)
         {
             var box = sKMatrix.MapRect(Box);
-            BorderEffect?.InvertApplyEffect(ref box);
+            InvertBorderAndEffect(ref box);
             var path = new SKPath();
             path.AddOval(box);
             return path;

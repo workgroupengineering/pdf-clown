@@ -261,7 +261,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         private SKRect GenerateBoundingBox()
         {
-            var rect = FontBBox?.ToRect() ?? SKRect.Empty;
+            var rect = FontBBox?.ToSKRect() ?? SKRect.Empty;
             if (rect.Width == 0 || rect.Height == 0)
             {
                 // Plan B: get the max bounding box of the glyphs
@@ -314,7 +314,7 @@ namespace PdfClown.Documents.Contents.Fonts
             return Type3CharProc.Wrap(baseObject, this);
         }
 
-        public override SKPath DrawChar(SKCanvas context, SKPaint fill, SKPaint stroke, char textChar, int code, ReadOnlySpan<byte> codeBytes)
+        public override SKPath DrawChar(SKCanvas context, SKPaint fill, SKPaint stroke, char textChar, int code)
         {
             var proc = GetCharProc(code);
             if (proc == null)

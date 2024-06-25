@@ -99,26 +99,17 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        /**
-          <summary>Creates the rendering object corresponding to this container.</summary>
-        */
-        protected virtual SKPath CreateRenderObject()
-        { return null; }
-
+        
         /**
           <summary>Renders this container.</summary>
           <param name="state">Graphics state.</param>
           <returns>Whether the rendering has been executed.</returns>
          */
-        protected bool Render(GraphicsState state)
+        protected virtual bool Render(GraphicsState state)
         {
             var scanner = state.Scanner;
-            var context = scanner.RenderContext;
-            if (context == null)
-                return false;
-
             // Render the inner elements!
-            scanner.ChildLevel.Render(context, scanner.CanvasSize, CreateRenderObject());
+            scanner.ChildLevel.Render();
             return true;
         }
     }

@@ -116,116 +116,107 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                     char c = GetChar();
 
                     // delimiters
-                    if (c == '%')
+                    switch (c)
                     {
-                        // comment
-                        ReadComment();
-                    }
-                    else if (c == '(')
-                    {
-                        return ReadString();
-                    }
-                    else if (c == ')')
-                    {
-                        // not allowed outside a string context
-                        throw new IOException("unexpected closing parenthesis");
-                    }
-                    else if (c == '[')
-                    {
-                        return new Token(c, TokenKind.START_ARRAY);
-                    }
-                    else if (c == '{')
-                    {
-                        return new Token(c, TokenKind.START_PROC);
-                    }
-                    else if (c == ']')
-                    {
-                        return new Token(c, TokenKind.END_ARRAY);
-                    }
-                    else if (c == '}')
-                    {
-                        return new Token(c, TokenKind.END_PROC);
-                    }
-                    else if (c == '/')
-                    {
-                        return new Token(ReadRegular(), TokenKind.LITERAL);
-                    }
-                    else if (c == '<')
-                    {
-                        char c2 = GetChar();
-                        if (c2 == c)
-                        {
-                            return new Token("<<", TokenKind.START_DICT);
-                        }
-                        else
-                        {
-                            // code may have to be changed in something better, maybe new token type
-                            buffer.Seek(buffer.Position - 1);
-                            return new Token(c, TokenKind.NAME);
-                        }
-                    }
-                    else if (c == '>')
-                    {
-                        char c2 = GetChar();
-                        if (c2 == c)
-                        {
-                            return new Token(">>", TokenKind.END_DICT);
-                        }
-                        else
-                        {
-                            // code may have to be changed in something better, maybe new token type
-                            buffer.Seek(buffer.Position - 1);
-                            return new Token(c, TokenKind.NAME);
-                        }
-                    }
-                    else if (char.IsWhiteSpace(c))
-                    {
-                        skip = true;
-                    }
-                    else if (c == 0)
-                    {
-                        Debug.WriteLine("warn: NULL byte in font, skipped");
-                        skip = true;
-                    }
-                    else
-                    {
-                        buffer.Seek(buffer.Position - 1);
-
-                        // regular character: try parse as number
-                        Token number = TryReadNumber();
-                        if (number != null)
-                        {
-                            return number;
-                        }
-                        else
-                        {
-                            // otherwise this must be a name
-                            string name = ReadRegular();
-                            if (name == null)
+                        case '%':
+                            // comment
+                            ReadComment();
+                            break;
+                        case '(':
+                            return ReadString();
+                        case ')':
+                            // not allowed outside a string context
+                            throw new IOException("unexpected closing parenthesis");
+                        case '[':
+                            return new Token(c, TokenKind.START_ARRAY);
+                        case '{':
+                            return new Token(c, TokenKind.START_PROC);
+                        case ']':
+                            return new Token(c, TokenKind.END_ARRAY);
+                        case '}':
+                            return new Token(c, TokenKind.END_PROC);
+                        case '/':
+                            return new Token(ReadRegular(), TokenKind.LITERAL);
+                        case '<':
                             {
-                                // the stream is corrupt
-                                throw new DamagedFontException("Could not read token at position " +
-                                                               buffer.Position);
-                            }
-
-                            if (string.Equals(name, "RD", StringComparison.Ordinal)
-                                || string.Equals(name, "-|", StringComparison.Ordinal))
-                            {
-                                // return the next CharString instead
-                                if (prevToken != null && prevToken.Kind == TokenKind.INTEGER)
+                                char c2 = GetChar();
+                                if (c2 == c)
                                 {
-                                    return ReadCharString(prevToken.IntValue);
+                                    return new Token("<<", TokenKind.START_DICT);
                                 }
                                 else
                                 {
-                                    throw new IOException("expected INTEGER before -| or RD");
+                                    // code may have to be changed in something better, maybe new token type
+                                    buffer.Seek(buffer.Position - 1);
+                                    return new Token(c, TokenKind.NAME);
                                 }
+                            }
+                        case '>':
+                            {
+                                char c2 = GetChar();
+                                if (c2 == c)
+                                {
+                                    return new Token(">>", TokenKind.END_DICT);
+                                }
+                                else
+                                {
+                                    // code may have to be changed in something better, maybe new token type
+                                    buffer.Seek(buffer.Position - 1);
+                                    return new Token(c, TokenKind.NAME);
+                                }
+                            }
+                        default:
+                            if (char.IsWhiteSpace(c))
+                            {
+                                skip = true;
+                            }
+                            else if (c == 0)
+                            {
+                                Debug.WriteLine("warn: NULL byte in font, skipped");
+                                skip = true;
                             }
                             else
                             {
-                                return new Token(name, TokenKind.NAME);
+                                buffer.Seek(buffer.Position - 1);
+
+                                // regular character: try parse as number
+                                Token number = TryReadNumber();
+                                if (number != null)
+                                {
+                                    return number;
+                                }
+                                else
+                                {
+                                    // otherwise this must be a name
+                                    string name = ReadRegular();
+                                    if (name == null)
+                                    {
+                                        // the stream is corrupt
+                                        throw new DamagedFontException("Could not read token at position " +
+                                                                       buffer.Position);
+                                    }
+
+                                    if (string.Equals(name, "RD", StringComparison.Ordinal)
+                                        || string.Equals(name, "-|", StringComparison.Ordinal))
+                                    {
+                                        // return the next CharString instead
+                                        if (prevToken != null && prevToken.Kind == TokenKind.INTEGER)
+                                        {
+                                            return ReadCharString(prevToken.IntValue);
+                                        }
+                                        else
+                                        {
+                                            throw new IOException("expected INTEGER before -| or RD");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        return new Token(name, TokenKind.NAME);
+                                    }
+                                }
                             }
-                        }
+
+                            break;
                     }
                 }
             }
@@ -437,7 +428,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                         switch (c1)
                         {
                             case 'n':
-                            case 'r': sb.Append("\n"); break;
+                            case 'r': sb.Append('\n'); break;
                             case 't': sb.Append('\t'); break;
                             case 'b': sb.Append('\b'); break;
                             case 'f': sb.Append('\f'); break;
@@ -457,7 +448,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                         break;
                     case '\r':
                     case '\n':
-                        sb.Append("\n");
+                        sb.Append('\n');
                         break;
                     default:
                         sb.Append(c);

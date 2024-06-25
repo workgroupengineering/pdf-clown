@@ -23,31 +23,41 @@
   this list of conditions.
 */
 
-using PdfClown;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Font resources collection [PDF:1.6:3.7.2].</summary>
-    */
+    ///<summary>Font resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class FontResources : ResourceItems<Font>
+    public sealed class FontResources : Dictionary<Font>
     {
-        public FontResources(PdfDocument context) : base(context)
+        public class ValueWrapper : IEntryWrapper<Font>
+        {
+            public Font Wrap(PdfDirectObject baseObject) => Font.Wrap(baseObject);
+        }
+
+        private static readonly ValueWrapper Wrapper = new ValueWrapper();
+
+        public FontResources(PdfDocument context) : base(context, Wrapper)
         { }
 
-        public FontResources(PdfDirectObject baseObject) : base(baseObject)
+        public FontResources(PdfDirectObject baseObject) : base(baseObject, Wrapper)
         { }
 
-        protected override Font WrapItem(PdfDirectObject baseObject)
-        { return Font.Wrap(baseObject); }
+        public bool TryGetByName(string fontName, out KeyValuePair<PdfName, Font> result)
+        {
+            foreach (var entry in this)
+            {
+                if (entry.Value.Name.Equals(fontName))
+                {
+                    result = entry;
+                    return true;
+                }
+            }
+            result = default;
+            return false;
+        }
     }
 }

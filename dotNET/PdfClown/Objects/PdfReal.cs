@@ -24,19 +24,18 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Tokens;
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF real number object [PDF:1.6:3.2.2].</summary>
-    */
+    /// <summary>PDF real number object [PDF:1.6:3.2.2].</summary>
     public sealed class PdfReal : PdfSimpleObject<double>, IPdfNumber
     {
         private static readonly NumberFormatInfo formatInfo;
+
+        public static readonly PdfReal Zero = new PdfReal(0D);
 
         static PdfReal()
         {
@@ -45,19 +44,19 @@ namespace PdfClown.Objects
             formatInfo.NegativeSign = "-";
         }
 
-        /**
-          <summary>Gets the object equivalent to the given value.</summary>
-        */
+        /// <summary>Gets the object equivalent to the given value.</summary>
         public static PdfReal Get(double? value, int roundDigit = 5)
         {
             if (!value.HasValue)
                 return null;
 
-            double doubleValue = value.Value;
-            if (Double.IsNaN(doubleValue))
-                return null;
+            return Get(value.Value, roundDigit);
+        }
 
-            return new PdfReal(Math.Round(doubleValue, roundDigit));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static PdfReal Get(double value, int roundDigit = 5)
+        {
+            return Double.IsNaN(value) ? null : new PdfReal(Math.Round(value, roundDigit));
         }
 
         public PdfReal(double value) => RawValue = value;

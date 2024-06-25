@@ -28,6 +28,7 @@ using PdfClown.Objects;
 
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -39,6 +40,7 @@ namespace PdfClown.Documents.Contents.Objects
     public sealed class ModifyCTM : Operation
     {
         public static readonly string OperatorKeyword = "cm";
+        private SKMatrix? matrix;
 
         public static ModifyCTM GetResetCTM(GraphicsState state)
         {
@@ -54,43 +56,21 @@ namespace PdfClown.Documents.Contents.Objects
               );
         }
 
-        public ModifyCTM(SKMatrix value) :
-            this(
-            value.ScaleX,
-            value.SkewY,
-            value.SkewX,
-            value.ScaleY,
-            value.TransX,
-            value.TransY)
-        { }
+        public ModifyCTM(SKMatrix value)
+            : this(value.ToPdfArray())
+        {
+            matrix = value;
+        }
 
         public ModifyCTM(double a, double b, double c, double d, double e, double f)
-            : base(OperatorKeyword,
-            new List<PdfDirectObject>(6)
-              {
-                PdfReal.Get(a),
-                PdfReal.Get(b),
-                PdfReal.Get(c),
-                PdfReal.Get(d),
-                PdfReal.Get(e),
-                PdfReal.Get(f)
-              })
+            : this(new PdfArray(6) { a, b, c, d, e, f })
         { }
 
-        public ModifyCTM(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public ModifyCTM(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state) => state.Ctm = state.Ctm.PreConcat(Value);
+        public override void Scan(GraphicsState state) => state.Ltm = Value;
 
-        public SKMatrix Value => new SKMatrix
-        {
-            ScaleX = ((IPdfNumber)operands[0]).FloatValue, // a.
-            SkewY = ((IPdfNumber)operands[1]).FloatValue, // b.
-            SkewX = ((IPdfNumber)operands[2]).FloatValue, // e.                        
-            ScaleY = ((IPdfNumber)operands[3]).FloatValue, // d.                       
-            TransX = ((IPdfNumber)operands[4]).FloatValue, // e.
-            TransY = ((IPdfNumber)operands[5]).FloatValue, // f.
-            Persp2 = 1
-        };
+        public SKMatrix Value => matrix ??= operands.ToSkMatrix();
     }
 }

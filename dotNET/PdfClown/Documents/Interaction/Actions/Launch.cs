@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Files;
 using PdfClown.Objects;
 
@@ -33,29 +31,19 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Launch an application' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Launch an application' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class Launch : Action
     {
-        /**
-          <summary>Windows-specific launch parameters [PDF:1.6:8.5.3].</summary>
-        */
+        /// <summary>Windows-specific launch parameters [PDF:1.6:8.5.3].</summary>
         public class WinTarget : PdfObjectWrapper<PdfDictionary>
         {
-            /**
-              <summary>Operation [PDF:1.6:8.5.3].</summary>
-            */
+            /// <summary>Operation [PDF:1.6:8.5.3].</summary>
             public enum OperationEnum
             {
-                /**
-                  <summary>Open.</summary>
-                */
+                /// <summary>Open.</summary>
                 Open,
-                /**
-                  <summary>Print.</summary>
-                */
+                /// <summary>Print.</summary>
                 Print
             };
 
@@ -73,14 +61,10 @@ namespace PdfClown.Documents.Interaction.Actions
                 };
             }
 
-            /**
-              <summary>Gets the code corresponding to the given value.</summary>
-            */
+            /// <summary>Gets the code corresponding to the given value.</summary>
             private static PdfString ToCode(OperationEnum value) => OperationEnumCodes[value];
 
-            /**
-              <summary>Gets the operation corresponding to the given value.</summary>
-            */
+            /// <summary>Gets the operation corresponding to the given value.</summary>
             private static OperationEnum ToOperationEnum(IPdfString value)
             {
                 if (value == null)
@@ -111,37 +95,29 @@ namespace PdfClown.Documents.Interaction.Actions
             public override object Clone(PdfDocument context)
             { throw new NotImplementedException(); }
 
-            /**
-              <summary>Gets/Sets the default directory.</summary>
-            */
+            /// <summary>Gets/Sets the default directory.</summary>
             public string DefaultDirectory
             {
                 get => BaseDataObject.GetString(PdfName.D);
-                set => BaseDataObject[PdfName.D] = new PdfString(value);
+                set => BaseDataObject.Set(PdfName.D, value);
             }
 
-            /**
-              <summary>Gets/Sets the file name of the application to be launched
-              or the document to be opened or printed.</summary>
-            */
+            /// <summary>Gets/Sets the file name of the application to be launched
+            /// or the document to be opened or printed.</summary>
             public string FileName
             {
                 get => BaseDataObject.GetString(PdfName.F);
-                set => BaseDataObject[PdfName.F] = new PdfString(value);
+                set => BaseDataObject.Set(PdfName.F, value);
             }
 
-            /**
-              <summary>Gets/Sets the operation to perform.</summary>
-            */
+            /// <summary>Gets/Sets the operation to perform.</summary>
             public OperationEnum Operation
             {
                 get => ToOperationEnum((IPdfString)BaseDataObject[PdfName.O]);
                 set => BaseDataObject[PdfName.O] = ToCode(value);
             }
 
-            /**
-              <summary>Gets/Sets the parameter string to be passed to the application.</summary>
-            */
+            /// <summary>Gets/Sets the parameter string to be passed to the application.</summary>
             public string ParameterString
             {
                 get => BaseDataObject.GetString(PdfName.P);
@@ -149,21 +125,17 @@ namespace PdfClown.Documents.Interaction.Actions
             }
         }
 
-        /**
-          <summary>Creates a launcher.</summary>
-          <param name="context">Document context.</param>
-          <param name="target">Either a <see cref="FileSpecification"/> or a <see cref="WinTarget"/>
-          representing either an application or a document.</param>
-        */
+        /// <summary>Creates a launcher.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="target">Either a <see cref="FileSpecification"/> or a <see cref="WinTarget"/>
+        /// representing either an application or a document.</param>
         public Launch(PdfDocument context, PdfObjectWrapper target) : base(context, PdfName.Launch)
         { Target = target; }
 
         internal Launch(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the action options.</summary>
-        */
+        /// <summary>Gets/Sets the action options.</summary>
         public OptionsEnum Options
         {
             get
@@ -184,10 +156,8 @@ namespace PdfClown.Documents.Interaction.Actions
             }
         }
 
-        /**
-          <summary>Gets/Sets the application to be launched or the document to be opened or printed.
-          </summary>
-        */
+        /// <summary>Gets/Sets the application to be launched or the document to be opened or printed.
+        /// </summary>
         public PdfObjectWrapper Target
         {
             get

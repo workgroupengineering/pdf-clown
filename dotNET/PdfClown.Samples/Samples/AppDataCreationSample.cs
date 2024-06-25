@@ -1,27 +1,21 @@
 using PdfClown.Bytes;
 using PdfClown.Documents;
-using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Interchange.Metadata;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to decorate documents and contents with private
-      application data (aka page-piece application data dictionary).</summary>
-    */
-    public class AppDataCreationSample
-      : Sample
+    /// <summary>This sample demonstrates how to decorate documents and contents with private
+    /// application data (aka page-piece application data dictionary).</summary>
+    public class AppDataCreationSample : Sample
     {
         private static PdfName MyAppName = PdfName.Get(typeof(AppDataCreationSample).Name);
 
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Instantiate a new PDF file!
             var file = new PdfFile();
@@ -67,8 +61,8 @@ namespace PdfClown.Samples.CLI
                     { PdfName.Get("MyPrivateDocEntry"), new PdfTextString("This is an arbitrary value") },
                     { PdfName.Get("AnotherPrivateEntry"), new PdfDictionary
                     {
-                        { PdfName.Get("SubEntry"), new PdfInteger(1287) },
-                        { PdfName.Get("SomeData"), new PdfArray(2) { new PdfReal(282.773), new PdfReal(14.28378)} }
+                        { PdfName.Get("SubEntry"), 1287 },
+                        { PdfName.Get("SomeData"), new PdfArray(2) { 282.773, 14.28378} }
                     }}
                 };
             }

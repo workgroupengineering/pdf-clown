@@ -23,50 +23,33 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Multimedia;
 using PdfClown.Objects;
-using PdfClown.Util;
 
 using System;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Control the playing of multimedia content' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Control the playing of multimedia content' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class Render : Action
     {
         public enum OperationEnum
         {
-            /**
-              <summary>Play the rendition on the screen, stopping any previous one.</summary>
-            */
+            /// <summary>Play the rendition on the screen, stopping any previous one.</summary>
             Play,
-            /**
-              <summary>Stop any rendition being played on the screen.</summary>
-            */
+            /// <summary>Stop any rendition being played on the screen.</summary>
             Stop,
-            /**
-              <summary>Pause any rendition being played on the screen.</summary>
-            */
+            /// <summary>Pause any rendition being played on the screen.</summary>
             Pause,
-            /**
-              <summary>Resume any rendition being played on the screen.</summary>
-            */
+            /// <summary>Resume any rendition being played on the screen.</summary>
             Resume,
-            /**
-              <summary>Play the rendition on the screen, resuming any previous one.</summary>
-            */
+            /// <summary>Play the rendition on the screen, resuming any previous one.</summary>
             PlayResume
         }
 
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public Render(Screen screen, OperationEnum operation, Rendition rendition)
             : base(screen.Document, PdfName.Rendition)
         {
@@ -79,25 +62,21 @@ namespace PdfClown.Documents.Interaction.Actions
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the operation to perform when the action is triggered.</summary>
-        */
+        /// <summary>Gets/Sets the operation to perform when the action is triggered.</summary>
         public OperationEnum? Operation
         {
-            get => OperationEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.OP]);
+            get => (OperationEnum?)BaseDataObject.GetNInt(PdfName.OP);
             set
             {
                 PdfDictionary baseDataObject = BaseDataObject;
                 if (value == null && baseDataObject[PdfName.JS] == null)
                     throw new ArgumentException("Operation MUST be defined.");
 
-                baseDataObject[PdfName.OP] = (value.HasValue ? value.Value.GetCode() : null);
+                baseDataObject.Set(PdfName.OP, (int?)value);
             }
         }
 
-        /**
-          <summary>Gets/Sets the rendition object to render.</summary>
-        */
+        /// <summary>Gets/Sets the rendition object to render.</summary>
         public Rendition Rendition
         {
             get => Rendition.Wrap(BaseDataObject[PdfName.R]);
@@ -120,9 +99,7 @@ namespace PdfClown.Documents.Interaction.Actions
             }
         }
 
-        /**
-          <summary>Gets/Sets the screen where to render the rendition object.</summary>
-        */
+        /// <summary>Gets/Sets the screen where to render the rendition object.</summary>
         public Screen Screen
         {
             get => (Screen)Annotation.Wrap(BaseDataObject[PdfName.AN]);
@@ -148,9 +125,7 @@ namespace PdfClown.Documents.Interaction.Actions
             }
         }
 
-        /**
-          <summary>Gets/Sets the JavaScript script to be executed when the action is triggered.</summary>
-        */
+        /// <summary>Gets/Sets the JavaScript script to be executed when the action is triggered.</summary>
         public String Script
         {
             get => JavaScript.GetScript(BaseDataObject, PdfName.JS);
@@ -167,33 +142,4 @@ namespace PdfClown.Documents.Interaction.Actions
         public override string GetDisplayName() => "Render";
     }
 
-    internal static class OperationEnumExtension
-    {
-        private static readonly BiDictionary<Render.OperationEnum, PdfInteger> codes;
-
-        static OperationEnumExtension()
-        {
-            codes = new BiDictionary<Render.OperationEnum, PdfInteger>();
-            codes[Render.OperationEnum.Play] = new PdfInteger(0);
-            codes[Render.OperationEnum.Stop] = new PdfInteger(1);
-            codes[Render.OperationEnum.Pause] = new PdfInteger(2);
-            codes[Render.OperationEnum.Resume] = new PdfInteger(3);
-            codes[Render.OperationEnum.PlayResume] = new PdfInteger(4);
-        }
-
-        public static Render.OperationEnum? Get(PdfInteger code)
-        {
-            if (code == null)
-                return null;
-
-            Render.OperationEnum? operation = codes.GetKey(code);
-            if (!operation.HasValue)
-                throw new NotSupportedException("Operation unknown: " + code);
-
-            return operation;
-        }
-
-        public static PdfInteger GetCode(this Render.OperationEnum operation)
-        { return codes[operation]; }
-    }
 }

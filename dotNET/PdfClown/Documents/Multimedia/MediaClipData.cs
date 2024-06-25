@@ -23,12 +23,8 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Files;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util;
 
@@ -36,50 +32,34 @@ using System;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Media clip data [PDF:1.7:9.1.3].</summary>
-    */
+    /// <summary>Media clip data [PDF:1.7:9.1.3].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaClipData
       : MediaClip
     {
-        /**
-          <summary>Circumstance under which it is acceptable to write a temporary file in order to play
-          a media clip.</summary>
-        */
+        /// <summary>Circumstance under which it is acceptable to write a temporary file in order to play
+        /// a media clip.</summary>
         public enum TempFilePermissionEnum
         {
-            /**
-              <summary>Never allowed.</summary>
-            */
+            /// <summary>Never allowed.</summary>
             Never,
-            /**
-              <summary>Allowed only if the document permissions allow content extraction.</summary>
-            */
+            /// <summary>Allowed only if the document permissions allow content extraction.</summary>
             ContentExtraction,
-            /**
-              <summary>Allowed only if the document permissions allow content extraction, including for
-              accessibility purposes.</summary>
-            */
+            /// <summary>Allowed only if the document permissions allow content extraction, including for
+            /// accessibility purposes.</summary>
             Accessibility,
-            /**
-              <summary>Always allowed.</summary>
-            */
+            /// <summary>Always allowed.</summary>
             Always
         }
 
-        /**
-          <summary>Media clip data viability.</summary>
-        */
+        /// <summary>Media clip data viability.</summary>
         public class Viability : PdfObjectWrapper<PdfDictionary>
         {
             public Viability(PdfDirectObject baseObject) : base(baseObject)
             { }
 
-            /**
-              <summary>Gets the absolute URL to be used as the base URL in resolving any relative URLs
-              found within the media data.</summary>
-            */
+            /// <summary>Gets the absolute URL to be used as the base URL in resolving any relative URLs
+            /// found within the media data.</summary>
             public Uri BaseURL
             {
                 get
@@ -87,7 +67,7 @@ namespace PdfClown.Documents.Multimedia
                     var baseURLObject = BaseDataObject.GetString(PdfName.BU);
                     return baseURLObject != null ? new Uri(baseURLObject) : null;
                 }
-                set => BaseDataObject.SetString(PdfName.BU, value?.ToString());
+                set => BaseDataObject.Set(PdfName.BU, value?.ToString());
             }
         }
 
@@ -117,48 +97,38 @@ namespace PdfClown.Documents.Multimedia
             set => BaseDataObject[PdfName.D] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the MIME type of data [RFC 2045].</summary>
-        */
+        /// <summary>Gets/Sets the MIME type of data [RFC 2045].</summary>
         public string MimeType
         {
             get => BaseDataObject.GetString(PdfName.CT);
-            set => BaseDataObject.SetString(PdfName.CT, value);
+            set => BaseDataObject.Set(PdfName.CT, value);
         }
 
-        /**
-          <summary>Gets/Sets the player rules for playing this media.</summary>
-        */
+        /// <summary>Gets/Sets the player rules for playing this media.</summary>
         public MediaPlayers Players
         {
             get => Wrap<MediaPlayers>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PL));
             set => BaseDataObject[PdfName.PL] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the preferred options the renderer should attempt to honor without affecting its
-          viability.</summary>
-        */
+        /// <summary>Gets/Sets the preferred options the renderer should attempt to honor without affecting its
+        /// viability.</summary>
         public Viability Preferences
         {
             get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.BE));
             set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the minimum requirements the renderer must honor in order to be considered viable.
-          </summary>
-        */
+        /// <summary>Gets/Sets the minimum requirements the renderer must honor in order to be considered viable.
+        /// </summary>
         public Viability Requirements
         {
             get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MH));
             set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the circumstance under which it is acceptable to write a temporary file in order
-          to play this media clip.</summary>
-        */
+        /// <summary>Gets/Sets the circumstance under which it is acceptable to write a temporary file in order
+        /// to play this media clip.</summary>
         public TempFilePermissionEnum? TempFilePermission
         {
             get => TempFilePermissionEnumExtension.Get((PdfString)BaseDataObject.Resolve<PdfDictionary>(PdfName.P)[PdfName.TF]);

@@ -39,45 +39,36 @@
  * limitations under the License.
  */
 
-using bytes = PdfClown.Bytes;
+using PdfClown.Bytes;
 using PdfClown.Objects;
 using PdfClown.Util;
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using PdfClown.Bytes;
-using System.Diagnostics;
 using PdfClown.Util.IO;
-using System.Collections;
-using System.Collections.ObjectModel;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using bytes = PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>Character map [PDF:1.6:5.6.4].</summary>
-    */
+    ///<summary>Character map [PDF:1.6:5.6.4].</summary>
     public sealed class CMap
     {
         private static readonly int SPACE = ' ';
         private static readonly ConcurrentDictionary<string, CMap> cMapCache = new();
-        /**
-          <summary>Gets the character map extracted from the given data.</summary>
-          <param name="stream">Character map data.</param>
-        */
+
+        ///<summary>Gets the character map extracted from the given data.</summary>
+        ///<param name="stream">Character map data.</param>
         public static CMap Get(IInputStream stream)
         {
-            CMapParser parser = new CMapParser(stream);
+            var parser = new CMapParser(stream);
             return parser.Parse();
         }
 
-        /**
-          <summary>Gets the character map extracted from the given encoding object.</summary>
-          <param name="encodingObject">Encoding object.</param>
-        */
+        ///<summary>Gets the character map extracted from the given encoding object.</summary>
+        ///<param name="encodingObject">Encoding object.</param>
         public static CMap Get(PdfDataObject encodingObject)
         {
             if (encodingObject == null)
@@ -91,24 +82,18 @@ namespace PdfClown.Documents.Contents.Fonts
                 throw new NotSupportedException("Unknown encoding object type: " + encodingObject.GetType().Name);
         }
 
-        /**
-          <summary>Gets the character map extracted from the given data.</summary>
-          <param name="stream">Character map data.</param>
-        */
+        ///<summary>Gets the character map extracted from the given data.</summary>
+        ///<param name="stream">Character map data.</param>
         public static CMap Get(PdfStream stream) => Get(stream.Body);
 
-        /**
-          <summary>Gets the character map corresponding to the given name.</summary>
-          <param name="name">Predefined character map name.</param>
-          <returns>null, in case no name matching occurs.</returns>
-        */
-        public static CMap Get(PdfName name) => Get(name.ToString());
+        ///<summary>Gets the character map corresponding to the given name.</summary>
+        ///<param name="name">Predefined character map name.</param>
+        ///<returns>null, in case no name matching occurs.</returns>
+        public static CMap Get(PdfName name) => Get(name.StringValue);
 
-        /**
-          <summary>Gets the character map corresponding to the given name.</summary>
-          <param name="name">Predefined character map name.</param>
-          <returns>null, in case no name matching occurs.</returns>
-        */
+        ///<summary>Gets the character map corresponding to the given name.</summary>
+        ///<param name="name">Predefined character map name.</param>
+        ///<returns>null, in case no name matching occurs.</returns>
         public static CMap Get(string name) => cMapCache.GetOrAdd(name, Load);
 
         private static CMap Load(string name)
@@ -194,32 +179,24 @@ namespace PdfClown.Documents.Contents.Fonts
             get => spaceMapping;
             set => spaceMapping = value;
         }
-        /**
-         * This will tell if this cmap has any CID mappings.
-         * 
-         * @return true If there are any CID mappings, false otherwise.
-         */
+
+        ///<summary>This will tell if this cmap has any CID mappings.</summary>
+        ///<remarks>@return true If there are any CID mappings, false otherwise.</remarks> 
         public bool HasCIDMappings
         {
             get => codeToCid.Count > 0 || codeToCidRanges.Count > 0;
         }
 
-        /**
-         * This will tell if this cmap has any Unicode mappings.
-         *
-         * @return true If there are any Unicode mappings, false otherwise.
-         */
+        ///<summary> This will tell if this cmap has any Unicode mappings.</summary>
+        ///<value>true If there are any Unicode mappings, false otherwise.</value> 
         public bool HasUnicodeMappings
         {
             get => charToUnicode.Count > 0;
         }
 
-        /**
-         * Returns the sequence of Unicode characters for the given character code.
-         *
-         * @param code character code
-         * @return Unicode characters (may be more than one, e.g "fi" ligature)
-         */
+        ///<summary>Returns the sequence of Unicode characters for the given character code.</summary>
+        ///<param name="code">code character code</param>
+        ///<returns>Unicode characters (may be more than one, e.g "fi" ligature)</returns>
         public int? ToUnicode(int code)
         {
             return charToUnicode.TryGetValue(code, out var unicode) ? unicode : null;
@@ -230,12 +207,9 @@ namespace PdfClown.Documents.Contents.Fonts
             return unicodeToByteCodes.TryGetValue(unicode, out var codes) ? codes : null;
         }
 
-        /**
-       * Returns the CID for the given character code.
-     *
-     * @param code character code as byte array
-     * @return CID
-     */
+        ///<summary>Returns the CID for the given character code.</summary>
+        ///<param name="code">character code as byte array</param>
+        ///<returns>CID</returns>
         public int? ToCID(ReadOnlySpan<byte> code)
         {
             if (!HasCIDMappings || code.Length < minCidLength || code.Length > maxCidLength)
@@ -251,12 +225,9 @@ namespace PdfClown.Documents.Contents.Fonts
             return cid ?? ToCIDFromRanges(code);
         }
 
-        /**
-         * Returns the CID for the given character code.
-         *
-         * @param code character code
-         * @return CID
-         */
+        ///<summary>Returns the CID for the given character code.</summary>
+        ///<param name="code">character code</param>
+        ///<returns>CID</returns>
         public int? ToCID(int code)
         {
             if (!HasCIDMappings)
@@ -272,13 +243,10 @@ namespace PdfClown.Documents.Contents.Fonts
             return cid;
         }
 
-        /**
-     * Returns the CID for the given character code.
-     *
-     * @param code   character code
-     * @param length the origin byte length of the code
-     * @return CID
-     */
+        /// <summary>Returns the CID for the given character code.</summary>
+        /// <param name="code">character code</param>
+        /// <param name="length">the origin byte length of the code</param>
+        /// <returns>CID</returns>
         public int? ToCID(int code, int length)
         {
             if (!HasCIDMappings || length < minCidLength || length > maxCidLength)
@@ -294,13 +262,10 @@ namespace PdfClown.Documents.Contents.Fonts
             return cid ?? ToCIDFromRanges(code, length);
         }
 
-        /**
-     * Returns the CID for the given character code.
-     *
-     * @param code character code
-     * @return CID
-     */
-
+        /// <summary>Returns the CID for the given character code.</summary>
+        /// <param name="code">character code</param>
+        /// <param name="length"></param>
+        /// <returns>CID</returns>
         private int ToCIDFromRanges(int code, int length)
         {
             foreach (CIDRange range in codeToCidRanges)
@@ -314,12 +279,9 @@ namespace PdfClown.Documents.Contents.Fonts
             return 0;
         }
 
-        /**
-     * Returns the CID for the given character code.
-     *
-     * @param code character code
-     * @return CID
-     */
+        /// <summary>Returns the CID for the given character code.</summary>
+        /// <param name="code">character code</param>
+        /// <returns>CID</returns>
         private int ToCIDFromRanges(ReadOnlySpan<byte> code)
         {
             foreach (CIDRange range in codeToCidRanges)
@@ -333,14 +295,9 @@ namespace PdfClown.Documents.Contents.Fonts
             return 0;
         }
 
-        /**
-     * Convert the given part of a byte array to an integer.
-     * 
-     * @param data   the byte array
-     * @param offset The offset into the byte array.
-     * @param length The length of the data we are getting.
-     * @return the resulting integer
-     */
+        /// <summary>Convert the given part of a byte array to an integer.</summary>
+        /// <param name="data">the byte array</param>
+        /// <returns>resulting integer</returns>
         private int GetCodeFromArray(ReadOnlySpan<byte> data)
         {
             int code = 0;
@@ -366,14 +323,13 @@ namespace PdfClown.Documents.Contents.Fonts
         //    return null;
         //}
 
-        /**
-         * Reads a character code from a string in the content stream.
-         * <p>See "CMap Mapping" and "Handling Undefined Characters" in PDF32000 for more details.
-         *
-         * @param in string stream
-         * @return character code
-         * @throws IOException if there was an error reading the stream or CMap
-         */
+        /// <summary>
+        /// Reads a character code from a string in the content stream.
+        /// <p>See "CMap Mapping" and "Handling Undefined Characters" in PDF32000 for more details.
+        ///</summary>
+        /// <param name="input">string stream</param>
+        /// <param name="bytes">character code</param>
+        /// <returns>character code</returns>
         public int ReadCode(IInputStream input, out ReadOnlySpan<byte> bytes)
         {
             var temp = input.Position;
@@ -401,6 +357,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     }
                 }
             }
+            byteCount = bytes.Length;
 #if DEBUG
             MissCode(bytes);
 #endif
@@ -410,7 +367,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private void MissCode(ReadOnlySpan<byte> bytes)
         {
             string seq = "";
-            for (int i = 0; i < maxCodeLength; ++i)
+            for (int i = 0; i < bytes.Length; ++i)
             {
                 seq += $"{bytes[i]} ({bytes[i]:x2}) ";
             }
@@ -442,11 +399,11 @@ namespace PdfClown.Documents.Contents.Fonts
             return 0;
         }
 
-        /**
-         * Implementation of the usecmap operator.  This will
-         * copy all of the mappings from one cmap to another.
-         * @param cmap The cmap to load mappings from.
-         * */
+        /// <summary>
+        /// Implementation of the usecmap operator.  This will
+        /// copy all of the mappings from one cmap to another.
+        /// </summary>
+        /// <param name="cmap">The cmap to load mappings from</param>
         public void UseCmap(CMap cmap)
         {
             foreach (var spaceRange in cmap.codespaceRanges)
@@ -477,11 +434,9 @@ namespace PdfClown.Documents.Contents.Fonts
             minCidLength = Math.Min(minCidLength, cmap.minCidLength);
         }
 
-        /**
-         * This will add a character code to Unicode character sequence mapping.
-         * @param codes The character codes to map from.
-         * @param unicode The Unicode characters to map to.
-          */
+        /// <summary>This will add a character code to Unicode character sequence mapping.</summary>
+        /// <param name="codes">The character codes to map from</param>
+        /// <param name="unicode">The Unicode characters to map to</param>
         internal void AddCharMapping(ReadOnlySpan<byte> codes, int unicode)
         {
             unicodeToByteCodes[unicode] = codes.ToArray();
@@ -495,12 +450,9 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * This will add a CID mapping.
-         *
-         * @param code character code
-         * @param cid CID
-         */
+        /// <summary>This will add a CID mapping.</summary>
+        /// <param name="code">character code</param>
+        /// <param name="cid">CID</param>
         internal void AddCIDMapping(ReadOnlySpan<byte> code, int cid)
         {
             if (!codeToCid.TryGetValue(code.Length, out var codeToCidMap))
@@ -513,14 +465,10 @@ namespace PdfClown.Documents.Contents.Fonts
             codeToCidMap[code.ReadIntOffset()] = cid;
         }
 
-        /**
-     * This will add a CID Range.
-     *
-     * @param from starting character of the CID range.
-     * @param to ending character of the CID range.
-     * @param cid the cid to be started with.
-     *
-     */
+        /// <summary>This will add a CID Range.</summary>
+        /// <param name="from">starting character of the CID range</param>
+        /// <param name="to">ending character of the CID range</param>
+        /// <param name="cid">the cid to be started with</param>
         public void AddCIDRange(ReadOnlySpan<byte> from, ReadOnlySpan<byte> to, int cid)
         {
             AddCIDRange(codeToCidRanges, from.ReadIntOffset(), to.ReadIntOffset(), cid, from.Length);
@@ -541,11 +489,9 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * This will add a codespace range.
-         *
-         * @param range A single codespace range.
-         */
+        /// <summary> This will add a codespace range.</summary>
+        /// <param name="range"></param>
+
         internal void AddCodespaceRange(CodespaceRange range)
         {
             codespaceRanges.Add(range);

@@ -48,13 +48,13 @@ namespace PdfClown.Documents.Contents.XObjects
         public bool Isolated
         {
             get => BaseDataObject.GetBool(PdfName.I);
-            set => BaseDataObject.SetBool(PdfName.I, value);
+            set => BaseDataObject.Set(PdfName.I, value);
         }
 
         public bool Knockout
         {
             get => BaseDataObject.GetBool(PdfName.K);
-            set => BaseDataObject.SetBool(PdfName.K, value);
+            set => BaseDataObject.Set(PdfName.K, value);
         }
     }
 }

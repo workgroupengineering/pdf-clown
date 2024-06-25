@@ -29,46 +29,37 @@ using PdfClown.Tokens;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using text = System.Text;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF dictionary object [PDF:1.6:3.2.6].</summary>
-    */
-    public sealed class PdfDictionary : PdfDirectObject, IDictionary<PdfName, PdfDirectObject>
+    /// <summary>PDF dictionary object [PDF:1.6:3.2.6].</summary>
+    public sealed class PdfDictionary : PdfWrapableDirectObject, IDictionary<PdfName, PdfDirectObject>
     {
         private static readonly byte[] BeginDictionaryChunk = Encoding.Pdf.Encode(Keyword.BeginDictionary);
         private static readonly byte[] EndDictionaryChunk = Encoding.Pdf.Encode(Keyword.EndDictionary);
 
-        internal IDictionary<PdfName, PdfDirectObject> entries;
+        internal Dictionary<PdfName, PdfDirectObject> entries;
 
         private PdfObject parent;
         private PdfObjectStatus status;
 
-        /**
-          <summary>Creates a new empty dictionary object with the default initial capacity.</summary>
-        */
+        /// <summary>Creates a new empty dictionary object with the default initial capacity.</summary>
         public PdfDictionary() : this(4)
         { }
 
-        /**
-          <summary>Creates a new empty dictionary object with the specified initial capacity.</summary>
-          <param name="capacity">Initial capacity.</param>
-        */
+        /// <summary>Creates a new empty dictionary object with the specified initial capacity.</summary>
+        /// <param name="capacity">Initial capacity.</param>
         public PdfDictionary(int capacity) : base(PdfObjectStatus.Updateable)
         {
             entries = new Dictionary<PdfName, PdfDirectObject>(capacity);
         }
 
-        /**
-          <summary>Creates a new dictionary object with the specified entries.</summary>
-          <param name="keys">Entry keys to add to this dictionary.</param>
-          <param name="values">Entry values to add to this dictionary; their position and number must
-          match the <code>keys</code> argument.</param>
-        */
+        /// <summary>Creates a new dictionary object with the specified entries.</summary>
+        /// <param name="keys">Entry keys to add to this dictionary.</param>
+        /// <param name="values">Entry values to add to this dictionary; their position and number must
+        /// match the <code>keys</code> argument.</param>
         public PdfDictionary(PdfName[] keys, PdfDirectObject[] values)
             : this(values.Length)
         {
@@ -78,11 +69,9 @@ namespace PdfClown.Objects
             Updateable = true;
         }
 
-        /**
-          <summary>Creates a new dictionary object with the specified entries.</summary>
-          <param name="objects">Sequence of key/value-paired objects (where key is a <see
-          cref="PdfName"/> and value is a <see cref="PdfDirectObject"/>).</param>
-        */
+        /// <summary>Creates a new dictionary object with the specified entries.</summary>
+        /// <param name="objects">Sequence of key/value-paired objects (where key is a <see
+        /// cref="PdfName"/> and value is a <see cref="PdfDirectObject"/>).</param>
         public PdfDictionary(params PdfDirectObject[] objects)
             : this(objects.Length / 2)
         {
@@ -92,10 +81,8 @@ namespace PdfClown.Objects
             Updateable = true;
         }
 
-        /**
-          <summary>Creates a new dictionary object with the specified entries.</summary>
-          <param name="entries">Map whose entries have to be added to this dictionary.</param>
-        */
+        /// <summary>Creates a new dictionary object with the specified entries.</summary>
+        /// <param name="entries">Map whose entries have to be added to this dictionary.</param>
         public PdfDictionary(IDictionary<PdfName, PdfDirectObject> entries)
             : this(entries.Count)
         {
@@ -117,9 +104,13 @@ namespace PdfClown.Objects
             protected internal set => status = value;
         }
 
-        public ICollection<PdfName> Keys => entries.Keys;
+        public Dictionary<PdfName, PdfDirectObject>.KeyCollection Keys => entries.Keys;
 
-        public ICollection<PdfDirectObject> Values => entries.Values;
+        ICollection<PdfName> IDictionary<PdfName, PdfDirectObject>.Keys => Keys;
+
+        public Dictionary<PdfName, PdfDirectObject>.ValueCollection Values => entries.Values;
+
+        ICollection<PdfDirectObject> IDictionary<PdfName, PdfDirectObject>.Values => Values;
 
         public int Count => entries.Count;
 
@@ -135,47 +126,43 @@ namespace PdfClown.Objects
             throw new NotImplementedException();
         }
 
-        public T Get<T>(PdfName key) where T : PdfDataObject
+        public T Get<T>(PdfName key)
+            where T : PdfDataObject
         {
-            var value = this[key];
-            return value is T typedValue ? typedValue 
-                : value?.Resolve() is T resolved ? resolved :  default;
+            return entries.TryGetValue(key, out var value)
+                ? value is T typedValue ? typedValue : value?.Resolve() as T
+                : default;
         }
 
-        public T Get<T>(PdfName key, T deaultValue) where T : PdfDataObject
+        public T Get<T>(PdfName key, T deaultValue)
+            where T : PdfDataObject
         {
-            var value = this[key];
-            return value is T typedValue ? typedValue
-                : value?.Resolve() is T resolved ? resolved : deaultValue;
+            return entries.TryGetValue(key, out var value)
+                ? value is T typedValue ? typedValue : (value?.Resolve() as T) ?? deaultValue
+                : deaultValue;
         }
 
-        /**
-          <summary>Gets the value corresponding to the given key, forcing its instantiation as a direct
-          object in case of missing entry.</summary>
-          <param name="key">Key whose associated value is to be returned.</param>
-        */
+        /// <summary>Gets the value corresponding to the given key, forcing its instantiation as a direct
+        /// object in case of missing entry.</summary>
+        /// <param name="key">Key whose associated value is to be returned.</param>
         public PdfDirectObject GetOrCreate<T>(PdfName key) where T : PdfDataObject, new()
         {
             return GetOrCreate<T>(key, true);
         }
 
-        /**
-          <summary>Gets the value corresponding to the given key, forcing its instantiation in case of
-          missing entry.</summary>
-          <param name="key">Key whose associated value is to be returned.</param>
-          <param name="direct">Whether the item has to be instantiated directly within its container
-          instead of being referenced through an indirect object.</param>
-        */
+        /// <summary>Gets the value corresponding to the given key, forcing its instantiation in case of
+        /// missing entry.</summary>
+        /// <param name="key">Key whose associated value is to be returned.</param>
+        /// <param name="direct">Whether the item has to be instantiated directly within its container
+        /// instead of being referenced through an indirect object.</param>
         public PdfDirectObject GetOrCreate<T>(PdfName key, bool direct) where T : PdfDataObject, new()
         {
             PdfDirectObject value = this[key];
             if (value == null)
             {
-                /*
-                  NOTE: The null-object placeholder MUST NOT perturb the existing structure; therefore:
-                    - it MUST be marked as virtual in order not to unnecessarily serialize it;
-                    - it MUST be put into this dictionary without affecting its update status.
-                */
+                //NOTE: The null-object placeholder MUST NOT perturb the existing structure; therefore:
+                //    - it MUST be marked as virtual in order not to unnecessarily serialize it;
+                //    - it MUST be put into this dictionary without affecting its update status.
                 try
                 {
                     value = (PdfDirectObject)Include(direct
@@ -198,14 +185,11 @@ namespace PdfClown.Objects
                 && ((PdfDictionary)@object).entries.Equals(entries));
         }
 
-        public override int GetHashCode()
-        {
-            return entries.GetHashCode();
-        }
+        public override int GetHashCode() => entries.GetHashCode();
 
-        /**
-          Gets the key associated to the specified value.
-        */
+        /// <summary>Gets the key associated to the specified value.</summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public PdfName GetKey(PdfDirectObject value)
         {
             /*
@@ -220,24 +204,18 @@ namespace PdfClown.Objects
             }
             return null;
         }
-        
+
         public float GetFloat(PdfName key, float def = 0) => ((IPdfNumber)Resolve(key))?.FloatValue ?? def;
 
         public float? GetNFloat(PdfName key, float? def = null) => (Resolve(key) as IPdfNumber)?.FloatValue ?? def;
-
-        public void SetFloat(PdfName key, float? value) => this[key] = PdfReal.Get(value);
 
         public double GetDouble(PdfName key, double def = 0) => ((IPdfNumber)Resolve(key))?.DoubleValue ?? def;
 
         public double? GetNDouble(PdfName key, double? def = null) => (Resolve(key) as IPdfNumber)?.DoubleValue ?? def;
 
-        public void SetDouble(PdfName key, double? value) => this[key] = PdfReal.Get(value);
-
         public int GetInt(PdfName key, int def = 0) => ((IPdfNumber)Resolve(key))?.IntValue ?? def;
 
         public int? GetNInt(PdfName key, int? def = null) => (Resolve(key) as IPdfNumber)?.IntValue ?? def;
-
-        public void SetInt(PdfName key, int? value) => this[key] = PdfInteger.Get(value);
 
         public IPdfNumber GetNumber(PdfName key) => (IPdfNumber)Resolve(key);
 
@@ -245,43 +223,83 @@ namespace PdfClown.Objects
 
         public bool? GetNBool(PdfName key, bool? def = null) => Get<PdfBoolean>(key)?.RawValue ?? def;
 
-        public void SetBool(PdfName key, bool? value) => this[key] = PdfBoolean.Get(value);
-
-        public Memory<byte> GetTextBytes(PdfName key) => ((PdfString)Resolve(key))?.RawValue ?? Memory<byte>.Empty;
-
-        public void SetTextBytes(PdfName key, Memory<byte> data) => this[key] = new PdfString(data);
-
-        public string GetString(PdfName key, string def = null) => ((IPdfString)Resolve(key))?.StringValue ?? def;
-
-        public void SetName(PdfName key, string value) => this[key] = PdfName.Get(value);
-
-        public void SetText(PdfName key, string value) => this[key] = PdfTextString.Get(value);
-
-        public void SetString(PdfName key, string value) => this[key] = PdfString.Get(value);
-
         public DateTime? GetDate(PdfName key) => Get<PdfDate>(key)?.DateValue;
 
         public DateTime? GetNDate(PdfName key) => Get<PdfDate>(key)?.DateValue ?? null;
 
-        public void SetDate(PdfName key, DateTime? value) => this[key] = PdfDate.Get(value);
+        public Memory<byte> GetTextBytes(PdfName key) => ((PdfString)Resolve(key))?.RawValue ?? Memory<byte>.Empty;
 
-        /**
-          <summary>Gets the dereferenced value corresponding to the given key.</summary>
-          <remarks>This method takes care to resolve the value returned by <see cref="this[PdfName]">
-          this[PdfName]</see>.</remarks>
-          <param name="key">Key whose associated value is to be returned.</param>
-          <returns>null, if the map contains no mapping for this key.</returns>
-        */
+        public string GetString(PdfName key, string def = null) => ((IPdfString)Resolve(key))?.StringValue ?? def;
+
+        public void Set(PdfName key, double? value) => Set(key, PdfReal.Get(value));
+
+        public void Set(PdfName key, float? value) => Set(key, PdfReal.Get(value));
+
+        public void Set(PdfName key, int? value) => Set(key, PdfInteger.Get(value));
+
+        public void Set(PdfName key, long? value) => Set(key, PdfInteger.Get(value));
+
+        public void Set(PdfName key, bool? value) => Set(key, PdfBoolean.Get(value));
+
+        public void Set(PdfName key, DateTime? value) => Set(key, PdfDate.Get(value));
+
+        public void Set(PdfName key, double value) => Set(key, PdfReal.Get(value));
+
+        public void Set(PdfName key, float value) => Set(key, PdfReal.Get(value));
+
+        public void Set(PdfName key, int value) => Set(key, PdfInteger.Get(value));
+
+        public void Set(PdfName key, long value) => Set(key, PdfInteger.Get(value));
+
+        public void Set(PdfName key, bool value) => Set(key, PdfBoolean.Get(value));
+
+        public void Set(PdfName key, Memory<byte> data) => Set(key, PdfString.Get(data));
+
+        public void Set(PdfName key, string value) => Set(key, PdfString.Get(value));
+
+        public void SetName(PdfName key, string value) => Set(key, PdfName.Get(value));
+
+        public void SetText(PdfName key, string value) => Set(key, PdfTextString.Get(value));
+
+        public void Add(PdfName key, double? value) => Add(key, PdfReal.Get(value));
+
+        public void Add(PdfName key, float? value) => Add(key, PdfReal.Get(value));
+
+        public void Add(PdfName key, int? value) => Add(key, PdfInteger.Get(value));
+
+        public void Add(PdfName key, long? value) => Add(key, PdfInteger.Get(value));
+
+        public void Add(PdfName key, bool? value) => Add(key, PdfBoolean.Get(value));
+
+        public void Add(PdfName key, DateTime? value) => Add(key, PdfDate.Get(value));
+
+        public void Add(PdfName key, double value) => Add(key, PdfReal.Get(value));
+
+        public void Add(PdfName key, float value) => Add(key, PdfReal.Get(value));
+
+        public void Add(PdfName key, int value) => Add(key, PdfInteger.Get(value));
+
+        public void Add(PdfName key, long value) => Add(key, PdfInteger.Get(value));
+
+        public void Add(PdfName key, bool value) => Add(key, PdfBoolean.Get(value));
+
+        public void Add(PdfName key, Memory<byte> data) => Add(key, PdfString.Get(data));
+
+        public void Add(PdfName key, string value) => Add(key, PdfString.Get(value));
+
+        /// <summary>Gets the dereferenced value corresponding to the given key.</summary>
+        /// <remarks>This method takes care to resolve the value returned by <see cref="this[PdfName]">
+        /// this[PdfName]</see>.</remarks>
+        /// <param name="key">Key whose associated value is to be returned.</param>
+        /// <returns>null, if the map contains no mapping for this key.</returns>
         public PdfDataObject Resolve(PdfName key) => this[key]?.Resolve();
 
-        /**
-          <summary>Gets the dereferenced value corresponding to the given key, forcing its instantiation
-          in case of missing entry.</summary>
-          <remarks>This method takes care to resolve the value returned by <see cref="GetOrCreate(PdfName)"/>.
-          </remarks>
-          <param name="key">Key whose associated value is to be returned.</param>
-          <returns>null, if the map contains no mapping for this key.</returns>
-        */
+        /// <summary>Gets the dereferenced value corresponding to the given key, forcing its instantiation
+        /// in case of missing entry.</summary>
+        /// <remarks>This method takes care to resolve the value returned by <see cref="GetOrCreate(PdfName)"/>.
+        /// </remarks>
+        /// <param name="key">Key whose associated value is to be returned.</param>
+        /// <returns>null, if the map contains no mapping for this key.</returns>
         public T Resolve<T>(PdfName key) where T : PdfDataObject, new() => (T)Resolve(GetOrCreate<T>(key));
 
         public override PdfObject Swap(PdfObject other)
@@ -299,7 +317,7 @@ namespace PdfClown.Objects
 
         public override string ToString()
         {
-            text::StringBuilder buffer = new text::StringBuilder();
+            var buffer = new text::StringBuilder();
             {
                 // Begin.
                 buffer.Append("<< ");
@@ -308,7 +326,7 @@ namespace PdfClown.Objects
                 {
                     // Entry...
                     // ...key.
-                    buffer.Append(entry.Key.ToString()).Append(" ");
+                    buffer.Append(entry.Key.StringValue).Append(" ");
                     // ...value.
                     buffer.Append(PdfDirectObject.ToString(entry.Value)).Append(" ");
                 }
@@ -339,6 +357,13 @@ namespace PdfClown.Objects
             stream.Write(EndDictionaryChunk);
         }
 
+        public void Add<T>(PdfName key, T value)
+            where T : PdfDirectObject, IPdfSimpleObject
+        {
+            entries.Add(key, value);
+            Update();
+        }
+
         public void Add(PdfName key, PdfDirectObject value)
         {
             entries.Add(key, (PdfDirectObject)Include(value));
@@ -352,14 +377,27 @@ namespace PdfClown.Objects
 
         public bool Remove(PdfName key)
         {
-            PdfDirectObject oldValue = this[key];
-            if (entries.Remove(key))
+            if (entries.Remove(key, out var oldValue))
             {
                 Exclude(oldValue);
                 Update();
                 return true;
             }
             return false;
+        }
+
+        public void Set<T>(PdfName key, T value)
+             where T : PdfDirectObject, IPdfSimpleObject
+        {
+            if (value == null)
+            { Remove(key); }
+            else
+            {
+                PdfDirectObject oldValue = this[key];
+                entries[key] = value;
+                Exclude(oldValue);
+                Update();
+            }
         }
 
         public PdfDirectObject this[PdfName key]
@@ -379,15 +417,9 @@ namespace PdfClown.Objects
             }
         }
 
-        public bool TryGetValue(PdfName key, out PdfDirectObject value)
-        {
-            return entries.TryGetValue(key, out value);
-        }
+        public bool TryGetValue(PdfName key, out PdfDirectObject value) => entries.TryGetValue(key, out value);
 
-        void ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Add(KeyValuePair<PdfName, PdfDirectObject> entry)
-        {
-            Add(entry.Key, entry.Value);
-        }
+        void ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Add(KeyValuePair<PdfName, PdfDirectObject> entry) => Add(entry.Key, entry.Value);
 
         public void Clear()
         {
@@ -399,12 +431,15 @@ namespace PdfClown.Objects
 
         bool ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Contains(KeyValuePair<PdfName, PdfDirectObject> entry)
         {
-            return ((ICollection<KeyValuePair<PdfName, PdfDirectObject>>)entries).Contains(entry);
+            return entries.TryGetValue(entry.Key, out var value) && value.Equals(entry.Value);
         }
 
         public void CopyTo(KeyValuePair<PdfName, PdfDirectObject>[] entries, int index)
         {
-            throw new NotImplementedException();
+            foreach (var entry in this)
+            {
+                entries[index++] = entry;
+            }
         }
 
         public bool Remove(KeyValuePair<PdfName, PdfDirectObject> entry)
@@ -415,15 +450,11 @@ namespace PdfClown.Objects
                 return false;
         }
 
-        IEnumerator<KeyValuePair<PdfName, PdfDirectObject>> IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>.GetEnumerator()
-        {
-            return entries.GetEnumerator();
-        }
+        public Dictionary<PdfName, PdfDirectObject>.Enumerator GetEnumerator() => entries.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>)this).GetEnumerator();
-        }
-        
+        IEnumerator<KeyValuePair<PdfName, PdfDirectObject>> IEnumerable<KeyValuePair<PdfName, PdfDirectObject>>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
     }
 }

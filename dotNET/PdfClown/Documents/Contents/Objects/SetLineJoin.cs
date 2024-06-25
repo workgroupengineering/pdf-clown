@@ -30,9 +30,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the line join style' operation [PDF:1.6:4.3.3].</summary>
-    */
+    ///<summary>'Set the line join style' operation [PDF:1.6:4.3.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetLineJoin : Operation
     {
@@ -42,17 +40,16 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, PdfInteger.Get((int)value))
         { }
 
-        public SetLineJoin(IList<PdfDirectObject> operands)
+        public SetLineJoin(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state)
-        { state.LineJoin = Value; }
+        public override void Scan(GraphicsState state) => state.LineJoin = Value;
 
         public LineJoinEnum Value
         {
-            get => (LineJoinEnum)((IPdfNumber)operands[0]).IntValue;
-            set => operands[0] = PdfInteger.Get((int)value);
+            get => (LineJoinEnum)operands.GetInt(0);
+            set => operands.Set(0, (int)value);
         }
     }
 }

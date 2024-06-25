@@ -48,16 +48,16 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public static new DeviceGrayColor Get(PdfArray components)
         {
             return components != null
-                ? components.Wrapper is DeviceGrayColor color ? color : new DeviceGrayColor(components)
+                ? components.Wrapper is DeviceGrayColor color ? color : new DeviceGrayColor(DeviceGrayColorSpace.Default, components)
                 : Default;
         }
 
         public DeviceGrayColor(float g)
-            : this(new PdfArray(1) { PdfReal.Get(NormalizeComponent(g)) })
+            : this(DeviceGrayColorSpace.Default, new PdfArray(1) { NormalizeComponent(g) })
         { }
 
-        internal DeviceGrayColor(IList<PdfDirectObject> components)
-            : base(DeviceGrayColorSpace.Default, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
+        internal DeviceGrayColor(DeviceColorSpace colorSpace, PdfArray components)
+            : base(colorSpace, components)
         { }
 
 

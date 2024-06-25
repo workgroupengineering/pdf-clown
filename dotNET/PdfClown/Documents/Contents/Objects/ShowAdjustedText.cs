@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
         { Value = value; }
 
-        internal ShowAdjustedText(IList<PdfDirectObject> operands)
+        internal ShowAdjustedText(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Contents.Objects
                     return textStream.AsMemory();
                 }
                 textStream = new ByteStream();
-                foreach (PdfDirectObject element in ((PdfArray)operands[0]))
+                foreach (var element in Value)
                 {
                     if (element is PdfString pdfString)
                     {
@@ -78,16 +78,10 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override IEnumerable<PdfDirectObject> Value
         {
-            get
-            {
-                foreach (PdfDirectObject element in ((PdfArray)operands[0]))
-                {
-                    yield return element;
-                }
-            }
+            get => operands.Get<PdfArray>(0);
             set
             {
-                PdfArray elements = (PdfArray)operands[0];
+                var elements = operands.Get<PdfArray>(0);
                 elements.Clear();
                 foreach (PdfDirectObject valueItem in value)
                 {

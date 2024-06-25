@@ -23,29 +23,32 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Field options [PDF:1.6:8.6.3].</summary>
-    */
+    /// <summary>Field options [PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class ChoiceItems : PdfObjectWrapper<PdfArray>, IList<ChoiceItem>
+    public sealed class ChoiceItems : Array<ChoiceItem>
     {
+        public class ItemWrapper : IEntryWrapper<ChoiceItem>
+        {
+            private ChoiceItems items;
+
+            public ItemWrapper(ChoiceItems items) => this.items = items;
+
+            public ChoiceItem Wrap(PdfDirectObject baseObject) => ChoiceItem.Wrap(baseObject, items);
+        }
+
         public ChoiceItems(PdfDocument context) : base(context, new PdfArray())
-        { }
+        {
+            itemWrapper = new ItemWrapper(this);
+        }
 
         public ChoiceItems(PdfDirectObject baseObject) : base(baseObject)
-        { }
+        {
+            itemWrapper = new ItemWrapper(this);
+        }
 
         public ChoiceItem Add(string value)
         {
@@ -61,51 +64,27 @@ namespace PdfClown.Documents.Interaction.Forms
             return item;
         }
 
-        public int IndexOf(ChoiceItem value) => BaseDataObject.IndexOf(value.BaseObject);
-
-        public void Insert(int index, ChoiceItem value)
+        public override void Insert(int index, ChoiceItem value)
         {
-            BaseDataObject.Insert(index, value.BaseObject);
+            base.Insert(index, value);
             value.Items = this;
         }
 
-        public void RemoveAt(int index) => BaseDataObject.RemoveAt(index);
-
-        public ChoiceItem this[int index]
+        public override ChoiceItem this[int index]
         {
-            get => ChoiceItem.Wrap(BaseDataObject[index], this);
+            get => base[index];
             set
             {
-                BaseDataObject[index] = value.BaseObject;
+                base[index] = value;
                 value.Items = this;
             }
         }
 
-        public void Add(ChoiceItem value)
+        public override void Add(ChoiceItem value)
         {
-            BaseDataObject.Add(value.BaseObject);
+            base.Add(value);
             value.Items = this;
         }
 
-        public void Clear() => BaseDataObject.Clear();
-
-        public bool Contains(ChoiceItem value) => BaseDataObject.Contains(value.BaseObject);
-
-        public void CopyTo(ChoiceItem[] values, int index)
-        { throw new NotImplementedException(); }
-
-        public int Count => BaseDataObject.Count;
-
-        public bool IsReadOnly => false;
-
-        public bool Remove(ChoiceItem value) => BaseDataObject.Remove(value.BaseObject);
-
-        IEnumerator<ChoiceItem> IEnumerable<ChoiceItem>.GetEnumerator()
-        {
-            for (int index = 0, length = Count; index < length; index++)
-            { yield return this[index]; }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<ChoiceItem>)this).GetEnumerator();
     }
 }

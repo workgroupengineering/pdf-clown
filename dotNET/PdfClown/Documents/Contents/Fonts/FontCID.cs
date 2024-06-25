@@ -63,6 +63,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
                 catch
                 {
+                    dictionary.Wrapper = null;
                     return new FontCIDType2(dictionary, parent);
                 }
             }
@@ -130,7 +131,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public int DefaultWidth
         {
             get => defaultWidth ??= Dictionary.GetInt(PdfName.DW, 1000);
-            set => Dictionary.SetInt(PdfName.DW, defaultWidth = value);
+            set => Dictionary.Set(PdfName.DW, defaultWidth = value);
         }
 
         public override PdfArray Widths

@@ -51,7 +51,7 @@ namespace PdfClown.Viewer.Test
                     || key.Equals(PdfName.P)
                     || key.Equals(PdfName.Page))
                     continue;
-                var prntKey = "".PadLeft(level, '-') + key.ToString();
+                var prntKey = "".PadLeft(level, '-') + key.StringValue;
                 var obj = dictionary[key];
                 foreach (var sub in Extract(obj, prntKey, level))
                     yield return sub;

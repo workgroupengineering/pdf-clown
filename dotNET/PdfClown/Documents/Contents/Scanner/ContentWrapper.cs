@@ -46,11 +46,11 @@ namespace PdfClown.Documents.Contents
     [PDF(VersionEnum.PDF10)]
     public sealed class ContentWrapper : PdfObjectWrapper<PdfDataObject>, IList<ContentObject>
     {
+        public static ContentWrapper Wrap(PdfDirectObject baseObject, IContentContext contentContext) => baseObject != null
+            ? baseObject.ContentsWrapper ??= new ContentWrapper(baseObject, contentContext)
+            : null;
 
-        public static ContentWrapper Wrap(PdfDirectObject baseObject, IContentContext contentContext)
-        { return baseObject != null ? baseObject.ContentsWrapper ??= new ContentWrapper(baseObject, contentContext) : null; }
-
-        private IList<ContentObject> items;
+        private List<ContentObject> items;
 
         private IContentContext contentContext;
 
@@ -141,9 +141,11 @@ namespace PdfClown.Documents.Contents
 
         public bool Remove(ContentObject obj) => items.Remove(obj);
 
-        public IEnumerator<ContentObject> GetEnumerator() => items.GetEnumerator();
+        public List<ContentObject>.Enumerator GetEnumerator() => items.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => items.GetEnumerator();
+        IEnumerator<ContentObject> IEnumerable<ContentObject>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         private void Load()
         {

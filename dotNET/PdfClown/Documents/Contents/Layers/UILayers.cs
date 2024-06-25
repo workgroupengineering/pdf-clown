@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Contents.Layers
     {
         private delegate int EvaluateNode(int currentNodeIndex, int currentBaseIndex);
 
-        private class ItemWrapper : IWrapper<IUILayerNode>
+        private class ItemWrapper : IEntryWrapper<IUILayerNode>
         {
             public IUILayerNode Wrap(PdfDirectObject baseObject)
             {

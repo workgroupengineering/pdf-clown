@@ -23,37 +23,25 @@
   this list of conditions.
 */
 
-using bytes = PdfClown.Bytes;
-using PdfClown.Documents;
+using PdfClown.Bytes;
 using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util;
-
 using System;
-using System.IO;
 using System.Net;
-using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Files
 {
-    /**
-      <summary>Extended reference to the contents of another file [PDF:1.6:3.10.2].</summary>
-    */
+    /// <summary>Extended reference to the contents of another file [PDF:1.6:3.10.2].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class FullFileSpecification : FileSpecification
     {
-        /**
-          <summary>Standard file system.</summary>
-        */
+        ///  <summary>Standard file system.</summary>
         public enum StandardFileSystemEnum
         {
-            /**
-              <summary>Generic platform file system.</summary>
-            */
+            /// <summary>Generic platform file system.</summary>
             Native,
-            /**
-              <summary>Uniform resource locator.</summary>
-            */
+            /// <summary>Uniform resource locator.</summary>
             URL
         }
 
@@ -77,9 +65,7 @@ namespace PdfClown.Documents.Files
         internal FullFileSpecification(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the identifier of the file.</summary>
-        */
+        /// <summary>Gets/Sets the identifier of the file.</summary>
         public FileIdentifier ID
         {
             get => Wrap<FileIdentifier>(BaseDictionary[PdfName.ID]);
@@ -89,41 +75,33 @@ namespace PdfClown.Documents.Files
         public override string Path
         {
             get => BaseDictionary.GetString(PdfName.F);
-            set => BaseDictionary.SetString(PdfName.F, value);
+            set => BaseDictionary.Set(PdfName.F, value);
         }
 
-        /**
-          <summary>Gets/Sets the related files.</summary>
-        */
+        /// <summary>Gets/Sets the related files.</summary>
         public RelatedFiles Dependencies
         {
             get => GetDependencies(PdfName.F);
             set => SetDependencies(PdfName.F, value);
         }
 
-        /**
-          <summary>Gets/Sets the description of the file.</summary>
-        */
+        /// <summary>Gets/Sets the description of the file.</summary>
         public string Description
         {
             get => BaseDictionary.GetString(PdfName.Desc);
             set => BaseDictionary.SetText(PdfName.Desc, value);
         }
 
-        /**
-          <summary>Gets/Sets the embedded file corresponding to this file.</summary>
-        */
+        /// <summary>Gets/Sets the embedded file corresponding to this file.</summary>
         public EmbeddedFile EmbeddedFile
         {
             get => GetEmbeddedFile(PdfName.F);
             set => SetEmbeddedFile(PdfName.F, value);
         }
 
-        /**
-          <summary>Gets/Sets the file system to be used to interpret this file specification.</summary>
-          <returns>Either <see cref="StandardFileSystemEnum"/> (standard file system) or
-          <see cref="String"/> (custom file system).</returns>
-        */
+        /// <summary>Gets/Sets the file system to be used to interpret this file specification.</summary>
+        /// <returns>Either <see cref="StandardFileSystemEnum"/> (standard file system) or
+        /// <see cref="String"/> (custom file system).</returns>
         public object FileSystem
         {
             get
@@ -145,14 +123,13 @@ namespace PdfClown.Documents.Files
                 BaseDictionary[PdfName.FS] = fileSystemObject;
             }
         }
-        /**
-          <summary>Gets/Sets whether the referenced file is volatile (changes frequently with time).
-          </summary>
-        */
+
+        /// <summary>Gets/Sets whether the referenced file is volatile (changes frequently with time).
+        /// </summary>
         public bool Volatile
         {
             get => BaseDictionary.GetBool(PdfName.V, false);
-            set => BaseDictionary.SetBool(PdfName.V, value);
+            set => BaseDictionary.Set(PdfName.V, value);
         }
 
         public override IInputStream GetInputStream()
@@ -196,9 +173,7 @@ namespace PdfClown.Documents.Files
 
         private PdfDictionary BaseDictionary => (PdfDictionary)BaseDataObject;
 
-        /**
-          <summary>Gets the related files associated to the given key.</summary>
-        */
+        /// <summary>Gets the related files associated to the given key.</summary>
         private RelatedFiles GetDependencies(PdfName key)
         {
             var dependenciesObject = BaseDictionary.Get<PdfDictionary>(PdfName.RF);
@@ -208,18 +183,15 @@ namespace PdfClown.Documents.Files
             return Wrap<RelatedFiles>(dependenciesObject[key]);
         }
 
-        /**
-          <see cref="GetDependencies(PdfName)"/>
-        */
+        /// <see cref="GetDependencies(PdfName)"/>
         private void SetDependencies(PdfName key, RelatedFiles value)
         {
             var dependenciesObject = BaseDictionary.Resolve<PdfDictionary>(PdfName.RF);
 
             dependenciesObject[key] = value.BaseObject;
         }
-        /**
-          <summary>Gets the embedded file associated to the given key.</summary>
-        */
+
+        /// <summary>Gets the embedded file associated to the given key.</summary>
         private EmbeddedFile GetEmbeddedFile(PdfName key)
         {
             var embeddedFilesObject = BaseDictionary.Get<PdfDictionary>(PdfName.EF);
@@ -229,9 +201,7 @@ namespace PdfClown.Documents.Files
             return Wrap<EmbeddedFile>(embeddedFilesObject[key]);
         }
 
-        /**
-          <see cref="GetEmbeddedFile(PdfName)"/>
-        */
+        /// <see cref="GetEmbeddedFile(PdfName)"/>
         private void SetEmbeddedFile(PdfName key, EmbeddedFile value)
         {
             var embeddedFilesObject = BaseDictionary.Resolve<PdfDictionary>(PdfName.EF);

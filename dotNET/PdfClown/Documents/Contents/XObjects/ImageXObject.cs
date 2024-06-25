@@ -23,25 +23,17 @@
   this list of conditions.
 */
 
-using PdfClown;
-using PdfClown.Documents;
+using PdfClown.Bytes;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
-
-using System;
 using SkiaSharp;
-using System.IO;
-using System.Text;
-using System.Runtime.InteropServices;
+using System;
 using System.Collections.Generic;
-using PdfClown.Bytes;
 using System.Linq;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
-    /**
-      <summary>Image external object [PDF:1.6:4.8.4].</summary>
-    */
+    ///<summary>Image external object [PDF:1.6:4.8.4].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class ImageXObject : XObject, IImageObject
     {
@@ -53,26 +45,20 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public ImageXObject(PdfDocument context, PdfStream baseDataObject) : base(context, baseDataObject)
         {
-            /*
-              NOTE: It's caller responsability to adequately populate the stream
-              header and body in order to instantiate a valid object; header entries like
-              'Width', 'Height', 'ColorSpace', 'BitsPerComponent' MUST be defined
-              appropriately.
-            */
+            //NOTE: It's caller responsability to adequately populate the stream
+            //header and body in order to instantiate a valid object; header entries like
+            //'Width', 'Height', 'ColorSpace', 'BitsPerComponent' MUST be defined
+            //appropriately.
             baseDataObject.Header[PdfName.Subtype] = PdfName.Image;
         }
 
         public ImageXObject(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the number of bits per color component.</summary>
-        */
+        ///<summary>Gets the number of bits per color component.</summary>
         public int BitsPerComponent => bitsPerComponent ??= BaseDataObject.Header.GetInt(PdfName.BitsPerComponent, 8);
 
-        /**
-          <summary>Gets the color space in which samples are specified.</summary>
-        */
+        ///<summary>Gets the color space in which samples are specified.</summary>
         public ColorSpace ColorSpace => colorSpace ??= ColorSpace.Wrap(BaseDataObject.Header[PdfName.ColorSpace]);
 
         public IByteStream Data => Stream.GetBody(false);
@@ -84,10 +70,8 @@ namespace PdfClown.Documents.Contents.XObjects
             get
             {
                 var size = Size;
-                /*
-                  NOTE: Image-space-to-user-space matrix is [1/w 0 0 1/h 0 0],
-                  where w and h are the width and height of the image in samples [PDF:1.6:4.8.3].
-                */
+                //NOTE: Image-space-to-user-space matrix is [1/w 0 0 1/h 0 0],
+                //where w and h are the width and height of the image in samples [PDF:1.6:4.8.3].
                 return new SKMatrix
                 {
                     Values = new float[] { 1f / size.Width, 0, 0, 0, 1f / size.Height, 0, 0, 0, 1 }
@@ -102,9 +86,8 @@ namespace PdfClown.Documents.Contents.XObjects
         public PdfDictionary Header => Stream.Header;
 
         IDictionary<PdfName, PdfDirectObject> IImageObject.Header => Header;
-        /**
-          <summary>Gets the size of the image (in samples).</summary>
-        */
+
+        ///<summary>Gets the size of the image (in samples).</summary>
         public override SKSize Size
         {
             get => size ??= new SKSize(
@@ -128,6 +111,13 @@ namespace PdfClown.Documents.Contents.XObjects
         public IImageObject SMask
         {
             get => smask ??= Wrap<ImageXObject>(BaseDataObject.Header[PdfName.SMask]);
+            set => BaseDataObject.Header[PdfName.SMask] = ((ImageXObject)value).BaseObject;
+        }
+
+        public PdfDirectObject Mask
+        {
+            get => BaseDataObject.Header[PdfName.Mask];
+            set => BaseDataObject.Header[PdfName.Mask] = value;
         }
 
         public PdfStream Stream => BaseDataObject as PdfStream;

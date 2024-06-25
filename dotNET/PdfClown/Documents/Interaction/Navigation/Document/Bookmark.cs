@@ -23,37 +23,26 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
 using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
-    /**
-      <summary>Outline item [PDF:1.6:8.2.2].</summary>
-    */
+    /// <summary>Outline item [PDF:1.6:8.2.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class Bookmark : PdfObjectWrapper<PdfDictionary>, ILink
     {
-        /**
-          <summary>Bookmark flags [PDF:1.6:8.2.2].</summary>
-        */
+        /// <summary>Bookmark flags [PDF:1.6:8.2.2].</summary>
         [Flags]
         [PDF(VersionEnum.PDF14)]
         public enum FlagsEnum
         {
-            /**
-              <summary>Display the item in italic.</summary>
-            */
+            /// <summary>Display the item in italic.</summary>
             Italic = 0x1,
-            /**
-              <summary>Display the item in bold.</summary>
-            */
+            /// <summary>Display the item in bold.</summary>
             Bold = 0x2
         }
 
@@ -69,18 +58,14 @@ namespace PdfClown.Documents.Interaction.Navigation
         public Bookmark(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the child bookmarks.</summary>
-        */
+        /// <summary>Gets the child bookmarks.</summary>
         public Bookmarks Bookmarks => Wrap<Bookmarks>(BaseObject);
 
-        /**
-          <summary>Gets/Sets the bookmark text color.</summary>
-        */
+        /// <summary>Gets/Sets the bookmark text color.</summary>
         [PDF(VersionEnum.PDF14)]
         public DeviceRGBColor Color
         {
-            get => DeviceRGBColor.Get(BaseDataObject.Get<PdfArray>(PdfName.C));
+            get => (DeviceRGBColor)DeviceRGBColorSpace.Default.GetColor(BaseDataObject.Get<PdfArray>(PdfName.C));
             set
             {
                 if (value == null)
@@ -93,9 +78,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
         }
 
-        /**
-          <summary>Gets/Sets whether this bookmark's children are displayed.</summary>
-        */
+        /// <summary>Gets/Sets whether this bookmark's children are displayed.</summary>
         public bool Expanded
         {
             get => BaseDataObject.GetInt(PdfName.Count) >= 0;
@@ -107,13 +90,11 @@ namespace PdfClown.Documents.Interaction.Navigation
                 /*
                   NOTE: Positive Count entry means open, negative Count entry means closed [PDF:1.6:8.2.2].
                 */
-                BaseDataObject[PdfName.Count] = PdfInteger.Get((value ? 1 : -1) * Math.Abs(BaseDataObject.GetInt(PdfName.Count)));
+                BaseDataObject.Set(PdfName.Count, (value ? 1 : -1) * Math.Abs(BaseDataObject.GetInt(PdfName.Count)));
             }
         }
 
-        /**
-          <summary>Gets/Sets the bookmark flags.</summary>
-        */
+        /// <summary>Gets/Sets the bookmark flags.</summary>
         [PDF(VersionEnum.PDF14)]
         public FlagsEnum Flags
         {
@@ -125,14 +106,12 @@ namespace PdfClown.Documents.Interaction.Navigation
                 else
                 {
                     CheckCompatibility(value);
-                    BaseDataObject[PdfName.F] = PdfInteger.Get((int)value);
+                    BaseDataObject.Set(PdfName.F, (int)value);
                 }
             }
         }
 
-        /**
-          <summary>Gets the parent bookmark.</summary>
-        */
+        /// <summary>Gets the parent bookmark.</summary>
         public Bookmark Parent
         {
             get
@@ -150,9 +129,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
         }
 
-        /**
-          <summary>Gets/Sets the text to be displayed for this bookmark.</summary>
-        */
+        /// <summary>Gets/Sets the text to be displayed for this bookmark.</summary>
         public string Title
         {
             get => BaseDataObject.GetString(PdfName.Title);

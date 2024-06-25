@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Contents.Objects
         public ShowSimpleText(Memory<byte> text) : base(OperatorKeyword, new PdfByteString(text))
         { }
 
-        public ShowSimpleText(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public ShowSimpleText(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         public override Memory<byte> Text
@@ -56,7 +56,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override IEnumerable<PdfDirectObject> Value
         {
-            get => Enumerable.Repeat(operands[0], 1);
+            get => operands;
             set => operands[0] = value.FirstOrDefault();
         }
     }

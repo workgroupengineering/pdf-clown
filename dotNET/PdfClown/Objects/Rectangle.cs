@@ -28,39 +28,42 @@ using PdfClown.Files;
 
 using System;
 using SkiaSharp;
+using System.Linq;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF rectangle object [PDF:1.6:3.8.4].</summary>
-      <remarks>
-        <para>Rectangles are described by two diagonally-opposite corners. Corner pairs which don't
-        respect the canonical form (lower-left and upper-right) are automatically normalized to
-        provide a consistent representation.</para>
-        <para>Coordinates are expressed within the PDF coordinate space (lower-left origin and
-        positively-oriented axes).</para>
-      </remarks>
-    */
+    /// <summary>PDF rectangle object [PDF:1.6:3.8.4].</summary>
+    /// <remarks>
+    ///   <para>Rectangles are described by two diagonally-opposite corners. Corner pairs which don't
+    ///   respect the canonical form (lower-left and upper-right) are automatically normalized to
+    ///   provide a consistent representation.</para>
+    ///   <para>Coordinates are expressed within the PDF coordinate space (lower-left origin and
+    ///   positively-oriented axes).</para>
+    /// </remarks>
     public sealed class Rectangle : PdfObjectWrapper<PdfArray>, IEquatable<Rectangle>
     {
-        private static PdfArray Normalize(PdfArray rectangle)
+        public static PdfArray Normalize(PdfArray array)
         {
-            if (rectangle.Count > 3)
+            if (array.Count == 0)
             {
-                if (rectangle.GetNumber(0).CompareTo(rectangle.GetNumber(2)) > 0)
+                array.AddRangeDirect(Enumerable.Repeat(PdfReal.Zero, 4));
+            }
+            else if (array.Count > 3)
+            {
+                if (array.GetDouble(0).CompareTo(array.GetDouble(2)) > 0)
                 {
-                    var leftCoordinate = rectangle.GetNumber(2);
-                    rectangle[2] = (PdfDirectObject)rectangle.GetNumber(0);
-                    rectangle[0] = (PdfDirectObject)leftCoordinate;
+                    var leftCoordinate = array.GetNumber(2);
+                    array[2] = (PdfDirectObject)array.GetNumber(0);
+                    array[0] = (PdfDirectObject)leftCoordinate;
                 }
-                if (rectangle.GetNumber(1).CompareTo(rectangle.GetNumber(3)) > 0)
+                if (array.GetDouble(1).CompareTo(array.GetDouble(3)) > 0)
                 {
-                    var bottomCoordinate = rectangle.GetNumber(3);
-                    rectangle[3] = (PdfDirectObject)rectangle.GetNumber(1);
-                    rectangle[1] = (PdfDirectObject)bottomCoordinate;
+                    var bottomCoordinate = array.GetNumber(3);
+                    array[3] = (PdfDirectObject)array.GetNumber(1);
+                    array[1] = (PdfDirectObject)bottomCoordinate;
                 }
             }
-            return rectangle;
+            return array;
         }
 
         public Rectangle(SKRect rectangle)
@@ -74,10 +77,10 @@ namespace PdfClown.Objects
         public Rectangle(double left, double top, double width, double height)
             : this(new PdfArray(4)
               {
-                  PdfReal.Get(left), // Left (X).
-                  PdfReal.Get(top - height), // Bottom (Y).
-                  PdfReal.Get(left + width), // Right.
-                  PdfReal.Get(top) // Top.
+                  left, // Left (X).
+                  top - height, // Bottom (Y).
+                  left + width, // Right.
+                  top // Top.
               })
         { }
 
@@ -89,38 +92,33 @@ namespace PdfClown.Objects
         public double Left
         {
             get => BaseDataObject.GetDouble(0);
-            set => BaseDataObject.SetDouble(0, value);
+            set => BaseDataObject.Set(0, value);
         }
 
         public double Bottom
         {
             get => BaseDataObject.GetDouble(1);
-            set => BaseDataObject.SetDouble(1, value);
+            set => BaseDataObject.Set(1, value);
         }
 
         public double Right
         {
             get => BaseDataObject.GetDouble(2);
-            set => BaseDataObject.SetDouble(2, value);
+            set => BaseDataObject.Set(2, value);
         }
 
         public double Top
         {
             get => BaseDataObject.GetDouble(3);
-            set => BaseDataObject.SetDouble(3, value);
-        }
-
-        public SKRect ToRect()
-        {
-            return new SKRect((float)Left, (float)Bottom, (float)Right, (float)Top);
+            set => BaseDataObject.Set(3, value);
         }
 
         public bool Equals(Rectangle other)
         {
-            return Math.Round(Left, 5).Equals(Math.Round(other.Left, 5))
-                && Math.Round(Bottom, 5).Equals(Math.Round(other.Bottom, 5))
-                && Math.Round(Right, 5).Equals(Math.Round(other.Right, 5))
-                && Math.Round(Top, 5).Equals(Math.Round(other.Top, 5));
+            return Left.Equals(other.Left)
+                && Bottom.Equals(other.Bottom)
+                && Right.Equals(other.Right)
+                && Top.Equals(other.Top);
         }
 
         public Rectangle Round() => Round(File?.Configuration?.RealPrecision ?? 5);

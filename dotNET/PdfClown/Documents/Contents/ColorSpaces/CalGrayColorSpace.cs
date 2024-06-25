@@ -53,6 +53,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private double ZB;
         private double G;
         private float[] gamma;
+        private CalGrayColor defaultColor;
 
         // TODO:IMPL new element constructor!
 
@@ -79,12 +80,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override int ComponentCount => 1;
 
-        public override Color DefaultColor => CalGrayColor.Default;
+        public override Color DefaultColor => defaultColor ??= new CalGrayColor(this, 0);
 
         public override float[] Gamma => gamma ??= new float[] { Dictionary.GetFloat(PdfName.Gamma, 1) };
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
-        { return new CalGrayColor(components); }
+        public override Color GetColor(PdfArray components, IContentContext context)
+            => components == null ? DefaultColor : components?.Wrapper as CalGrayColor ?? new CalGrayColor(this, components);
 
         public override bool IsSpaceColor(Color color)
         { return color is CalGrayColor; }

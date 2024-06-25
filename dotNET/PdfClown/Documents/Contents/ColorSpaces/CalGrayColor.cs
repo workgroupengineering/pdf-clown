@@ -30,29 +30,19 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Single-component CIE-based color value [PDF:1.6:4.5.4].</summary>
-    */
+    ///<summary>Single-component CIE-based color value [PDF:1.6:4.5.4].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class CalGrayColor
-      : LeveledColor
+    public sealed class CalGrayColor : LeveledColor
     {
-        public static readonly CalGrayColor Black = new CalGrayColor(0);
-        public static readonly CalGrayColor White = new CalGrayColor(1);
-
-        public static readonly CalGrayColor Default = Black;
-
-        public CalGrayColor(double g)
-            : this(new PdfArray(1) { PdfReal.Get(NormalizeComponent(g)) })
+        public CalGrayColor(CalGrayColorSpace colorSpace, double g)
+            : this(null, new PdfArray(1) { NormalizeComponent(g) })
         { }
 
-        internal CalGrayColor(IList<PdfDirectObject> components) //TODO:colorspace?
-            : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
+        internal CalGrayColor(CalGrayColorSpace colorSpace, PdfArray components)
+            : base(colorSpace, components)
         { }
 
-        /**
-          <summary>Gets/Sets the gray component.</summary>
-        */
+        ///<summary>Gets/Sets the gray component.</summary>
         public float G
         {
             get => this[0];

@@ -23,23 +23,19 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System;
 using System.IO;
 using System.Xml;
 
 namespace PdfClown.Documents.Interchange.Metadata
 {
-    /**
-      <summary>Metadata stream [PDF:1.6:10.2.2].</summary>
-    */
+    ///<summary>Metadata stream [PDF:1.6:10.2.2].</summary>
     [PDF(VersionEnum.PDF14)]
     public sealed class Metadata : PdfObjectWrapper<PdfStream>
     {
-        public static Metadata Wrap(PdfDirectObject baseObject)
-        { return baseObject?.Wrapper as Metadata ?? new Metadata(baseObject); }
+        public static Metadata Wrap(PdfDirectObject baseObject) => baseObject != null
+            ? baseObject.Wrapper as Metadata ?? new Metadata(baseObject)
+            : null;
 
         private XmlDocument content;
 

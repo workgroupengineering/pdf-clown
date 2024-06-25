@@ -58,10 +58,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color DefaultColor => AlternateColorSpace.DefaultColor;
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
-        {
-            return AlternateColorSpace.GetColor(components, context);
-        }
+        public override Color GetColor(PdfArray components, IContentContext context) => AlternateColorSpace.GetColor(components, context);
 
         public override bool IsSpaceColor(Color color) => AlternateColorSpace.IsSpaceColor(color);
 
@@ -79,7 +76,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             {
                 if (alternate == null)
                 {
-                    var obj = Profile?.Header[PdfName.Alternate];
+                    var obj = Alternate;
                     if (obj == null)
                     {
                         switch (N)

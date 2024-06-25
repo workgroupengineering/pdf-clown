@@ -24,128 +24,109 @@
 */
 
 using PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using system = System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Annotation actions [PDF:1.6:8.5.2].</summary>
-    */
+    /// <summary>Annotation actions [PDF:1.6:8.5.2].</summary>
     [PDF(VersionEnum.PDF12)]
-    public abstract class AnnotationActions : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, Action>
+    public abstract class AnnotationActions : Dictionary<Action>
     {
+        public class ValueWrapper : IEntryWrapper<Action>
+        {
+            public Action Wrap(PdfDirectObject baseObject) => Action.Wrap(baseObject);
+        }
+
+        private static readonly ValueWrapper Wrapper = new ValueWrapper();
+
         private Annotation parent;
 
-        public AnnotationActions(Annotation parent) : base(parent.Document, new PdfDictionary())
+        public AnnotationActions(Annotation parent) : base(parent.Document, Wrapper)
         { this.parent = parent; }
 
-        public AnnotationActions(Annotation parent, PdfDirectObject baseObject) : base(baseObject)
+        public AnnotationActions(Annotation parent, PdfDirectObject baseObject) : base(baseObject, Wrapper)
         { this.parent = parent; }
 
         public override object Clone(PdfDocument context)
         { throw new system::NotImplementedException(); } // TODO: verify parent reference.
 
-        /**
-          <summary>Gets/Sets the action to be performed when the annotation is activated.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the annotation is activated.</summary>
         public Action OnActivate
         {
             get => parent.Action;
             set => parent.Action = value;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the cursor enters the annotation's active area.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the cursor enters the annotation's active area.</summary>
         public Action OnEnter
         {
             get => this[PdfName.E];
             set => this[PdfName.E] = value;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the cursor exits the annotation's active area.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the cursor exits the annotation's active area.</summary>
         public Action OnExit
         {
             get => this[PdfName.X];
             set => this[PdfName.X] = value;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the mouse button is pressed
-          inside the annotation's active area.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the mouse button is pressed
+        /// inside the annotation's active area.</summary>
         public Action OnMouseDown
         {
             get => this[PdfName.D];
             set => this[PdfName.D] = value;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the mouse button is released
-          inside the annotation's active area.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the mouse button is released
+        /// inside the annotation's active area.</summary>
         public Action OnMouseUp
         {
             get => this[PdfName.U];
             set => this[PdfName.U] = value;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the page containing the annotation is closed.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the page containing the annotation is closed.</summary>
         public Action OnPageClose
         {
             get => this[PdfName.PC];
             set => this[PdfName.PC] = value;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the page containing the annotation
-          is no longer visible in the viewer application's user interface.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the page containing the annotation
+        /// is no longer visible in the viewer application's user interface.</summary>
         public Action OnPageInvisible
         {
             get => this[PdfName.PI];
             set => this[PdfName.PI] = value;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the page containing the annotation is opened.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the page containing the annotation is opened.</summary>
         public Action OnPageOpen
         {
             get => this[PdfName.PO];
             set => this[PdfName.PO] = value;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the page containing the annotation
-          becomes visible in the viewer application's user interface.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the page containing the annotation
+        /// becomes visible in the viewer application's user interface.</summary>
         public Action OnPageVisible
         {
             get => this[PdfName.PV];
             set => this[PdfName.PV] = value;
         }
 
-        public void Add(PdfName key, Action value) => BaseDataObject.Add(key, value.BaseObject);
 
-        public bool ContainsKey(PdfName key)
+        public override bool ContainsKey(PdfName key)
         {
-            return BaseDataObject.ContainsKey(key)
+            return base.ContainsKey(key)
               || (PdfName.A.Equals(key) && parent.BaseDataObject.ContainsKey(key));
         }
 
-        public ICollection<PdfName> Keys => BaseDataObject.Keys;
-
-        public bool Remove(PdfName key)
+        public override bool Remove(PdfName key)
         {
             if (PdfName.A.Equals(key) && parent.BaseDataObject.ContainsKey(key))
             {
@@ -153,71 +134,17 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return true;
             }
             else
-                return BaseDataObject.Remove(key);
+                return base.Remove(key);
         }
 
-        public Action this[PdfName key]
+        public override void Clear()
         {
-            get => Action.Wrap(BaseDataObject[key]);
-            set => BaseDataObject[key] = (value != null ? value.BaseObject : null);
-        }
-
-        public bool TryGetValue(PdfName key, out Action value)
-        {
-            value = this[key];
-            if (value == null)
-                return ContainsKey(key);
-            else
-                return true;
-        }
-
-        public ICollection<Action> Values
-        {
-            get
-            {
-                List<Action> values;
-                {
-                    ICollection<PdfDirectObject> objs = BaseDataObject.Values;
-                    values = new List<Action>(objs.Count);
-                    foreach (PdfDirectObject obj in objs)
-                    { values.Add(Action.Wrap(obj)); }
-                    Action action = OnActivate;
-                    if (action != null)
-                    { values.Add(action); }
-                }
-                return values;
-            }
-        }
-
-        void ICollection<KeyValuePair<PdfName, Action>>.Add(KeyValuePair<PdfName, Action> entry) => Add(entry.Key, entry.Value);
-
-        public void Clear()
-        {
-            BaseDataObject.Clear();
+            base.Clear();
             OnActivate = null;
         }
 
-        bool ICollection<KeyValuePair<PdfName, Action>>.Contains(KeyValuePair<PdfName, Action> entry)
-            => entry.Value.BaseObject.Equals(BaseDataObject[entry.Key]);
-
-        public void CopyTo(KeyValuePair<PdfName, Action>[] entries, int index)
-        { throw new system::NotImplementedException(); }
-
-        public int Count => BaseDataObject.Count + (parent.BaseDataObject.ContainsKey(PdfName.A) ? 1 : 0);
-
-        public bool IsReadOnly => false;
+        public override int Count => base.Count + (parent.BaseDataObject.ContainsKey(PdfName.A) ? 1 : 0);
 
         public Annotation Parent { get => parent; set => parent = value; }
-
-        public bool Remove(KeyValuePair<PdfName, Action> entry)
-            => BaseDataObject.Remove(new KeyValuePair<PdfName, PdfDirectObject>(entry.Key, entry.Value.BaseObject));
-
-        IEnumerator<KeyValuePair<PdfName, Action>> IEnumerable<KeyValuePair<PdfName, Action>>.GetEnumerator()
-        {
-            foreach (PdfName key in Keys)
-            { yield return new KeyValuePair<PdfName, Action>(key, this[key]); }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<PdfName, Action>>)this).GetEnumerator();
     }
 }

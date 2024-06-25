@@ -23,13 +23,7 @@
   this list of conditions.
 */
 
-using PdfClown;
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interchange.Access;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 
@@ -39,52 +33,42 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Rendition [PDF:1.7:9.1.2].</summary>
-    */
+    /// <summary>Rendition [PDF:1.7:9.1.2].</summary>
     [PDF(VersionEnum.PDF15)]
     public abstract class Rendition : PdfObjectWrapper<PdfDictionary>, IPdfNamedObjectWrapper
     {
-        /**
-          <summary>Rendition viability [PDF:1.7:9.1.2].</summary>
-        */
+        /// <summary>Rendition viability [PDF:1.7:9.1.2].</summary>
         public class Viability : PdfObjectWrapper<PdfDictionary>
         {
             public Viability(PdfDirectObject baseObject) : base(baseObject)
             { }
 
-            /**
-              <summary>Gets the minimum system's bandwidth (in bits per second).</summary>
-              <remarks>Equivalent to SMIL's systemBitrate attribute.</remarks>
-            */
-            public int? Bandwidth => MediaCriteria.GetNInt(PdfName.R);
-
-            /**
-              <summary>Gets the minimum screen color depth (in bits per pixel).</summary>
-              <remarks>Equivalent to SMIL's systemScreenDepth attribute.</remarks>
-            */
-            public int? ScreenDepth
+            /// <summary>Gets the minimum system's bandwidth (in bits per second).</summary>
+            /// <remarks>Equivalent to SMIL's systemBitrate attribute.</remarks>
+            public int? Bandwidth
             {
-                get
-                {
-                    PdfDictionary screenDepthObject = (PdfDictionary)MediaCriteria[PdfName.D];
-                    return screenDepthObject != null ? screenDepthObject.GetInt(PdfName.V) : (int?)null;
-                }
+                get => MediaCriteria.GetNInt(PdfName.R);
+                set => MediaCriteria.Set(PdfName.R, value);
             }
 
-            /**
-              <summary>Gets the minimum screen size (in pixels).</summary>
-              <remarks>Equivalent to SMIL's systemScreenSize attribute.</remarks>
-            */
+            /// <summary>Gets the minimum screen color depth (in bits per pixel).</summary>
+            /// <remarks>Equivalent to SMIL's systemScreenDepth attribute.</remarks>
+            public int? ScreenDepth
+            {
+                get => MediaCriteria.Get<PdfDictionary>(PdfName.D)?.GetInt(PdfName.V);
+            }
+
+            /// <summary>Gets the minimum screen size (in pixels).</summary>
+            /// <remarks>Equivalent to SMIL's systemScreenSize attribute.</remarks>
             public SKSize? ScreenSize
             {
                 get
                 {
-                    PdfDictionary screenSizeObject = (PdfDictionary)MediaCriteria[PdfName.Z];
+                    var screenSizeObject = MediaCriteria.Get<PdfDictionary>(PdfName.Z);
                     if (screenSizeObject == null)
                         return null;
 
-                    PdfArray screenSizeValueObject = (PdfArray)screenSizeObject[PdfName.V];
+                    var screenSizeValueObject = screenSizeObject.Get<PdfArray>(PdfName.V);
                     return screenSizeValueObject != null
                       ? new SKSize(
                         screenSizeValueObject.GetInt(0),
@@ -93,42 +77,35 @@ namespace PdfClown.Documents.Multimedia
                 }
             }
 
-            /**
-              <summary>Gets the list of supported viewer applications.</summary>
-            */
+            /// <summary>Gets the list of supported viewer applications.</summary>
             public Array<SoftwareIdentifier> Renderers => Wrap<Array<SoftwareIdentifier>>(MediaCriteria.GetOrCreate<PdfArray>(PdfName.V));
 
-            /**
-              <summary>Gets the PDF version range supported by the viewer application.</summary>
-            */
+            /// <summary>Gets the PDF version range supported by the viewer application.</summary>
             public Interval<PdfVersion> Version
             {
                 get
                 {
-                    PdfArray pdfVersionArray = (PdfArray)MediaCriteria[PdfName.P];
+                    var pdfVersionArray = MediaCriteria.Get<PdfArray>(PdfName.P);
                     return pdfVersionArray != null && pdfVersionArray.Count > 0
                       ? new Interval<PdfVersion>(
-                        PdfClown.PdfVersion.Get((PdfName)pdfVersionArray[0]),
-                        pdfVersionArray.Count > 1 ? PdfClown.PdfVersion.Get((PdfName)pdfVersionArray[1]) : null
-                        )
+                        PdfVersion.Get((PdfName)pdfVersionArray[0]),
+                        pdfVersionArray.Count > 1 ? PdfVersion.Get((PdfName)pdfVersionArray[1]) : null)
                       : null;
                 }
             }
 
-            /**
-              <summary>Gets the list of supported languages.</summary>
-              <remarks>Equivalent to SMIL's systemLanguage attribute.</remarks>
-            */
+            /// <summary>Gets the list of supported languages.</summary>
+            /// <remarks>Equivalent to SMIL's systemLanguage attribute.</remarks>
             public IList<LanguageIdentifier> Languages
             {
                 get
                 {
                     IList<LanguageIdentifier> languages = new List<LanguageIdentifier>();
                     {
-                        PdfArray languagesObject = (PdfArray)MediaCriteria[PdfName.L];
+                        var languagesObject = (PdfArray)MediaCriteria[PdfName.L];
                         if (languagesObject != null)
                         {
-                            foreach (PdfDirectObject languageObject in languagesObject)
+                            foreach (var languageObject in languagesObject)
                             { languages.Add(LanguageIdentifier.Wrap(languageObject)); }
                         }
                     }
@@ -136,42 +113,34 @@ namespace PdfClown.Documents.Multimedia
                 }
             }
 
-            /**
-              <summary>Gets whether to hear audio descriptions.</summary>
-              <remarks>Equivalent to SMIL's systemAudioDesc attribute.</remarks>
-            */
+            /// <summary>Gets whether to hear audio descriptions.</summary>
+            /// <remarks>Equivalent to SMIL's systemAudioDesc attribute.</remarks>
             public bool AudioDescriptionEnabled
             {
                 get => MediaCriteria.GetBool(PdfName.A);
-                set => MediaCriteria.SetBool(PdfName.A, value);
+                set => MediaCriteria.Set(PdfName.A, value);
             }
 
-            /**
-              <summary>Gets whether to hear audio overdubs.</summary>
-            */
+            /// <summary>Gets whether to hear audio overdubs.</summary>
             public bool AudioOverdubEnabled
             {
                 get => MediaCriteria.GetBool(PdfName.O);
-                set => MediaCriteria.SetBool(PdfName.O, value);
+                set => MediaCriteria.Set(PdfName.O, value);
             }
 
-            /**
-              <summary>Gets whether to see subtitles.</summary>
-            */
+            /// <summary>Gets whether to see subtitles.</summary>
             public bool SubtitleEnabled
             {
                 get => MediaCriteria.GetBool(PdfName.S);
-                set => MediaCriteria.SetBool(PdfName.S, value);
+                set => MediaCriteria.Set(PdfName.S, value);
             }
 
-            /**
-              <summary>Gets whether to see text captions.</summary>
-              <remarks>Equivalent to SMIL's systemCaptions attribute.</remarks>
-            */
+            /// <summary>Gets whether to see text captions.</summary>
+            /// <remarks>Equivalent to SMIL's systemCaptions attribute.</remarks>
             public bool TextCaptionEnabled
             {
                 get => MediaCriteria.GetBool(PdfName.C);
-                set => MediaCriteria.SetBool(PdfName.C, value);
+                set => MediaCriteria.Set(PdfName.C, value);
             }
 
             private PdfDictionary MediaCriteria => BaseDataObject.Resolve<PdfDictionary>(PdfName.C);
@@ -179,18 +148,16 @@ namespace PdfClown.Documents.Multimedia
             //TODO:setters!
         }
 
-        /**
-          <summary>Wraps a rendition base object into a rendition object.</summary>
-          <param name="baseObject">Rendition base object.</param>
-          <returns>Rendition object associated to the base object.</returns>
-        */
+        /// <summary>Wraps a rendition base object into a rendition object.</summary>
+        /// <param name="baseObject">Rendition base object.</param>
+        /// <returns>Rendition object associated to the base object.</returns>
         public static Rendition Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
             if (baseObject.Wrapper is Rendition rendition)
                 return rendition;
-            
+
             PdfName subtype = (PdfName)((PdfDictionary)baseObject.Resolve())[PdfName.S];
             if (PdfName.MR.Equals(subtype))
                 return new MediaRendition(baseObject);
@@ -211,20 +178,16 @@ namespace PdfClown.Documents.Multimedia
         public Rendition(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the preferred options the renderer should attempt to honor without affecting
-          its viability [PDF:1.7:9.1.1].</summary>
-*/
+        /// <summary>Gets/Sets the preferred options the renderer should attempt to honor without affecting
+        /// its viability [PDF:1.7:9.1.1].</summary>
         public Viability Preferences
         {
             get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.BE));
             set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the minimum requirements the renderer must honor in order to be considered
-          viable [PDF:1.7:9.1.1].</summary>
-*/
+        /// <summary>Gets/Sets the minimum requirements the renderer must honor in order to be considered
+        /// viable [PDF:1.7:9.1.1].</summary>
         public Viability Requirements
         {
             get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MH));
@@ -237,11 +200,9 @@ namespace PdfClown.Documents.Multimedia
 
         protected override PdfString RetrieveName()
         {
-            /*
-              NOTE: A rendition dictionary is not required to have a name tree entry. When it does, the
-              viewer application should ensure that the name specified in the tree is kept the same as the
-              value of the N entry (for example, if the user interface allows the name to be changed).
-            */
+              //NOTE: A rendition dictionary is not required to have a name tree entry. When it does, the
+              //viewer application should ensure that the name specified in the tree is kept the same as the
+              //value of the N entry (for example, if the user interface allows the name to be changed).
             return (PdfString)BaseDataObject[PdfName.N];
         }
     }

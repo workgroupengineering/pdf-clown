@@ -23,9 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown;
-using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -34,40 +31,50 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>Chained actions [PDF:1.6:8.5.1].</summary>
-    */
+    ///<summary>Chained actions [PDF:1.6:8.5.1].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class ChainedActions : PdfObjectWrapper<PdfDataObject>, IList<Action>
+    public sealed class ChainedActions : PdfObjectWrapper2<PdfDataObject>, IList<Action>
     {
-        /*
-          NOTE: Chained actions may be either singular or multiple (within an array).
-          This implementation hides such a complexity to the user, smoothly exposing
-          just the most general case (array) yet preserving its internal state.
-        */
-        /**
-          Parent action.
-        */
+        //NOTE: Chained actions may be either singular or multiple (within an array).
+        //This implementation hides such a complexity to the user, smoothly exposing
+        //just the most general case (array) yet preserving its internal state.
+
+        public static ChainedActions Wrap(PdfDirectObject baseObject, Action parent)
+            => baseObject == null ? null : baseObject.Wrapper2 as ChainedActions ?? new ChainedActions(baseObject, parent);
+
+        ///Parent action.
         private Action parent;
 
         public ChainedActions(PdfDirectObject baseObject, Action parent) : base(baseObject)
         { this.parent = parent; }
 
+        ///<summary>Gets the parent action.</summary>
+        public Action Parent => parent;
+
+        public int Count
+        {
+            get
+            {
+                PdfDataObject baseDataObject = BaseDataObject;
+                if (baseDataObject is PdfDictionary) // Single action.
+                    return 1;
+                else // Multiple actions.
+                    return ((PdfArray)baseDataObject).Count;
+            }
+        }
+
+        public bool IsReadOnly => false;
+
         public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); } // TODO:verify
-
-        /**
-          <summary>Gets the parent action.</summary>
-        */
-        public Action Parent => parent;
 
         public int IndexOf(Action value)
         {
             PdfDataObject baseDataObject = BaseDataObject;
             if (baseDataObject is PdfDictionary) // Single action.
-                return (((Action)value).BaseObject.Equals(BaseObject) ? 0 : -1);
+                return value.BaseObject.Equals(BaseObject) ? 0 : -1;
             else // Multiple actions.
-                return ((PdfArray)baseDataObject).IndexOf(((Action)value).BaseObject);
+                return ((PdfArray)baseDataObject).IndexOf(value.BaseObject);
         }
 
         public void Insert(int index, Action value) => EnsureArray().Insert(index, value.BaseObject);
@@ -100,27 +107,18 @@ namespace PdfClown.Documents.Interaction.Actions
         {
             PdfDataObject baseDataObject = BaseDataObject;
             if (baseDataObject is PdfDictionary) // Single action.
-                return ((Action)value).BaseObject.Equals(BaseObject);
+                return value.BaseObject.Equals(BaseObject);
             else // Multiple actions.
-                return ((PdfArray)baseDataObject).Contains(((Action)value).BaseObject);
+                return ((PdfArray)baseDataObject).Contains(value.BaseObject);
         }
 
-        public void CopyTo(Action[] values, int index)
-        { throw new NotImplementedException(); }
-
-        public int Count
+        public void CopyTo(Action[] entries, int index)
         {
-            get
+            foreach (var entry in this)
             {
-                PdfDataObject baseDataObject = BaseDataObject;
-                if (baseDataObject is PdfDictionary) // Single action.
-                    return 1;
-                else // Multiple actions.
-                    return ((PdfArray)baseDataObject).Count;
+                entries[index++] = entry;
             }
         }
-
-        public bool IsReadOnly => false;
 
         public bool Remove(Action value) => EnsureArray().Remove(((Action)value).BaseObject);
 
@@ -137,9 +135,12 @@ namespace PdfClown.Documents.Interaction.Actions
             PdfDataObject baseDataObject = BaseDataObject;
             if (baseDataObject is PdfDictionary) // Single action.
             {
-                PdfArray actionsArray = new PdfArray();
-                actionsArray.Add(BaseObject);
+                var actionsArray = new PdfArray
+                {
+                    BaseObject
+                };
                 BaseObject = actionsArray;
+                BaseObject.Wrapper2 = this;
                 parent.BaseDataObject[PdfName.Next] = actionsArray;
 
                 baseDataObject = actionsArray;

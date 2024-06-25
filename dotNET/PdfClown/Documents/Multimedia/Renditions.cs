@@ -29,18 +29,17 @@ namespace PdfClown.Documents.Multimedia
 {
     public class Renditions : Array<Rendition>
     {
-        private class ArrayWrapperObject : IWrapper<Rendition>
+        private class RenditionWrapper : IEntryWrapper<Rendition>
         {
-            public Rendition Wrap(PdfDirectObject baseObject)
-            { return Rendition.Wrap(baseObject); }
+            public Rendition Wrap(PdfDirectObject baseObject) => Rendition.Wrap(baseObject);
         }
 
-        private static readonly IWrapper<Rendition> ArrayWrapper = new ArrayWrapperObject();
+        private static readonly IEntryWrapper<Rendition> Wrapper = new RenditionWrapper();
         
-        public Renditions(PdfDocument context) : base(context, ArrayWrapper)
+        public Renditions(PdfDocument context) : base(context, Wrapper)
         { }
 
-        public Renditions(PdfDirectObject baseObject) : base(ArrayWrapper, baseObject)
+        public Renditions(PdfDirectObject baseObject) : base(Wrapper, baseObject)
         { }
     }
 }

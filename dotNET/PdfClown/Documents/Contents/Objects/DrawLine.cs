@@ -50,10 +50,10 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="pointY">Final endpoint Y.</param>
         */
         public DrawLine(double pointX, double pointY)
-            : base(OperatorKeyword, new List<PdfDirectObject>(2) { PdfReal.Get(pointX), PdfReal.Get(pointY) })
+            : base(OperatorKeyword, new PdfArray(2) { pointX, pointY })
         { }
 
-        public DrawLine(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public DrawLine(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         /**
@@ -61,19 +61,14 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public SKPoint Point
         {
-            get => new SKPoint(
-                  ((IPdfNumber)operands[0]).FloatValue,
-                  ((IPdfNumber)operands[1]).FloatValue);
+            get => new SKPoint(operands.GetFloat(0), operands.GetFloat(1));
             set
             {
-                operands[0] = PdfReal.Get(value.X);
-                operands[1] = PdfReal.Get(value.Y);
+                operands.Set(0, value.X);
+                operands.Set(1, value.Y);
             }
         }
 
-        public override void Scan(GraphicsState state)
-        {
-            state.Scanner.RenderObject?.LineTo(Point);
-        }
+        public override void Scan(GraphicsState state) => state.Scanner.Path?.LineTo(Point);
     }
 }

@@ -51,6 +51,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public static readonly string AllComponentName = PdfName.All.StringValue;
         private List<string> list;
+        private SeparationColor defaultColor;
 
         //TODO:IMPL new element constructor!
 
@@ -74,13 +75,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         public override IList<string> ComponentNames => list ??= new List<string> { ((PdfArray)BaseDataObject).GetString(1) };
 
-        public override Color DefaultColor => SeparationColor.Default;
+        public override Color DefaultColor => defaultColor ??= new SeparationColor(this, 0);
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
-        { return new SeparationColor(components); }
+        public override Color GetColor(PdfArray components, IContentContext context)
+            => components == null ? DefaultColor : components.Wrapper as SeparationColor ?? new SeparationColor(this, components);
 
-        public override bool IsSpaceColor(Color color)
-        { return color is SeparationColor; }
+        public override bool IsSpaceColor(Color color) => color is SeparationColor;
 
     }
 }

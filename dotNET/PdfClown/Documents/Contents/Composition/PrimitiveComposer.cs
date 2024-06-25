@@ -100,7 +100,7 @@ namespace PdfClown.Documents.Contents.Composition
         public void ApplyState(PdfName name)
         {
             // Doesn't the state exist in the context resources?
-            if (!Scanner.ContentContext.Resources.ExtGStates.ContainsKey(name))
+            if (!Scanner.Context.Resources.ExtGStates.ContainsKey(name))
                 throw new ArgumentException("No state resource associated to the given argument.", "name");
 
             ApplyState_(name);
@@ -136,7 +136,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Added layered-content sequence.</returns>
           <seealso cref="End()"/>
         */
-        public MarkedContent BeginLayer(LayerEntity layer) => BeginLayer(GetResourceName(layer.Membership));
+        public GraphicsMarkedContent BeginLayer(LayerEntity layer) => BeginLayer(GetResourceName(layer.Membership));
 
         /**
           <summary>Begins a new layered-content sequence [PDF:1.6:4.10.2].</summary>
@@ -145,14 +145,14 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Added layered-content sequence.</returns>
           <seealso cref="End()"/>
         */
-        public MarkedContent BeginLayer(PdfName layerName) => BeginMarkedContent(PdfName.OC, layerName);
+        public GraphicsMarkedContent BeginLayer(PdfName layerName) => BeginMarkedContent(PdfName.OC, layerName);
 
         /**
           <summary>Begins a new nested graphics state context [PDF:1.6:4.3.1].</summary>
           <returns>Added local graphics state object.</returns>
           <seealso cref="End()"/>
         */
-        public LocalGraphicsState BeginLocalState() => (LocalGraphicsState)Begin(new LocalGraphicsState());
+        public GraphicsLocalState BeginLocalState() => (GraphicsLocalState)Begin(new GraphicsLocalState());
 
         /**
           <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
@@ -160,7 +160,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Added marked-content sequence.</returns>
           <seealso cref="End()"/>
         */
-        public MarkedContent BeginMarkedContent(PdfName tag) => BeginMarkedContent(tag, (PdfName)null);
+        public GraphicsMarkedContent BeginMarkedContent(PdfName tag) => BeginMarkedContent(tag, (PdfName)null);
 
         /**
           <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
@@ -169,7 +169,7 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Added marked-content sequence.</returns>
           <seealso cref="End()"/>
         */
-        public MarkedContent BeginMarkedContent(PdfName tag, PropertyList propertyList) => BeginMarkedContent_(tag, GetResourceName(propertyList));
+        public GraphicsMarkedContent BeginMarkedContent(PdfName tag, PropertyList propertyList) => BeginMarkedContent_(tag, GetResourceName(propertyList));
 
         /**
           <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
@@ -179,10 +179,10 @@ namespace PdfClown.Documents.Contents.Composition
           <returns>Added marked-content sequence.</returns>
           <seealso cref="End()"/>
         */
-        public MarkedContent BeginMarkedContent(PdfName tag, PdfName propertyListName)
+        public GraphicsMarkedContent BeginMarkedContent(PdfName tag, PdfName propertyListName)
         {
             // Doesn't the property list exist in the context resources?
-            if (propertyListName != null && !Scanner.ContentContext.Resources.PropertyLists.ContainsKey(propertyListName))
+            if (propertyListName != null && !Scanner.Context.Resources.PropertyLists.ContainsKey(propertyListName))
                 throw new ArgumentException("No property list resource associated to the given argument.", "name");
 
             return BeginMarkedContent_(tag, propertyListName);
@@ -237,7 +237,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void DrawCurve(SKPoint endPoint, SKPoint startControl, SKPoint endControl)
         {
-            double contextHeight = Scanner.ContextSize.Height;
+            double contextHeight = Scanner.ContextBox.Height;
             Add(new DrawFullCurve(endPoint.X, contextHeight - endPoint.Y,
                 startControl.X, contextHeight - startControl.Y,
                 endControl.X, contextHeight - endControl.Y));
@@ -282,7 +282,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="endPoint">Ending point.</param>
           <seealso cref="Stroke()"/>
         */
-        public void DrawLine(SKPoint endPoint) => Add(new DrawLine(endPoint.X, Scanner.ContextSize.Height - endPoint.Y));
+        public void DrawLine(SKPoint endPoint) => Add(new DrawLine(endPoint.X, Scanner.ContextBox.Height - endPoint.Y));
 
         /**
           <summary>Draws a line [PDF:1.6:4.4.1].</summary>
@@ -418,7 +418,7 @@ namespace PdfClown.Documents.Contents.Composition
         {
             if (radius == 0)
             {
-                Add(new DrawRectangle(location.Left, Scanner.ContextSize.Height - location.Top - location.Height, location.Width, location.Height));
+                Add(new DrawRectangle(location.Left, Scanner.ContextBox.Height - location.Top - location.Height, location.Width, location.Height));
             }
             else
             {
@@ -563,11 +563,11 @@ namespace PdfClown.Documents.Contents.Composition
         public void Rotate(double angle, SKPoint origin)
         {
             // Center to the new origin!
-            Translate(origin.X, Scanner.ContextSize.Height - origin.Y);
+            Translate(origin.X, Scanner.ContextBox.Height - origin.Y);
             // Rotate on the new origin!
             Rotate(angle);
             // Restore the standard vertical coordinates system!
-            Translate(0, -Scanner.ContextSize.Height);
+            Translate(0, -Scanner.ContextBox.Height);
         }
 
         /**
@@ -596,7 +596,7 @@ namespace PdfClown.Documents.Contents.Composition
                 Add(new SetFillColorSpace(GetResourceName(value.ColorSpace)));
             }
 
-            Add(new SetFillColor(value));
+            Add(new SetFillColorExtended(value));
         }
 
         /**
@@ -607,12 +607,12 @@ namespace PdfClown.Documents.Contents.Composition
         public void SetFont(PdfName name, double size)
         {
             // Doesn't the font exist in the context resources?
-            if (!Scanner.ContentContext.Resources.Fonts.ContainsKey(name))
+            if (!Scanner.Context.Resources.Fonts.ContainsKey(name))
             {
                 var mapping = FontMappers.Instance.GetTrueTypeFont(name.StringValue, null);
                 if (mapping?.Font != null)
                 {
-                    var fallbackFont = FontType0.Load(Scanner.ContentContext.Resources.Document, mapping.Font, false);
+                    var fallbackFont = FontType0.Load(Scanner.Context.Resources.Document, mapping.Font, false);
                     SetFont(fallbackFont, size, name);
                     return;
                 }
@@ -695,7 +695,7 @@ namespace PdfClown.Documents.Contents.Composition
                 Add(new SetStrokeColorSpace(GetResourceName(value.ColorSpace)));
             }
 
-            Add(new SetStrokeColor(value));
+            Add(new SetStrokeColorExtended(value));
         }
 
         /**
@@ -785,7 +785,7 @@ namespace PdfClown.Documents.Contents.Composition
                 double rad = MathUtils.ToRadians(rotation);
                 double cos = Math.Cos(rad);
                 double sin = Math.Sin(rad);
-                ApplyMatrix(cos, sin, -sin, cos, location.X, Scanner.ContextSize.Height - location.Y);
+                ApplyMatrix(cos, sin, -sin, cos, location.X, Scanner.ContextBox.Height - location.Y);
 
                 string[] textLines = value.Split('\n');
 
@@ -901,7 +901,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public Link ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation, actions::Action action)
         {
-            IContentContext contentContext = Scanner.ContentContext;
+            IContentContext contentContext = Scanner.Context;
             if (contentContext is not PdfPage page)
                 throw new Exception("Links can be shown only on page contexts.");
 
@@ -925,7 +925,7 @@ namespace PdfClown.Documents.Contents.Composition
           behavior, use <see cref="ShowXObject(PdfName)"/>.</remarks>
           <param name="value">External object.</param>
         */
-        public void ShowXObject(XObjects.XObject value) => ShowXObject(GetResourceName(value));
+        public void ShowXObject(XObject value) => ShowXObject(GetResourceName(value));
 
         /**
           <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
@@ -942,7 +942,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="value">External object.</param>
           <param name="location">Position at which showing the external object.</param>
         */
-        public void ShowXObject(XObjects.XObject value, SKPoint location) => ShowXObject(GetResourceName(value), location);
+        public void ShowXObject(XObject value, SKPoint location) => ShowXObject(GetResourceName(value), location);
 
         /**
           <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
@@ -961,7 +961,7 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="location">Position at which showing the external object.</param>
           <param name="size">Size of the external object.</param>
         */
-        public void ShowXObject(XObjects.XObject value, SKPoint location, SKSize? size) => ShowXObject(GetResourceName(value), location, size);
+        public void ShowXObject(XObject value, SKPoint location, SKSize? size) => ShowXObject(GetResourceName(value), location, size);
 
         /**
           <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
@@ -974,7 +974,7 @@ namespace PdfClown.Documents.Contents.Composition
         */
         public void ShowXObject(PdfName name, SKPoint location, SKSize? size, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
         {
-            var xObject = Scanner.ContentContext.Resources.XObjects[name];
+            var xObject = Scanner.Context.Resources.XObjects[name];
             var xObjectSize = xObject.Size;
 
             if (!size.HasValue)
@@ -1019,7 +1019,7 @@ namespace PdfClown.Documents.Contents.Composition
             BeginLocalState();
             try
             {
-                Translate(location.X, Scanner.ContextSize.Height - location.Y);
+                Translate(location.X, Scanner.ContextBox.Height - location.Y);
                 if (rotation != 0)
                 { Rotate(rotation); }
                 ApplyMatrix(
@@ -1047,14 +1047,14 @@ namespace PdfClown.Documents.Contents.Composition
           <param name="yAlignment">Vertical alignment.</param>
           <param name="rotation">Rotational counterclockwise angle.</param>
         */
-        public void ShowXObject(XObjects.XObject value, SKPoint location, SKSize? size, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
+        public void ShowXObject(XObject value, SKPoint location, SKSize? size, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
             => ShowXObject(GetResourceName(value), location, size, xAlignment, yAlignment, rotation);
 
         /**
           <summary>Begins a subpath [PDF:1.6:4.4.1].</summary>
           <param name="startPoint">Starting point.</param>
         */
-        public void StartPath(SKPoint startPoint) => Add(new BeginSubpath(startPoint.X, Scanner.ContextSize.Height - startPoint.Y));
+        public void StartPath(SKPoint startPoint) => Add(new BeginSubpath(startPoint.X, Scanner.ContextBox.Height - startPoint.Y));
 
         /**
           <summary>Strokes the path using the current color [PDF:1.6:4.4.2].</summary>
@@ -1073,14 +1073,14 @@ namespace PdfClown.Documents.Contents.Composition
 
         private void ApplyState_(PdfName name) => Add(new ApplyExtGState(name));
 
-        private MarkedContent BeginMarkedContent_(PdfName tag, PdfName propertyListName)
-            => (MarkedContent)Begin(new MarkedContent(new BeginPropertyListMarkedContent(tag, propertyListName)));
+        private GraphicsMarkedContent BeginMarkedContent_(PdfName tag, PdfName propertyListName)
+            => (GraphicsMarkedContent)Begin(new GraphicsMarkedContent(new BeginPropertyListMarkedContent(tag, propertyListName)));
 
         /**
           <summary>Begins a text object [PDF:1.6:5.3].</summary>
           <seealso cref="End()"/>
         */
-        private Text BeginText() => (Text)Begin(new Text());
+        private GraphicsText BeginText() => (GraphicsText)Begin(new GraphicsText());
 
         //TODO: drawArc MUST seamlessly manage already-begun paths.
         private void DrawArc(SKRect location, double startAngle, double endAngle, double branchWidth, double branchRatio, bool beginPath)
@@ -1170,7 +1170,7 @@ namespace PdfClown.Documents.Contents.Composition
             var parentLevel = Scanner.ParentLevel;
             while (parentLevel != null)
             {
-                if (parentLevel.Current is MarkedContent markedContent)
+                if (parentLevel.Current is GraphicsMarkedContent markedContent)
                 {
                     var marker = (ContentMarker)markedContent.Header;
                     if (PdfName.OC.Equals(marker.Tag))
@@ -1192,7 +1192,7 @@ namespace PdfClown.Documents.Contents.Composition
             else
             {
                 // Ensuring that the resource exists within the context resources...
-                PdfDictionary resourceItemsObject = ((PdfObjectWrapper<PdfDictionary>)Scanner.ContentContext.Resources.Get(value.GetType())).BaseDataObject;
+                PdfDictionary resourceItemsObject = ((PdfObjectWrapper<PdfDictionary>)Scanner.Context.Resources.Get(value.GetType())).BaseDataObject;
                 // Get the key associated to the resource!
                 PdfName name = resourceItemsObject.GetKey(value.BaseObject);
                 // No key found?

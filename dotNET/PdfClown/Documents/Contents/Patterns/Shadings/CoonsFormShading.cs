@@ -53,22 +53,17 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
 
         public List<Patch> Patches => patches ??= LoadPatches();
 
-        public override SKRect Box => box ??= CalculateBox();
+        public override SKRect Box => box ??= Dictionary.Get<PdfArray>(PdfName.BBox)?.ToSKRect() ?? CalculateBox();
 
-        public override SKShader GetShader(SKMatrix skMatrix, GraphicsState state)
-        {
-            var picture = Render();
-            return picture == null ? null : SKShader.CreatePicture(picture, SKShaderTileMode.Decal, SKShaderTileMode.Decal, skMatrix, SKRect.Create(SKPoint.Empty, Box.Size));
-        }
-
-        private SKPicture Render()
+        protected override SKPicture Render(SKMatrix spaceMatrix)
         {
             var patches = Patches;
             if (patches == null || patches.Count == 0)
                 return null;
-
+            var box = spaceMatrix.MapRect(Box);
             using var recorder = new SKPictureRecorder();
-            using var canvas = recorder.BeginRecording(Box);
+            using var canvas = recorder.BeginRecording(box);
+            canvas.SetMatrix(spaceMatrix);
             using var paint = new SKPaint { IsAntialias = true };
             foreach (var patch in patches)
             {

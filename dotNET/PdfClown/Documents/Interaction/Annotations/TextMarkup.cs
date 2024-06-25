@@ -174,14 +174,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                     */
                     SKPoint[] points = markupBox.GetPoints();
 
-                    quadPoints.Add(PdfReal.Get(points[0].X)); // x1.
-                    quadPoints.Add(PdfReal.Get(points[0].Y)); // y1.
-                    quadPoints.Add(PdfReal.Get(points[1].X)); // x2.
-                    quadPoints.Add(PdfReal.Get(points[1].Y)); // y2.
-                    quadPoints.Add(PdfReal.Get(points[3].X)); // x4.
-                    quadPoints.Add(PdfReal.Get(points[3].Y)); // y4.
-                    quadPoints.Add(PdfReal.Get(points[2].X)); // x3.
-                    quadPoints.Add(PdfReal.Get(points[2].Y)); // y3.
+                    quadPoints.Add(points[0].X); // x1.
+                    quadPoints.Add(points[0].Y); // y1.
+                    quadPoints.Add(points[1].X); // x2.
+                    quadPoints.Add(points[1].Y); // y2.
+                    quadPoints.Add(points[3].X); // x4.
+                    quadPoints.Add(points[3].Y); // y4.
+                    quadPoints.Add(points[2].X); // x3.
+                    quadPoints.Add(points[2].Y); // y3.
                 }
 
                 QuadPoints = quadPoints;
@@ -223,6 +223,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
         }
+
+        public override bool AllowSize => false;
+
+        public override bool AllowDrag => false;
 
         public override void RefreshBox()
         {
@@ -268,7 +272,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
                                     extGStates[HighlightExtGStateName] = defaultExtGState = new ExtGState(Document);
                                     defaultExtGState.AlphaShape = false;
-                                    defaultExtGState.BlendMode = new List<BlendModeEnum>(1) { BlendModeEnum.Multiply };
+                                    defaultExtGState.BlendMode = BlendModeEnum.Multiply;
                                 }
                             }
 

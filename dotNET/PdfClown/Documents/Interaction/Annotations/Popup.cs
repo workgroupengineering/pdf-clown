@@ -91,7 +91,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = IsOpen;
                 if (oldValue != value)
                 {
-                    BaseDataObject.SetBool(PdfName.Open, value);
+                    BaseDataObject.Set(PdfName.Open, value);
                     OnPropertyChanged(oldValue, value);
                 }
             }

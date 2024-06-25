@@ -141,7 +141,7 @@ namespace PdfClown.Viewer
                 ClearPages();
                 File.Dispose();
                 File = null;
-
+                GC.Collect();
                 try { System.IO.File.Delete(TempFilePath); }
                 catch { }
             }

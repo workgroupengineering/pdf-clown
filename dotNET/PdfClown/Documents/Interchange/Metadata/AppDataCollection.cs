@@ -26,19 +26,16 @@
 using PdfClown.Objects;
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interchange.Metadata
 {
-    /**
-      <summary>A page-piece dictionary used to hold private application data [PDF:1.7:10.4].</summary>
-    */
+    /// <summary>A page-piece dictionary used to hold private application data [PDF:1.7:10.4].</summary>
     [PDF(VersionEnum.PDF13)]
-    public sealed class AppDataCollection : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, AppData>
+    public sealed class AppDataCollection : Dictionary<AppData>
     {
-        public static AppDataCollection Wrap(PdfDirectObject baseObject, IAppDataHolder holder)
-        { return baseObject != null ? (baseObject.Wrapper as AppDataCollection ?? new AppDataCollection(baseObject, holder)) : null; }
+        public static AppDataCollection Wrap(PdfDirectObject baseObject, IAppDataHolder holder) => baseObject != null
+                ? baseObject.Wrapper as AppDataCollection ?? new AppDataCollection(baseObject, holder)
+                : null;
 
         private IAppDataHolder holder;
 
@@ -56,61 +53,15 @@ namespace PdfClown.Documents.Interchange.Metadata
             return appData;
         }
 
-        public void Add(PdfName key, AppData value)
-        { throw new NotSupportedException(); }
-
-        public void Clear() => BaseDataObject.Clear();
-
-        public bool ContainsKey(PdfName key) => BaseDataObject.ContainsKey(key);
-
-        public ICollection<PdfName> Keys => BaseDataObject.Keys;
-
-        public bool Remove(PdfName key) => BaseDataObject.Remove(key);
-
-        public AppData this[PdfName key]
+        public override AppData this[PdfName key]
         {
-            get => Wrap<AppData>(BaseDataObject[key]);
+            get => base[key];
             set => throw new NotSupportedException();
         }
 
-        public bool TryGetValue(PdfName key, out AppData value) => throw new NotImplementedException();
+        public override void Add(PdfName key, AppData value) => throw new NotSupportedException();
 
-        public ICollection<AppData> Values
-        {
-            get
-            {
-                ICollection<AppData> values = new List<AppData>();
-                foreach (PdfDirectObject valueObject in BaseDataObject.Values)
-                { values.Add(Wrap<AppData>(valueObject)); }
-                return values;
-            }
-        }
 
-        public void Add(KeyValuePair<PdfName, AppData> item) => throw new NotSupportedException();
-
-        public bool Contains(KeyValuePair<PdfName, AppData> item) => item.Value.BaseObject.Equals(BaseDataObject[item.Key]);
-
-        public void CopyTo(KeyValuePair<PdfName, AppData>[] array, int arrayIndex) => throw new NotImplementedException();
-
-        public int Count => BaseDataObject.Count;
-
-        public bool IsReadOnly => false;
-
-        public bool Remove(KeyValuePair<PdfName, AppData> item)
-        {
-            if (Contains(item))
-                return Remove(item.Key);
-            else
-                return false;
-        }
-
-        public IEnumerator<KeyValuePair<PdfName, AppData>> GetEnumerator()
-        {
-            foreach (PdfName key in Keys)
-            { yield return new KeyValuePair<PdfName, AppData>(key, this[key]); }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
 

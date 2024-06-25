@@ -24,23 +24,16 @@
 */
 
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Composite dictionary.</summary>
-    */
+    /// <summary>Composite dictionary.</summary>
     public interface ICompositeDictionary<TKey>
     {
-        /**
-          <summary>Gets the value dictionary associated to the specified type.</summary>
-        */
+        /// <summary>Gets the value dictionary associated to the specified type.</summary>
         PdfObjectWrapper Get(Type type);
 
-        /**
-          <summary>Gets the value associated to the specified key for the specified type.</summary>
-        */
+        /// <summary>Gets the value associated to the specified key for the specified type.</summary>
         T Get<T>(TKey key) where T : PdfObjectWrapper;
     }
 }

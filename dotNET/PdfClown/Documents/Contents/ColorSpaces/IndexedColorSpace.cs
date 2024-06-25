@@ -44,6 +44,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private byte[] baseComponentValues;
         private ColorSpace baseSpace;
         private int? componentCount;
+        private IndexedColor defaultColor;
 
         //TODO:IMPL new element constructor!
 
@@ -63,7 +64,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override int ComponentCount => 1;
 
-        public override Color DefaultColor => IndexedColor.Default;
+        public override Color DefaultColor => defaultColor ??= new IndexedColor(this, 0);
 
         /**
           <summary>Gets the color corresponding to the specified table index resolved according to
@@ -76,7 +77,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             {
                 ColorSpace baseSpace = BaseSpace;
                 int componentCount = BaseSpaceComponentCount;
-                var components = new PdfDirectObject[componentCount];
+                var components = new PdfArray(componentCount);
                 {
                     int componentValueIndex = colorIndex * componentCount;
                     byte[] baseComponentValues = BaseComponentValues;
@@ -86,7 +87,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                             ? baseComponentValues[componentValueIndex]
                             : 0;
                         var value = ((int)byteValue & 0xff) / 255d;
-                        components[componentIndex] = PdfReal.Get(value);
+                        components.Set(componentIndex, value);
                         componentValueIndex++;
                     }
                 }
@@ -121,16 +122,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return baseColor;
         }
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
-        { return new IndexedColor(components); }
+        public override Color GetColor(PdfArray components, IContentContext context)
+            => components == null ? DefaultColor : components.Wrapper as IndexedColor ?? new IndexedColor(this, components);
 
-        public override bool IsSpaceColor(Color color)
-        { return color is IndexedColor; }
+        public override bool IsSpaceColor(Color color) => color is IndexedColor;
 
-        public override SKColor GetSKColor(Color color, float? alpha = null)
-        {
-            return BaseSpace.GetSKColor(GetBaseColor((IndexedColor)color), alpha);
-        }
+        public override SKColor GetSKColor(Color color, float? alpha = null) => BaseSpace.GetSKColor(GetBaseColor((IndexedColor)color), alpha);
 
         public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)
         {
@@ -142,9 +139,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return color;
         }
 
-        public override SKPaint GetPaint(Color color, float? alpha = null, GraphicsState state = null)
+        public override SKPaint GetPaint(Color color, SKPaintStyle paintStyle, float? alpha = null, GraphicsState state = null)
         {
-            return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color), alpha, state);
+            return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color), paintStyle, alpha, state);
         }
 
         /**

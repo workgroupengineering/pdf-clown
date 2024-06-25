@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Contents.Objects
         private ICollection<PdfName> keys;
 
         // [FIX:0.0.4:2] Null operator.
-        public InlineImageHeader(IList<PdfDirectObject> operands) : base(String.Empty, operands)
+        public InlineImageHeader(PdfArray operands) : base(String.Empty, operands)
         { }
 
         public void Add(PdfName key, PdfDirectObject value)
@@ -166,13 +166,13 @@ namespace PdfClown.Documents.Contents.Objects
                 int? index = GetKeyIndex(key);
                 if (index == null)
                 {
-                    operands.Add(key);
-                    operands.Add(value);
+                    operands.AddDirect(key);
+                    operands.AddDirect(value);
                 }
                 else
                 {
-                    operands[index.Value] = key;
-                    operands[index.Value + 1] = value;
+                    operands.SetDirect(index.Value, key);
+                    operands.SetDirect(index.Value + 1, value);
                 }
             }
         }

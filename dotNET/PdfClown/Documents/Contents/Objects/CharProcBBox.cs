@@ -42,10 +42,10 @@ namespace PdfClown.Documents.Contents.Objects
 
         public CharProcBBox(double wx, double wy, double x, double y, double width, double height)
             : base(OperatorKeyword,
-                  new List<PdfDirectObject>(6) { PdfReal.Get(wx), PdfReal.Get(wy), PdfReal.Get(x), PdfReal.Get(y), PdfReal.Get(width), PdfReal.Get(height) })
+                  new PdfArray(6) { wx, wy, x, y, width, height })
         { }
 
-        public CharProcBBox(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public CharProcBBox(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         public override void Scan(GraphicsState state)
@@ -54,38 +54,38 @@ namespace PdfClown.Documents.Contents.Objects
 
         public double WX
         {
-            get => ((IPdfNumber)operands[0]).RawValue;
-            set => operands[0] = PdfReal.Get(value);
+            get => operands.GetFloat(0);
+            set => operands.Set(0, value);
         }
 
         public double WY
         {
-            get => ((IPdfNumber)operands[1]).RawValue;
-            set => operands[1] = PdfReal.Get(value);
+            get => operands.GetFloat(1);
+            set => operands.Set(1, value);
         }
 
         public double Left
         {
-            get => ((IPdfNumber)operands[2]).RawValue;
-            set => operands[0] = PdfReal.Get(value);
+            get => operands.GetFloat(2);
+            set => operands.Set(2, value);
         }
 
         public double Top
         {
-            get => ((IPdfNumber)operands[3]).RawValue;
-            set => operands[1] = PdfReal.Get(value);
+            get => operands.GetFloat(3);
+            set => operands.Set(3, value);
         }
 
         public double Right
         {
-            get => ((IPdfNumber)operands[4]).RawValue;
-            set => operands[2] = PdfReal.Get(value);
+            get => operands.GetFloat(4);
+            set => operands.Set(4, value);
         }
 
         public double Bottom
         {
-            get => ((IPdfNumber)operands[5]).RawValue;
-            set => operands[3] = PdfReal.Get(value);
+            get => operands.GetFloat(5);
+            set => operands.Set(5, value);
         }
 
         public SKRect BBox

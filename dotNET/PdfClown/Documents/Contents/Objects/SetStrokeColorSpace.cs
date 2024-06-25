@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, name)
         { }
 
-        public SetStrokeColorSpace(IList<PdfDirectObject> operands)
+        public SetStrokeColorSpace(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
@@ -72,7 +72,7 @@ namespace PdfClown.Documents.Contents.Objects
             else if (name.Equals(PdfName.Pattern))
                 return PatternColorSpace.Default;
             else
-                return context.ContentContext.Resources.ColorSpaces[name];
+                return context.Context.Resources.ColorSpaces[name];
         }
 
         public override void Scan(GraphicsState state)
@@ -90,7 +90,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public PdfName Name
         {
-            get => (PdfName)operands[0];
+            get => operands.Get<PdfName>(0);
             set => operands[0] = value;
         }
     }

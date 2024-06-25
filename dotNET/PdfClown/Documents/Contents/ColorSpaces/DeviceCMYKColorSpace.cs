@@ -57,8 +57,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color DefaultColor => DeviceCMYKColor.Default;
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
-        { return new DeviceCMYKColor(components); }
+        public override Color GetColor(PdfArray components, IContentContext context = null) 
+            => components == null ? DefaultColor : components.Wrapper as DeviceCMYKColor ?? new DeviceCMYKColor(this, components);
 
         public override bool IsSpaceColor(Color color)
         { return color is DeviceCMYKColor; }

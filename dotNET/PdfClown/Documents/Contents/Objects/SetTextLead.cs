@@ -30,9 +30,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the text leading' operation [PDF:1.6:5.2].</summary>
-    */
+    ///<summary>'Set the text leading' operation [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetTextLead : Operation
     {
@@ -41,20 +39,17 @@ namespace PdfClown.Documents.Contents.Objects
         public SetTextLead(double value) : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetTextLead(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public SetTextLead(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state)
-        { state.Lead = Value; }
+        public override void Scan(GraphicsState state) => state.Lead = Value;
 
-        /**
-          <summary>Gets/Sets the text leading, which is a number expressed in unscaled text space units.
-          </summary>
-        */
+        ///<summary>Gets/Sets the text leading, which is a number expressed in unscaled text space units.
+        ///</summary>
         public float Value
         {
-            get => ((IPdfNumber)operands[0]).FloatValue;
-            set => operands[0] = PdfReal.Get(value);
+            get => operands.GetFloat(0);
+            set => operands.Set(0, value);
         }
     }
 }

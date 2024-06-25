@@ -32,22 +32,23 @@ using System.IO;
 
 namespace PdfClown.Util.Parsers
 {
-    /**
-      <summary>PostScript (non-procedural subset) parser [PS].</summary>
-    */
+    ///<summary>PostScript (non-procedural subset) parser [PS].</summary>
     public class PostScriptParser : IDisposable
     {
         public struct Reference
         {
-            public readonly int GenerationNumber;
             public readonly int ObjectNumber;
+            public readonly int GenerationNumber;
+            public readonly long Offset;
 
-            public Reference(int objectNumber, int generationNumber)
+            public Reference(int objectNumber, int generationNumber, long baseOffset)
             {
                 ObjectNumber = objectNumber;
                 GenerationNumber = generationNumber;
+                Offset = baseOffset;
             }
         }
+
         public enum TokenTypeEnum // [PS:3.3].
         {
             Keyword,
@@ -80,9 +81,7 @@ namespace PdfClown.Util.Parsers
                 return -1;
         }
 
-        /**
-          <summary>Evaluate whether a character is a delimiter.</summary>
-        */
+        ///<summary>Evaluate whether a character is a delimiter.</summary>
         protected static bool IsDelimiter(int c)
         {
             return c == Symbol.OpenRoundBracket
@@ -95,15 +94,11 @@ namespace PdfClown.Util.Parsers
               || c == Symbol.Percent;
         }
 
-        /**
-          <summary>Evaluate whether a character is an EOL marker.</summary>
-        */
+        ///<summary>Evaluate whether a character is an EOL marker.</summary>
         protected static bool IsEOL(int c)
         { return (c == 10 || c == 13); }
 
-        /**
-          <summary>Evaluate whether a character is a white-space.</summary>
-        */
+        ///<summary>Evaluate whether a character is a white-space.</summary>
         protected static bool IsWhitespace(int c)
         { return c == 32 || IsEOL(c) || c == 0 || c == 9 || c == 12; }
 
@@ -116,6 +111,7 @@ namespace PdfClown.Util.Parsers
         private DateTime? dateToken;
         private double realToken;
         private Reference referenceToken;
+        private long tokenOffset;
 
         public PostScriptParser(IInputStream stream)
         {
@@ -130,23 +126,10 @@ namespace PdfClown.Util.Parsers
 
         public override int GetHashCode() => stream.GetHashCode();
 
-        ///**
-        //  <summary>Gets a token after moving to the given offset.</summary>
-        //  <param name="offset">Number of tokens to skip before reaching the intended one.</param>
-        //  <seealso cref="Token"/>
-        //*/
-        //public object GetToken(int offset = 1)
-        //{
-        //    MoveNext(offset);
-        //    return Token;
-        //}
-
         public long Length => stream.Length;
 
-        /**
-          <summary>Moves the pointer to the next token.</summary>
-          <param name="offset">Number of tokens to skip before reaching the intended one.</param>
-        */
+        ///<summary>Moves the pointer to the next token.</summary>
+        ///<param name="offset">Number of tokens to skip before reaching the intended one.</param>
         public bool MoveNext(int offset)
         {
             for (int index = 0; index < offset; index++)
@@ -157,13 +140,11 @@ namespace PdfClown.Util.Parsers
             return true;
         }
 
-        /**
-          <summary>Moves the pointer to the next token.</summary>
-          <remarks>To properly parse the current token, the pointer MUST be just before its starting
-          (leading whitespaces are ignored). When this method terminates, the pointer IS
-          at the last byte of the current token.</remarks>
-          <returns>Whether a new token was found.</returns>
-        */
+        ///<summary>Moves the pointer to the next token.</summary>
+        ///<remarks>To properly parse the current token, the pointer MUST be just before its starting
+        ///(leading whitespaces are ignored). When this method terminates, the pointer IS
+        ///at the last byte of the current token.</remarks>
+        ///<returns>Whether a new token was found.</returns>
         public virtual bool MoveNext()
         {
             mBuffer.Reset();
@@ -174,18 +155,16 @@ namespace PdfClown.Util.Parsers
             int c = ReadIgnoreWhitespace();
             if (c == -1)
                 return false;
-
+            tokenOffset = stream.Position;
             // Which character is it?
             switch (c)
             {
                 case Symbol.Slash: // Name.
                     {
                         tokenType = TokenTypeEnum.Name;
-                        /*
-                          NOTE: As name objects are simple symbols uniquely defined by sequences of characters,
-                          the bytes making up the name are never treated as text, so here they are just
-                          passed through without unescaping.
-                        */
+                        //NOTE: As name objects are simple symbols uniquely defined by sequences of characters,
+                        //the bytes making up the name are never treated as text, so here they are just
+                        //passed through without unescaping.
                         while (true)
                         {
                             c = stream.ReadByte();
@@ -279,7 +258,11 @@ namespace PdfClown.Util.Parsers
                         if (c == -1)
                             throw new PostScriptParseException("Malformed dictionary.");
                         else if (c != Symbol.CloseAngleBracket)
-                            throw new PostScriptParseException("Malformed dictionary.", this);
+                        {
+                            Skip(-1);
+                            return MoveNext();
+                            //throw new PostScriptParseException("Malformed dictionary.", this);
+                        }
 
                         tokenType = TokenTypeEnum.DictionaryEnd;
                     }
@@ -440,28 +423,24 @@ namespace PdfClown.Util.Parsers
                 default:
                     break;
             }
+#if DEBUG
             if ((int)tokenType == -1)
             { }
+#endif
             return true;
         }
 
         public long Position => stream.Position;
 
-        /**
-          <summary>Moves the pointer to the given absolute byte position.</summary>
-        */
+        ///<summary>Moves the pointer to the given absolute byte position.</summary>
         public void Seek(long offset) => stream.Seek(offset);
 
-        /**
-          <summary>Moves the pointer to the given relative byte position.</summary>
-        */
+        ///<summary>Moves the pointer to the given relative byte position.</summary>
         public void Skip(long offset) => stream.Skip(offset);
 
-        /**
-          <summary>Moves the pointer after the next end-of-line character sequence (that is just before
-          the non-EOL character following the EOL sequence).</summary>
-          <returns>Whether the stream can be further read.</returns>
-        */
+        ///<summary>Moves the pointer after the next end-of-line character sequence (that is just before
+        ///the non-EOL character following the EOL sequence).</summary>
+        ///<returns>Whether the stream can be further read.</returns>
         public bool SkipEOL()
         {
             int c;
@@ -484,10 +463,8 @@ namespace PdfClown.Util.Parsers
             return true;
         }
 
-        /**
-          <summary>Moves the pointer to first entires of specified key char sequence.</summary>
-          <returns>Whether the stream can be further read.</returns>
-        */
+        ///<summary>Moves the pointer to first entires of specified key char sequence.</summary>
+        ///<returns>Whether the stream can be further read.</returns>
         public bool SkipKey(string key)
         {
             int c;
@@ -541,11 +518,9 @@ namespace PdfClown.Util.Parsers
             return true;
         }
 
-        /**
-          <summary>Moves the pointer after the current whitespace sequence (that is just before the
-          non-whitespace character following the whitespace sequence).</summary>
-          <returns>Whether the stream can be further read.</returns>
-        */
+        ///<summary>Moves the pointer after the current whitespace sequence (that is just before the
+        ///non-whitespace character following the whitespace sequence).</summary>
+        ///<returns>Whether the stream can be further read.</returns>
         public bool SkipWhitespace()
         {
             int c;
@@ -574,9 +549,7 @@ namespace PdfClown.Util.Parsers
 
         public IInputStream Stream => stream;
 
-        /**
-          <summary>Gets the currently-parsed token.</summary>
-        */
+        ///<summary>Gets the currently-parsed token.</summary>
         public object Token
         {
             get
@@ -639,13 +612,16 @@ namespace PdfClown.Util.Parsers
             get => mBuffer.AsSpan();
         }
 
-        /**
-          <summary>Gets the currently-parsed token type.</summary>
-        */
+        ///<summary>Gets the currently-parsed token type.</summary>
         public TokenTypeEnum TokenType
         {
             get => tokenType;
             protected set => tokenType = value;
+        }
+
+        public long TokenStartOffset
+        {
+            get => tokenOffset;
         }
 
         public void Dispose()

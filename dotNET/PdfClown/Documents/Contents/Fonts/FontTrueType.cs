@@ -24,25 +24,18 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.Fonts.CCF;
 using PdfClown.Documents.Contents.Fonts.TTF;
-using PdfClown.Documents.Contents.Objects;
-using PdfClown.Files;
 using PdfClown.Objects;
-using PdfClown.Util;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>TrueType font [PDF:1.6:5;OFF:2009].</summary>
-    */
+    ///<summary>TrueType font [PDF:1.6:5;OFF:2009].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class FontTrueType : FontSimple
     {
@@ -72,7 +65,6 @@ namespace PdfClown.Documents.Contents.Fonts
         private bool cmapInitialized = false;
         private Dictionary<int, int> gidToCode; // for embedding
         private SKRect? fontBBox;
-
 
         internal FontTrueType(PdfDirectObject baseObject)
             : base(baseObject)
@@ -119,9 +111,11 @@ namespace PdfClown.Documents.Contents.Fonts
             ReadEncoding();
         }
 
-        /**
-         * Creates a new TrueType font for embedding.
-         */
+        /// <summary>Creates a new TrueType font for embedding.</summary>
+        /// <param name="document"></param>
+        /// <param name="ttf"></param>
+        /// <param name="encoding"></param>
+        /// <param name="closeTTF"></param>
         private FontTrueType(PdfDocument document, TrueTypeFont ttf, Encoding encoding, bool closeTTF)
             : base(document)
         {
@@ -139,60 +133,48 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * Loads a TTF to be embedded into a document as a simple font.
-         * 
-         * <p><b>Note:</b> Simple fonts only support 256 characters. For Unicode support, use
-         * {@link PDType0Font#load(Document, File)} instead.</p>
-         *
-         * @param doc The PDF document that will hold the embedded font.
-         * @param file A TTF file.
-         * @param encoding The PostScript encoding vector to be used for embedding.
-         * @return a PdfTrueTypeFont instance.
-         * @throws IOException If there is an error loading the data.
-         */
+        /// <summary>
+        /// Loads a TTF to be embedded into a document as a simple font.
+        /// <p><b>Note:</b> Simple fonts only support 256 characters. For Unicode support, use
+        /// FontType0.Load(Document, File)} instead.</p>
+        /// </summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="file">A TTF file</param>
+        /// <param name="encoding">The PostScript encoding vector to be used for embedding</param>
+        /// <returns>a PdfTrueTypeFont instance</returns>
         public static FontTrueType Load(PdfDocument doc, string file, Encoding encoding)
         {
             return new FontTrueType(doc, new TTFParser().Parse(file), encoding, true);
         }
 
-        /**
-         * Loads a TTF to be embedded into a document as a simple font.
-         *
-         * <p><b>Note:</b> Simple fonts only support 256 characters. For Unicode support, use
-         * {@link PDType0Font#load(Document, Bytes.IInputStream)} instead.</p>
-         * 
-         * @param doc The PDF document that will hold the embedded font.
-         * @param input A TTF file stream
-         * @param encoding The PostScript encoding vector to be used for embedding.
-         * @return a PdfTrueTypeFont instance.
-         * @throws IOException If there is an error loading the data.
-         */
+        /// <summary>
+        /// Loads a TTF to be embedded into a document as a simple font.
+        /// <p><b>Note:</b> Simple fonts only support 256 characters. For Unicode support, use
+        /// <see cref="FontType0.Load(Document, IInputStream)"/> instead.
+        /// </summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="input">A TTF file stream</param>
+        /// <param name="encoding">The PostScript encoding vector to be used for embedding</param>
+        /// <returns>a PdfTrueTypeFont instance</returns>
         public static FontTrueType Load(PdfDocument doc, IInputStream input, Encoding encoding)
 
         {
             return new FontTrueType(doc, new TTFParser().Parse(input), encoding, true);
         }
 
-        /**
-         * Loads a TTF to be embedded into a document as a simple font.
-         *
-         * <p>
-         * <b>Note:</b> Simple fonts only support 256 characters. For Unicode support, use
-         * {@link PDType0Font#load(Document, Bytes.IInputStream)} instead.
-         * </p>
-         * 
-         * @param doc The PDF document that will hold the embedded font.
-         * @param ttf A true type font
-         * @param encoding The PostScript encoding vector to be used for embedding.
-         * @return a PdfTrueTypeFont instance.
-         * @throws IOException If there is an error loading the data.
-         */
+        /// <summary>
+        /// Loads a TTF to be embedded into a document as a simple font.
+        /// <b>Note:</b> Simple fonts only support 256 characters. For Unicode support, use
+        /// <see cref="FontType0.Load(PdfDocument, IInputStream)"/> instead.
+        /// </summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="ttf">A true type font</param>
+        /// <param name="encoding">The PostScript encoding vector to be used for embedding</param>
+        /// <returns>a PdfTrueTypeFont instance</returns>
         public static FontTrueType Load(PdfDocument doc, TrueTypeFont ttf, Encoding encoding)
         {
             return new FontTrueType(doc, ttf, encoding, false);
         }
-
 
         protected override Encoding ReadEncodingFromFont()
         {
@@ -247,7 +229,6 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-
         public override int ReadCode(IInputStream input, out ReadOnlySpan<byte> bytes)
         {
             bytes = input.ReadSpan(1);
@@ -263,7 +244,6 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             get => BaseFont;
         }
-
 
         public override SKRect BoundingBox
         {
@@ -284,21 +264,18 @@ namespace PdfClown.Documents.Contents.Fonts
                 Rectangle bbox = FontDescriptor.FontBBox;
                 if (bbox != null)
                 {
-                    return bbox.ToRect();
+                    return bbox.ToSKRect();
                 }
             }
             return ttf.FontBBox;
         }
-
 
         public override bool IsDamaged
         {
             get => isDamaged;
         }
 
-        /**
-         * Returns the embedded or substituted TrueType font.
-         */
+        ///<summary>Returns the embedded or substituted TrueType font.</summary>
         public TrueTypeFont TrueTypeFont
         {
             get => ttf;
@@ -315,7 +292,6 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             return width;
         }
-
 
         public override float GetHeight(int code)
         {
@@ -374,9 +350,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * Inverts the font's code -&gt; GID mapping. Any duplicate (GID -&gt; code) mappings will be lost.
-         */
+        ///<summary>Inverts the font's code -&gt; GID mapping. Any duplicate (GID -&gt; code) mappings will be lost.</summary>
         private Dictionary<int, int> GIDToCode
         {
             get
@@ -448,7 +422,6 @@ namespace PdfClown.Documents.Contents.Fonts
             return glyph?.GetPath();
         }
 
-
         public override SKPath GetNormalizedPath(int code)
         {
             if (!cacheGlyphs.TryGetValue(code, out SKPath path))
@@ -497,25 +470,19 @@ namespace PdfClown.Documents.Contents.Fonts
             return !(gid == 0 || gid >= ttf.MaximumProfile.NumGlyphs);
         }
 
-
         public override BaseFont Font
         {
             get => ttf;
         }
-
 
         public override bool HasGlyph(int code)
         {
             return CodeToGID(code) != 0;
         }
 
-        /**
-         * Returns the GID for the given character code.
-         *
-         * @param code character code
-         * @return GID (glyph index)
-         * @throws java.io.IOException
-         */
+        /// <summary>Returns the GID for the given character code.</summary>
+        /// <param name="code">character code</param>
+        /// <returns>GID (glyph index)</returns>
         public int CodeToGID(int code)
         {
             ExtractCmapTable();
@@ -619,9 +586,7 @@ namespace PdfClown.Documents.Contents.Fonts
             return gid;
         }
 
-        /**
-         * extract all useful "cmap" subtables.
-         */
+        ///<summary>extract all useful "cmap" subtables.</summary>
         private void ExtractCmapTable()
         {
             if (cmapInitialized)

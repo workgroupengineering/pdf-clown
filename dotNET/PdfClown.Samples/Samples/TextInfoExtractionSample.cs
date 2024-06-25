@@ -1,24 +1,19 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
-using PdfClown.Files;
-using PdfClown.Tools;
-
-using System;
-using SkiaSharp;
 using PdfClown.Documents.Contents.Scanner;
+using PdfClown.Tools;
+using SkiaSharp;
+using System;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to retrieve text content along with its graphic attributes
-      (font, font size, text color, text rendering mode, text bounding box...) from a PDF document;
-      it also generates a document version decorated by text bounding boxes.</summary>
-    */
-    public class TextInfoExtractionSample
-      : Sample
+    /// <summary>This sample demonstrates how to retrieve text content along with its graphic attributes
+    /// (font, font size, text color, text rendering mode, text bounding box...) from a PDF document;
+    /// it also generates a document version decorated by text bounding boxes.</summary>
+    public class TextInfoExtractionSample : Sample
     {
         private DeviceRGBColor[] textCharBoxColors = new DeviceRGBColor[]
           {
@@ -28,8 +23,7 @@ namespace PdfClown.Samples.CLI
           };
         private DeviceRGBColor textStringBoxColor = DeviceRGBColor.Black;
 
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
@@ -59,9 +53,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        /**
-          <summary>Scans a content level looking for text.</summary>
-        */
+        /// <summary>Scans a content level looking for text.</summary>
         /*
           NOTE: Page contents are represented by a sequence of content objects,
           possibly nested into multiple levels.
@@ -74,7 +66,7 @@ namespace PdfClown.Samples.CLI
             while (level.MoveNext())
             {
                 ContentObject content = level.Current;
-                if (content is Text)
+                if (content is GraphicsText)
                 {
                     TextWrapper text = (TextWrapper)level.CurrentWrapper;
                     int colorIndex = 0;
@@ -113,10 +105,10 @@ namespace PdfClown.Samples.CLI
                         composer.End();
                     }
                 }
-                else if (content is XObject)
+                else if (content is GraphicsXObject)
                 {
                     // Scan the external level!
-                    Extract(((XObject)content).GetScanner(level), composer);
+                    Extract(((GraphicsXObject)content).GetScanner(level), composer);
                 }
                 else if (content is ContainerObject)
                 {

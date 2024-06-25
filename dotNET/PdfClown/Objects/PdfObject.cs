@@ -26,13 +26,9 @@
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents;
 
-using System;
-
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Abstract PDF object.</summary>
-    */
+    /// <summary>Abstract PDF object.</summary>
     public abstract class PdfObject : IVisitable
     {
         ///<summary>Gets the clone of the specified object, registered inside the specified file context.</summary>
@@ -43,21 +39,17 @@ namespace PdfClown.Objects
             return @object == null ? null : @object.Clone(context);
         }
 
-        /**
-          <summary>Ensures an indirect reference to be resolved into its corresponding data object.</summary>
-          <param name="object">Object to resolve.</param>
-        */
+        /// <summary>Ensures an indirect reference to be resolved into its corresponding data object.</summary>
+        /// <param name="object">Object to resolve.</param>
         public static PdfDataObject Resolve(PdfObject @object)
         {
             return @object?.Resolve();
         }
 
-        /**
-          <summary>Ensures a data object to be unresolved into its corresponding indirect reference, if
-          available.</summary>
-          <param name="object">Object to unresolve.</param>
-          <returns><see cref="PdfReference"/>, if available; <code>object</code>, otherwise.</returns>
-        */
+        /// <summary>Ensures a data object to be unresolved into its corresponding indirect reference, if
+        /// available.</summary>
+        /// <param name="object">Object to unresolve.</param>
+        /// <returns><see cref="PdfReference"/>, if available; <code>object</code>, otherwise.</returns>
         public static PdfDirectObject Unresolve(PdfDataObject @object)
         {
             return @object?.Unresolve();
@@ -75,40 +67,31 @@ namespace PdfClown.Objects
 
         public virtual PdfIndirectObject Container => Parent?.Container;
 
-        /**
-          <summary>Gets the indirect object containing the data associated to this object.</summary>
-          <seealso cref="Container"/>
-          <seealso cref="IndirectObject"/>
-        */
+        /// <summary>Gets the indirect object containing the data associated to this object.</summary>
+        /// <seealso cref="Container"/>
+        /// <seealso cref="IndirectObject"/>
         public PdfIndirectObject DataContainer => IndirectObject ?? Container;
-        /**
-          <summary>Gets the file containing this object.</summary>
-        */
+
+        /// <summary>Gets the file containing this object.</summary>
         public virtual PdfFile File => DataContainer?.File;
 
-        /**
-          <summary>Gets the indirect object corresponding to this object.</summary>
-          <seealso cref="Container"/>
-          <seealso cref="DataContainer"/>
-        */
+        /// <summary>Gets the indirect object corresponding to this object.</summary>
+        /// <seealso cref="Container"/>
+        /// <seealso cref="DataContainer"/>
         public virtual PdfIndirectObject IndirectObject => Parent as PdfIndirectObject;
 
-        /**
-          <summary>Gets/Sets the parent of this object.</summary>
-          <seealso cref="Container"/>
-        */
+        /// <summary>Gets/Sets the parent of this object.</summary>
+        /// <seealso cref="Container"/>
         public abstract PdfObject Parent
         {
             get;
             internal set;
         }
 
-        /**
-          <summary>Gets the indirect reference of this object.</summary>
-        */
+        /// <summary>Gets the indirect reference of this object.</summary>
         public virtual PdfReference Reference => IndirectObject?.Reference;
 
-        public ContentWrapper ContentsWrapper { get; internal set; }
+        public abstract ContentWrapper ContentsWrapper { get; internal set; }
 
         public abstract IPdfObjectWrapper Wrapper
         {
@@ -142,9 +125,7 @@ namespace PdfClown.Objects
         }
 
 
-        /**
-          <summary>Creates a shallow copy of this object.</summary>
-        */
+        /// <summary>Creates a shallow copy of this object.</summary>
         public object Clone()
         {
             PdfObject clone = (PdfObject)MemberwiseClone();
@@ -152,30 +133,18 @@ namespace PdfClown.Objects
             return clone;
         }
 
-        /**
-          <summary>Creates a deep copy of this object using the default cloner of the specified file
-          context.</summary>
-        */
+        /// <summary>Creates a deep copy of this object using the default cloner of the specified file
+        /// context.</summary>
         public virtual PdfObject Clone(PdfFile context) => Clone(context.Cloner);
 
-        /**
-          <summary>Creates a deep copy of this object using the specified cloner.</summary>
-        */
+        /// <summary>Creates a deep copy of this object using the specified cloner.</summary>
         public virtual PdfObject Clone(Cloner cloner) => Accept(cloner, null);
 
-        /**
-          <summary>Gets the indirect object containing this object.</summary>
-          <seealso cref="DataContainer"/>
-          <seealso cref="IndirectObject"/>
-        */
-
-        /**
-          <summary>Removes the object from its file context.</summary>
-          <remarks>Only indirect objects can be removed through this method; direct objects have to be
-          explicitly removed from their parent object. The object is no more usable after this method
-          returns.</remarks>
-          <returns>Whether the object was removed from its file context.</returns>
-        */
+        /// <summary>Removes the object from its file context.</summary>
+        /// <remarks>Only indirect objects can be removed through this method; direct objects have to be
+        /// explicitly removed from their parent object. The object is no more usable after this method
+        /// returns.</remarks>
+        /// <returns>Whether the object was removed from its file context.</returns>
         public virtual bool Delete()
         {
             PdfIndirectObject indirectObject = IndirectObject;
@@ -183,25 +152,19 @@ namespace PdfClown.Objects
         }
 
 
-        /**
-          <summary>Ensures this object to be resolved into its corresponding data object.</summary>
-          <seealso cref="Unresolve()"/>
-        */
+        /// <summary>Ensures this object to be resolved into its corresponding data object.</summary>
+        /// <seealso cref="Unresolve()"/>
         public virtual PdfDataObject Resolve() => (PdfDataObject)this;
 
-        /**
-          <summary>Swaps contents between this object and the other one.</summary>
-          <param name="other">Object whose contents have to be swapped with this one's.</param>
-          <returns>This object.</returns>
-        */
+        /// <summary>Swaps contents between this object and the other one.</summary>
+        /// <param name="other">Object whose contents have to be swapped with this one's.</param>
+        /// <returns>This object.</returns>
         public abstract PdfObject Swap(PdfObject other);
 
-        /**
-          <summary>Ensures this object to be unresolved into its corresponding indirect reference, if
-          available.</summary>
-          <returns><see cref="PdfReference"/>, if available; <code>this</code>, otherwise.</returns>
-          <seealso cref="Resolve()"/>
-        */
+        /// <summary>Ensures this object to be unresolved into its corresponding indirect reference, if
+        /// available.</summary>
+        /// <returns><see cref="PdfReference"/>, if available; <code>this</code>, otherwise.</returns>
+        /// <seealso cref="Resolve()"/>
         public PdfDirectObject Unresolve()
         {
             return Reference ?? (PdfDirectObject)this;
@@ -228,18 +191,14 @@ namespace PdfClown.Objects
             set => Status = value ? (Status | PdfObjectStatus.Virtual) : (Status & ~PdfObjectStatus.Virtual);
         }
 
-        /**
-          <summary>Serializes this object to the specified stream.</summary>
-          <param name="stream">Target stream.</param>
-          <param name="context">File context.</param>
-        */
+        /// <summary>Serializes this object to the specified stream.</summary>
+        /// <param name="stream">Target stream.</param>
+        /// <param name="context">File context.</param>
         public abstract void WriteTo(IOutputStream stream, PdfFile context);
 
         public abstract PdfObject Accept(IVisitor visitor, object data);
 
-        /**
-          <summary>Updates the state of this object.</summary>
-        */
+        /// <summary>Updates the state of this object.</summary>
         protected internal void Update()
         {
             if (!Updateable || Updated)
@@ -252,24 +211,20 @@ namespace PdfClown.Objects
             Parent?.Update();
         }
 
-        /**
-          <summary>Ensures that the specified object is decontextualized from this object.</summary>
-          <param name="obj">Object to decontextualize from this object.</param>
-          <seealso cref="Include(PdfDataObject)"/>
-        */
+        /// <summary>Ensures that the specified object is decontextualized from this object.</summary>
+        /// <param name="obj">Object to decontextualize from this object.</param>
+        /// <seealso cref="Include(PdfDataObject)"/>
         internal void Exclude(PdfDataObject obj)
         {
             if (obj != null)
             { obj.Parent = null; }
         }
 
-        /**
-          <summary>Ensures that the specified object is contextualized into this object.</summary>
-          <param name="obj">Object to contextualize into this object; if it is already contextualized
-            into another object, it will be cloned to preserve its previous association.</param>
-          <returns>Contextualized object.</returns>
-          <seealso cref="Exclude(PdfDataObject)"/>
-        */
+        /// <summary>Ensures that the specified object is contextualized into this object.</summary>
+        /// <param name="obj">Object to contextualize into this object; if it is already contextualized
+        ///    into another object, it will be cloned to preserve its previous association.</param>
+        /// <returns>Contextualized object.</returns>
+        /// <seealso cref="Exclude(PdfDataObject)"/>
         internal PdfDataObject Include(PdfDataObject obj)
         {
             if (obj != null)
@@ -280,15 +235,5 @@ namespace PdfClown.Objects
             }
             return obj;
         }
-    }
-
-    [Flags]
-    public enum PdfObjectStatus : byte
-    {
-        None = 0,
-        Updateable = 1,
-        Updated = 2,
-        Virtual = 4,
-        Original = 8,
     }
 }

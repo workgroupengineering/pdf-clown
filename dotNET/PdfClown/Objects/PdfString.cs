@@ -24,46 +24,33 @@
 */
 
 using PdfClown.Bytes;
-using tokens = PdfClown.Tokens;
 using PdfClown.Util;
-
 using System;
-using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
+using tokens = PdfClown.Tokens;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF string object [PDF:1.6:3.2.3].</summary>
-      <remarks>
-        <para>A string object consists of a series of bytes.</para>
-        <para>String objects can be serialized in two ways:</para>
-        <list type="bullet">
-          <item>as a sequence of literal characters (plain form)</item>
-          <item>as a sequence of hexadecimal digits (hexadecimal form)</item>
-        </list>
-      </remarks>
-    */
+    /// <summary>PDF string object [PDF:1.6:3.2.3].</summary>
+    /// <remarks>
+    ///   <para>A string object consists of a series of bytes.</para>
+    ///   <para>String objects can be serialized in two ways:</para>
+    ///   <list type="bullet">
+    ///     <item>as a sequence of literal characters (plain form)</item>
+    ///     <item>as a sequence of hexadecimal digits (hexadecimal form)</item>
+    ///   </list>
+    /// </remarks>
     public class PdfString : PdfSimpleObject<Memory<byte>>, IDataWrapper, IPdfString
     {
-        /*
-          NOTE: String objects are internally represented as unescaped sequences of bytes.
-          Escaping is applied on serialization only.
-        */
-        /**
-          <summary>String serialization mode.</summary>
-        */
-        public enum SerializationModeEnum
+        // NOTE: String objects are internally represented as unescaped sequences of bytes.
+        // Escaping is applied on serialization only.
+
+        /// <summary>String serialization mode.</summary>
+        public enum SerializationModeEnum : byte
         {
-            /**
-              Plain form.
-            */
+            // Plain form.
             Literal,
-            /**
-              Hexadecimal form.
-            */
+            // Hexadecimal form.
             Hex
         };
 
@@ -75,6 +62,11 @@ namespace PdfClown.Objects
         public static PdfString Get(byte[] value)
         {
             return value != null ? new PdfString(value) : null;
+        }
+
+        public static PdfString Get(Memory<byte> value)
+        {
+            return value.Length != 0 ? new PdfString(value) : null;
         }
 
         public static readonly PdfString Default = new PdfString("");
@@ -121,16 +113,20 @@ namespace PdfClown.Objects
 
         public override bool Equals(object @object)
         {
-            if (@object is PdfString objString)
-                return RawValue.Span.SequenceEqual(objString.RawValue.Span);
+            if (@object is PdfString pdfString)
+                return Equals(pdfString);
+            if (@object is PdfName pdfName)
+                return Equals(pdfName);
             return base.Equals(@object);
         }
 
+        public bool Equals(PdfString pdfString) => RawValue.Span.SequenceEqual(pdfString.RawValue.Span);
+
+        public bool Equals(PdfName pdfName) => string.Equals(StringValue, pdfName.RawValue, StringComparison.Ordinal);
+
         public override int GetHashCode() => RawValue.GetHashCode();
 
-        /**
-          <summary>Gets/Sets the serialization mode.</summary>
-        */
+        /// <summary>Gets/Sets the serialization mode.</summary>
         public virtual SerializationModeEnum SerializationMode
         {
             get => serializationMode;

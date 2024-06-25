@@ -36,7 +36,7 @@ namespace PdfClown.Documents.Contents.Layers
       [PDF:1.7:4.10.1].</summary>
     */
     [PDF(VersionEnum.PDF16)]
-    public class VisibilityExpression : PdfObjectWrapper<PdfArray>
+    public class VisibilityExpression : PdfObjectWrapper2<PdfArray>
     {
         public enum OperatorEnum
         {
@@ -47,14 +47,14 @@ namespace PdfClown.Documents.Contents.Layers
 
         private class OperandsImpl : Array<IPdfObjectWrapper>
         {
-            private class ItemWrapper : IWrapper<IPdfObjectWrapper>
+            private class ItemWrapper : IEntryWrapper<IPdfObjectWrapper>
             {
                 public IPdfObjectWrapper Wrap(PdfDirectObject baseObject)
                 {
                     if (baseObject.Wrapper is IPdfObjectWrapper wrapper)
                         return wrapper;
                     if (baseObject.Resolve() is PdfArray)
-                        return Wrap<VisibilityExpression>(baseObject);
+                        return Wrap2<VisibilityExpression>(baseObject);
                     else
                         return Wrap<Layer>(baseObject);
                 }

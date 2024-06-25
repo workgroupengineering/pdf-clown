@@ -25,9 +25,7 @@ using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Tsp;
 using Org.BouncyCastle.Utilities.Collections;
 using Org.BouncyCastle.X509;
-using Org.BouncyCastle.X509.Store;
 using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Forms.Signature.Sertificate;
 using PdfClown.Objects;
 using PdfClown.Tokens;
@@ -41,11 +39,10 @@ using System.Threading.Tasks;
 
 namespace PdfClown.Documents.Interaction.Forms.Signature
 {
-    /**
-    * Utility class for the signature / timestamp examples.
-    * 
-    * @author Tilman Hausherr
-*/
+    /// <summary>
+    /// Utility class for the signature / timestamp examples.
+    /// <br/>  * @author Tilman Hausherr
+    /// </summary>
     public static class SigUtils
     {
         public static readonly DerObjectIdentifier PurposePdfSigning = new DerObjectIdentifier("1.2.840.113583.1.1.5");
@@ -54,21 +51,22 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         {
         }
 
-        /**
-         * Get the access permissions granted for this document in the DocMDP transform parameters
-         * dictionary. Details are described in the table "Entries in the DocMDP transform parameters
-         * dictionary" in the PDF specification.
-         *
-         * @param doc document.
-         * @return the permission value. 0 means no DocMDP transform parameters dictionary exists. Other
-         * return values are 1, 2 or 3. 2 is also returned if the DocMDP transform parameters dictionary
-         * is found but did not contain a /P entry, or if the value is outside the valid range.
-         */
+        /// <summary>
+        /// Get the access permissions granted for this document in the DocMDP transform parameters
+        /// dictionary. Details are described in the table "Entries in the DocMDP transform parameters
+        /// dictionary" in the PDF specification.
+        /// </summary>
+        /// <param name="doc">document</param>
+        /// <returns>
+        /// the permission value. 0 means no DocMDP transform parameters dictionary exists. Other
+        /// return values are 1, 2 or 3. 2 is also returned if the DocMDP transform parameters dictionary
+        /// is found but did not contain a /P entry, or if the value is outside the valid range.
+        /// </returns>
         public static int GetMDPPermission(PdfDocument doc)
         {
             PdfDictionary permsDict = doc.BaseDataObject.Get<PdfDictionary>(PdfName.Perms);
             if (permsDict != null
-                && permsDict.Resolve(PdfName.DocMDP) is PdfDictionary signatureDict 
+                && permsDict.Resolve(PdfName.DocMDP) is PdfDictionary signatureDict
                 && signatureDict.Resolve(PdfName.Reference) is PdfArray refArray)
             {
                 for (int i = 0; i < refArray.Count; ++i)
@@ -93,24 +91,22 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             return 0;
         }
 
-        /**
-         * Set the "modification detection and prevention" permissions granted for this document in the
-         * DocMDP transform parameters dictionary. Details are described in the table "Entries in the
-         * DocMDP transform parameters dictionary" in the PDF specification.
-         *
-         * @param doc The document.
-         * @param signature The signature object.
-         * @param accessPermissions The permission value (1, 2 or 3).
-         *
-         * @ if a signature exists.
-         */
+        /// <summary>
+        /// Set the "modification detection and prevention" permissions granted for this document in the
+        /// DocMDP transform parameters dictionary. Details are described in the table "Entries in the
+        /// DocMDP transform parameters dictionary" in the PDF specification.
+        /// </summary>
+        /// <param name="doc">The document</param>
+        /// <param name="signature">The signature object</param>
+        /// <param name="accessPermissions">The permission value (1, 2 or 3)</param>
+        /// <exception cref="Exception"></exception>
         public static void SetMDPPermission(PdfDocument doc, SignatureDictionary signature, int accessPermissions)
         {
             foreach (SignatureDictionary sig in doc.GetSignatureDictionaries())
             {
                 // "Approval signatures shall follow the certification signature if one is present"
                 // thus we don't care about timestamp signatures
-                if (PdfName.DocTimeStamp.Equals(sig.BaseDataObject[PdfName.Type]))
+                if (PdfName.DocTimeStamp.Equals(sig.BaseDataObject.Get<PdfName>(PdfName.Type)))
                 {
                     continue;
                 }
@@ -126,7 +122,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             // all values in the signature dictionary shall be direct objects
             var transformParameters = new PdfDictionary();
             transformParameters[PdfName.Type] = PdfName.TransformParams;
-            transformParameters.SetInt(PdfName.P, accessPermissions);
+            transformParameters.Set(PdfName.P, accessPermissions);
             transformParameters.SetName(PdfName.V, "1.2");
 
             var referenceDict = new PdfDictionary
@@ -149,13 +145,11 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             catalogDict[PdfName.Perms] = permsDict;
         }
 
-        /**
-         * Log if the certificate is not valid for signature usage. Doing this
-         * anyway results in Adobe Reader failing to validate the PDF.
-         *
-         * @param x509Certificate 
-         * @throws java.security.cert.CertificateParsingException 
-         */
+        /// <summary>
+        /// Log if the certificate is not valid for signature usage. Doing this
+        /// anyway results in Adobe Reader failing to validate the PDF.
+        /// </summary>
+        /// <param name="x509Certificate"></param>
         public static void CheckCertificateUsage(X509Certificate x509Certificate)
         {
             // Check whether signer certificate is "valid for usage"
@@ -183,12 +177,10 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             }
         }
 
-        /**
-         * Log if the certificate is not valid for timestamping.
-         *
-         * @param x509Certificate 
-         * @throws java.security.cert.CertificateParsingException 
-         */
+        /// <summary>
+        /// Log if the certificate is not valid for timestamping.
+        /// </summary>
+        /// <param name="x509Certificate"></param>
         public static void CheckTimeStampCertificateUsage(X509Certificate x509Certificate)
         {
             var extendedKeyUsage = x509Certificate.GetExtendedKeyUsage();
@@ -200,12 +192,10 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             }
         }
 
-        /**
-         * Log if the certificate is not valid for responding.
-         *
-         * @param x509Certificate 
-         * @throws java.security.cert.CertificateParsingException 
-         */
+        /// <summary>
+        /// Log if the certificate is not valid for responding.
+        /// </summary>
+        /// <param name="x509Certificate"></param>
         public static void CheckResponderCertificateUsage(X509Certificate x509Certificate)
         {
             var extendedKeyUsage = x509Certificate.GetExtendedKeyUsage();
@@ -217,12 +207,11 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             }
         }
 
-        /**
-         * Gets the last relevant signature in the document, i.e. the one with the highest offset.
-         * 
-         * @param document to get its last signature
-         * @return last signature or null when none found
-         */
+        /// <summary>
+        /// Gets the last relevant signature in the document, i.e. the one with the highest offset.
+        /// </summary>
+        /// <param name="document">document to get its last signature</param>
+        /// <returns>last signature or null when none found</returns>
         public static SignatureDictionary getLastRelevantSignature(PdfDocument document)
         {
             // we can't use getLastSignatureDictionary() because this will fail (see PDFBOX-3978) 
@@ -268,18 +257,16 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             timeStampToken.Validate(certificate);
         }
 
-        /**
-         * Verify the certificate chain up to the root, including OCSP or CRL. However this does not
-         * test whether the root certificate is in a trusted list.<br><br>
-         * Please post bad PDF files that succeed and good PDF files that fail in
-         * <a href="https://issues.apache.org/jira/browse/PDFBOX-3017">PDFBOX-3017</a>.
-         *
-         * @param certificatesStore
-         * @param certFromSignedData
-         * @param signDate
-         * @throws CertificateVerificationException
-         * @throws CertificateException
-         */
+        /// <summary>
+        /// Verify the certificate chain up to the root, including OCSP or CRL. However this does not
+        /// test whether the root certificate is in a trusted list.<br/>
+        /// Please post bad PDF files that succeed and good PDF files that fail in
+        /// <a href="https://issues.apache.org/jira/browse/PDFBOX-3017">PDFBOX-3017</a>.
+        /// </summary>
+        /// <param name="certificatesStore"></param>
+        /// <param name="certFromSignedData"></param>
+        /// <param name="signDate"></param>
+        /// <returns></returns>
         public static async Task verifyCertificateChain(IStore<X509Certificate> certificatesStore, X509Certificate certFromSignedData, DateTime signDate)
         {
             var certificates = certificatesStore.EnumerateMatches(null);
@@ -298,16 +285,11 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             // ( getRootCertificates() is not helpful because these are SSL certificates)
         }
 
-        /**
-         * Get certificate of a TSA.
-         * 
-         * @param tsaUrl URL
-         * @return the X.509 certificate.
-         *
-         * @throws GeneralSecurityException
-         * @ 
-         * @throws URISyntaxException 
-         */
+        /// <summary>
+        /// Get certificate of a TSA.
+        /// </summary>
+        /// <param name="tsaUrl">URL</param>
+        /// <returns>the X.509 certificate</returns>
         public static async Task<X509Certificate> getTsaCertificate(string tsaUrl)
         {
             var digest = new Sha256Digest();//"SHA-256"
@@ -317,24 +299,22 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             return GetCertificateFromTimeStampToken(timeStampToken);
         }
 
-        /**
-         * Extract X.509 certificate from a timestamp
-         * @param timeStampToken
-         * @return the X.509 certificate.
-         * @throws CertificateException 
-         */
+        /// <summary>
+        /// Extract X.509 certificate from a timestamp
+        /// </summary>
+        /// <param name="timeStampToken"></param>
+        /// <returns>the X.509 certificate</returns>
         public static X509Certificate GetCertificateFromTimeStampToken(TimeStampToken timeStampToken)
         {
             var tstMatches = timeStampToken.GetCertificates().EnumerateMatches(timeStampToken.SignerID);
             return tstMatches.Cast<X509Certificate>().FirstOrDefault();
         }
 
-        /**
-         * Look for gaps in the cross reference table and display warnings if any found. See also
-         * <a href="https://stackoverflow.com/questions/71267471/">here</a>.
-         *
-         * @param doc document.
-         */
+        /// <summary>
+        /// Look for gaps in the cross reference table and display warnings if any found. See also
+        /// <a href="https://stackoverflow.com/questions/71267471/">here</a>.
+        /// </summary>
+        /// <param name="doc">document</param>
         public static void CheckCrossReferenceTable(PdfDocument doc)
         {
             List<XRefEntry> set = new(doc.File.IndirectObjects.Select(x => x.XrefEntry));
@@ -353,14 +333,12 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             }
         }
 
-        /**
-         * Like {@link URL#openStream()} but will follow redirection from http to https.
-         *
-         * @param urlString
-         * @return
-         * @ 
-         * @throws URISyntaxException 
-         */
+        /// <summary>
+        /// Like {@link URL#openStream()} but will follow redirection from http to https.
+        /// </summary>
+        /// <param name="urlString"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static async Task<Stream> OpenURL(string urlString)
         {
             var url = new Uri(urlString);

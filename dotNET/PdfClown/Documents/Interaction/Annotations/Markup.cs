@@ -35,6 +35,9 @@ using SkiaSharp;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Util.Math.Geom;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Objects;
+using Org.BouncyCastle.Pqc.Crypto.Lms;
+using PdfClown.Documents.Contents.Composition;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -87,7 +90,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = CreationDate;
                 if (oldValue != PdfDate.Trimm(value))
                 {
-                    BaseDataObject.SetDate(PdfName.CreationDate, value);
+                    BaseDataObject.Set(PdfName.CreationDate, value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -186,6 +189,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
+
         [PDF(VersionEnum.PDF16)]
         public MarkupIntent? Intent
         {
@@ -249,6 +253,46 @@ namespace PdfClown.Documents.Interaction.Annotations
                     OnPropertyChanged(oldValue, value);
                 }
             }
+        }
+
+        public SKPath ApplyBorderAndEffect(PrimitiveComposer composer, SKPath path)
+        {
+            ApplyBorder(composer);
+            return BorderEffect?.Apply(composer, path) ?? path;
+        }
+
+        protected void ApplyBorder(PrimitiveComposer composer)
+        {
+            if (Border != null) Border.Apply(composer);
+            else composer.SetLineWidth(1);
+        }
+
+        public virtual void ApplyBorderAndEffect(ref SKRect rect)
+        {
+            ApplyBorder(ref rect);
+            BorderEffect?.Apply(ref rect);
+        }
+
+        protected void ApplyBorder(ref SKRect rect)
+        {
+            if (Border == null)
+                rect.Inflate(1, 1);
+            else
+                Border.Apply(ref rect);
+        }
+
+        public virtual void InvertBorderAndEffect(ref SKRect rect)
+        {
+            InvertBorder(ref rect);
+            BorderEffect?.Invert(ref rect);
+        }
+
+        protected void InvertBorder(ref SKRect rect)
+        {
+            if (Border == null)
+                rect.Inflate(-1, -1);
+            else
+                Border.Invert(ref rect);
         }
     }
 

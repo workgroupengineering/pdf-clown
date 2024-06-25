@@ -24,11 +24,13 @@
 */
 
 using PdfClown.Bytes;
-using Shadings = PdfClown.Documents.Contents.Patterns.Shadings;
+using PdfClown.Documents.Contents.Patterns.Shadings;
 using PdfClown.Objects;
 
 using System.Collections.Generic;
 using SkiaSharp;
+using System;
+using PdfClown.Documents.Contents.ColorSpaces;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -36,14 +38,14 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Paint the shape and color shading' operation [PDF:1.6:4.6.3].</summary>
     */
     [PDF(VersionEnum.PDF13)]
-    public sealed class PaintShading : Operation, IResourceReference<Shadings::Shading>
+    public sealed class PaintShading : Operation, IResourceReference<Shading>
     {
         public static readonly string OperatorKeyword = "sh";
 
         public PaintShading(PdfName name) : base(OperatorKeyword, name)
         { }
 
-        public PaintShading(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public PaintShading(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         /**
@@ -51,14 +53,14 @@ namespace PdfClown.Documents.Contents.Objects
           </summary>
           <param name="context">Content context.</param>
         */
-        public Shadings::Shading GetShading(ContentScanner scanner) => GetResource(scanner);
+        public Shading GetShading(ContentScanner scanner) => GetResource(scanner);
 
-        public Shadings::Shading GetResource(ContentScanner scanner)
+        public Shading GetResource(ContentScanner scanner)
         {
             var pscanner = scanner;
-            Shadings::Shading shading;
-            while ((shading = pscanner.ContentContext.Resources.Shadings[Name]) == null
-                && (pscanner = pscanner.ParentLevel) != null)
+            Shading shading;
+            while ((shading = pscanner.Context.Resources.Shadings[Name]) == null
+                && (pscanner = pscanner.ResourceParent) != null)
             { }
             return shading;
         }
@@ -73,26 +75,23 @@ namespace PdfClown.Documents.Contents.Objects
         {
             var scanner = state.Scanner;
 
-            if (scanner.RenderContext != null)
+            if (scanner.Canvas is SKCanvas canvas)
             {
                 var shading = GetShading(scanner);
-                var paint = state.FillColorSpace?.GetPaint(state.FillColor, state.FillAlpha);
-                if (shading.Background != null)
+                using var paint = state.FillColorSpace?.GetPaint(state.FillColor, SKPaintStyle.Fill, state.FillAlpha);
+                if (shading.BackgroundColor is Color backColor)
                 {
-                    var color = shading.BackgroundColor;
-                    paint.Color = shading.ColorSpace.GetSKColor(color);
-                    scanner.RenderContext.DrawPaint(paint);
+                    paint.Color = backColor.GetSkColor(state.FillAlpha);
                 }
-                var matrix = shading.CalculateMatrix(SKMatrix.Identity, state);
-                paint.Shader = shading?.GetShader(matrix, state);
-                scanner.RenderContext.DrawPaint(paint);
+                paint.Shader = shading.GetShader(SKMatrix.Identity, state);
+                canvas.DrawPaint(paint);
             }
         }
 
-        private static SKMatrix GenerateMatrix(ContentScanner scanner, Shadings.Shading shading)
+        private static SKMatrix GenerateMatrix(ContentScanner scanner, Shading shading)
         {
             var matrix = SKMatrix.Identity;
-            if (scanner.RenderContext.GetLocalClipBounds(out var clipBound))
+            if (scanner.Canvas.GetLocalClipBounds(out var clipBound))
             {
                 matrix = SKMatrix.CreateScale(shading.Box.Width == 0 ? 1 : clipBound.Width / shading.Box.Width,
                                                   shading.Box.Height == 0 ? 1 : clipBound.Width / shading.Box.Height);

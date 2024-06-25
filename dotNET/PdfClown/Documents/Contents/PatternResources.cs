@@ -23,29 +23,27 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.Patterns;
 using PdfClown.Objects;
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Pattern resources collection [PDF:1.6:3.7.2].</summary>
-    */
+    ///<summary>Pattern resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class PatternResources : ResourceItems<Pattern>
+    public sealed class PatternResources : Dictionary<Pattern>
     {
-        public PatternResources(PdfDocument context) : base(context)
+        public class ValueWrapper : IEntryWrapper<Pattern>
+        {
+            public Pattern Wrap(PdfDirectObject baseObject) => Pattern.Wrap(baseObject);
+        }
+
+        private static readonly ValueWrapper Wrapper = new ValueWrapper();
+
+        public PatternResources(PdfDocument context) : base(context, Wrapper)
         { }
 
-        public PatternResources(PdfDirectObject baseObject) : base(baseObject)
+        public PatternResources(PdfDirectObject baseObject) : base(baseObject, Wrapper)
         { }
 
-        protected override Pattern WrapItem(PdfDirectObject baseObject)
-        { return Pattern.Wrap(baseObject); }
     }
 }

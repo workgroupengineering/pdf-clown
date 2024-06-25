@@ -24,17 +24,12 @@
   this list of conditions.
 */
 
-using bytes = PdfClown.Bytes;
+using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Objects;
 using PdfClown.Tokens;
-using PdfClown.Util.Parsers;
-
 using System;
 using System.Collections.Generic;
-using sysIO = System.IO;
-using PdfClown.Bytes;
-using PdfClown.Util;
 
 namespace PdfClown.Documents.Contents.Tokens
 {
@@ -49,35 +44,36 @@ namespace PdfClown.Documents.Contents.Tokens
         public ContentParser(Memory<byte> data) : base(data)
         { }
 
-        /**
-          <summary>Parses the next content object [PDF:1.6:4.1].</summary>
-        */
+        ///<summary>Parses the next content object [PDF:1.6:4.1].</summary>
         public ContentObject ParseContentObject()
         {
             Operation operation = ParseOperation();
-            if (operation is PaintXObject paintXObject) // External object.
-                return new XObject(paintXObject);
-            else if (operation is PaintShading paintShading) // Shading.
-                return new Shading(paintShading);
-            else if (operation is BeginSubpath
-              || operation is DrawRectangle) // Path.
-                return ParsePath(operation);
-            else if (operation is BeginText) // Text.
-                return new Text(ParseContentObjects());
-            else if (operation is SaveGraphicsState) // Local graphics state.
-                return new LocalGraphicsState(ParseContentObjects());
-            //else if (operation is BeginMarkedContent) // Marked-content sequence.
-            //    return new MarkedContent((BeginMarkedContent)operation, ParseContentObjects());
-            else if (operation is BeginInlineImage) // Inline image.
-                return ParseInlineImage();
-            else // Single operation.
-                return operation;
+            switch (operation) // External object.
+            {
+                case PaintXObject paintXObject:
+                    return new GraphicsXObject(paintXObject);
+                case PaintShading paintShading:
+                    return new GraphicsShading(paintShading);
+                case BeginSubpath:
+                case DrawRectangle:
+                    return ParsePath(operation);
+                case BeginText:
+                    return new GraphicsText(ParseContentObjects());
+                case SaveGraphicsState:
+                    return new GraphicsLocalState(ParseContentObjects());
+                case BeginMarkedContent beginMarkedContent:
+                    return new GraphicsMarkedContent(beginMarkedContent, ParseContentObjects());
+                case BeginCompatibilityState:
+                    return new GraphicsCompatibilityState(ParseContentObjects());
+                case BeginInlineImage:
+                    return ParseInlineImage();
+                default:
+                    return operation;
+            }
         }
 
-        /**
-          <summary>Parses the next content objects.</summary>
-        */
-        public IList<ContentObject> ParseContentObjects()
+        ///<summary>Parses the next content objects.</summary>
+        public List<ContentObject> ParseContentObjects()
         {
             var contentObjects = new List<ContentObject>();
             while (MoveNext())
@@ -86,8 +82,10 @@ namespace PdfClown.Documents.Contents.Tokens
                 // Multiple-operation graphics object end?
                 if (contentObject is EndText // Text.
                   || contentObject is RestoreGraphicsState // Local graphics state.
-                                                           //    || contentObject is EndMarkedContent // End marked-content sequence.
-                  || contentObject is EndInlineImage) // Inline image.
+                  || contentObject is EndMarkedContent // End marked-content sequence.
+                  || contentObject is EndCompatibilityState // compatibility state.
+                  || contentObject is EndInlineImage // Inline image.
+                  )
                     return contentObjects;
 
                 contentObjects.Add(contentObject);
@@ -95,13 +93,11 @@ namespace PdfClown.Documents.Contents.Tokens
             return contentObjects;
         }
 
-        /**
-          <summary>Parses the next operation.</summary>
-        */
+        ///<summary>Parses the next operation.</summary>
         public Operation ParseOperation()
         {
-            StringStream @operator = null;
-            var operands = new List<PdfDirectObject>();
+            string @operator = null;
+            PdfArray operands = null;
             // Parsing the operation parts...
             do
             {
@@ -110,14 +106,15 @@ namespace PdfClown.Documents.Contents.Tokens
                 switch (TokenType)
                 {
                     case TokenTypeEnum.Keyword:
-                        @operator = StringBuffer;
+                        @operator = StringBuffer.ToString();
                         break;
                     default:
-                        operands.Add((PdfDirectObject)ParsePdfObject());
+                        operands ??= new PdfArray();
+                        operands.AddDirect((PdfDirectObject)ParsePdfObject());
                         break;
                 }
             } while (@operator == null && MoveNext());
-            return @operator == null ? null : Operation.Get(@operator.AsSpan(), operands);
+            return @operator == null ? null : Operation.Get(@operator, operands);
         }
 
         public override PdfDataObject ParsePdfObject()
@@ -130,19 +127,17 @@ namespace PdfClown.Documents.Contents.Tokens
             return base.ParsePdfObject();
         }
 
-        private InlineImage ParseInlineImage()
+        private GraphicsInlineImage ParseInlineImage()
         {
-            /*
-              NOTE: Inline images use a peculiar syntax that's an exception to the usual rule
-              that the data in a content stream is interpreted according to the standard PDF syntax
-              for objects.
-            */
+            //NOTE: Inline images use a peculiar syntax that's an exception to the usual rule
+            //that the data in a content stream is interpreted according to the standard PDF syntax
+            //for objects.
             InlineImageHeader header;
             {
-                var operands = new List<PdfDirectObject>();
+                var operands = new PdfArray();
                 // Parsing the image entries...
                 while (MoveNext() && TokenType != TokenTypeEnum.Keyword) // Not keyword (i.e. end at image data beginning (ID operator)).
-                { operands.Add((PdfDirectObject)ParsePdfObject()); }
+                { operands.AddDirect((PdfDirectObject)ParsePdfObject()); }
                 header = new InlineImageHeader(operands);
             }
 
@@ -166,15 +161,13 @@ namespace PdfClown.Documents.Contents.Tokens
                 body = new InlineImageBody(data);
             }
 
-            return new InlineImage(header, body);
+            return new GraphicsInlineImage(header, body);
         }
 
-        private Path ParsePath(Operation beginOperation)
+        private GraphicsPath ParsePath(Operation beginOperation)
         {
-            /*
-              NOTE: Paths do not have an explicit end operation, so we must infer it
-              looking for the first non-painting operation.
-            */
+            //NOTE: Paths do not have an explicit end operation, so we must infer it
+            //looking for the first non-painting operation.
             IList<ContentObject> operations = new List<ContentObject>();
             {
                 operations.Add(beginOperation);
@@ -197,7 +190,9 @@ namespace PdfClown.Documents.Contents.Tokens
                     position = Position;
                 }
             }
-            return new Path(operations);
+            return new GraphicsPath(operations);
         }
+
+        public override bool MoveNextComplex() => base.MoveNext();
     }
 }

@@ -167,7 +167,7 @@ namespace PdfClown.Documents.Contents.Composition
         private Row currentRow;
         private bool rowEnded;
 
-        private LocalGraphicsState container;
+        private GraphicsLocalState container;
 
         private double lastFontSize;
 
@@ -382,7 +382,7 @@ namespace PdfClown.Documents.Contents.Composition
                     }
                 }
 
-                if (OperationUtils.Compare(currentRow.Y + lineHeight, frame.Height) == 1) // Text's height exceeds block's remaining vertical space.
+                if (OperationUtils.Compare(currentRow.Y, frame.Height) == 1) // Text's height exceeds block's remaining vertical space.
                 {
                     // Terminate the current row and exit!
                     EndRow(false);
@@ -727,7 +727,7 @@ namespace PdfClown.Documents.Contents.Composition
                       will be declared as styles and their composition will occur as a single pass without such
                       ugly tweakings.
                     */
-                    var showTextOperation = (ShowText)((Text)((LocalGraphicsState)containedGraphics[1]).Objects[1]).Objects[1];
+                    var showTextOperation = (ShowText)((GraphicsText)((GraphicsLocalState)containedGraphics[1]).Objects[1]).Objects[1];
                     if (showTextOperation is ShowAdjustedText)
                     {
                         PdfInteger wordSpaceObject = PdfInteger.Get((int)Math.Round(-wordSpace * 1000 * obj.Scale / obj.FontSize));

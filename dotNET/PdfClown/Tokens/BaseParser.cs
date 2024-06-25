@@ -28,13 +28,10 @@ using PdfClown.Objects;
 using PdfClown.Util.Parsers;
 
 using System;
-using System.IO;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>Base PDF parser [PDF:1.7:3.2].</summary>
-    */
+    /// <summary>Base PDF parser [PDF:1.7:3.2].</summary>
     public class BaseParser : PostScriptParser
     {
         protected BaseParser(IInputStream stream) : base(stream)
@@ -48,11 +45,21 @@ namespace PdfClown.Tokens
             bool moved;
             while (moved = base.MoveNext())
             {
-                TokenTypeEnum tokenType = TokenType;
-                if (tokenType == TokenTypeEnum.Comment)
+                if (TokenType == TokenTypeEnum.Comment)
                     continue; // Comments are ignored.
 
-                if (tokenType == TokenTypeEnum.Literal)
+
+                break;
+            }
+            return moved;
+        }
+
+        public virtual bool MoveNextComplex()
+        {
+            bool moved = MoveNext();
+            if (moved)
+            {
+                if (TokenType == TokenTypeEnum.Literal)
                 {
                     var bytes = BytesToken;
                     if (bytes.Length > 5)
@@ -69,14 +76,51 @@ namespace PdfClown.Tokens
                         }
                     }
                 }
-                break;
+                else if (TokenType == TokenTypeEnum.Integer)
+                {
+                    // NOTE: We need to verify whether indirect reference pattern is applicable:
+                    // ref :=  { int int 'R' }
+                    IInputStream stream = Stream;
+                    // Backs up the recovery position.
+                    long resetOffset = stream.Position;
+                    // Offset of Inderect object
+                    long referenceOffset = TokenStartOffset;
+                    // 1. Object number.
+                    int objectNumber = IntegerToken;
+                    // 2. Generation number.
+                    MoveNext();
+                    if (TokenType == TokenTypeEnum.Integer)
+                    {
+                        int generationNumber = IntegerToken;
+                        // 3. Reference keyword.
+                        MoveNext();
+                        if (TokenType == TokenTypeEnum.Keyword)
+                        {
+                            var span = CharsToken;
+                            if (span.Equals(Keyword.Reference, StringComparison.Ordinal))
+                            {
+                                TokenType = TokenTypeEnum.Reference;
+                                ReferenceToken = new Reference(objectNumber, generationNumber, referenceOffset);
+                                return moved;
+                            }
+                            else if (span.Equals(Keyword.BeginIndirectObject, StringComparison.Ordinal))
+                            {
+                                TokenType = TokenTypeEnum.InderectObject;
+                                ReferenceToken = new Reference(objectNumber, generationNumber, referenceOffset);
+                                return moved;
+                            }
+                        }
+                    }
+                    // Rollback!
+                    stream.Seek(resetOffset);
+                    IntegerToken = objectNumber;
+                    TokenType = TokenTypeEnum.Integer;
+                }
             }
             return moved;
         }
 
-        /**
-          <summary>Parses the current PDF object [PDF:1.6:3.2].</summary>
-        */
+        // <summary>Parses the current PDF object [PDF:1.6:3.2].</summary>
         public virtual PdfDataObject ParsePdfObject()
         {
             switch (TokenType)
@@ -89,20 +133,18 @@ namespace PdfClown.Tokens
                     {
                         var dictionary = new PdfDictionary();
                         dictionary.Updateable = false;
-                        while (true)
+                        while (MoveNext()
+                            && TokenType != TokenTypeEnum.DictionaryEnd
+                            && ParsePdfObject() is PdfName key
+                            && MoveNextComplex()
+                            && TokenType != TokenTypeEnum.DictionaryEnd)
                         {
-                            // Key.
-                            MoveNext(); if (TokenType == TokenTypeEnum.DictionaryEnd) break;
-                            var key = (PdfName)ParsePdfObject();
-                            // Value.
-                            MoveNext(); if (TokenType == TokenTypeEnum.DictionaryEnd) break;
-                            PdfDirectObject value = (PdfDirectObject)ParsePdfObject();
                             // Add the current entry to the dictionary!
                             if (dictionary.ContainsKey(key))
                             {
                                 key = PdfName.Get(key.StringValue + "Dublicat", true);
                             }
-                            dictionary[key] = value;
+                            dictionary[key] = (PdfDirectObject)ParsePdfObject();
                         }
                         dictionary.Updateable = true;
                         return dictionary;
@@ -111,10 +153,9 @@ namespace PdfClown.Tokens
                     {
                         var array = new PdfArray();
                         array.Updateable = false;
-                        while (true)
+                        while (MoveNextComplex()
+                            && TokenType != TokenTypeEnum.ArrayEnd)
                         {
-                            // Value.
-                            MoveNext(); if (TokenType == TokenTypeEnum.ArrayEnd) break;
                             // Add the current item to the array!
                             array.Add((PdfDirectObject)ParsePdfObject());
                         }
@@ -138,11 +179,9 @@ namespace PdfClown.Tokens
             }
         }
 
-        /**
-          <summary>Parses a PDF object after moving to the given token offset.</summary>
-          <param name="offset">Number of tokens to skip before reaching the intended one.</param>
-          <seealso cref="ParsePdfObject()"/>
-        */
+        /// <summary>Parses a PDF object after moving to the given token offset.</summary>
+        /// <param name="offset">Number of tokens to skip before reaching the intended one.</param>
+        /// <seealso cref="ParsePdfObject()"/>
         public PdfDataObject ParsePdfObject(int offset)
         {
             MoveNext(offset);

@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Objects;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Patterns.Shadings
@@ -43,58 +44,24 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
 
         public float[] Domain
         {
-            get
-            {
-                return domain ??= Dictionary.Resolve(PdfName.Domain) is PdfArray array
-                    ? new float[]
-                    {
-                    array.GetFloat(0),
-                    array.GetFloat(1),
-                    array.GetFloat(2),
-                    array.GetFloat(3)
-                    }
-                    : new float[] { 0F, 1F, 0F, 1F };
-            }
+            get => domain ??= Dictionary.Get<PdfArray>(PdfName.Domain)?.ToFloatArray() ?? new float[] { 0F, 1F, 0F, 1F };
             set
             {
                 domain = value;
-                Dictionary[PdfName.Domain] = new PdfArray(4)
-                {
-                    new PdfReal(value[0]),
-                    new PdfReal(value[1]),
-                    new PdfReal(value[2]),
-                    new PdfReal(value[3])
-                };
+                Dictionary[PdfName.Domain] = new PdfArray(value);
             }
         }
 
         public SKMatrix Matrix
         {
-            get => matrix ??= Dictionary.Resolve(PdfName.Matrix) is PdfArray array
-                   ? new SKMatrix
-                   {
-                       ScaleX = array.GetFloat(0),
-                       SkewY = array.GetFloat(1),
-                       SkewX = array.GetFloat(2),
-                       ScaleY = array.GetFloat(3),
-                       TransX = array.GetFloat(4),
-                       TransY = array.GetFloat(5),
-                       Persp2 = 1
-                   }
-                   : SKMatrix.Identity;
+            get => matrix ??= Dictionary.Get<PdfArray>(PdfName.Matrix)?.ToSkMatrix() ?? SKMatrix.Identity;
             set
             {
                 matrix = value;
-                Dictionary[PdfName.Matrix] =
-                 new PdfArray(6)
-                 {
-                    PdfReal.Get(value.ScaleX),
-                    PdfReal.Get(value.SkewY),
-                    PdfReal.Get(value.SkewX),
-                    PdfReal.Get(value.ScaleY),
-                    PdfReal.Get(value.TransX),
-                    PdfReal.Get(value.TransY)
-                 };
+                if (Dictionary.Get<PdfArray>(PdfName.Matrix) is PdfArray array)
+                    value.UpdatePdfArray(array);
+                else
+                    Dictionary[PdfName.Matrix] = value.ToPdfArray();
             }
         }
 

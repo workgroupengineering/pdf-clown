@@ -39,19 +39,19 @@ namespace PdfClown.Documents.Contents.Fonts
         public int Length1
         {
             get => Dictionary.GetInt(PdfName.Length1);
-            set => Dictionary.SetInt(PdfName.Length1, value);
+            set => Dictionary.Set(PdfName.Length1, value);
         }
 
         public int Length2
         {
             get => Dictionary.GetInt(PdfName.Length2);
-            set => Dictionary.SetInt(PdfName.Length2, value);
+            set => Dictionary.Set(PdfName.Length2, value);
         }
 
         public int Length3
         {
             get => Dictionary.GetInt(PdfName.Length3);
-            set => Dictionary.SetInt(PdfName.Length3, value);
+            set => Dictionary.Set(PdfName.Length3, value);
         }
 
 

@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public Panose Panose
         {
             get => panose ??= new Panose(Dictionary.GetTextBytes(PdfName.Panose));
-            set => Dictionary.SetTextBytes(PdfName.Panose, value.Bytes);
+            set => Dictionary.Set(PdfName.Panose, value.Bytes);
         }
     }
 }

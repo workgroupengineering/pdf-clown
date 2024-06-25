@@ -59,11 +59,9 @@ namespace PdfClown.Documents.Contents.Layers
                     return ((PdfArray)baseDataObject).IndexOf(item.BaseObject);
             }
 
-            public void Insert(int index, Layer item)
-            { EnsureArray().Insert(index, item.BaseObject); }
+            public void Insert(int index, Layer item) => EnsureArray().Insert(index, item.BaseObject);
 
-            public void RemoveAt(int index)
-            { EnsureArray().RemoveAt(index); }
+            public void RemoveAt(int index) => EnsureArray().RemoveAt(index);
 
             public Layer this[int index]
             {
@@ -85,11 +83,9 @@ namespace PdfClown.Documents.Contents.Layers
                 set => EnsureArray()[index] = value.BaseObject;
             }
 
-            public void Add(Layer item)
-            { EnsureArray().Add(item.BaseObject); }
+            public void Add(Layer item) => EnsureArray().Add(item.BaseObject);
 
-            public void Clear()
-            { EnsureArray().Clear(); }
+            public void Clear() => EnsureArray().Clear();
 
             public bool Contains(Layer item)
             {
@@ -121,8 +117,7 @@ namespace PdfClown.Documents.Contents.Layers
 
             public bool IsReadOnly => false;
 
-            public bool Remove(Layer item)
-            { return EnsureArray().Remove(item.BaseObject); }
+            public bool Remove(Layer item) => EnsureArray().Remove(item.BaseObject);
 
             public IEnumerator<Layer> GetEnumerator()
             {
@@ -136,9 +131,9 @@ namespace PdfClown.Documents.Contents.Layers
             private PdfArray EnsureArray()
             {
                 PdfDirectObject baseDataObject = BaseDataObject;
-                if (!(baseDataObject is PdfArray))
+                if (baseDataObject is not PdfArray)
                 {
-                    PdfArray array = new PdfArray();
+                    var array = new PdfArray();
                     if (baseDataObject != null)
                     { array.Add(baseDataObject); }
                     BaseObject = baseDataObject = array;
@@ -161,7 +156,7 @@ namespace PdfClown.Documents.Contents.Layers
 
         public override VisibilityExpression VisibilityExpression
         {
-            get => Wrap<VisibilityExpression>(BaseDataObject[PdfName.VE]);
+            get => Wrap2<VisibilityExpression>(BaseDataObject[PdfName.VE]);
             set => BaseDataObject[PdfName.VE] = PdfObjectWrapper.GetBaseObject(value);
         }
 

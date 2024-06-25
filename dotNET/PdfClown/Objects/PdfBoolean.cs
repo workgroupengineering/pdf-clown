@@ -30,24 +30,21 @@ using System;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF boolean object [PDF:1.6:3.2.1].</summary>
-    */
+    /// <summary>PDF boolean object [PDF:1.6:3.2.1].</summary>
     public sealed class PdfBoolean : PdfSimpleObject<bool>
     {
-        public static readonly PdfBoolean False = new PdfBoolean(false);
-        public static readonly PdfBoolean True = new PdfBoolean(true);
+        public static readonly PdfBoolean False = new(false);
+        public static readonly PdfBoolean True = new(true);
 
-        /**
-          <summary>Gets the object equivalent to the given value.</summary>
-        */
-        public static PdfBoolean Get(bool? value)
-        { return value.HasValue ? (value.Value ? True : False) : null; }
+        /// <summary>Gets the object equivalent to the given value.</summary>
+        public static PdfBoolean Get(bool? value) => value.HasValue ? (value.Value ? True : False) : null;
 
-        public PdfBoolean() : this(false)
+        public static PdfBoolean Get(bool value) => value ? True : False;
+
+        private PdfBoolean() : this(false)
         { }
 
-        public PdfBoolean(bool value)
+        private PdfBoolean(bool value)
         { RawValue = value; }
 
         public override PdfObject Accept(IVisitor visitor, object data)

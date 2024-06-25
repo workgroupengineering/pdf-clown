@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Forms;
 using PdfClown.Objects;
@@ -36,36 +34,22 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Widget annotation [PDF:1.6:8.4.5].</summary>
-    */
+    /// <summary>Widget annotation [PDF:1.6:8.4.5].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class Widget : Annotation
     {
-        /**
-          <summary>Highlighting mode [PDF:1.6:8.4.5].</summary>
-        */
+        /// <summary>Highlighting mode [PDF:1.6:8.4.5].</summary>
         public enum HighlightModeEnum
         {
-            /**
-              <summary>No highlighting.</summary>
-            */
+            /// <summary>No highlighting.</summary>
             None,
-            /**
-              <summary>Invert the contents of the annotation rectangle.</summary>
-            */
+            /// <summary>Invert the contents of the annotation rectangle.</summary>
             Invert,
-            /**
-              <summary>Invert the annotation's border.</summary>
-            */
+            /// <summary>Invert the annotation's border.</summary>
             Outline,
-            /**
-              <summary>Display the annotation's down appearance.</summary>
-            */
+            /// <summary>Display the annotation's down appearance.</summary>
             Push,
-            /**
-              <summary>Same as Push (which is preferred).</summary>
-            */
+            /// <summary>Same as Push (which is preferred).</summary>
             Toggle
         };
 
@@ -85,15 +69,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             };
         }
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
-        private static PdfName ToCode(HighlightModeEnum value)
-        { return HighlightModeEnumCodes[value]; }
+        /// <summary>Gets the code corresponding to the given value.</summary>
+        private static PdfName ToCode(HighlightModeEnum value) => HighlightModeEnumCodes[value];
 
-        /**
-          <summary>Gets the highlighting mode corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the highlighting mode corresponding to the given value.</summary>
         private static HighlightModeEnum ToHighlightModeEnum(string value)
         {
             if (value == null)
@@ -106,24 +85,18 @@ namespace PdfClown.Documents.Interaction.Annotations
             return HighlightModeEnum.Invert;
         }
 
-        /**
-          <summary>Creates a new generic widget.</summary>
-        */
+        /// <summary>Creates a new generic widget.</summary>
         public Widget(PdfPage page, SKRect box)
             : base(page, PdfName.Widget, box, null)
         { Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Print, true); }
 
-        /**
-          <summary>Creates a new dual-state widget (required by <see
-          cref="PdfClown.Documents.forms.RadioButton"/> fields).</summary>
-        */
+        /// <summary>Creates a new dual-state widget (required by <see
+        /// cref="PdfClown.Documents.forms.RadioButton"/> fields).</summary>
         public Widget(PdfPage page, SKRect box, string name)
             : this(page, box)
         {
             // Initialize the on-state appearance!
-            /*
-              NOTE: This is necessary to keep the reference to the on-state name.
-            */
+            //NOTE: This is necessary to keep the reference to the on-state name.
             var appearance = new Appearance(page.Document);
             Appearance = appearance;
             AppearanceStates normalAppearance = appearance.Normal;
@@ -139,30 +112,24 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => base.Actions = value;
         }
 
-        /**
-          <summary>Gets/Sets the annotation's appearance characteristics to be used for its visual
-          presentation on the page.</summary>
-        */
+        /// <summary>Gets/Sets the annotation's appearance characteristics to be used for its visual
+        /// presentation on the page.</summary>
         public AppearanceCharacteristics AppearanceCharacteristics
         {
             get => Wrap<AppearanceCharacteristics>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MK));
             set => BaseDataObject[PdfName.MK] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the annotation's highlighting mode, the visual effect to be used when the
-          mouse button is pressed or held down inside its active area.</summary>
-        */
+        /// <summary>Gets/Sets the annotation's highlighting mode, the visual effect to be used when the
+        /// mouse button is pressed or held down inside its active area.</summary>
         public HighlightModeEnum HighlightMode
         {
             get => ToHighlightModeEnum(BaseDataObject.GetString(PdfName.H));
             set => BaseDataObject[PdfName.H] = ToCode(value);
         }
 
-        /**
-          <summary>Gets the widget value (applicable to dual-state widgets only). It corresponds to the
-          on-state appearance of this widget.</summary>
-        */
+        /// <summary>Gets the widget value (applicable to dual-state widgets only). It corresponds to the
+        /// on-state appearance of this widget.</summary>
         public string Value
         {
             get
@@ -175,12 +142,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
                 return null; // NOTE: It MUST NOT happen (on-state should always be defined).
             }
-        }
-
-        public string DefaultAppearence
-        {
-            get => BaseDataObject.GetString(PdfName.DA);
-            set => BaseDataObject.SetString(PdfName.DA, value);
         }
 
         public override string Name
@@ -207,6 +168,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             return null;
         }
-        
+
     }
 }

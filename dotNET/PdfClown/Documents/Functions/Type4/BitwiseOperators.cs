@@ -20,10 +20,7 @@ using System;
 namespace PdfClown.Documents.Functions.Type4
 {
 
-    /**
-     * Provides the bitwise operators such as "and" and "xor".
-     *
-     */
+    /// <summary> Provides the bitwise operators such as "and" and "xor".</summary>
     public class BitwiseOperators
     {
 
@@ -32,10 +29,9 @@ namespace PdfClown.Documents.Functions.Type4
             // Private constructor.
         }
 
-        /** Abstract base class for logical operators. */
+        /// <summary>Abstract base class for logical operators.</summary>
         internal abstract class AbstractLogicalOperator : Operator
         {
-
             public override void Execute(ExecutionContext context)
             {
                 var stack = context.Stack;
@@ -53,7 +49,7 @@ namespace PdfClown.Documents.Functions.Type4
                     int int1 = op1Int.IntValue;
                     int int2 = op2Int.IntValue;
                     int result = ApplyForInteger(int1, int2);
-                    stack.Push(new PdfInteger(result));
+                    stack.Push(PdfInteger.Get(result));
                 }
                 else
                 {
@@ -61,18 +57,15 @@ namespace PdfClown.Documents.Functions.Type4
                 }
             }
 
-
             protected abstract bool ApplyForBoolean(bool bool1, bool bool2);
 
             protected abstract int ApplyForInteger(int int1, int int2);
 
         }
 
-        /** Implements the "and" operator. */
+        /// <summary>Implements the "and" operator.</summary>
         internal sealed class And : AbstractLogicalOperator
         {
-
-
             protected override bool ApplyForBoolean(bool bool1, bool bool2)
             {
                 return bool1 && bool2;
@@ -85,7 +78,7 @@ namespace PdfClown.Documents.Functions.Type4
             }
         }
 
-        /** Implements the "bitshift" operator. */
+        /// <summary>Implements the "bitshift" operator.</summary>
         internal sealed class Bitshift : Operator
         {
 
@@ -97,18 +90,18 @@ namespace PdfClown.Documents.Functions.Type4
                 if (shift < 0)
                 {
                     int result = int1 >> Math.Abs(shift);
-                    stack.Push(new PdfInteger(result));
+                    stack.Push(PdfInteger.Get(result));
                 }
                 else
                 {
                     int result = int1 << shift;
-                    stack.Push(new PdfInteger(result));
+                    stack.Push(PdfInteger.Get(result));
                 }
             }
 
         }
 
-        /** Implements the "false" operator. */
+        /// <summary>Implements the "false" operator.</summary>
         internal sealed class False : Operator
         {
 
@@ -120,10 +113,9 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "not" operator. */
+        /// <summary>Implements the "not" operator.</summary>
         internal sealed class Not : Operator
         {
-
             public override void Execute(ExecutionContext context)
             {
                 var stack = context.Stack;
@@ -138,7 +130,7 @@ namespace PdfClown.Documents.Functions.Type4
                 {
                     int int1 = pdfInt.IntValue;
                     int result = -int1;
-                    stack.Push(new PdfInteger(result));
+                    stack.Push(PdfInteger.Get(result));
                 }
                 else
                 {
@@ -148,14 +140,13 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "or" operator. */
+        /// <summary>Implements the "or" operator.</summary>
         internal sealed class Or : AbstractLogicalOperator
         {
             protected override bool ApplyForBoolean(bool bool1, bool bool2)
             {
                 return bool1 || bool2;
             }
-
 
             protected override int ApplyForInteger(int int1, int int2)
             {
@@ -164,34 +155,28 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "true" operator. */
+        /// <summary>Implements the "true" operator.</summary>
         internal sealed class True : Operator
         {
-
             public override void Execute(ExecutionContext context)
             {
                 var stack = context.Stack;
                 stack.Push(PdfBoolean.Get(true));
             }
-
         }
 
-        /** Implements the "xor" operator. */
+        /// <summary>Implements the "xor" operator.</summary>
         internal sealed class Xor : AbstractLogicalOperator
         {
-
-
             protected override bool ApplyForBoolean(bool bool1, bool bool2)
             {
                 return bool1 ^ bool2;
             }
 
-
             protected override int ApplyForInteger(int int1, int int2)
             {
                 return int1 ^ int2;
             }
-
         }
     }
 }

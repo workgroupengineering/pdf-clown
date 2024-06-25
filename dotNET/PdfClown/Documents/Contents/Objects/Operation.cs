@@ -40,159 +40,98 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public abstract class Operation : ContentObject
     {
+        private static readonly Dictionary<string, Func<PdfArray, Operation>> cache = new(128, StringComparer.Ordinal)
+        {
+            { SaveGraphicsState.OperatorKeyword, (operands) => SaveGraphicsState.Value },
+            { SetFont.OperatorKeyword, (operands) => new SetFont(operands) },
+            { SetStrokeColorBase.OperatorKeyword, (operands) => new SetStrokeColorBase(operands) },
+            { SetStrokeColorExtended.OperatorKeyword, (operands) => new SetStrokeColorExtended(operands) },
+            { SetStrokeColorSpace.OperatorKeyword, (operands) => new SetStrokeColorSpace(operands) },
+            { SetFillColorBase.OperatorKeyword, (operands) => new SetFillColorBase(operands) },
+            { SetFillColorExtended.OperatorKeyword, (operands) => new SetFillColorExtended(operands) },
+            { SetFillColorSpace.OperatorKeyword, (operands) => new SetFillColorSpace(operands) },
+            { SetDeviceGrayStrokeColor.OperatorKeyword, (operands) => new SetDeviceGrayStrokeColor(operands) },
+            { SetDeviceGrayFillColor.OperatorKeyword, (operands) => new SetDeviceGrayFillColor(operands) },
+            { SetDeviceRGBStrokeColor.OperatorKeyword, (operands) => new SetDeviceRGBStrokeColor(operands) },
+            { SetDeviceRGBFillColor.OperatorKeyword, (operands) => new SetDeviceRGBFillColor(operands) },
+            { SetDeviceCMYKStrokeColor.OperatorKeyword, (operands) => new SetDeviceCMYKStrokeColor(operands) },
+            { SetDeviceCMYKFillColor.OperatorKeyword, (operands) => new SetDeviceCMYKFillColor(operands) },
+            { RestoreGraphicsState.OperatorKeyword, (operands) => RestoreGraphicsState.Value },
+            { BeginSubpath.OperatorKeyword, (operands) => new BeginSubpath(operands) },
+            { CloseSubpath.OperatorKeyword, (operands) => CloseSubpath.Value },
+            { PaintPath.CloseStrokeOperatorKeyword, (operands) => PaintPath.CloseStroke },
+            { PaintPath.FillOperatorKeyword, (operands) => PaintPath.Fill },
+            { PaintPath.FillCompatibleOperatorKeyword, (operands) => PaintPath.Fill },
+            { PaintPath.FillEvenOddOperatorKeyword, (operands) => PaintPath.FillEvenOdd },
+            { PaintPath.StrokeOperatorKeyword, (operands) => PaintPath.Stroke },
+            { PaintPath.FillStrokeOperatorKeyword, (operands) => PaintPath.FillStroke },
+            { PaintPath.FillStrokeEvenOddOperatorKeyword, (operands) => PaintPath.FillStrokeEvenOdd },
+            { PaintPath.CloseFillStrokeOperatorKeyword, (operands) => PaintPath.CloseFillStroke },
+            { PaintPath.CloseFillStrokeEvenOddOperatorKeyword, (operands) => PaintPath.CloseFillStrokeEvenOdd },
+            { PaintPath.EndPathNoOpOperatorKeyword, (operands) => PaintPath.EndPathNoOp },
+            { ModifyClipPathNonZero.OperatorKeyword, (operands) => ModifyClipPath.NonZero },
+            { ModifyClipPathEvenOdd.OperatorKeyword, (operands) => ModifyClipPath.EvenOdd },
+            { TranslateTextToNextLine.OperatorKeyword, (operands) => TranslateTextToNextLine.Value },
+            { ShowSimpleText.OperatorKeyword, (operands) => new ShowSimpleText(operands) },
+            { ShowTextToNextLineNoSpace.OperatorKeyword, (operands) => new ShowTextToNextLineNoSpace(operands) },
+            { ShowTextToNextLineWithSpace.OperatorKeyword, (operands) => new ShowTextToNextLineWithSpace(operands) },
+            { ShowAdjustedText.OperatorKeyword, (operands) => new ShowAdjustedText(operands) },
+            { TranslateTextRelativeNoLead.OperatorKeyword, (operands) => new TranslateTextRelativeNoLead(operands) },
+            { TranslateTextRelativeWithLead.OperatorKeyword, (operands) => new TranslateTextRelativeWithLead(operands) },
+            { SetTextMatrix.OperatorKeyword, (operands) => new SetTextMatrix(operands) },
+            { ModifyCTM.OperatorKeyword, (operands) => new ModifyCTM(operands) },
+            { PaintXObject.OperatorKeyword, (operands) => new PaintXObject(operands) },
+            { PaintShading.OperatorKeyword, (operands) => new PaintShading(operands) },
+            { SetCharSpace.OperatorKeyword, (operands) => new SetCharSpace(operands) },
+            { SetLineCap.OperatorKeyword, (operands) => new SetLineCap(operands) },
+            { SetLineDash.OperatorKeyword, (operands) => new SetLineDash(operands) },
+            { SetLineJoin.OperatorKeyword, (operands) => new SetLineJoin(operands) },
+            { SetLineWidth.OperatorKeyword, (operands) => new SetLineWidth(operands) },
+            { SetMiterLimit.OperatorKeyword, (operands) => new SetMiterLimit(operands) },
+            { SetTextLead.OperatorKeyword, (operands) => new SetTextLead(operands) },
+            { SetTextRise.OperatorKeyword, (operands) => new SetTextRise(operands) },
+            { SetTextScale.OperatorKeyword, (operands) => new SetTextScale(operands) },
+            { SetTextRenderMode.OperatorKeyword, (operands) => new SetTextRenderMode(operands) },
+            { SetWordSpace.OperatorKeyword, (operands) => new SetWordSpace(operands) },
+            { DrawLine.OperatorKeyword, (operands) => new DrawLine(operands) },
+            { DrawRectangle.OperatorKeyword, (operands) => new DrawRectangle(operands) },
+            { DrawCurve.InitialOperatorKeyword, (operands) => new DrawInitialCurve(operands) },
+            { DrawCurve.FullOperatorKeyword, (operands) => new DrawFullCurve(operands) },
+            { DrawCurve.FinalOperatorKeyword, (operands) => new DrawFinalCurve(operands) },
+            { BeginText.OperatorKeyword, (operands) => BeginText.Value },
+            { EndText.OperatorKeyword, (operands) => EndText.Value },
+            { BeginNamedMarkedContent.SimpleOperatorKeyword, (operands) => new BeginNamedMarkedContent(operands) },
+            { BeginPropertyListMarkedContent.PropertyListOperatorKeyword, (operands) => new BeginPropertyListMarkedContent(operands) },
+            { EndMarkedContent.OperatorKeyword, (operands) => EndMarkedContent.Value },
+            { MarkedNamedContentPoint.OperatorKeyword, (operands) => new MarkedNamedContentPoint(operands) },
+            { MarkedPropertyListContentPoint.OperatorKeyword, (operands) => new MarkedPropertyListContentPoint(operands) },
+            { BeginInlineImage.OperatorKeyword, (operands) => BeginInlineImage.Value },
+            { EndInlineImage.OperatorKeyword, (operands) => EndInlineImage.Value },
+            { ApplyExtGState.OperatorKeyword, (operands) => new ApplyExtGState(operands) },
+            { CharProcWidth.OperatorKeyword, (operands) => new CharProcWidth(operands) },
+            { CharProcBBox.OperatorKeyword, (operands) => new CharProcBBox(operands) },
+            { Flatness.OperatorKeyword, (operands) => new Flatness(operands) },
+            { BeginCompatibilityState.OperatorKeyword, (operands) => BeginCompatibilityState.Value },
+            { EndCompatibilityState.OperatorKeyword, (operands) => EndCompatibilityState.Value },
+        };
         /**
           <summary>Gets an operation.</summary>
           <param name="@operator">Operator.</param>
           <param name="operands">List of operands.</param>
         */
-        public static Operation Get(ReadOnlySpan<char> @operator, IList<PdfDirectObject> operands)
+        public static Operation Get(string @operator, PdfArray operands)
         {
-            if (@operator == null)
+            if (string.IsNullOrEmpty(@operator))
                 return null;
-
-            if (@operator.Equals(SaveGraphicsState.OperatorKeyword, StringComparison.Ordinal))
-                return SaveGraphicsState.Value;
-            else if (@operator.Equals(SetFont.OperatorKeyword, StringComparison.Ordinal))
-                return new SetFont(operands);
-            else if (@operator.Equals(SetStrokeColor.OperatorKeyword, StringComparison.Ordinal)
-              || @operator.Equals(SetStrokeColor.ExtendedOperatorKeyword, StringComparison.Ordinal))
-                return new SetStrokeColor(new string(@operator.ToArray()), operands);
-            else if (@operator.Equals(SetStrokeColorSpace.OperatorKeyword, StringComparison.Ordinal))
-                return new SetStrokeColorSpace(operands);
-            else if (@operator.Equals(SetFillColor.OperatorKeyword, StringComparison.Ordinal)
-              || @operator.Equals(SetFillColor.ExtendedOperatorKeyword, StringComparison.Ordinal))
-                return new SetFillColor(new string(@operator.ToArray()), operands);
-            else if (@operator.Equals(SetFillColorSpace.OperatorKeyword, StringComparison.Ordinal))
-                return new SetFillColorSpace(operands);
-            else if (@operator.Equals(SetDeviceGrayStrokeColor.OperatorKeyword, StringComparison.Ordinal))
-                return new SetDeviceGrayStrokeColor(operands);
-            else if (@operator.Equals(SetDeviceGrayFillColor.OperatorKeyword, StringComparison.Ordinal))
-                return new SetDeviceGrayFillColor(operands);
-            else if (@operator.Equals(SetDeviceRGBStrokeColor.OperatorKeyword, StringComparison.Ordinal))
-                return new SetDeviceRGBStrokeColor(operands);
-            else if (@operator.Equals(SetDeviceRGBFillColor.OperatorKeyword, StringComparison.Ordinal))
-                return new SetDeviceRGBFillColor(operands);
-            else if (@operator.Equals(SetDeviceCMYKStrokeColor.OperatorKeyword, StringComparison.Ordinal))
-                return new SetDeviceCMYKStrokeColor(operands);
-            else if (@operator.Equals(SetDeviceCMYKFillColor.OperatorKeyword, StringComparison.Ordinal))
-                return new SetDeviceCMYKFillColor(operands);
-            else if (@operator.Equals(RestoreGraphicsState.OperatorKeyword, StringComparison.Ordinal))
-                return RestoreGraphicsState.Value;
-            else if (@operator.Equals(BeginSubpath.OperatorKeyword, StringComparison.Ordinal))
-                return new BeginSubpath(operands);
-            else if (@operator.Equals(CloseSubpath.OperatorKeyword, StringComparison.Ordinal))
-                return CloseSubpath.Value;
-            else if (@operator.Equals(PaintPath.CloseStrokeOperatorKeyword, StringComparison.Ordinal))
-                return PaintPath.CloseStroke;
-            else if (@operator.Equals(PaintPath.FillOperatorKeyword, StringComparison.Ordinal)
-              || @operator.Equals(PaintPath.FillObsoleteOperatorKeyword, StringComparison.Ordinal))
-                return PaintPath.Fill;
-            else if (@operator.Equals(PaintPath.FillEvenOddOperatorKeyword, StringComparison.Ordinal))
-                return PaintPath.FillEvenOdd;
-            else if (@operator.Equals(PaintPath.StrokeOperatorKeyword, StringComparison.Ordinal))
-                return PaintPath.Stroke;
-            else if (@operator.Equals(PaintPath.FillStrokeOperatorKeyword, StringComparison.Ordinal))
-                return PaintPath.FillStroke;
-            else if (@operator.Equals(PaintPath.FillStrokeEvenOddOperatorKeyword, StringComparison.Ordinal))
-                return PaintPath.FillStrokeEvenOdd;
-            else if (@operator.Equals(PaintPath.CloseFillStrokeOperatorKeyword, StringComparison.Ordinal))
-                return PaintPath.CloseFillStroke;
-            else if (@operator.Equals(PaintPath.CloseFillStrokeEvenOddOperatorKeyword, StringComparison.Ordinal))
-                return PaintPath.CloseFillStrokeEvenOdd;
-            else if (@operator.Equals(PaintPath.EndPathNoOpOperatorKeyword, StringComparison.Ordinal))
-                return PaintPath.EndPathNoOp;
-            else if (@operator.Equals(ModifyClipPath.NonZeroOperatorKeyword, StringComparison.Ordinal))
-                return ModifyClipPath.NonZero;
-            else if (@operator.Equals(ModifyClipPath.EvenOddOperatorKeyword, StringComparison.Ordinal))
-                return ModifyClipPath.EvenOdd;
-            else if (@operator.Equals(TranslateTextToNextLine.OperatorKeyword, StringComparison.Ordinal))
-                return TranslateTextToNextLine.Value;
-            else if (@operator.Equals(ShowSimpleText.OperatorKeyword, StringComparison.Ordinal))
-                return new ShowSimpleText(operands);
-            else if (@operator.Equals(ShowTextToNextLineNoSpace.OperatorKeyword, StringComparison.Ordinal))
-                return new ShowTextToNextLineNoSpace(operands);
-            else if (@operator.Equals(ShowTextToNextLineWithSpace.OperatorKeyword, StringComparison.Ordinal))
-                return new ShowTextToNextLineWithSpace(operands);
-            else if (@operator.Equals(ShowAdjustedText.OperatorKeyword, StringComparison.Ordinal))
-                return new ShowAdjustedText(operands);
-            else if (@operator.Equals(TranslateTextRelativeNoLead.OperatorKeyword, StringComparison.Ordinal))
-                return new TranslateTextRelativeNoLead(operands);
-            else if (@operator.Equals(TranslateTextRelativeWithLead.OperatorKeyword, StringComparison.Ordinal))
-                return new TranslateTextRelativeWithLead(operands);
-            else if (@operator.Equals(SetTextMatrix.OperatorKeyword, StringComparison.Ordinal))
-                return new SetTextMatrix(operands);
-            else if (@operator.Equals(ModifyCTM.OperatorKeyword, StringComparison.Ordinal))
-                return new ModifyCTM(operands);
-            else if (@operator.Equals(PaintXObject.OperatorKeyword, StringComparison.Ordinal))
-                return new PaintXObject(operands);
-            else if (@operator.Equals(PaintShading.OperatorKeyword, StringComparison.Ordinal))
-                return new PaintShading(operands);
-            else if (@operator.Equals(SetCharSpace.OperatorKeyword, StringComparison.Ordinal))
-                return new SetCharSpace(operands);
-            else if (@operator.Equals(SetLineCap.OperatorKeyword, StringComparison.Ordinal))
-                return new SetLineCap(operands);
-            else if (@operator.Equals(SetLineDash.OperatorKeyword, StringComparison.Ordinal))
-                return new SetLineDash(operands);
-            else if (@operator.Equals(SetLineJoin.OperatorKeyword, StringComparison.Ordinal))
-                return new SetLineJoin(operands);
-            else if (@operator.Equals(SetLineWidth.OperatorKeyword, StringComparison.Ordinal))
-                return new SetLineWidth(operands);
-            else if (@operator.Equals(SetMiterLimit.OperatorKeyword, StringComparison.Ordinal))
-                return new SetMiterLimit(operands);
-            else if (@operator.Equals(SetTextLead.OperatorKeyword, StringComparison.Ordinal))
-                return new SetTextLead(operands);
-            else if (@operator.Equals(SetTextRise.OperatorKeyword, StringComparison.Ordinal))
-                return new SetTextRise(operands);
-            else if (@operator.Equals(SetTextScale.OperatorKeyword, StringComparison.Ordinal))
-                return new SetTextScale(operands);
-            else if (@operator.Equals(SetTextRenderMode.OperatorKeyword, StringComparison.Ordinal))
-                return new SetTextRenderMode(operands);
-            else if (@operator.Equals(SetWordSpace.OperatorKeyword, StringComparison.Ordinal))
-                return new SetWordSpace(operands);
-            else if (@operator.Equals(DrawLine.OperatorKeyword, StringComparison.Ordinal))
-                return new DrawLine(operands);
-            else if (@operator.Equals(DrawRectangle.OperatorKeyword, StringComparison.Ordinal))
-                return new DrawRectangle(operands);
-            else if (@operator.Equals(DrawCurve.InitialOperatorKeyword, StringComparison.Ordinal))
-                return new DrawInitialCurve(operands);
-            else if (@operator.Equals(DrawCurve.FullOperatorKeyword, StringComparison.Ordinal))
-                return new DrawFullCurve(operands);
-            else if (@operator.Equals(DrawCurve.FinalOperatorKeyword, StringComparison.Ordinal))
-                return new DrawFinalCurve(operands);
-            else if (@operator.Equals(EndInlineImage.OperatorKeyword, StringComparison.Ordinal))
-                return EndInlineImage.Value;
-            else if (@operator.Equals(BeginText.OperatorKeyword, StringComparison.Ordinal))
-                return BeginText.Value;
-            else if (@operator.Equals(EndText.OperatorKeyword, StringComparison.Ordinal))
-                return EndText.Value;
-            else if (@operator.Equals(BeginSimpleMarkedContent.SimpleOperatorKeyword, StringComparison.Ordinal))
-                return new BeginSimpleMarkedContent(operands);
-            else if (@operator.Equals(BeginPropertyListMarkedContent.PropertyListOperatorKeyword, StringComparison.Ordinal))
-                return new BeginPropertyListMarkedContent(operands);
-            else if (@operator.Equals(EndMarkedContent.OperatorKeyword, StringComparison.Ordinal))
-                return EndMarkedContent.Value;
-            else if (@operator.Equals(MarkedSimpleContentPoint.SimpleOperatorKeyword, StringComparison.Ordinal))
-                return new MarkedSimpleContentPoint(operands);
-            else if (@operator.Equals(MarkedPropertyListContentPoint.PropertyListOperatorKeyword, StringComparison.Ordinal))
-                return new MarkedPropertyListContentPoint(operands);
-            else if (@operator.Equals(BeginInlineImage.OperatorKeyword, StringComparison.Ordinal))
-                return BeginInlineImage.Value;
-            else if (@operator.Equals(EndInlineImage.OperatorKeyword, StringComparison.Ordinal))
-                return EndInlineImage.Value;
-            else if (@operator.Equals(ApplyExtGState.OperatorKeyword, StringComparison.Ordinal))
-                return new ApplyExtGState(operands);
-            else if (@operator.Equals(CharProcWidth.OperatorKeyword, StringComparison.Ordinal))
-                return new CharProcWidth(operands);
-            else if (@operator.Equals(CharProcBBox.OperatorKeyword, StringComparison.Ordinal))
-                return new CharProcBBox(operands);
-            else if (@operator.Equals(Flatness.OperatorKeyword, StringComparison.Ordinal))
-                return new Flatness(operands);
+            var str = @operator.ToString();
+            if (cache.TryGetValue(str, out var func))
+                return func(operands);
             else // No explicit operation implementation available.
-                return new GenericOperation(new string(@operator.ToArray()), operands);
+                return new GenericOperation(@operator, operands);
         }
 
         protected string @operator;
-        protected IList<PdfDirectObject> operands;
+        protected PdfArray operands;
 
         protected Operation(string @operator)
         { this.@operator = @operator; }
@@ -201,17 +140,18 @@ namespace PdfClown.Documents.Contents.Objects
         {
             this.@operator = @operator;
 
-            this.operands = new List<PdfDirectObject>();
-            this.operands.Add(operand);
+            operands = new PdfArray(1);
+            operands.AddDirect(operand);
         }
 
         protected Operation(string @operator, params PdfDirectObject[] operands)
         {
             this.@operator = @operator;
-            this.operands = new List<PdfDirectObject>(operands);
+            this.operands = new PdfArray(operands.Length);
+            this.operands.AddRangeDirect(operands);
         }
 
-        protected Operation(string @operator, IList<PdfDirectObject> operands)
+        protected Operation(string @operator, PdfArray operands)
         {
             this.@operator = @operator;
             this.operands = operands;
@@ -256,7 +196,7 @@ namespace PdfClown.Documents.Contents.Objects
             if (operands != null)
             {
                 var fileContext = context.File;
-                foreach (PdfDirectObject operand in operands)
+                foreach (var operand in operands)
                 { operand.WriteTo(stream, fileContext); stream.Write(Chunk.Space); }
             }
             stream.Write(@operator); stream.Write(Chunk.LineFeed);

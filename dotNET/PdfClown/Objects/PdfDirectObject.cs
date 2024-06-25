@@ -25,30 +25,23 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents;
-using PdfClown.Documents.Interaction.Forms;
 using PdfClown.Tokens;
 
 using System;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Abstract PDF direct object.</summary>
-    */
+    /// <summary>Abstract PDF direct object.</summary>
     public abstract class PdfDirectObject : PdfDataObject, IComparable<PdfDirectObject>
     {
         private static readonly byte[] NullChunk = Encoding.Pdf.Encode(Keyword.Null);
 
-        /**
-          <summary>Ensures that the given direct object is properly represented as string.</summary>
-          <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
-        */
+        /// <summary>Ensures that the given direct object is properly represented as string.</summary>
+        /// <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
         internal static string ToString(PdfDirectObject obj) => obj?.ToString() ?? Keyword.Null;
 
-        /**
-          <summary>Ensures that the given direct object is properly serialized.</summary>
-          <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
-        */
+        /// <summary>Ensures that the given direct object is properly serialized.</summary>
+        /// <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
         internal static void WriteTo(IOutputStream stream, PdfFile context, PdfDirectObject obj)
         {
             if (obj == null)
@@ -56,10 +49,6 @@ namespace PdfClown.Objects
             else
             { obj.WriteTo(stream, context); }
         }
-
-        protected internal IPdfObjectWrapper wrapper;
-        protected internal IPdfObjectWrapper wrapper2;
-        protected internal IPdfObjectWrapper wrapper3;
 
         protected PdfDirectObject()
         { }
@@ -70,43 +59,12 @@ namespace PdfClown.Objects
 
         public abstract int CompareTo(PdfDirectObject obj);
 
-        public override IPdfObjectWrapper Wrapper
+        public override ContentWrapper ContentsWrapper
         {
-            get => wrapper;
-            internal set
-            {
-#if DEBUG
-                if (wrapper != null)
-                    throw new Exception($"Wrapper override. Existing:{wrapper}");
-#endif
-                wrapper = value;
-            }
+            get => null;
+            internal set { }
         }
 
-        public override IPdfObjectWrapper Wrapper2
-        {
-            get => wrapper2;
-            internal set
-            {
-#if DEBUG
-                if (wrapper2 != null)
-                    throw new Exception($"Wrapper2 override. Existing:{wrapper2}");
-#endif
-                wrapper2 = value;
-            }
-        }
 
-        public override IPdfObjectWrapper Wrapper3
-        {
-            get => wrapper3;
-            internal set
-            {
-#if DEBUG
-                if (wrapper3 != null)
-                    throw new Exception($"Wrapper3 override. Existing:{wrapper3}");
-#endif
-                wrapper3 = value;
-            }
-        }
     }
 }

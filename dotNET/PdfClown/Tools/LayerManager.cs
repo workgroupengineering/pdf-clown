@@ -27,7 +27,7 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Layers;
 using PdfClown.Documents.Contents.Objects;
-using xobjects = PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 
@@ -36,22 +36,16 @@ using System.Collections.Generic;
 
 namespace PdfClown.Tools
 {
-    /**
-      <summary>Tool to manage layers (aka OCGs).</summary>
-    */
+    ///<summary>Tool to manage layers (aka OCGs).</summary>
     public class LayerManager
     {
-        /**
-          <summary>Removes the specified layers from the document.</summary>
-          <param name="layers">Layers to remove (they MUST belong to the same document).</param>
-        */
+        /// <summary>Removes the specified layers from the document.</summary>
+        /// <param name="layers">Layers to remove (they MUST belong to the same document).</param>
         public void Remove(params Layer[] layers) => Remove(false, layers);
 
-        /**
-          <summary>Removes the specified layers from the document.</summary>
-          <param name="preserveContent">Whether the layer contents have to be flattened only.</param>
-          <param name="layers">Layers to remove (they MUST belong to the same document).</param>
-        */
+        /// <summary>Removes the specified layers from the document.</summary>
+        /// <param name="preserveContent">Whether the layer contents have to be flattened only.</param>
+        /// <param name="layers">Layers to remove (they MUST belong to the same document).</param>
         public void Remove(bool preserveContent, params Layer[] layers)
         {
             var document = layers[0].Document;
@@ -59,7 +53,7 @@ namespace PdfClown.Tools
             // 1. Page contents.
             var removedLayers = new HashSet<Layer>(layers);
             var layerEntities = new HashSet<LayerEntity>(removedLayers);
-            var layerXObjects = new HashSet<xobjects::XObject>();
+            var layerXObjects = new HashSet<XObject>();
             foreach (var page in document.Pages)
             { RemoveLayerContents(page, removedLayers, layerEntities, layerXObjects, preserveContent); }
 
@@ -93,7 +87,7 @@ namespace PdfClown.Tools
             Optimizer.RemoveOrphanedObjects(document.File);
         }
 
-        private void RemoveLayerContents(PdfPage page, ICollection<Layer> removedLayers, ICollection<LayerEntity> layerEntities, ICollection<xobjects::XObject> layerXObjects, bool preserveContent)
+        private void RemoveLayerContents(PdfPage page, ICollection<Layer> removedLayers, ICollection<LayerEntity> layerEntities, ICollection<XObject> layerXObjects, bool preserveContent)
         {
             var pageResources = page.Resources;
 
@@ -185,9 +179,8 @@ namespace PdfClown.Tools
             while (level.MoveNext())
             {
                 ContentObject content = level.Current;
-                if (content is MarkedContent)
+                if (content is GraphicsMarkedContent markedContent)
                 {
-                    var markedContent = (MarkedContent)content;
                     var marker = (ContentMarker)markedContent.Header;
                     if (PdfName.OC.Equals(marker.Tag) // NOTE: /OC tag identifies layer (aka optional content) markers.
                       && layerEntityNames.Contains(marker.Name))
@@ -203,9 +196,8 @@ namespace PdfClown.Tools
                         }
                     }
                 }
-                else if (!preserveContent && content is XObject)
+                else if (!preserveContent && content is GraphicsXObject xObject)
                 {
-                    var xObject = (XObject)content;
                     if (layerXObjectNames.Contains(xObject.Name))
                     {
                         level.Remove();
@@ -219,8 +211,7 @@ namespace PdfClown.Tools
                       level.ChildLevel,
                       layerEntityNames,
                       layerXObjectNames,
-                      preserveContent
-                      );
+                      preserveContent);
                 }
             }
         }

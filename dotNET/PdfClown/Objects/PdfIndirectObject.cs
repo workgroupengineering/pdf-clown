@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents;
 using PdfClown.Tokens;
 
 using System;
@@ -31,9 +32,7 @@ using System.Text;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF indirect object [PDF:1.6:3.2.9].</summary>
-    */
+    ///<summary>PDF indirect object [PDF:1.6:3.2.9].</summary>
     public class PdfIndirectObject : PdfObject, IPdfIndirectObject
     {
         private static readonly byte[] BeginIndirectObjectChunk = Tokens.Encoding.Pdf.Encode(Symbol.Space + Keyword.BeginIndirectObject + Symbol.LineFeed);
@@ -46,18 +45,16 @@ namespace PdfClown.Objects
         private PdfObjectStatus status;
 
 
-        /**
-          <param name="file">Associated file.</param>
-          <param name="dataObject">
-            <para>Data object associated to the indirect object. It MUST be</para>
-            <list type="bullet">
-              <item><code>null</code>, if the indirect object is original or free.</item>
-              <item>NOT <code>null</code>, if the indirect object is new and in-use.</item>
-            </list>
-          </param>
-          <param name="xrefEntry">Cross-reference entry associated to the indirect object. If the
-            indirect object is new, its offset field MUST be set to 0.</param>
-        */
+        /// <param name="file">Associated file.</param>
+        /// <param name="dataObject">
+        ///   <para>Data object associated to the indirect object. It MUST be</para>
+        ///   <list type="bullet">
+        ///     <item><code>null</code>, if the indirect object is original or free.</item>
+        ///     <item>NOT <code>null</code>, if the indirect object is new and in-use.</item>
+        ///   </list>
+        /// </param>
+        /// <param name="xrefEntry">Cross-reference entry associated to the indirect object. If the
+        ///   indirect object is new, its offset field MUST be set to 0.</param>
         internal PdfIndirectObject(PdfFile file, PdfDataObject dataObject, XRefEntry xrefEntry)
             : base(PdfObjectStatus.Updateable)
         {
@@ -76,11 +73,9 @@ namespace PdfClown.Objects
 
         public override PdfDataObject Resolve() => DataObject;
 
-        /**
-          <summary>Adds the <see cref="DataObject">data object</see> to the specified object stream
-          [PDF:1.6:3.4.6].</summary>
-          <param name="objectStream">Target object stream.</param>
-         */
+        /// <summary>Adds the <see cref="DataObject">data object</see> to the specified object stream
+        /// [PDF:1.6:3.4.6].</summary>
+        /// <param name="objectStream">Target object stream.</param>
         public void Compress(ObjectStream objectStream)
         {
             // Remove from previous object stream!
@@ -102,10 +97,11 @@ namespace PdfClown.Objects
 
         public override PdfFile File => file;
 
+        // NOTE: As indirect objects are root objects, no parent can be associated.
         public override PdfObject Parent
         {
-            get => null;  // NOTE: As indirect objects are root objects, no parent can be associated.
-            internal set {/* NOOP: As indirect objects are root objects, no parent can be associated. */}
+            get => null;
+            internal set { }
         }
 
         public override PdfObjectStatus Status
@@ -121,11 +117,9 @@ namespace PdfClown.Objects
             {
                 if (value && IsOriginal)
                 {
-                    /*
-                      NOTE: It's expected that DropOriginal() is invoked by IndirectObjects indexer;
-                      such an action is delegated because clients may invoke directly the indexer skipping
-                      this method.
-                    */
+                    // NOTE: It's expected that DropOriginal() is invoked by IndirectObjects indexer;
+                    // such an action is delegated because clients may invoke directly the indexer skipping
+                    // this method.
                     file.IndirectObjects.Update(this);
                 }
                 base.Updated = value;
@@ -134,16 +128,12 @@ namespace PdfClown.Objects
 
         public override int GetHashCode() => reference.GetHashCode();
 
-        /**
-          <summary>Gets whether this object is compressed within an object stream [PDF:1.6:3.4.6].
-          </summary>
-        */
+        /// <summary>Gets whether this object is compressed within an object stream [PDF:1.6:3.4.6].
+        /// </summary>
         public bool IsCompressed() => xrefEntry.Usage == XRefEntry.UsageEnum.InUseCompressed;
 
-        /**
-          <summary>Gets whether this object can be compressed within an object stream [PDF:1.6:3.4.6].
-          </summary>
-        */
+        /// <summary>Gets whether this object can be compressed within an object stream [PDF:1.6:3.4.6].
+        /// </summary>
         public bool IsCompressible()
         {
             return !IsCompressed()
@@ -153,14 +143,10 @@ namespace PdfClown.Objects
               && Reference.GenerationNumber == 0;
         }
 
-        /**
-          <summary>Gets whether this object contains a data object.</summary>
-        */
+        /// <summary>Gets whether this object contains a data object.</summary>
         public bool IsInUse() => (xrefEntry.Usage == XRefEntry.UsageEnum.InUse);
 
-        /**
-          <summary>Gets whether this object comes intact from an existing file.</summary>
-        */
+        /// <summary>Gets whether this object comes intact from an existing file.</summary>
         public bool IsOriginal
         {
             get => (Status & PdfObjectStatus.Original) != 0;
@@ -178,9 +164,7 @@ namespace PdfClown.Objects
             return this;
         }
 
-        /**
-          <summary>Removes the <see cref="DataObject">data object</see> from its object stream [PDF:1.6:3.4.6].</summary>
-        */
+        /// <summary>Removes the <see cref="DataObject">data object</see> from its object stream [PDF:1.6:3.4.6].</summary>
         public void Uncompress()
         {
             if (!IsCompressed())
@@ -253,11 +237,9 @@ namespace PdfClown.Objects
         {
             if (file != null)
             {
-                /*
-                  NOTE: It's expected that DropFile() is invoked by IndirectObjects.Remove() method;
-                  such an action is delegated because clients may invoke directly Remove() method,
-                  skipping this method.
-                */
+                // NOTE: It's expected that DropFile() is invoked by IndirectObjects.Remove() method;
+                // such an action is delegated because clients may invoke directly Remove() method,
+                // skipping this method.
                 file.IndirectObjects.RemoveAt(xrefEntry.Number);
             }
             return true;
@@ -266,6 +248,12 @@ namespace PdfClown.Objects
         public override PdfIndirectObject IndirectObject => this;
 
         public override PdfReference Reference => reference;
+
+        public override ContentWrapper ContentsWrapper
+        {
+            get => DataObject?.ContentsWrapper;
+            internal set => DataObject.ContentsWrapper = value;
+        }
 
         public override IPdfObjectWrapper Wrapper
         {
@@ -319,6 +307,6 @@ namespace PdfClown.Objects
         {
             Uncompress();
             file = null;
-        }        
+        }
     }
 }

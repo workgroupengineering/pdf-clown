@@ -49,25 +49,25 @@ namespace PdfClown.Documents.Contents.Fonts
         public string FontFamily
         {
             get => Dictionary.GetString(PdfName.FontFamily);
-            set => Dictionary.SetString(PdfName.FontFamily, value);
+            set => Dictionary.Set(PdfName.FontFamily, value);
         }
 
         public float? FontStretch
         {
             get => Dictionary.GetFloat(PdfName.FontStretch);
-            set => Dictionary.SetFloat(PdfName.FontStretch, value);
+            set => Dictionary.Set(PdfName.FontStretch, value);
         }
 
         public float? FontWeight
         {
             get => Dictionary.GetFloat(PdfName.FontWeight);
-            set => Dictionary.SetFloat(PdfName.FontWeight, value);
+            set => Dictionary.Set(PdfName.FontWeight, value);
         }
 
         public FlagsEnum Flags
         {
             get => (FlagsEnum)Dictionary.GetInt(PdfName.Flags);
-            set => Dictionary.SetInt(PdfName.Flags, (int)value);
+            set => Dictionary.Set(PdfName.Flags, (int)value);
         }
 
         public bool HasFlags => Dictionary.ContainsKey(PdfName.Flags);
@@ -104,67 +104,67 @@ namespace PdfClown.Documents.Contents.Fonts
         public float ItalicAngle
         {
             get => Dictionary.GetFloat(PdfName.ItalicAngle, 0F);
-            set => Dictionary.SetFloat(PdfName.ItalicAngle, value);
+            set => Dictionary.Set(PdfName.ItalicAngle, value);
         }
 
         public float Ascent
         {
             get => Dictionary.GetFloat(PdfName.Ascent, 750F);
-            set => Dictionary.SetFloat(PdfName.Ascent, value);
+            set => Dictionary.Set(PdfName.Ascent, value);
         }
 
         public float Descent
         {
             get => Dictionary.GetFloat(PdfName.Descent, -250F);
-            set => Dictionary.SetFloat(PdfName.Descent, value);
+            set => Dictionary.Set(PdfName.Descent, value);
         }
 
         public float? Leading
         {
             get => Dictionary.GetNFloat(PdfName.Leading);
-            set => Dictionary.SetFloat(PdfName.Leading, value);
+            set => Dictionary.Set(PdfName.Leading, value);
         }
 
         public float? CapHeight
         {
             get => Dictionary.GetNFloat(PdfName.CapHeight);
-            set => Dictionary.SetFloat(PdfName.CapHeight, value);
+            set => Dictionary.Set(PdfName.CapHeight, value);
         }
 
         public float? XHeight
         {
             get => Dictionary.GetNFloat(PdfName.XHeight);
-            set => Dictionary.SetFloat(PdfName.XHeight, value);
+            set => Dictionary.Set(PdfName.XHeight, value);
         }
 
         public float StemV
         {
             get => Dictionary.GetFloat(PdfName.StemV, 0F);
-            set => Dictionary.SetFloat(PdfName.StemV, value);
+            set => Dictionary.Set(PdfName.StemV, value);
         }
 
         public float StemH
         {
             get => Dictionary.GetFloat(PdfName.StemH, 0F);
-            set => Dictionary.SetFloat(PdfName.StemH, value);
+            set => Dictionary.Set(PdfName.StemH, value);
         }
 
         public float? AvgWidth
         {
             get => Dictionary.GetNFloat(PdfName.AvgWidth);
-            set => Dictionary.SetFloat(PdfName.AvgWidth, value);
+            set => Dictionary.Set(PdfName.AvgWidth, value);
         }
 
         public float? MaxWidth
         {
             get => Dictionary.GetNFloat(PdfName.MaxWidth);
-            set => Dictionary.SetFloat(PdfName.MaxWidth, value);
+            set => Dictionary.Set(PdfName.MaxWidth, value);
         }
 
         public float? MissingWidth
         {
             get => Dictionary.GetNFloat(PdfName.MissingWidth);
-            set => Dictionary.SetFloat(PdfName.MissingWidth, value);
+            set => Dictionary.Set(PdfName.MissingWidth, value);
         }
 
         public FontFile FontFile
@@ -188,7 +188,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public string CharSet
         {
             get => Dictionary.GetString(PdfName.CharSet);
-            set => Dictionary.SetString(PdfName.CharSet, value);
+            set => Dictionary.Set(PdfName.CharSet, value);
         }
 
         //CID Font Specific

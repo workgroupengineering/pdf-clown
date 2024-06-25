@@ -24,68 +24,24 @@
 */
 
 using PdfClown.Documents.Contents.Composition;
-using PdfClown.Objects;
-using PdfClown.Util;
 
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction
 {
-    /**
-      <summary>Text justification [PDF:1.6:8.4.5,8.6.2].</summary>
-    */
+    /// <summary>Text justification [PDF:1.6:8.4.5,8.6.2].</summary>
     public enum JustificationEnum
     {
-        /**
-          <summary>Left.</summary>
-        */
+        /// <summary>Left.</summary>
         Left,
-        /**
-          <summary>Center.</summary>
-        */
+        /// <summary>Center.</summary>
         Center,
-        /**
-          <summary>Right.</summary>
-        */
+        /// <summary>Right.</summary>
         Right
     }
 
     internal static class JustificationEnumExtension
     {
-        private static readonly BiDictionary<JustificationEnum, PdfInteger> codes;
-
-        static JustificationEnumExtension()
-        {
-            codes = new BiDictionary<JustificationEnum, PdfInteger>
-            {
-                [JustificationEnum.Left] = PdfInteger.Get(0),
-                [JustificationEnum.Center] = PdfInteger.Get(1),
-                [JustificationEnum.Right] = PdfInteger.Get(2)
-            };
-        }
-
-        /**
-          <summary>Gets the justification corresponding to the given value.</summary>
-        */
-        public static JustificationEnum Get(PdfInteger value)
-        {
-            if (value == null)
-                return JustificationEnum.Left;
-
-            JustificationEnum? justification = codes.GetKey(value);
-            if (!justification.HasValue)
-                throw new NotSupportedException("Justification unknown: " + value);
-
-            return justification.Value;
-        }
-
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
-        public static PdfInteger GetCode(this JustificationEnum value)
-        { return codes[value]; }
-
         public static XAlignmentEnum ToXAlignment(this JustificationEnum value)
         {
             switch (value)

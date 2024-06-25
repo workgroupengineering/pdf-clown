@@ -24,23 +24,21 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents;
 using PdfClown.Tokens;
-using PdfClown.Util.Collections;
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using text = System.Text;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF array object, that is a one-dimensional collection of (possibly-heterogeneous)
-      objects arranged sequentially [PDF:1.7:3.2.5].</summary>
-    */
-    public sealed class PdfArray : PdfDirectObject, IList<PdfDirectObject>
+    /// <summary>PDF array object, that is a one-dimensional collection of (possibly-heterogeneous)
+    /// objects arranged sequentially [PDF:1.7:3.2.5].</summary>
+    public sealed class PdfArray : PdfWrapableDirectObject, IList<PdfDirectObject>
     {
         private static readonly byte[] BeginArrayChunk = Encoding.Pdf.Encode(Keyword.BeginArray);
         private static readonly byte[] EndArrayChunk = Encoding.Pdf.Encode(Keyword.EndArray);
@@ -54,39 +52,11 @@ namespace PdfClown.Objects
                 && oldValue.SequenceEqual(newValue);
         }
 
-        public static PdfArray FromInts(ICollection<int> source)
-        {
-            var array = new PdfArray(source.Count);
-            array.AddRange(source.Select(p => PdfInteger.Get(p)));
-            return array;
-        }
-
-        public static PdfArray FromFloats(ICollection<float> source)
-        {
-            var array = new PdfArray(source.Count);
-            array.AddRange(source.Select(p => PdfReal.Get(p)));
-            return array;
-        }
-
-        public static PdfArray FromStrings(ICollection<byte[]> source)
-        {
-            var array = new PdfArray(source.Count);
-            array.AddRange(source.Select(p => PdfString.Get(p)));
-            return array;
-        }
-
-        public static PdfArray FromStrings(ICollection<string> source)
-        {
-            var array = new PdfArray(source.Count);
-            array.AddRange(source.Select(p => PdfString.Get(p)));
-            return array;
-        }
-
-
         internal List<PdfDirectObject> items;
 
         private PdfObject parent;
         private PdfObjectStatus status;
+        private ContentWrapper contentsWrapper;
 
         public PdfArray() : this(10)
         { }
@@ -112,28 +82,62 @@ namespace PdfClown.Objects
             Updateable = true;
         }
 
-        public PdfArray(int[] items)
-            : this(items.Length)
+        public PdfArray(ICollection<int> items)
+            : this(items.Count)
         {
             Updateable = false;
-            this.AddRange(items.Select(x => PdfInteger.Get(x)));
+            this.AddRangeDirect(items.Select(x => PdfInteger.Get(x)));
             Updateable = true;
         }
 
-        public PdfArray(float[] items)
-            : this(items.Length)
+        public PdfArray(ICollection<float> items)
+            : this(items.Count)
         {
             Updateable = false;
-            this.AddRange(items.Select(x => PdfReal.Get(x)));
+            this.AddRangeDirect(items.Select(x => PdfReal.Get(x)));
             Updateable = true;
         }
 
-        public PdfArray(double[] items)
-            : this(items.Length)
+        public PdfArray(ICollection<double> items)
+            : this(items.Count)
         {
             Updateable = false;
-            this.AddRange(items.Select(x => PdfReal.Get(x)));
+            this.AddRangeDirect(items.Select(x => PdfReal.Get(x)));
             Updateable = true;
+        }
+
+        public PdfArray(ICollection<byte[]> source)
+            : this(source.Count)
+        {
+            Updateable = false;
+            AddRangeDirect(source.Select(p => PdfString.Get(p)));
+            Updateable = true;
+        }
+
+        public PdfArray(ICollection<string> source)
+            : this(source.Count)
+        {
+            Updateable = false;
+            AddRangeDirect(source.Select(p => PdfString.Get(p)));
+            Updateable = true;
+        }
+
+        public override PdfObject Parent
+        {
+            get => parent;
+            internal set => parent = value;
+        }
+
+        public override PdfObjectStatus Status
+        {
+            get => status;
+            protected internal set => status = value;
+        }
+
+        public override ContentWrapper ContentsWrapper
+        {
+            get => contentsWrapper;
+            internal set => contentsWrapper = value;
         }
 
         public override PdfObject Accept(IVisitor visitor, object data)
@@ -160,58 +164,95 @@ namespace PdfClown.Objects
 
         public float? GetNFloat(int index, float? def = null) => (Resolve(index) as IPdfNumber)?.FloatValue ?? def;
 
-        public void SetFloat(int index, float? value) => this[index] = PdfReal.Get(value);
-
         public double GetDouble(int index, double def = 0) => ((IPdfNumber)Resolve(index))?.RawValue ?? def;
 
-        public void SetDouble(int index, double? value) => this[index] = PdfReal.Get(value);
+        public double? GetNDouble(int index, double? def = null) => (Resolve(index) as IPdfNumber)?.RawValue ?? def;
 
         public int GetInt(int index, int def = 0) => ((IPdfNumber)Resolve(index))?.IntValue ?? def;
 
         public int? GetNInt(int index, int? def = null) => (Resolve(index) as IPdfNumber)?.IntValue ?? def;
 
-        public void SetInt(int index, int? value) => this[index] = PdfInteger.Get(value);
-
         public bool GetBool(int index, bool def = false) => ((PdfBoolean)Resolve(index))?.RawValue ?? def;
 
-        public void SetBool(int index, bool? value) => this[index] = PdfBoolean.Get(value);
+        public bool? GetNBool(int index, bool? def = null) => (Resolve(index) as PdfBoolean)?.RawValue ?? def;
 
         public string GetString(int index, string def = null) => ((IPdfString)Resolve(index))?.StringValue ?? def;
 
-        public void SetName(int index, string value) => this[index] = PdfName.Get(value);
+        public void Set(int index, bool? value) => Set(index, PdfBoolean.Get(value));
 
-        public void SetText(int index, string value) => this[index] = PdfTextString.Get(value);
+        public void Set(int index, float? value) => Set(index, PdfReal.Get(value));
+
+        public void Set(int index, double? value) => Set(index, PdfReal.Get(value));
+
+        public void Set(int index, int? value) => Set(index, PdfInteger.Get(value));
+
+        public void Set(int index, long? value) => Set(index, PdfInteger.Get(value));
+
+        public void Set(int index, bool value) => Set(index, PdfBoolean.Get(value));
+
+        public void Set(int index, float value) => Set(index, PdfReal.Get(value));
+
+        public void Set(int index, double value) => Set(index, PdfReal.Get(value));
+
+        public void Set(int index, int value) => Set(index, PdfInteger.Get(value));
+
+        public void Set(int index, long value) => Set(index, PdfInteger.Get(value));
+
+        public void SetText(int index, string value) => Set(index, PdfTextString.Get(value));
+
+        public void SetName(int index, string value) => Set(index, PdfName.Get(value));
+
+        public void Add(bool? value) => Add(PdfBoolean.Get(value));
+
+        public void Add(float? value) => Add(PdfReal.Get(value));
+
+        public void Add(double? value) => Add(PdfReal.Get(value));
+
+        public void Add(int? value) => Add(PdfInteger.Get(value));
+
+        public void Add(long? value) => Add(PdfInteger.Get(value));
+
+        public void Add(DateTime? value) => Add(PdfDate.Get(value));
+
+        public void Add(bool value) => Add(PdfBoolean.Get(value));
+
+        public void Add(float value) => Add(PdfReal.Get(value));
+
+        public void Add(double value) => Add(PdfReal.Get(value));
+
+        public void Add(int value) => Add(PdfInteger.Get(value));
+
+        public void Add(long value) => Add(PdfInteger.Get(value));
+
+        public void Add(string value) => Add(PdfTextString.Get(value));
+
+        public void Add(byte[] value) => Add(PdfTextString.Get(value));
 
         public T Get<T>(int index) where T : PdfDataObject
         {
-            var value = this[index];
+            var value = items[index];
             return value is T typedValue ? typedValue
                 : value?.Resolve() is T resolved ? resolved : default;
         }
 
         public T Get<T>(int index, T defaultValue) where T : PdfDataObject
         {
-            var value = this[index];
+            var value = items[index];
             return value is T typedValue ? typedValue
                 : value?.Resolve() is T resolved ? resolved : defaultValue;
         }
 
-        /**
-          <summary>Gets the value corresponding to the given index, forcing its instantiation as a direct
-          object in case of missing entry.</summary>
-          <param name="index">Index of the item to return.</param>
-          <param name="itemClass">Class to use for instantiating the item in case of missing entry.</param>
-        */
-        public PdfDirectObject GetOrCreate<T>(int index) where T : PdfDataObject, new()
-        { return GetOrCreate<T>(index, true); }
+        /// <summary>Gets the value corresponding to the given index, forcing its instantiation as a direct
+        /// object in case of missing entry.</summary>
+        /// <param name="index">Index of the item to return.</param>
+        /// <param name="itemClass">Class to use for instantiating the item in case of missing entry.</param>
+        public PdfDirectObject GetOrCreate<T>(int index) where T : PdfDataObject, new() => GetOrCreate<T>(index, true);
 
-        /**
-          <summary>Gets the value corresponding to the given index, forcing its instantiation in case
-          of missing entry.</summary>
-          <param name="index">Index of the item to return.</param>
-          <param name="direct">Whether the item has to be instantiated directly within its container
-          instead of being referenced through an indirect object.</param>
-        */
+        /// <summary>Gets the value corresponding to the given index, forcing its instantiation in case
+        /// of missing entry.</summary>
+        /// <param name="index">Index of the item to return.</param>
+        /// <param name="direct">Whether the item has to be instantiated directly within its container
+        /// instead of being referenced through an indirect object.</param>
         public PdfDirectObject GetOrCreate<T>(int index, bool direct) where T : PdfDataObject, new()
         {
             PdfDirectObject item;
@@ -219,11 +260,9 @@ namespace PdfClown.Objects
               || (item = this[index]) == null
               || !item.Resolve().GetType().Equals(typeof(T)))
             {
-                /*
-                  NOTE: The null-object placeholder MUST NOT perturb the existing structure; therefore:
-                    - it MUST be marked as virtual in order not to unnecessarily serialize it;
-                    - it MUST be put into this array without affecting its update status.
-                */
+                //NOTE: The null-object placeholder MUST NOT perturb the existing structure; therefore:
+                //   - it MUST be marked as virtual in order not to unnecessarily serialize it;
+                //   - it MUST be put into this array without affecting its update status.
                 try
                 {
                     item = (PdfDirectObject)Include(direct
@@ -243,38 +282,20 @@ namespace PdfClown.Objects
             return item;
         }
 
-        public override int GetHashCode()
-        {
-            return items.GetHashCode();
-        }
+        public override int GetHashCode() => items.GetHashCode();
 
-        public override PdfObject Parent
-        {
-            get => parent;
-            internal set => parent = value;
-        }
+        /// <summary>Gets the dereferenced value corresponding to the given index.</summary>
+        /// <remarks>This method takes care to resolve the value returned by
+        /// <see cref="this[int]">this[int]</see>.</remarks>
+        /// <param name="index">Index of the item to return.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public PdfDataObject Resolve(int index) => items[index]?.Resolve();
 
-        public override PdfObjectStatus Status
-        {
-            get => status;
-            protected internal set => status = value;
-        }
-
-        /**
-          <summary>Gets the dereferenced value corresponding to the given index.</summary>
-          <remarks>This method takes care to resolve the value returned by
-          <see cref="this[int]">this[int]</see>.</remarks>
-          <param name="index">Index of the item to return.</param>
-        */
-        public PdfDataObject Resolve(int index) => this[index]?.Resolve();
-
-        /**
-          <summary>Gets the dereferenced value corresponding to the given index, forcing its
-          instantiation in case of missing entry.</summary>
-          <remarks>This method takes care to resolve the value returned by
-          <see cref="GetOrCreate<T>">Get<T></see>.</remarks>
-          <param name="index">Index of the item to return.</param>
-        */
+        /// <summary>Gets the dereferenced value corresponding to the given index, forcing its
+        /// instantiation in case of missing entry.</summary>
+        /// <remarks>This method takes care to resolve the value returned by
+        /// <see cref="GetOrCreate<T>">Get<T></see>.</remarks>
+        /// <param name="index">Index of the item to return.</param>
         public T Resolve<T>(int index) where T : PdfDataObject, new()
         {
             return (T)Resolve(GetOrCreate<T>(index));
@@ -343,8 +364,26 @@ namespace PdfClown.Objects
             Update();
         }
 
+        internal void SetDirect(int index, PdfDirectObject value)
+        {
+            PdfDirectObject oldItem = items[index];
+            items[index] = value;
+            Exclude(oldItem);
+            Update();
+        }
+
+        public void Set<T>(int index, T value)
+             where T : PdfDirectObject, IPdfSimpleObject
+        {
+            PdfDirectObject oldItem = items[index];
+            items[index] = value;
+            Exclude(oldItem);
+            Update();
+        }
+
         public PdfDirectObject this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => items[index];
             set
             {
@@ -355,9 +394,27 @@ namespace PdfClown.Objects
             }
         }
 
+        internal void AddDirect(PdfDirectObject item)
+        {
+            items.Add(item);
+            Update();
+        }
+
+        public void Add<T>(T item) where T : PdfDirectObject, IPdfSimpleObject
+        {
+            items.Add(item);
+            Update();
+        }
+
         public void Add(PdfDirectObject item)
         {
             items.Add((PdfDirectObject)Include(item));
+            Update();
+        }
+
+        internal void AddRangeDirect(IEnumerable<PdfDirectObject> source)
+        {
+            items.AddRange(source);
             Update();
         }
 
@@ -381,6 +438,8 @@ namespace PdfClown.Objects
 
         public bool IsReadOnly => false;
 
+        public int Capacity { get => items.Capacity; }
+
         public bool Remove(PdfDirectObject item)
         {
             if (!items.Remove(item))
@@ -391,15 +450,11 @@ namespace PdfClown.Objects
             return true;
         }
 
-        public IEnumerator<PdfDirectObject> GetEnumerator()
-        {
-            return items.GetEnumerator();
-        }
+        public List<PdfDirectObject>.Enumerator GetEnumerator() => items.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return items.GetEnumerator();
-        }
+        IEnumerator<PdfDirectObject> IEnumerable<PdfDirectObject>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public int[] ToIntArray()
         {
@@ -437,6 +492,21 @@ namespace PdfClown.Objects
             return newArray;
         }
 
+        public List<string> ToStringList()
+        {
+            var newArray = new List<string>(Count);
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    newArray.Add(GetString(i));
+                }
+            }
+            return newArray;
+        }
 
+        public PdfDirectObject TryGet(int i)
+        {
+            return i < Count ? items[i] : null;
+        }
     }
 }

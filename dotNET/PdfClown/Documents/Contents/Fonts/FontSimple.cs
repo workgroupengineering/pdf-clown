@@ -24,17 +24,13 @@
 */
 
 using PdfClown.Objects;
-using PdfClown.Util;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>Simple font [PDF:1.6:5.5].</summary>
-    */
+    ///<summary>Simple font [PDF:1.6:5.5].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class FontSimple : Font
     {
@@ -55,17 +51,13 @@ namespace PdfClown.Documents.Contents.Fonts
             : base(baseObject)
         { }
 
-        /**
-        * Returns the Encoding vector.
-        */
+        /// <summary>Returns the Encoding vector.</summary>
         public Encoding Encoding
         {
             get => encoding;
         }
 
-        /**
-         * Returns the Encoding vector.
-         */
+        /// <summary>Returns the Encoding vector.</summary>
         public GlyphMapping GlyphList
         {
             get => glyphList;
@@ -97,10 +89,9 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * Returns true the font is a symbolic (that is, it does not use the Adobe Standard Roman
-         * character set).
-         */
+        /// <summary>
+        /// Returns true the font is a symbolic (that is, it does not use the Adobe Standard Roman character set).
+        /// </summary>
         public override bool Symbolic
         {
             get
@@ -113,10 +104,9 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * Internal implementation of isSymbolic, allowing for the fact that the result may be
-         * indeterminate.
-         */
+        /// <summary>
+        /// Internal implementation of isSymbolic, allowing for the fact that the result may be indeterminate.
+        /// </summary>
         protected virtual bool? FontSymbolic
         {
             get
@@ -178,10 +168,9 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-        * Returns the value of the symbolic flag,  allowing for the fact that the result may be
-        * indeterminate.
-*/
+        /// <summary>
+        /// Returns the value of the symbolic flag,  allowing for the fact that the result may be indeterminate.
+        /// </summary>
         protected bool? SymbolicFlag
         {
             get => FontDescriptor != null && FontDescriptor.HasFlags
@@ -235,7 +224,6 @@ namespace PdfClown.Documents.Contents.Fonts
             return null;
         }
 
-
         public override bool IsVertical
         {
             get => false;
@@ -274,28 +262,20 @@ namespace PdfClown.Documents.Contents.Fonts
             throw new InvalidOperationException("No AFM");
         }
 
-
-        /**
-         * Returns the path for the character with the given name. For some fonts, GIDs may be used
-         * instead of names when calling this method.
-         *
-         * @return glyph path
-         * @throws IOException if the path could not be read
-         */
+        /// <summary>
+        /// Returns the path for the character with the given name. For some fonts, GIDs may be used instead of names when calling this method.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>glyph path</returns>
         public abstract SKPath GetPath(string name);
 
-        /**
-         * Returns true if the font contains the character with the given name.
-         *
-         * @throws IOException if the path could not be read
-         */
+        /// <summary>Returns true if the font contains the character with the given name.</summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public abstract bool HasGlyph(string name);
 
-        /**
-         * Returns the embedded or system font used for rendering. This is never null.
-         */
+        /// <summary>Returns the embedded or system font used for rendering. This is never null.</summary>
         public abstract BaseFont Font { get; }
-
 
         public override void AddToSubset(int codePoint)
         {
@@ -327,12 +307,8 @@ namespace PdfClown.Documents.Contents.Fonts
             return false;
         }
 
-        /**
-        * Reads the Encoding from the Font dictionary or the embedded or substituted font file.
-        * Must be called at the end of any subclass constructors.
-        *
-        * @throws IOException if the font file could not be read
-*/
+        /// <summary>Reads the Encoding from the Font dictionary or the embedded or substituted font file. 
+        /// Must be called at the end of any subclass constructors.</summary>
         protected virtual void ReadEncoding()
         {
             var encodingData = EncodingData;
@@ -382,13 +358,9 @@ namespace PdfClown.Documents.Contents.Fonts
             AssignGlyphList(Standard14Fonts.GetMappedFontName(Name));
         }
 
-        /**
-         * Called by readEncoding() if the encoding needs to be extracted from the font file.
-         *
-         * @throws IOException if the font file could not be read.
-         */
+        /// <summary>Called by readEncoding() if the encoding needs to be extracted from the font file.</summary>
+        /// <returns></returns>
         protected abstract Encoding ReadEncodingFromFont();
-
 
         private void AssignGlyphList(FontName baseFont)
         {
@@ -402,7 +374,6 @@ namespace PdfClown.Documents.Contents.Fonts
                 glyphList = GlyphMapping.Default;
             }
         }
-
 
     }
 }

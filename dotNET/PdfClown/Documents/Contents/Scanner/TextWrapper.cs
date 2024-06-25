@@ -34,13 +34,13 @@ namespace PdfClown.Documents.Contents.Scanner
     /**
       <summary>Text information.</summary>
     */
-    public sealed class TextWrapper : GraphicsObjectWrapper<Text>
+    public sealed class TextWrapper : GraphicsObjectWrapper<GraphicsText>
     {
         private List<TextStringWrapper> textStrings;
         private string text;
         private Quad? quad;
 
-        internal TextWrapper(ContentScanner scanner) : base((Text)scanner.Current)
+        internal TextWrapper(ContentScanner scanner) : base((GraphicsText)scanner.Current)
         {
             textStrings = new List<TextStringWrapper>();
             Extract(scanner.ChildLevel);

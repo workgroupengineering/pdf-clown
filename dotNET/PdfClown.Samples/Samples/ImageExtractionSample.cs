@@ -1,6 +1,4 @@
 using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -35,19 +33,18 @@ namespace PdfClown.Samples.CLI
                         PdfDictionary header = ((PdfStream)dataObject).Header;
                         // Is this stream an image?
                         if (header.ContainsKey(PdfName.Type)
-                          && header[PdfName.Type].Equals(PdfName.XObject)
-                          && header[PdfName.Subtype].Equals(PdfName.Image))
+                          && PdfName.XObject.Equals(header.Get<PdfName>(PdfName.Type))
+                          && PdfName.Image.Equals(header.Get<PdfName>(PdfName.Subtype)))
                         {
                             // Which kind of image?
-                            if (header[PdfName.Filter].Equals(PdfName.DCTDecode)) // JPEG image.
+                            if (PdfName.DCTDecode.Equals(header.Get<PdfName>(PdfName.Filter))) // JPEG image.
                             {
                                 // Get the image data (keeping it encoded)!
                                 IByteStream body = ((PdfStream)dataObject).GetBody(false);
                                 // Export the image!
                                 ExportImage(
                                   body,
-                                  "ImageExtractionSample_" + (index++) + ".jpg"
-                                  );
+                                  "ImageExtractionSample_" + (index++) + ".jpg");
                             }
                             else // Unsupported image.
                             { Console.WriteLine("Image XObject " + indirectObject.Reference + " couldn't be extracted (filter: " + header[PdfName.Filter] + ")"); }
@@ -57,10 +54,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private void ExportImage(
-          IByteStream data,
-          string filename
-          )
+        private void ExportImage(IByteStream data, string filename)
         {
             string outputPath = GetOutputPath(filename);
             FileStream outputStream;

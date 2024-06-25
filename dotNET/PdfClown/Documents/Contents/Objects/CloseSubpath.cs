@@ -43,11 +43,6 @@ namespace PdfClown.Documents.Contents.Objects
         private CloseSubpath() : base(OperatorKeyword)
         { }
 
-        public override void Scan(GraphicsState state)
-        {
-            var pathObject = state.Scanner.RenderObject;
-            if (pathObject != null)
-            { pathObject.Close(); }
-        }
+        public override void Scan(GraphicsState state) => state.Scanner.Path?.Close();
     }
 }

@@ -37,9 +37,7 @@ using System.Threading;
 
 namespace PdfClown
 {
-    /**
-      <summary>PDF file representation.</summary>
-    */
+    ///<summary>PDF file representation.</summary>
     public sealed class PdfFile : IDisposable
     {
         private sealed class ImplicitContainer : PdfIndirectObject
@@ -118,7 +116,7 @@ namespace PdfClown
                         }
                     }
                 }
-                Configuration.XRefMode = PdfName.XRef.Equals(trailer[PdfName.Type])
+                Configuration.XRefMode = PdfName.XRef.Equals(trailer.Get<PdfName>(PdfName.Type))
                   ? XRefModeEnum.Compressed
                   : XRefModeEnum.Plain;
             }
@@ -134,14 +132,10 @@ namespace PdfClown
             Dispose(false);
         }
 
-        /**
-          <summary>Gets the file configuration.</summary>
-        */
+        /// <summary>Gets the file configuration.</summary>
         public FileConfiguration Configuration => configuration;
 
-        /**
-          <summary>Gets the high-level representation of the file content.</summary>
-        */
+        /// <summary>Gets the high-level representation of the file content.</summary>
         public PdfDocument Document => document;
 
         public PdfEncryption Encryption
@@ -150,94 +144,74 @@ namespace PdfClown
             set => trailer[PdfName.Encrypt] = value?.BaseDataObject;
         }
 
-        /**
-          <summary>Gets the identifier of this file.</summary>
-        */
+        /// <summary>Gets the identifier of this file.</summary>
         public FileIdentifier ID
         {
             get => PdfObjectWrapper.Wrap<FileIdentifier>(Trailer[PdfName.ID]);
             set => Trailer[PdfName.ID] = value.BaseDataObject;
         }
 
-        /**
-          <summary>Gets the indirect objects collection.</summary>
-        */
+        /// <summary>Gets the indirect objects collection.</summary>
         public IndirectObjects IndirectObjects => indirectObjects;
 
-        /**
-          <summary>Gets/Sets the file path.</summary>
-        */
+        /// <summary>Gets/Sets the file path.</summary>
         public string Path
         {
             get => path;
             set => path = value;
         }
 
-        /**
-          <summary>Gets the data reader backing this file.</summary>
-          <returns><code>null</code> in case of newly-created file.</returns>
-        */
+        /// <summary>Gets the data reader backing this file.</summary>
+        /// <returns><code>null</code> in case of newly-created file.</returns>
         public Reader Reader => reader;
 
 
-        /**
-          <summary>Gets the file trailer.</summary>
-        */
+        /// <summary>Gets the file trailer.</summary>
         public PdfDictionary Trailer => trailer;
 
-        /**
-          <summary>Gets whether the initial state of this file has been modified.</summary>
-        */
+        /// <summary>Gets whether the initial state of this file has been modified.</summary>
         public bool Updated => indirectObjects.ModifiedObjects.Count > 0;
 
-        /**
-          <summary>Gets the file header version [PDF:1.6:3.4.1].</summary>
-          <remarks>This property represents just the original file version; to get the actual version,
-          use the <see cref="PdfDocument.Version">Document.Version</see> method.
-          </remarks>
-        */
+        /// <summary>Gets the file header version [PDF:1.6:3.4.1].</summary>
+        /// <remarks>This property represents just the original file version; to get the actual version,
+        /// use the <see cref="PdfDocument.Version">Document.Version</see> method.
+        /// </remarks>
         public PdfVersion Version => version;
 
-        /**
-          <summary>Registers an <b>internal data object</b>.</summary>
-        */
+        /// <summary>Registers an <b>internal data object</b>.</summary>
         public PdfReference Register(PdfDataObject obj)
         {
             return indirectObjects.Add(obj).Reference;
         }
 
-        ///<summary>Serializes the file to the current file-system path using the 
-        ///<see cref="SerializationModeEnum.Incremental">incremental for signatures</see> or 
-        ///<see cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
+        /// <summary>Serializes the file to the current file-system path using the 
+        /// <see cref="SerializationModeEnum.Incremental">incremental for signatures</see> or 
+        /// <see cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
         public void Save() => Save(Document.HasSignatures ? SerializationModeEnum.Incremental : SerializationModeEnum.Standard);
 
-        /**
-          <summary>Serializes the file to the current file-system path.</summary>
-          <param name="mode">Serialization mode.</param>
-        */
+        /// <summary>Serializes the file to the current file-system path.</summary>
+        /// <param name="mode">Serialization mode.</param>
         public void Save(SerializationModeEnum mode)
         {
             if (!File.Exists(path))
                 throw new FileNotFoundException("No valid source path available.");
 
-            /*
-              NOTE: The document file cannot be directly overwritten as it's locked for reading by the
-              open stream; its update is therefore delayed to its disposal, when the temporary file will
-              overwrite it (see Dispose() method).
-            */
+            // NOTE: The document file cannot be directly overwritten as it's locked for reading by the
+            // open stream; its update is therefore delayed to its disposal, when the temporary file will
+            // overwrite it (see Dispose() method).
             Save(TempPath, mode);
             CompleatSave();
         }
 
-        ///<summary>Serializes the file to the specified file system path using the 
-        ///<see cref="SerializationModeEnum.Incremental">incremental for signatures</see> or 
-        ///<see cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
-        ///<param name="path">Target path.</param>
+        /// <summary>Serializes the file to the specified file system path using the 
+        /// <see cref="SerializationModeEnum.Incremental">incremental for signatures</see> or 
+        /// <see cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
+        /// <param name="path">Target path.</param>
         public void Save(string path) => Save(path, Document.HasSignatures ? SerializationModeEnum.Incremental : SerializationModeEnum.Standard);
 
-        ///<summary>Serializes the file to the specified file system path .</summary>
-        ///<param name="path">Target path.</param>
-        ///<param name="mode">Serialization mode.</param>
+        /// <summary>Serializes the file to the specified file system path .</summary>
+        /// <param name="path">Target path.</param>
+        /// <param name="mode">Serialization mode.</param>
         public void Save(string path, SerializationModeEnum mode)
         {
             using (var outputStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
@@ -247,26 +221,22 @@ namespace PdfClown
             File.SetLastWriteTimeUtc(path, DateTime.UtcNow);
         }
 
-        ///<summary>Serializes the file to the specified stream using the 
-        ///<see cref="SerializationModeEnum.Incremental">incremental for signatures</see> or 
-        ///<see cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
-        ///<param name="path">Target path.</param>
+        /// <summary>Serializes the file to the specified stream using the 
+        /// <see cref="SerializationModeEnum.Incremental">incremental for signatures</see> or 
+        /// <see cref="SerializationModeEnum.Standard">standard serialization mode</see>.</summary>
+        /// <param name="path">Target path.</param>
         public void Save(Stream stream) => Save(stream, Document.HasSignatures ? SerializationModeEnum.Incremental : SerializationModeEnum.Standard);
 
-        /**
-          <summary>Serializes the file to the specified stream.</summary>
-          <remarks>It's caller responsibility to close the stream after this method ends.</remarks>
-          <param name="stream">Target stream.</param>
-          <param name="mode">Serialization mode.</param>
-        */
+        /// <summary>Serializes the file to the specified stream.</summary>
+        /// <remarks>It's caller responsibility to close the stream after this method ends.</remarks>
+        /// <param name="stream">Target stream.</param>
+        /// <param name="mode">Serialization mode.</param>
         public void Save(Stream stream, SerializationModeEnum mode) => Save((IOutputStream)new StreamContainer(stream), mode);
 
-        /**
-          <summary>Serializes the file to the specified stream.</summary>
-          <remarks>It's caller responsibility to close the stream after this method ends.</remarks>
-          <param name="stream">Target stream.</param>
-          <param name="mode">Serialization mode.</param>
-        */
+        /// <summary>Serializes the file to the specified stream.</summary>
+        /// <remarks>It's caller responsibility to close the stream after this method ends.</remarks>
+        /// <param name="stream">Target stream.</param>
+        /// <param name="mode">Serialization mode.</param>
         public void Save(IOutputStream stream, SerializationModeEnum mode)
         {
             var information = Document.Information;
@@ -289,18 +259,13 @@ namespace PdfClown
             writer.Write(mode);
         }
 
-
-        /**
-          <summary>Unregisters an internal object.</summary>
-        */
+        /// <summary>Unregisters an internal object.</summary>
         public void Unregister(PdfReference reference)
         {
             indirectObjects.RemoveAt(reference.ObjectNumber);
         }
 
-        /**
-          <summary>Gets/Sets the default cloner.</summary>
-        */
+        /// <summary>Gets/Sets the default cloner.</summary>
         public Cloner Cloner
         {
             get => cloner ??= new Cloner(this);

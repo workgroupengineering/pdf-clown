@@ -73,7 +73,7 @@ namespace PdfClown.Documents.Contents.Fonts
             int firstChar = codeToName.Keys.Min();
             int lastChar = codeToName.Keys.Max();
 
-            List<int> widths = new List<int>(lastChar - firstChar + 1);
+            var widths = new List<int>(lastChar - firstChar + 1);
             for (int i = 0; i < lastChar - firstChar + 1; i++)
             {
                 widths.Add(0);
@@ -94,9 +94,9 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
             }
 
-            font[PdfName.FirstChar] = PdfInteger.Get(firstChar);
-            font[PdfName.LastChar] = PdfInteger.Get(lastChar);
-            font[PdfName.Widths] = PdfArray.FromInts(widths);
+            font.Set(PdfName.FirstChar, firstChar);
+            font.Set(PdfName.LastChar, lastChar);
+            font[PdfName.Widths] = new PdfArray(widths);
         }
 
         /**

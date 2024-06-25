@@ -23,18 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Files;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Named embedded files [PDF:1.6:3.6.3].</summary>
-    */
+    /// <summary>Named embedded files [PDF:1.6:3.6.3].</summary>
     [PDF(VersionEnum.PDF14)]
     public sealed class NamedEmbeddedFiles : NameTree<FileSpecification>
     {
@@ -44,7 +38,6 @@ namespace PdfClown.Documents
         public NamedEmbeddedFiles(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        protected override FileSpecification WrapValue(PdfDirectObject baseObject)
-        { return FileSpecification.Wrap(baseObject); }
+        protected override FileSpecification WrapValue(PdfDirectObject baseObject) => FileSpecification.Wrap(baseObject);
     }
 }

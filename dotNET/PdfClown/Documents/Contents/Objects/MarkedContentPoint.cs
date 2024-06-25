@@ -37,56 +37,18 @@ namespace PdfClown.Documents.Contents.Objects
     public abstract class MarkedContentPoint : ContentMarker
     {
 
-        public MarkedContentPoint(PdfName tag)
-            : base(tag)
+        public MarkedContentPoint(string @operator, PdfName tag)
+            : base(@operator, tag, null)
         { }
 
-        public MarkedContentPoint(PdfName tag, PdfDirectObject properties)
-            : base(tag, properties)
+        public MarkedContentPoint(string @operator, PdfName tag, PdfDirectObject properties)
+            : base(@operator, tag, properties)
         { }
 
-        internal MarkedContentPoint(string @operator, IList<PdfDirectObject> operands)
+        internal MarkedContentPoint(string @operator, PdfArray operands)
             : base(@operator, operands)
         { }
 
-        protected override string PropertyListOperator => MarkedPropertyListContentPoint.PropertyListOperatorKeyword;
-
-        protected override string SimpleOperator => MarkedSimpleContentPoint.SimpleOperatorKeyword;
-    }
-
-    public sealed class MarkedPropertyListContentPoint : MarkedContentPoint
-    {
-        public static readonly string PropertyListOperatorKeyword = "DP";
-
-        public MarkedPropertyListContentPoint(PdfName tag)
-            : base(tag)
-        { }
-
-        public MarkedPropertyListContentPoint(PdfName tag, PdfDirectObject properties)
-            : base(tag, properties)
-        { }
-
-        internal MarkedPropertyListContentPoint(IList<PdfDirectObject> operands)
-            : base(PropertyListOperatorKeyword, operands)
-        { }
         
-    }
-
-    public sealed class MarkedSimpleContentPoint : MarkedContentPoint
-    {
-        public static readonly string SimpleOperatorKeyword = "MP";
-
-        public MarkedSimpleContentPoint(PdfName tag)
-            : base(tag)
-        { }
-
-        public MarkedSimpleContentPoint(PdfName tag, PdfDirectObject properties)
-            : base(tag, properties)
-        { }
-
-        internal MarkedSimpleContentPoint(IList<PdfDirectObject> operands)
-            : base(SimpleOperatorKeyword, operands)
-        { }
-
     }
 }

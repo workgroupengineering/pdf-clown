@@ -26,82 +26,55 @@
 using PdfClown.Objects;
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Functions
 {
-    /**
-      <summary>List of 1-input functions combined in a Parent stitching function</see> [PDF:1.6:3.9.3].</summary>
-    */
+    ///<summary>List of 1-input functions combined in a Parent stitching function</see> [PDF:1.6:3.9.3].</summary>
     [PDF(VersionEnum.PDF13)]
-    public sealed class Functions : PdfObjectWrapper<PdfArray>, IList<Function>
+    public sealed class Functions : Array<Function>
     {
-        public static Functions Wrap(PdfDirectObject baseObject)
+        public class ItemWrapper : IEntryWrapper<Function>
         {
-            if (baseObject.Wrapper is Functions functions)
-                return functions;
-            return new Functions(baseObject);
-        }       
+            public Function Wrap(PdfDirectObject baseObject) => Function.Wrap(baseObject);
+        }
 
-        public Functions(PdfDirectObject baseObject) : base(baseObject)
+        private static readonly ItemWrapper Wrapper = new ItemWrapper();
+
+        public static Functions Wrap(PdfDirectObject baseObject) => baseObject != null
+                ? baseObject.Wrapper is Functions functions ? functions : new Functions(baseObject)
+                : null;
+
+        public Functions(PdfDirectObject baseObject) : base(Wrapper, baseObject)
         { }
 
         public override Object Clone(PdfDocument context)
         { return new NotImplementedException(); }
 
-        public int IndexOf(Function value) => BaseDataObject.IndexOf(value.BaseObject);
 
-        public void Insert(int index, Function value)
+        public override void Insert(int index, Function value)
         {
             Validate(value);
-            BaseDataObject.Insert(index, value.BaseObject);
+            base.Insert(index, value);
         }
 
-        public void RemoveAt(int index) => BaseDataObject.RemoveAt(index);
-
-        public Function this[int index]
+        public override Function this[int index]
         {
-            get => Function.Wrap(BaseDataObject[index]);
+            get => base[index];
             set
             {
                 Validate(value);
-                BaseDataObject[index] = value.BaseObject;
+                base[index] = value;
             }
         }
 
-        public void Add(Function value)
+        public override void Add(Function value)
         {
             Validate(value);
-            BaseDataObject.Add(value.BaseObject);
+            base.Add(value);
         }
 
-        public void Clear() => BaseDataObject.Clear();
-
-        public bool Contains(Function value) => BaseDataObject.Contains(value.BaseObject);
-
-        public void CopyTo(Function[] values, int index)
-        { throw new NotImplementedException(); }
-
-        public int Count => BaseDataObject.Count;
-
-        public bool IsReadOnly => false;
-
-        public bool Remove(Function value) => BaseDataObject.Remove(value.BaseObject);
-
-        IEnumerator<Function> IEnumerable<Function>.GetEnumerator()
-        {
-            for (int index = 0, length = Count; index < length; index++)
-            { yield return this[index]; }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<Function>)this).GetEnumerator(); }
-
-        /**
-          <summary>Checks whether the specified function is valid for insertion.</summary>
-          <param name="value">Function to validate.</param>
-        */
+        ///<summary>Checks whether the specified function is valid for insertion.</summary>
+        ///<param name="value">Function to validate.</param>
         private void Validate(Function value)
         {
             if (value.InputCount != 1)

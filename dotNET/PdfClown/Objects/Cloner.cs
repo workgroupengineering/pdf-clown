@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Forms;
 using PdfClown.Documents.Interaction.Navigation;
@@ -34,9 +33,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Object cloner.</summary>
-    */
+    /// <summary>Object cloner.</summary>
     public class Cloner : Visitor
     {
         public class Filter
@@ -48,76 +45,58 @@ namespace PdfClown.Objects
                 this.name = name;
             }
 
-            /**
-              <summary>Notifies a complete clone operation on an object.</summary>
-              <param name="cloner">Object cloner.</param>
-              <param name="source">Source object.</param>
-              <param name="clone">Clone object.</param>
-            */
+            /// <summary>Notifies a complete clone operation on an object.</summary>
+            /// <param name="cloner">Object cloner.</param>
+            /// <param name="source">Source object.</param>
+            /// <param name="clone">Clone object.</param>
             public virtual void AfterClone(Cloner cloner, PdfObject source, PdfObject clone)
-            {
-                /* NOOP */
-            }
+            { }
 
-            /**
-              <summary>Notifies a complete clone operation on a dictionary entry.</summary>
-              <param name="cloner">Object cloner.</param>
-              <param name="source">Parent source object.</param>
-              <param name="clone">Parent clone object.</param>
-              <param name="key">Entry key within the parent.</param>
-              <param name="value">Clone value.</param>
-            */
+            /// <summary>Notifies a complete clone operation on a dictionary entry.</summary>
+            /// <param name="cloner">Object cloner.</param>
+            /// <param name="source">Parent source object.</param>
+            /// <param name="clone">Parent clone object.</param>
+            /// <param name="key">Entry key within the parent.</param>
+            /// <param name="value">Clone value.</param>
             public virtual void AfterClone(Cloner cloner, PdfDictionary source, PdfDictionary clone, PdfName key, PdfDirectObject value)
-            {
-                /* NOOP */
-            }
+            { }
 
-            /**
-              <summary>Notifies a complete clone operation on an array item.</summary>
-              <param name="cloner">Object cloner.</param>
-              <param name="source">Parent source object.</param>
-              <param name="clone">Parent clone object.</param>
-              <param name="index">Item index within the parent.</param>
-              <param name="item">Clone item.</param>
-            */
+            /// <summary>Notifies a complete clone operation on an array item.</summary>
+            /// <param name="cloner">Object cloner.</param>
+            /// <param name="source">Parent source object.</param>
+            /// <param name="clone">Parent clone object.</param>
+            /// <param name="index">Item index within the parent.</param>
+            /// <param name="item">Clone item.</param>
             public virtual void AfterClone(Cloner cloner, PdfArray source, PdfArray clone, int index, PdfDirectObject item)
-            {
-                /* NOOP */
-            }
+            { }
 
-            /**
-              <summary>Notifies a starting clone operation on a dictionary entry.</summary>
-              <param name="cloner">Object cloner.</param>
-              <param name="source">Parent source object.</param>
-              <param name="clone">Parent clone object.</param>
-              <param name="key">Entry key within the parent.</param>
-              <param name="value">Source value.</param>
-              <returns>Whether the clone operation can be fulfilled.</returns>
-            */
+            /// <summary>Notifies a starting clone operation on a dictionary entry.</summary>
+            /// <param name="cloner">Object cloner.</param>
+            /// <param name="source">Parent source object.</param>
+            /// <param name="clone">Parent clone object.</param>
+            /// <param name="key">Entry key within the parent.</param>
+            /// <param name="value">Source value.</param>
+            /// <returns>Whether the clone operation can be fulfilled.</returns>
             public virtual bool BeforeClone(Cloner cloner, PdfDictionary source, PdfDictionary clone, PdfName key, PdfDirectObject value)
             {
                 return true;
             }
 
-            /**
-              <summary>Notifies a starting clone operation on an array item.</summary>
-              <param name="cloner">Object cloner.</param>
-              <param name="source">Parent source object.</param>
-              <param name="clone">Parent clone object.</param>
-              <param name="index">Item index within the parent.</param>
-              <param name="item">Source item.</param>
-              <returns>Whether the clone operation can be fulfilled.</returns>
-            */
+            /// <summary>Notifies a starting clone operation on an array item.</summary>
+            /// <param name="cloner">Object cloner.</param>
+            /// <param name="source">Parent source object.</param>
+            /// <param name="clone">Parent clone object.</param>
+            /// <param name="index">Item index within the parent.</param>
+            /// <param name="item">Source item.</param>
+            /// <returns>Whether the clone operation can be fulfilled.</returns>
             public virtual bool BeforeClone(Cloner cloner, PdfArray source, PdfArray clone, int index, PdfDirectObject item)
             {
                 return true;
             }
 
-            /**
-              <summary>Gets whether this filter can deal with the given object.</summary>
-              <param name="cloner">Object cloner.</param>
-              <param name="source">Source object.</param>
-            */
+            /// <summary>Gets whether this filter can deal with the given object.</summary>
+            /// <param name="cloner">Object cloner.</param>
+            /// <param name="source">Source object.</param>
             public virtual bool Matches(Cloner cloner, PdfObject source)
             {
                 return true;
@@ -159,7 +138,8 @@ namespace PdfClown.Objects
                 {
                     PdfDictionary dictionary = (PdfDictionary)source;
                     return dictionary.ContainsKey(PdfName.S)
-                      && (!dictionary.ContainsKey(PdfName.Type) || PdfName.Action.Equals(dictionary[PdfName.Type]));
+                      && (!dictionary.ContainsKey(PdfName.Type)
+                      || PdfName.Action.Equals(dictionary.Get<PdfName>(PdfName.Type)));
                 }
                 return false;
             }
@@ -185,8 +165,8 @@ namespace PdfClown.Objects
 
             public override bool Matches(Cloner cloner, PdfObject source)
             {
-                if (source is PdfArray array 
-                    && array.Count > 0 
+                if (source is PdfArray array
+                    && array.Count > 0
                     && array.Resolve(0) is PdfDictionary arrayItemDictionary)
                 {
                     return arrayItemDictionary.ContainsKey(PdfName.Subtype)
@@ -211,7 +191,7 @@ namespace PdfClown.Objects
             public override bool Matches(Cloner cloner, PdfObject source)
             {
                 if (source is PdfDictionary dictionary
-                    && PdfName.Annot.Equals(dictionary[PdfName.Type]))
+                    && PdfName.Annot.Equals(dictionary.Get<PdfName>(PdfName.Type)))
                 {
                     return true;
                 }
@@ -226,12 +206,10 @@ namespace PdfClown.Objects
 
             public override void AfterClone(Cloner cloner, PdfObject source, PdfObject clone)
             {
-                /*
-                  NOTE: Inheritable attributes have to be consolidated into the cloned page dictionary in
-                  order to ensure its consistency.
-                */
-                PdfDictionary cloneDictionary = (PdfDictionary)clone;
-                PdfDictionary sourceDictionary = (PdfDictionary)source;
+                // NOTE: Inheritable attributes have to be consolidated into the cloned page dictionary in
+                // order to ensure its consistency.
+                var cloneDictionary = (PdfDictionary)clone;
+                var sourceDictionary = (PdfDictionary)source;
                 foreach (PdfName key in PdfPage.InheritableAttributeKeys)
                 {
                     if (!sourceDictionary.ContainsKey(key))
@@ -251,7 +229,7 @@ namespace PdfClown.Objects
             public override bool Matches(Cloner cloner, PdfObject source)
             {
                 return source is PdfDictionary dictionary
-                  && PdfName.Page.Equals(dictionary[PdfName.Type]);
+                  && PdfName.Page.Equals(dictionary.Get<PdfName>(PdfName.Type));
             }
         }
 

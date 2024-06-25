@@ -25,52 +25,41 @@
 
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interchange.Metadata;
-using PdfClown.Objects;
 
 using SkiaSharp;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Content stream context.</summary>
-    */
+    ///<summary>Content stream context.</summary>
     public interface IContentContext : IAppDataHolder, IContentEntity
     {
-        /**
-          <summary>Gets the bounding box associated with this content context either explicitly
-          (directly associated to the object) or (if not explicitly available) implicitly (inherited
-          from a higher level object), expressed in default user-space units.</summary>
-        */
+        ///<summary>Gets the bounding box associated with this content context either explicitly
+        ///(directly associated to the object) or (if not explicitly available) implicitly (inherited
+        ///from a higher level object), expressed in default user-space units.</summary>
         SKRect Box { get; }
 
-        /**
-          <summary>Gets the contents collection representing the content stream associated
-          with this content context.</summary>
-        */
+        ///<summary>Gets the contents collection representing the content stream associated
+        ///with this content context.</summary>
         ContentWrapper Contents { get; }
 
-        /**
-          Renders this content context into the specified rendering context.
+        /// <summary>
+        /// Renders this content context into the specified rendering context.
+        /// </summary>
+        /// <param name="context">Rendering context</param>
+        /// <param name="box">Rendering canvas size</param>
+        /// <param name="clearColor"></param>
+        /// <remarks> @since 0.1.0</remarks> 
+        void Render(SKCanvas context, SKRect box, SKColor? clearColor = null);
 
-          @param context Rendering context.
-          @param size Rendering canvas SKSize.
-          @since 0.1.0
-        */
-        void Render(SKCanvas context, SKSize size, bool clearContent = true);
-
-        /**
-          <summary>Gets the resources associated with this content context either explicitly (directly
-          associated to the object) or (if not explicitly available) implicitly (inherited from a
-          higher-level object).</summary>
-          <remarks>The implementing class MUST ensure that the returned object isn't
-          <code>null</code>.</remarks>
-        */
+        /// <summary>Gets the resources associated with this content context either explicitly (directly
+        /// associated to the object) or (if not explicitly available) implicitly (inherited from a
+        /// higher-level object).</summary>
+        /// <remarks>The implementing class MUST ensure that the returned object isn't
+        /// <code>null</code>.</remarks>
         Resources Resources { get; }
 
-        /**
-          <summary>Gets the rendering rotation of this content context.</summary>
-        */
+        ///<summary>Gets the rendering rotation of this content context.</summary>
         RotationEnum Rotation { get; }
 
         int Rotate { get; }

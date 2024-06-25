@@ -43,61 +43,43 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public static readonly DeviceCMYKColor Default = Black;
 
-        /**
-          <summary>Gets the color corresponding to the specified components.</summary>
-          <param name="components">Color components to convert.</param>
-        */
-        public static new DeviceCMYKColor Get(PdfArray components)
-        {
-            return components != null
-                ? components.Wrapper is DeviceCMYKColor color ? color : new DeviceCMYKColor(components)
-                : Default;
-        }
-
-        public DeviceCMYKColor(double c, double m, double y, double k) : this(
-            new PdfArray(4)
-            {
-                  PdfReal.Get(NormalizeComponent(c)),
-                  PdfReal.Get(NormalizeComponent(m)),
-                  PdfReal.Get(NormalizeComponent(y)),
-                  PdfReal.Get(NormalizeComponent(k))
-            })
+        public DeviceCMYKColor(double c, double m, double y, double k)
+            : this(DeviceCMYKColorSpace.Default,
+                  new PdfArray(4)
+                  {
+                      NormalizeComponent(c),
+                      NormalizeComponent(m),
+                      NormalizeComponent(y),
+                      NormalizeComponent(k)
+                  })
         { }
 
-        internal DeviceCMYKColor(IList<PdfDirectObject> components)
-            : base(DeviceCMYKColorSpace.Default, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
+        internal DeviceCMYKColor(DeviceColorSpace colorSpace, PdfArray components)
+            : base(colorSpace, components)
         { }
 
-        /**
-          <summary>Gets/Sets the cyan component.</summary>
-        */
+        ///<summary>Gets/Sets the cyan component.</summary>
         public float C
         {
             get => this[0];
             set => this[0] = value;
         }
 
-        /**
-          <summary>Gets/Sets the magenta component.</summary>
-        */
+        ///<summary>Gets/Sets the magenta component.</summary>
         public float M
         {
             get => this[1];
             set => this[1] = value;
         }
 
-        /**
-          <summary>Gets/Sets the yellow component.</summary>
-        */
+        ///<summary>Gets/Sets the yellow component.</summary>
         public float Y
         {
             get => this[2];
             set => this[2] = value;
         }
 
-        /**
-          <summary>Gets/Sets the black (key) component.</summary>
-        */
+        ///<summary>Gets/Sets the black (key) component.</summary>
         public float K
         {
             get => this[3];

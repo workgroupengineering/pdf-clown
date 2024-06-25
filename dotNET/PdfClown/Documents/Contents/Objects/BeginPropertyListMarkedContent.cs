@@ -1,5 +1,5 @@
-/*
-  Copyright 2007-2012 Stefano Chizzolini. http://www.pdfclown.org
+﻿/*
+  Copyright 2008-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,45 +23,23 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-using PdfClown.Tokens;
-
-using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Local graphics state [PDF:1.6:4.3.1].</summary>
-    */
-    [PDF(VersionEnum.PDF10)]
-    public sealed class LocalGraphicsState : ContainerObject
+    public sealed class BeginPropertyListMarkedContent : BeginMarkedContent
     {
-        public static readonly string BeginOperatorKeyword = SaveGraphicsState.OperatorKeyword;
-        public static readonly string EndOperatorKeyword = RestoreGraphicsState.OperatorKeyword;
+        public static readonly string PropertyListOperatorKeyword = "BDC";
 
-        private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
-        private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
-
-        public LocalGraphicsState()
+        public BeginPropertyListMarkedContent(PdfName tag) : base(PropertyListOperatorKeyword, tag)
         { }
 
-        public LocalGraphicsState(IList<ContentObject> objects) : base(objects)
+        public BeginPropertyListMarkedContent(PdfName tag, PdfDirectObject properties) : base(PropertyListOperatorKeyword, tag, properties)
         { }
 
-        public override void Scan(GraphicsState state)
-        {
-            state.Save();
-            Render(state);
-            state.Restore();
-        }
-
-        public override void WriteTo(IOutputStream stream, PdfDocument context)
-        {
-            stream.Write(BeginChunk);
-            base.WriteTo(stream, context);
-            stream.Write(EndChunk);
-        }
+        internal BeginPropertyListMarkedContent(PdfArray operands) : base(PropertyListOperatorKeyword, operands)
+        { }
     }
+
+
 }

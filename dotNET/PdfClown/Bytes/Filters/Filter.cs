@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown;
 using PdfClown.Objects;
 
 using System;
@@ -31,9 +30,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Bytes.Filters
 {
-    /**
-      <summary>Abstract filter [PDF:1.6:3.3].</summary>
-    */
+    ///<summary>Abstract filter [PDF:1.6:3.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class Filter
     {
@@ -46,48 +43,38 @@ namespace PdfClown.Bytes.Filters
         private static readonly Filter DCTFilter = new DCTFilter();
         private static readonly Filter LZWFilter = new LZWFilter();
 
-        /**
-          <summary>Gets a specific filter object.</summary>
-          <param name="name">Name of the requested filter.</param>
-          <returns>Filter object associated to the name.</returns>
-        */
+        private static readonly Dictionary<PdfName, Filter> cache = new(16)
+        {
+            { PdfName.FlateDecode, FlateDecode },
+            { PdfName.Fl, FlateDecode },
+            { PdfName.LZWDecode, LZWFilter },
+            { PdfName.LZW, LZWFilter },
+            { PdfName.ASCIIHexDecode, ASCIIHexFilter },
+            { PdfName.AHx, ASCIIHexFilter },
+            { PdfName.ASCII85Decode, ASCII85Filter },
+            { PdfName.A85, ASCII85Filter },
+            { PdfName.CCITTFaxDecode, CCITTFaxDecode },
+            { PdfName.CCF, CCITTFaxDecode },
+            { PdfName.DCTDecode, DCTFilter },
+            { PdfName.DCT, DCTFilter },
+            { PdfName.JBIG2Decode, JBIG2Decode },
+            { PdfName.JPXDecode, JPXDecode },
+        };
+
+        ///<summary>Gets a specific filter object.</summary>
+        ///<param name="name">Name of the requested filter.</param>
+        ///<returns>Filter object associated to the name.</returns>
         public static Filter Get(PdfName name)
         {
-            /*
-              NOTE: This is a factory singleton method for any filter-derived object.
-            */
+            //NOTE: This is a factory singleton method for any filter-derived object.
             if (name == null)
                 return null;
-
-            if (name.Equals(PdfName.FlateDecode)
-              || name.Equals(PdfName.Fl))
-                return FlateDecode;
-            else if (name.Equals(PdfName.LZWDecode)
-              || name.Equals(PdfName.LZW))
-                return LZWFilter;
-            else if (name.Equals(PdfName.ASCIIHexDecode)
-              || name.Equals(PdfName.AHx))
-                return ASCIIHexFilter;
-            else if (name.Equals(PdfName.ASCII85Decode)
-              || name.Equals(PdfName.A85))
-                return ASCII85Filter;
-            else if (name.Equals(PdfName.RunLengthDecode)
-              || name.Equals(PdfName.RL))
-                throw new NotImplementedException("RunLengthDecode");
-            else if (name.Equals(PdfName.CCITTFaxDecode)
-              || name.Equals(PdfName.CCF))
-                return CCITTFaxDecode;
-            else if (name.Equals(PdfName.JBIG2Decode))
-                return JBIG2Decode;
-            else if (name.Equals(PdfName.DCTDecode)
-              || name.Equals(PdfName.DCT))
-                return DCTFilter;
-            else if (name.Equals(PdfName.JPXDecode))
-                return JPXDecode;
-            else if (name.Equals(PdfName.Crypt))
-                throw new NotImplementedException("Crypt");
-
-            return null;
+            return cache.TryGetValue(name, out var filter) ? filter
+                : name.Equals(PdfName.RunLengthDecode)
+              || name.Equals(PdfName.RL)
+              || name.Equals(PdfName.Crypt)
+                ? throw new NotImplementedException(name.StringValue)
+                : null;
         }
 
         protected Filter()

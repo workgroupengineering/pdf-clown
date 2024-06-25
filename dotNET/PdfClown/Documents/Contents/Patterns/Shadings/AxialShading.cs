@@ -26,6 +26,7 @@
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Functions;
 using PdfClown.Objects;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 
@@ -47,12 +48,12 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
 
         public override SKRect Box
         {
-            get => box ??= new SKRect(Coords[0].X, Coords[0].Y, Coords[1].X, Coords[1].Y).Standardized;
+            get => box ??= Dictionary.Get<PdfArray>(PdfName.BBox)?.ToSKRect() ?? new SKRect(Coords[0].X, Coords[0].Y, Coords[1].X, Coords[1].Y).Standardized;
         }
 
         public SKPoint[] Coords
         {
-            get => coords ??= Dictionary[PdfName.Coords] is PdfArray array
+            get => coords ??= Dictionary.Resolve(PdfName.Coords) is PdfArray array
                 ? new SKPoint[]
                 {
                     new SKPoint(array.GetFloat(0), array.GetFloat(1)),
@@ -64,8 +65,8 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                 coords = value;
                 Dictionary[PdfName.Domain] = new PdfArray(4)
                 {
-                    new PdfReal(value[0].X), new PdfReal(value[0].Y),
-                    new PdfReal(value[1].X), new PdfReal(value[1].Y)
+                    value[0].X, value[0].Y,
+                    value[1].X, value[1].Y
                 };
             }
         }
@@ -78,7 +79,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             set
             {
                 domain = value;
-                Dictionary[PdfName.Domain] = new PdfArray(2) { new PdfReal(value[0]), new PdfReal(value[1]) };
+                Dictionary[PdfName.Domain] = new PdfArray(2) { value[0], value[1] };
             }
         }
 
@@ -92,8 +93,8 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                 extend = value;
                 Dictionary[PdfName.Domain] = new PdfArray(2)
                 {
-                    PdfBoolean.Get(value[0]),
-                    PdfBoolean.Get(value[1])
+                    value[0],
+                    value[1]
                 };
             }
         }
@@ -118,13 +119,27 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                 : Extend[0] && !Extend[1] ? SKShaderTileMode.Mirror
                 : !Extend[0] && Extend[1] ? SKShaderTileMode.Mirror
                 : SKShaderTileMode.Decal;
-
+            //var matrix = CalculateMatrix(sKMatrix, state);
             return SKShader.CreateLinearGradient(coords[0], coords[1], colors, domain, mode, sKMatrix);
         }
 
         public override SKMatrix CalculateMatrix(SKMatrix skMatrix, GraphicsState state)
         {
-            return skMatrix;
+            var box = Box;
+            box = skMatrix.MapRect(box);
+            var pathRect = state.Scanner.Path?.Bounds ?? state.Scanner.Canvas.LocalClipBounds;
+            pathRect = state.Ctm.MapRect(pathRect);
+
+            var scale = box.Height != 0
+                ? pathRect.Height / box.Height
+                : pathRect.Width / box.Width;
+            var scaleMAtrix = SKMatrix.CreateScale(scale, scale);
+            var mBox = scaleMAtrix.MapRect(box);
+            if (!mBox.IntersectsWith(pathRect))
+            {
+                //    scaleMAtrix = scaleMAtrix.PostConcat(SKMatrix.CreateTranslation(pathRect.Left - mBox.Left, pathRect.Top - mBox.Top));
+            }
+            return scaleMAtrix.PreConcat(skMatrix);
         }
     }
 }

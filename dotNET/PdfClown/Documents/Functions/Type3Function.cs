@@ -29,14 +29,11 @@ using PdfClown.Util.Math;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace PdfClown.Documents.Functions
 {
-    /**
-      <summary>Stitching function producing a single new 1-input function from the combination of the
-      subdomains of <see cref="Functions">several 1-input functions</see> [PDF:1.6:3.9.3].</summary>
-    */
+    /// <summary>Stitching function producing a single new 1-input function from the combination of the
+    /// subdomains of <see cref="Functions">several 1-input functions</see> [PDF:1.6:3.9.3].</summary>
     [PDF(VersionEnum.PDF13)]
     public sealed class Type3Function : Function
     {
@@ -47,6 +44,22 @@ namespace PdfClown.Documents.Functions
 
         internal Type3Function(PdfDirectObject baseObject) : base(baseObject)
         { }
+
+        /// <summary>Gets the <see cref="Domains">domain</see> partition bounds whose resulting intervals
+        /// are respectively applied to each <see cref="Functions">function</see>.</summary>
+        public float[] Bounds
+        {
+            get => bounds ??= Dictionary.Get<PdfArray>(PdfName.Bounds).ToFloatArray();
+            set => Dictionary[PdfName.Bounds] = new PdfArray(bounds = value);
+        }
+
+        /// <summary>Gets the mapping of each <see cref="Bounds">subdomain</see> into the domain
+        /// of the corresponding <see cref="Functions">function</see>.</summary>
+        public IList<Interval<float>> Encodes => encodes ??= GetIntervals<float>(PdfName.Encode, null);
+
+        /// <summary>Gets the 1-input functions making up this stitching function.</summary>
+        /// <remarks>The output dimensionality of all functions must be the same.</remarks>
+        public Functions Functions => Functions.Wrap(Dictionary[PdfName.Functions]);
 
         public override ReadOnlySpan<float> Calculate(ReadOnlySpan<float> input)
         {
@@ -103,26 +116,5 @@ namespace PdfClown.Documents.Functions
             return functionResult;
         }
 
-        /**
-          <summary>Gets the <see cref="Domains">domain</see> partition bounds whose resulting intervals
-          are respectively applied to each <see cref="Functions">function</see>.</summary>
-        */
-        public float[] Bounds
-        {
-            get => bounds ??= Dictionary.Get<PdfArray>(PdfName.Bounds).ToFloatArray();
-            set => Dictionary[PdfName.Bounds] = PdfArray.FromFloats(bounds = value);
-        }
-
-        /**
-          <summary>Gets the mapping of each <see cref="Bounds">subdomain</see> into the domain
-          of the corresponding <see cref="Functions">function</see>.</summary>
-        */
-        public IList<Interval<float>> Encodes => encodes ??= GetIntervals<float>(PdfName.Encode, null);
-
-        /**
-          <summary>Gets the 1-input functions making up this stitching function.</summary>
-          <remarks>The output dimensionality of all functions must be the same.</remarks>
-        */
-        public Functions Functions => Functions.Wrap(Dictionary[PdfName.Functions]);
     }
 }

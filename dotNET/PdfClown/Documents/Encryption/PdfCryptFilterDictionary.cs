@@ -20,27 +20,24 @@ using System;
 
 namespace PdfClown.Documents.Encryption
 {
-
-    /**
-     * This class is a specialized view of the crypt filter dictionary of a PDF document.
-     * It contains a low level dictionary (PdfDictionary) and provides the methods to
-     * manage its fields.
-     *
-     */
+    /// <summary>
+    /// This class is a specialized view of the crypt filter dictionary of a PDF document.
+    /// It contains a low level dictionary (PdfDictionary) and provides the methods to
+    /// manage its fields.
+    /// </summary>
     public class PdfCryptFilterDictionary : PdfObjectWrapper<PdfDictionary>
     {
-        /**
-		 * creates a new empty crypt filter dictionary.
-		 */
+		 /// <summary>creates a new empty crypt filter dictionary.</summary>
+         /// <param name="context"></param>
         public PdfCryptFilterDictionary(PdfFile context)
             : base((PdfFile)null, new PdfDictionary())
         {
         }
 
-        /**
-		 * creates a new crypt filter dictionary from the low level dictionary provided.
-		 * @param d the low level dictionary that will be managed by the newly created object
-		 */
+        /// <summary>
+        /// creates a new crypt filter dictionary from the low level dictionary provided.
+        /// </summary>
+        /// <param name="baseObject">the low level dictionary that will be managed by the newly created object</param>
         public PdfCryptFilterDictionary(PdfDirectObject baseObject)// Catalog.
             : base(baseObject)
         { }
@@ -59,7 +56,7 @@ namespace PdfClown.Documents.Encryption
         public int Length
         {
             get => BaseDataObject.GetInt(PdfName.Length, 0);
-            set => BaseDataObject.SetInt(PdfName.Length, value);
+            set => BaseDataObject.Set(PdfName.Length, value);
         }
 
 
@@ -95,7 +92,7 @@ namespace PdfClown.Documents.Encryption
         public bool IsEncryptMetaData
         {
             get => BaseDataObject.GetBool(PdfName.EncryptMetadata, true);
-            set => BaseDataObject.SetBool(PdfName.EncryptMetadata, value);
+            set => BaseDataObject.Set(PdfName.EncryptMetadata, value);
         }
 
         public PdfArray Recipients

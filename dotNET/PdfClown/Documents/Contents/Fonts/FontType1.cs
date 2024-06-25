@@ -24,20 +24,14 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents;
+using PdfClown.Documents.Contents.Fonts.Type1;
 using PdfClown.Objects;
-using PdfClown.Util;
-
+using PdfClown.Util.Math.Geom;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Reflection;
-using text = System.Text;
-using System.Text.RegularExpressions;
-using SkiaSharp;
-using PdfClown.Documents.Contents.Fonts.Type1;
 using System.Diagnostics;
+using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
@@ -517,7 +511,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 Rectangle bbox = FontDescriptor.FontBBox;
                 if (IsNonZeroBoundingBox(bbox))
                 {
-                    return bbox.ToRect();
+                    return bbox.ToSKRect();
                 }
             }
             return genericFont.FontBBox;

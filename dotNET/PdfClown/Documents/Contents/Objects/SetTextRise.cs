@@ -30,9 +30,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the text rise' operation [PDF:1.6:5.2].</summary>
-    */
+    ///<summary>'Set the text rise' operation [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetTextRise : Operation
     {
@@ -42,12 +40,11 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetTextRise(IList<PdfDirectObject> operands)
+        public SetTextRise(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state)
-        { state.Rise = Value; }
+        public override void Scan(GraphicsState state) => state.Rise = Value;
 
         /**
           <summary>Gets/Sets the text rise, which is a number expressed in unscaled text space units.
@@ -55,8 +52,8 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public float Value
         {
-            get => ((IPdfNumber)operands[0]).FloatValue;
-            set => operands[0] = PdfReal.Get(value);
+            get => operands.GetFloat(0);
+            set => operands.Set(0, value);
         }
     }
 }

@@ -78,8 +78,10 @@ namespace PdfClown.Documents.Contents
             else // Array of streams.
             {
                 long length = 0;
-                foreach (PdfDirectObject stream in (PdfArray)baseDataObject)
-                { length += ((PdfStream)((PdfReference)stream).DataObject).Body.Length; }
+                foreach (PdfReference reference in (PdfArray)baseDataObject)
+                {
+                    length += ((PdfStream)reference.DataObject).Body.Length;
+                }
                 return length;
             }
         }

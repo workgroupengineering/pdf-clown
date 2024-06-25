@@ -24,22 +24,17 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-using PdfClown.Util;
 using PdfClown.Util.Parsers;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using static PdfClown.Documents.Multimedia.MediaOffset;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>PDF file reader.</summary>
-    */
+    /// <summary>PDF file reader.</summary>
     public sealed class Reader : IDisposable
     {
         public sealed class FileInfo
@@ -77,81 +72,113 @@ namespace PdfClown.Tokens
 
         public FileParser Parser => parser;
 
-        /**
-          <summary>Retrieves the file information.</summary>
-        */
+        /// <summary>Retrieves the file information.</summary>
         public FileInfo ReadInfo()
         {
             //TODO:hybrid xref table/stream
             PdfVersion version = PdfVersion.Get(parser.RetrieveVersion());
             PdfDictionary trailer = null;
             var xrefEntries = new SortedDictionary<int, XRefEntry>();
+            long sectionOffset = parser.RetrieveXRefOffset();
+            long? xrefStm = null;
+            while (sectionOffset > -1)
             {
-                long sectionOffset = parser.RetrieveXRefOffset();
-                long? xrefStm = null;
-                while (sectionOffset > -1)
+                // Move to the start of the xref section!
+                parser.Seek(sectionOffset);
+
+                PdfDictionary sectionTrailer = null;
+                if (parser.MoveNextComplex()
+                    && parser.TokenType == PostScriptParser.TokenTypeEnum.Keyword
+                    && MemoryExtensions.Equals(parser.CharsToken, Keyword.XRef, StringComparison.Ordinal)) // XRef-table section.
                 {
-                    // Move to the start of the xref section!
-                    parser.Seek(sectionOffset);
-
-                    PdfDictionary sectionTrailer = null;
-                    if (parser.MoveNext()
-                        && parser.TokenType == PostScriptParser.TokenTypeEnum.Keyword
-                        && MemoryExtensions.Equals(parser.CharsToken, Keyword.XRef, StringComparison.Ordinal)) // XRef-table section.
-                    {
-                        ReadXRefTable(xrefEntries);
-                        // Get the previous trailer!
-                        sectionTrailer = (PdfDictionary)parser.ParsePdfObject(1);
-                    }
-                    else // XRef-stream section.
-                    {
-                        var obj = parser.ParsePdfObject(1);
-                        if (obj is PdfDictionary dictinary
-                            && dictinary.ContainsKey(PdfName.Linearized))
-                        {
-                            var xrefOffcet = dictinary.GetInt(PdfName.T, -1);
-                            if (xrefOffcet > -1)
-                            {
-                                parser.Seek(xrefOffcet);
-                                ReadXRefTable(xrefEntries);
-                                // Get the previous trailer!
-                                sectionTrailer = (PdfDictionary)parser.ParsePdfObject(1);
-                            }
-                        }
-                        else if (obj is XRefStream stream)
-                        {
-                            //skipping the indirect - object header.
-                            //
-                            // XRef-stream subsection entries.
-                            foreach (XRefEntry xrefEntry in stream.Values)
-                            {
-                                if (xrefEntries.ContainsKey(xrefEntry.Number)) // Already-defined entry.
-                                    continue;
-
-                                // Define entry!
-                                xrefEntries[xrefEntry.Number] = xrefEntry;
-                            }
-
-                            // Get the previous trailer!
-                            sectionTrailer = stream.Header;
-                        }
-                        else if (xrefStm != null)
-                        {
-                            sectionOffset = xrefStm.Value;
-                            continue;
-                        }
-                    }
-
-                    if (trailer == null)
-                    { trailer = sectionTrailer; }
-
-                    // Get the previous xref-table section's offset!
-                    sectionOffset = sectionTrailer.GetInt(PdfName.Prev, -1);
-                    xrefStm = sectionTrailer.GetNInt(PdfName.XRefStm);
+                    ReadXRefTable(xrefEntries);
+                    // Get the previous trailer!
+                    sectionTrailer = (PdfDictionary)parser.ParsePdfObject(1);
                 }
+                else // XRef-stream section.
+                {
+                    var obj = parser.ParsePdfObject(1);
+                    if (obj is PdfDictionary dictinary
+                        && dictinary.ContainsKey(PdfName.Linearized))
+                    {
+                        var xrefOffcet = dictinary.GetInt(PdfName.T, -1);
+                        if (xrefOffcet > -1)
+                        {
+                            parser.Seek(xrefOffcet);
+                            ReadXRefTable(xrefEntries);
+                            // Get the previous trailer!
+                            sectionTrailer = (PdfDictionary)parser.ParsePdfObject(1);
+                        }
+                    }
+                    else if (obj is XRefStream stream)
+                    {
+                        try
+                        {
+                            // XRef-stream subsection entries.
+                            stream.ReadEntries();
+                        }
+                        catch (ParseException)
+                        {
+                            RecoveryXRefStream(stream);
+                        }
+
+                        foreach (XRefEntry xrefEntry in stream.Values)
+                        {
+                            if (xrefEntries.ContainsKey(xrefEntry.Number)) // Already-defined entry.
+                                continue;
+
+                            // Define entry!
+                            xrefEntries[xrefEntry.Number] = xrefEntry;
+                        }
+
+                        // Get the previous trailer!
+                        sectionTrailer = stream.Header;
+                    }
+                    else if (xrefStm != null)
+                    {
+                        sectionOffset = xrefStm.Value;
+                        continue;
+                    }
+                }
+
+                if (trailer == null)
+                { trailer = sectionTrailer; }
+
+                // Get the previous xref-table section's offset!
+                sectionOffset = sectionTrailer.GetInt(PdfName.Prev, -1);
+                xrefStm = sectionTrailer.GetNInt(PdfName.XRefStm);
             }
 
             return new FileInfo(version, trailer, xrefEntries);
+        }
+
+        private void RecoveryXRefStream(XRefStream stream)
+        {
+            Debug.WriteLine("Restore XRef stream");
+            stream.Header[PdfName.Prev] = null;
+            stream.Entries.Clear();
+            parser.Stream.Position = 0;
+            while (parser.MoveNextComplex())
+            {
+                if (parser.TokenType == PostScriptParser.TokenTypeEnum.InderectObject)
+                {
+                    var reference = parser.ReferenceToken;
+                    var pdfObject = parser.ParsePdfObject(1);
+                    if (pdfObject is XRefStream)
+                        continue;
+
+                    var entryIndex = reference.ObjectNumber;
+                    stream.Entries[entryIndex] = new XRefEntry(entryIndex, reference.GenerationNumber, (int)reference.Offset, XRefEntry.UsageEnum.InUse);
+
+                    if (pdfObject is ObjectStream oStream)
+                    {
+                        foreach (var oEntry in oStream.Entries)
+                        {
+                            stream.Entries[oEntry.Key] = new XRefEntry(oEntry.Key, oEntry.Value.offset, reference.ObjectNumber);
+                        }
+                    }
+                }
+            }
         }
 
         private void ReadXRefTable(SortedDictionary<int, XRefEntry> xrefEntries)
@@ -159,11 +186,9 @@ namespace PdfClown.Tokens
             // Looping sequentially across the subsections inside the current xref-table section...
             while (true)
             {
-                /*
-                  NOTE: Each iteration of this block represents the scanning of one subsection.
-                  We get its bounds (first and last object numbers within its range) and then collect
-                  its entries.
-                */
+                // NOTE: Each iteration of this block represents the scanning of one subsection.
+                // We get its bounds (first and last object numbers within its range) and then collect
+                // its entries.
                 // 1. First object number.
                 parser.MoveNext();
                 if (parser.TokenType == PostScriptParser.TokenTypeEnum.Keyword

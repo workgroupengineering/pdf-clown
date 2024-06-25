@@ -23,29 +23,26 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Property list resources collection [PDF:1.6:3.7.2].</summary>
-    */
+    ///<summary>Property list resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class PropertyListResources : ResourceItems<PropertyList>
+    public sealed class PropertyListResources : Dictionary<PropertyList>
     {
-        public PropertyListResources(PdfDocument context) : base(context)
+        public class ValueWrapper : IEntryWrapper<PropertyList>
+        {
+            public PropertyList Wrap(PdfDirectObject baseObject) => PropertyList.Wrap(baseObject);
+        }
+
+        private static readonly ValueWrapper Wrapper = new ValueWrapper();
+
+        public PropertyListResources(PdfDocument context) : base(context, Wrapper)
         { }
 
-        public PropertyListResources(PdfDirectObject baseObject) : base(baseObject)
+        public PropertyListResources(PdfDirectObject baseObject) : base(baseObject, Wrapper)
         { }
 
-        protected override PropertyList WrapItem(PdfDirectObject baseObject)
-        { return PropertyList.Wrap(baseObject); }
     }
 }

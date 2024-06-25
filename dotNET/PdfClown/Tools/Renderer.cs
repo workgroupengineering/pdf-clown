@@ -25,63 +25,45 @@
 
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Objects;
-using PdfClown.Files;
-using PdfClown.Objects;
 
 using System.Collections.Generic;
 using SkiaSharp;
 
 namespace PdfClown.Tools
 {
-    /**
-      <summary>Tool for rendering <see cref="IContentContext">content contexts</see>.</summary>
-    */
+    /// <summary>Tool for rendering <see cref="IContentContext">content contexts</see>.</summary>
+    /// <remarks>It wraps a page collection for printing purposes.</remarks>
     public sealed class Renderer
     {
-        /**
-          <summary>Printable document.</summary>
-          <remarks>It wraps a page collection for printing purposes.</remarks>
-        */
-
-        /**
-          <summary>Prints silently the specified document.</summary>
-          <param name="document">Document to print.</param>
-          <returns>Whether the print was fulfilled.</returns>
-        */
+        /// <summary>Prints silently the specified document.</summary>
+        /// <param name="document">Document to print.</param>
+        /// <returns>Whether the print was fulfilled.</returns>
         public bool Print(PdfDocument document)
         {
             return Print(document.Pages);
         }
 
-        /**
-          <summary>Prints the specified document.</summary>
-          <param name="document">Document to print.</param>
-          <param name="silent">Whether to avoid showing a print dialog.</param>
-          <returns>Whether the print was fulfilled.</returns>
-        */
+        /// <summary>Prints the specified document.</summary>
+        /// <param name="document">Document to print.</param>
+        /// <param name="silent">Whether to avoid showing a print dialog.</param>
+        /// <returns>Whether the print was fulfilled.</returns>
         public bool Print(PdfDocument document, bool silent)
         {
             return Print(document.Pages, silent);
         }
 
-        /**
-          <summary>Prints silently the specified page collection.</summary>
-          <param name="pages">Page collection to print.</param>
-          <returns>Whether the print was fulfilled.</returns>
-        */
+        /// <summary>Prints silently the specified page collection.</summary>
+        /// <param name="pages">Page collection to print.</param>
+        /// <returns>Whether the print was fulfilled.</returns>
         public bool Print(IList<PdfPage> pages)
         {
             return Print(pages, true);
         }
 
-        /**
-          <summary>Prints the specified page collection.</summary>
-          <param name="pages">Page collection to print.</param>
-          <param name="silent">Whether to avoid showing a print dialog.</param>
-          <returns>Whether the print was fulfilled.</returns>
-        */
+        /// <summary>Prints the specified page collection.</summary>
+        /// <param name="pages">Page collection to print.</param>
+        /// <param name="silent">Whether to avoid showing a print dialog.</param>
+        /// <returns>Whether the print was fulfilled.</returns>
         public bool Print(IList<PdfPage> pages, bool silent)
         {
             using (var stream = new SKFileWStream("print.xps"))
@@ -91,7 +73,7 @@ namespace PdfClown.Tools
                 {
                     using (var canvas = document.BeginPage(page.Size.Width, page.Size.Height))
                     {
-                        page.Render(canvas, page.Size);
+                        page.Render(canvas, page.Box);
                     }
                 }
                 document.Close();
@@ -99,49 +81,42 @@ namespace PdfClown.Tools
 
             return true;
         }
-        /**
-          <summary>Renders the specified contents into an image context.</summary>
-          <param name="contents">Source contents.</param>
-          <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
-          <returns>Image representing the rendered contents.</returns>
-         */
+
+        /// <summary>Renders the specified contents into an image context.</summary>
+        /// <param name="contents">Source contents.</param>
+        /// <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
+        /// <returns>Image representing the rendered contents.</returns>
         public SKBitmap Render(ContentWrapper contents, SKSize size)
         {
             return Render(contents, size, null);
         }
 
-        /**
-          <summary>Renders the specified content context into an image context.</summary>
-          <param name="contentContext">Source content context.</param>
-          <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
-          <returns>Image representing the rendered contents.</returns>
-         */
+        /// <summary>Renders the specified content context into an image context.</summary>
+        /// <param name="contentContext">Source content context.</param>
+        /// <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
+        /// <returns>Image representing the rendered contents.</returns>
         public SKBitmap Render(IContentContext contentContext, SKSize size)
         {
             return Render(contentContext, size, null);
         }
 
-        /**
-          <summary>Renders the specified contents into an image context.</summary>
-          <param name="contents">Source contents.</param>
-          <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
-          <param name="area">Content area to render; <code>null</code> corresponds to the entire
-           <see cref="IContentContext.Box">content bounding box</see>.</param>
-          <returns>Image representing the rendered contents.</returns>
-         */
+        /// <summary>Renders the specified contents into an image context.</summary>
+        /// <param name="contents">Source contents.</param>
+        /// <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
+        /// <param name="area">Content area to render; <code>null</code> corresponds to the entire
+        ///  <see cref="IContentContext.Box">content bounding box</see>.</param>
+        /// <returns>Image representing the rendered contents.</returns>
         public SKBitmap Render(ContentWrapper contents, SKSize size, SKRect? area)
         {
             return Render(contents.ContentContext, size, area);
         }
 
-        /**
-          <summary>Renders the specified content context into an image context.</summary>
-          <param name="contentContext">Source content context.</param>
-          <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
-          <param name="area">Content area to render; <code>null</code> corresponds to the entire
-           <see cref="IContentContext.Box">content bounding box</see>.</param>
-          <returns>Image representing the rendered contents.</returns>
-         */
+        /// <summary>Renders the specified content context into an image context.</summary>
+        /// <param name="contentContext">Source content context.</param>
+        /// <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
+        /// <param name="area">Content area to render; <code>null</code> corresponds to the entire
+        /// <see cref="IContentContext.Box">content bounding box</see>.</param>
+        /// <returns>Image representing the rendered contents.</returns>
         public SKBitmap Render(IContentContext contentContext, SKSize size, SKRect? area)
         {
             //TODO:area!
@@ -153,7 +128,7 @@ namespace PdfClown.Tools
               //PixelFormat.Format24bppRgb
               );
             using (var canvas = new SKCanvas(image))
-                contentContext.Render(canvas, size);
+                contentContext.Render(canvas, SKRect.Create(size));
             return image;
         }
     }

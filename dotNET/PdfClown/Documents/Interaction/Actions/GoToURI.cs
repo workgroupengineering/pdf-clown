@@ -31,15 +31,13 @@ using System;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Cause a URI (Uniform Resource Identifier) to be resolved' action [PDF:1.6:8.5.3].</summary>
-    */
+    ///<summary>'Cause a URI (Uniform Resource Identifier) to be resolved' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class GoToURI : Action, IGoToAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        private Uri url;
+
+        /// <summary>Creates a new action within the given document context.</summary>
         public GoToURI(PdfDocument context, Uri uri)
             : base(context, PdfName.URI)
         {
@@ -49,14 +47,12 @@ namespace PdfClown.Documents.Interaction.Actions
         internal GoToURI(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the uniform resource identifier to resolve [RFC 2396].</summary>
-        */
+        /// <summary>Gets/Sets the uniform resource identifier to resolve [RFC 2396].</summary>
         public Uri URI
         {
             //NOTE: 'URI' entry MUST exist.
-            get => new Uri(BaseDataObject.GetString(PdfName.URI));
-            set => BaseDataObject.SetString(PdfName.URI, value.ToString());
+            get => url ??= Uri.TryCreate(BaseDataObject.GetString(PdfName.URI), UriKind.RelativeOrAbsolute, out var parsed) ? parsed : null;
+            set => BaseDataObject.Set(PdfName.URI, (url = value)?.ToString());
         }
 
         public override string GetDisplayName() => "Go To " + URI;

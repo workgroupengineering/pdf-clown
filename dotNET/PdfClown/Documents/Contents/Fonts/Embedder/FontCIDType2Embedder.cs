@@ -146,7 +146,7 @@ namespace PdfClown.Documents.Contents.Fonts
             var cMapStream = new ByteStream { };
             toUniWriter.WriteTo(cMapStream);
 
-            var header = new PdfDictionary() { { PdfName.Length, PdfInteger.Get(cMapStream.Length) } };
+            var header = new PdfDictionary() { { PdfName.Length, cMapStream.Length } };
             var stream = new PdfStream(header, cMapStream);
 
             // surrogate code points, requires PDF 1.5
@@ -166,9 +166,9 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             var info = new PdfDictionary
             {
-                [PdfName.Registry] = new PdfString(registry),
-                [PdfName.Ordering] = new PdfString(ordering),
-                [PdfName.Supplement] = new PdfInteger(supplement)
+                { PdfName.Registry, registry },
+                { PdfName.Ordering, ordering },
+                { PdfName.Supplement, supplement }
             };
             return info;
         }
@@ -276,10 +276,10 @@ namespace PdfClown.Documents.Contents.Fonts
                 if (prev != cid - 1)
                 {
                     ws = new PdfArray();
-                    widths.Add(PdfInteger.Get(cid)); // c
+                    widths.Add(cid); // c
                     widths.Add(ws);
                 }
-                ws.Add(PdfInteger.Get(width)); // wi
+                ws.Add(width); // wi
                 prev = cid;
             }
             cidFont[PdfName.W] = widths;
@@ -300,10 +300,7 @@ namespace PdfClown.Documents.Contents.Fonts
             long w1 = (long)Math.Round(-vhea.AdvanceHeightMax * scaling);
             if (v != 880 || w1 != -1000)
             {
-                PdfArray cosDw2 = new PdfArray();
-                cosDw2.Add(PdfInteger.Get(v));
-                cosDw2.Add(PdfInteger.Get(w1));
-                cidFont[PdfName.DW2] = cosDw2;
+                cidFont[PdfName.DW2] = new PdfArray { v, w1 };
             }
             return true;
         }
@@ -332,8 +329,8 @@ namespace PdfClown.Documents.Contents.Fonts
             long v_y = (long)Math.Round(vhea.Ascender * scaling);
             long w1 = (long)Math.Round(-vhea.AdvanceHeightMax * scaling);
 
-            PdfArray heights = new PdfArray();
-            PdfArray w2 = new PdfArray();
+            var heights = new PdfArray();
+            var w2 = new PdfArray();
             int prev = int.MinValue;
             // Use a sorted list to get an optimal width array
             ISet<int> keys = new HashSet<int>(cidToGid.Keys);
@@ -357,13 +354,13 @@ namespace PdfClown.Documents.Contents.Fonts
                 if (prev != cid - 1)
                 {
                     w2 = new PdfArray();
-                    heights.Add(PdfInteger.Get(cid)); // c
+                    heights.Add(cid); // c
                     heights.Add(w2);
                 }
-                w2.Add(PdfInteger.Get(advance)); // w1_iy
+                w2.Add(advance); // w1_iy
                 long width = (long)Math.Round(hmtx.GetAdvanceWidth(cid) * scaling);
-                w2.Add(PdfInteger.Get(width / 2)); // v_ix
-                w2.Add(PdfInteger.Get(height)); // v_iy
+                w2.Add(width / 2); // v_ix
+                w2.Add(height); // v_iy
                 prev = cid;
             }
             cidFont[PdfName.W2] = heights;
@@ -404,8 +401,7 @@ namespace PdfClown.Documents.Contents.Fonts
             long lastValue = (long)Math.Round(widths[1] * scaling);
 
             var inner = new PdfArray();
-            var outer = new PdfArray();
-            outer.Add(PdfInteger.Get(lastCid));
+            var outer = new PdfArray { lastCid };
 
             State state = State.FIRST;
 
@@ -424,15 +420,13 @@ namespace PdfClown.Documents.Contents.Fonts
                         else if (cid == lastCid + 1)
                         {
                             state = State.BRACKET;
-                            inner = new PdfArray();
-                            inner.Add(PdfInteger.Get(lastValue));
+                            inner = new PdfArray { lastValue };
                         }
                         else
                         {
-                            inner = new PdfArray();
-                            inner.Add(PdfInteger.Get(lastValue));
+                            inner = new PdfArray { lastValue };
                             outer.Add(inner);
-                            outer.Add(PdfInteger.Get(cid));
+                            outer.Add(cid);
                         }
                         break;
                     case State.BRACKET:
@@ -440,26 +434,26 @@ namespace PdfClown.Documents.Contents.Fonts
                         {
                             state = State.SERIAL;
                             outer.Add(inner);
-                            outer.Add(PdfInteger.Get(lastCid));
+                            outer.Add(lastCid);
                         }
                         else if (cid == lastCid + 1)
                         {
-                            inner.Add(PdfInteger.Get(lastValue));
+                            inner.Add(lastValue);
                         }
                         else
                         {
                             state = State.FIRST;
-                            inner.Add(PdfInteger.Get(lastValue));
+                            inner.Add(lastValue);
                             outer.Add(inner);
-                            outer.Add(PdfInteger.Get(cid));
+                            outer.Add(cid);
                         }
                         break;
                     case State.SERIAL:
                         if (cid != lastCid + 1 || value != lastValue)
                         {
-                            outer.Add(PdfInteger.Get(lastCid));
-                            outer.Add(PdfInteger.Get(lastValue));
-                            outer.Add(PdfInteger.Get(cid));
+                            outer.Add(lastCid);
+                            outer.Add(lastValue);
+                            outer.Add(cid);
                             state = State.FIRST;
                         }
                         break;
@@ -471,17 +465,16 @@ namespace PdfClown.Documents.Contents.Fonts
             switch (state)
             {
                 case State.FIRST:
-                    inner = new PdfArray();
-                    inner.Add(PdfInteger.Get(lastValue));
+                    inner = new PdfArray { lastValue };
                     outer.Add(inner);
                     break;
                 case State.BRACKET:
-                    inner.Add(PdfInteger.Get(lastValue));
+                    inner.Add(lastValue);
                     outer.Add(inner);
                     break;
                 case State.SERIAL:
-                    outer.Add(PdfInteger.Get(lastCid));
-                    outer.Add(PdfInteger.Get(lastValue));
+                    outer.Add(lastCid);
+                    outer.Add(lastValue);
                     break;
             }
             return outer;
@@ -536,9 +529,8 @@ namespace PdfClown.Documents.Contents.Fonts
             long lastVxValue = (long)Math.Round(values[2] * scaling / 2f);
             long lastVyValue = (long)Math.Round(values[3] * scaling);
 
-            PdfArray inner = new PdfArray();
-            PdfArray outer = new PdfArray();
-            outer.Add(PdfInteger.Get(lastCid));
+            var inner = new PdfArray();
+            var outer = new PdfArray { lastCid };
 
             State state = State.FIRST;
 
@@ -564,19 +556,23 @@ namespace PdfClown.Documents.Contents.Fonts
                         else if (cid == lastCid + 1)
                         {
                             state = State.BRACKET;
-                            inner = new PdfArray();
-                            inner.Add(PdfInteger.Get(lastW1Value));
-                            inner.Add(PdfInteger.Get(lastVxValue));
-                            inner.Add(PdfInteger.Get(lastVyValue));
+                            inner = new PdfArray
+                            {
+                                lastW1Value,
+                                lastVxValue,
+                                lastVyValue
+                            };
                         }
                         else
                         {
-                            inner = new PdfArray();
-                            inner.Add(PdfInteger.Get(lastW1Value));
-                            inner.Add(PdfInteger.Get(lastVxValue));
-                            inner.Add(PdfInteger.Get(lastVyValue));
+                            inner = new PdfArray
+                            {
+                                lastW1Value,
+                                lastVxValue,
+                                lastVyValue
+                            };
                             outer.Add(inner);
-                            outer.Add(PdfInteger.Get(cid));
+                            outer.Add(cid);
                         }
                         break;
                     case State.BRACKET:
@@ -584,32 +580,32 @@ namespace PdfClown.Documents.Contents.Fonts
                         {
                             state = State.SERIAL;
                             outer.Add(inner);
-                            outer.Add(PdfInteger.Get(lastCid));
+                            outer.Add(lastCid);
                         }
                         else if (cid == lastCid + 1)
                         {
-                            inner.Add(PdfInteger.Get(lastW1Value));
-                            inner.Add(PdfInteger.Get(lastVxValue));
-                            inner.Add(PdfInteger.Get(lastVyValue));
+                            inner.Add(lastW1Value);
+                            inner.Add(lastVxValue);
+                            inner.Add(lastVyValue);
                         }
                         else
                         {
                             state = State.FIRST;
-                            inner.Add(PdfInteger.Get(lastW1Value));
-                            inner.Add(PdfInteger.Get(lastVxValue));
-                            inner.Add(PdfInteger.Get(lastVyValue));
+                            inner.Add(lastW1Value);
+                            inner.Add(lastVxValue);
+                            inner.Add(lastVyValue);
                             outer.Add(inner);
-                            outer.Add(PdfInteger.Get(cid));
+                            outer.Add(cid);
                         }
                         break;
                     case State.SERIAL:
                         if (cid != lastCid + 1 || w1Value != lastW1Value || vxValue != lastVxValue || vyValue != lastVyValue)
                         {
-                            outer.Add(PdfInteger.Get(lastCid));
-                            outer.Add(PdfInteger.Get(lastW1Value));
-                            outer.Add(PdfInteger.Get(lastVxValue));
-                            outer.Add(PdfInteger.Get(lastVyValue));
-                            outer.Add(PdfInteger.Get(cid));
+                            outer.Add(lastCid);
+                            outer.Add(lastW1Value);
+                            outer.Add(lastVxValue);
+                            outer.Add(lastVyValue);
+                            outer.Add(cid);
                             state = State.FIRST;
                         }
                         break;
@@ -623,23 +619,25 @@ namespace PdfClown.Documents.Contents.Fonts
             switch (state)
             {
                 case State.FIRST:
-                    inner = new PdfArray();
-                    inner.Add(PdfInteger.Get(lastW1Value));
-                    inner.Add(PdfInteger.Get(lastVxValue));
-                    inner.Add(PdfInteger.Get(lastVyValue));
+                    inner = new PdfArray
+                    {
+                        lastW1Value,
+                        lastVxValue,
+                        lastVyValue
+                    };
                     outer.Add(inner);
                     break;
                 case State.BRACKET:
-                    inner.Add(PdfInteger.Get(lastW1Value));
-                    inner.Add(PdfInteger.Get(lastVxValue));
-                    inner.Add(PdfInteger.Get(lastVyValue));
+                    inner.Add(lastW1Value);
+                    inner.Add(lastVxValue);
+                    inner.Add(lastVyValue);
                     outer.Add(inner);
                     break;
                 case State.SERIAL:
-                    outer.Add(PdfInteger.Get(lastCid));
-                    outer.Add(PdfInteger.Get(lastW1Value));
-                    outer.Add(PdfInteger.Get(lastVxValue));
-                    outer.Add(PdfInteger.Get(lastVyValue));
+                    outer.Add(lastCid);
+                    outer.Add(lastW1Value);
+                    outer.Add(lastVxValue);
+                    outer.Add(lastVyValue);
                     break;
             }
             return outer;

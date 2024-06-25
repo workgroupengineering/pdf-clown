@@ -23,76 +23,58 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents;
 using PdfClown.Objects;
 using PdfClown.Tokens;
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace PdfClown.Files
 {
-    /**
-      <summary>Collection of the <b>alive indirect objects</b> available inside the
-      file.</summary>
-      <remarks>
-        <para>According to the PDF spec, <i>indirect object entries may be free
-        (no data object associated) or in-use (data object associated)</i>.</para>
-        <para>We can effectively subdivide indirect objects in two possibly-overriding
-        collections: the <b>original indirect objects</b> (coming from the associated
-        preexisting file) and the <b>newly-registered indirect objects</b> (coming
-        from new data objects or original indirect objects manipulated during the
-        current session).</para>
-        <para><i>To ensure that the modifications applied to an original indirect object
-        are committed to being persistent</i> is critical that the modified original
-        indirect object is newly-registered (practically overriding the original
-        indirect object).</para>
-        <para><b>Alive indirect objects</b> encompass all the newly-registered ones plus
-        not-overridden original ones.</para>
-      </remarks>
-    */
+    /// <summary>Collection of the <b>alive indirect objects</b> available inside the
+    /// file.</summary>
+    /// <remarks>
+    ///   <para>According to the PDF spec, <i>indirect object entries may be free
+    ///   (no data object associated) or in-use (data object associated)</i>.</para>
+    ///   <para>We can effectively subdivide indirect objects in two possibly-overriding
+    ///   collections: the <b>original indirect objects</b> (coming from the associated
+    ///   preexisting file) and the <b>newly-registered indirect objects</b> (coming
+    ///   from new data objects or original indirect objects manipulated during the
+    ///   current session).</para>
+    ///   <para><i>To ensure that the modifications applied to an original indirect object
+    ///   are committed to being persistent</i> is critical that the modified original
+    ///   indirect object is newly-registered (practically overriding the original
+    ///   indirect object).</para>
+    ///   <para><b>Alive indirect objects</b> encompass all the newly-registered ones plus
+    ///   not-overridden original ones.</para>
+    /// </remarks>
     public sealed class IndirectObjects : IList<PdfIndirectObject>
     {
-        /**
-          <summary>Associated file.</summary>
-        */
+        /// <summary>Associated file.</summary>
         private PdfFile file;
 
-        /**
-          <summary>Map of matching references of imported indirect objects.</summary>
-          <remarks>
-            <para>This collection is used to prevent duplications among imported
-            indirect objects.</para>
-            <para><code>Key</code> is the external indirect object hashcode, <code>Value</code> is the
-            matching internal indirect object.</para>
-          </remarks>
-        */
+        /// <summary>Map of matching references of imported indirect objects.</summary>
+        /// <remarks>
+        ///   <para>This collection is used to prevent duplications among imported
+        ///   indirect objects.</para>
+        ///   <para><code>Key</code> is the external indirect object hashcode, <code>Value</code> is the
+        ///   matching internal indirect object.</para>
+        /// </remarks>
         private Dictionary<int, PdfIndirectObject> importedObjects = new();
-        /**
-          <summary>Collection of newly-registered indirect objects.</summary>
-        */
+        /// <summary>Collection of newly-registered indirect objects.</summary>
         private SortedDictionary<int, PdfIndirectObject> modifiedObjects = new();
-        /**
-          <summary>Collection of instantiated original indirect objects.</summary>
-          <remarks>This collection is used as a cache to avoid unconsistent parsing duplications.</remarks>
-        */
+        /// <summary>Collection of instantiated original indirect objects.</summary>
+        /// <remarks>This collection is used as a cache to avoid unconsistent parsing duplications.</remarks>
         private SortedDictionary<int, PdfIndirectObject> wokenObjects = new();
 
-        /**
-          <summary>Object counter.</summary>
-        */
+        /// <summary>Object counter.</summary>
         private int lastObjectNumber;
-        /**
-          <summary>Offsets of the original indirect objects inside the associated file
-          (to say: implicit collection of the original indirect objects).</summary>
-          <remarks>This information is vital to randomly retrieve the indirect-object
-          persistent representation inside the associated file.</remarks>
-        */
+        /// <summary>Offsets of the original indirect objects inside the associated file
+        /// (to say: implicit collection of the original indirect objects).</summary>
+        /// <remarks>This information is vital to randomly retrieve the indirect-object
+        /// persistent representation inside the associated file.</remarks>
         private SortedDictionary<int, XRefEntry> xrefEntries;
 
         internal IndirectObjects(PdfFile file, SortedDictionary<int, XRefEntry> xrefEntries)
@@ -102,10 +84,8 @@ namespace PdfClown.Files
             if (this.xrefEntries == null) // No original indirect objects.
             {
                 // Register the leading free-object!
-                /*
-                  NOTE: Mandatory head of the linked list of free objects
-                  at object number 0 [PDF:1.6:3.4.3].
-                */
+                // NOTE: Mandatory head of the linked list of free objects
+                // at object number 0 [PDF:1.6:3.4.3].
                 lastObjectNumber = 0;
                 modifiedObjects[lastObjectNumber] = new PdfIndirectObject(
                   this.file,
@@ -119,12 +99,10 @@ namespace PdfClown.Files
             }
         }
 
-        /**
-          <summary>Registers an <i>internal</i> data object.</summary>
-          <remarks>To register an external indirect object, use <see
-          cref="AddExternal(PdfIndirectObject)"/>.</remarks>
-          <returns>Indirect object corresponding to the registered data object.</returns>
-        */
+        /// <summary>Registers an <i>internal</i> data object.</summary>
+        /// <remarks>To register an external indirect object, use <see
+        /// cref="AddExternal(PdfIndirectObject)"/>.</remarks>
+        /// <returns>Indirect object corresponding to the registered data object.</returns>
         public PdfIndirectObject Add(PdfDataObject obj)
         {
             // Register a new indirect object wrapping the data object inside!
@@ -146,8 +124,7 @@ namespace PdfClown.Files
           <param nme="obj">External indirect object to import.</param>
           <returns>Indirect object imported from the external indirect object.</returns>
         */
-        public PdfIndirectObject AddExternal(PdfIndirectObject obj)
-        { return AddExternal(obj, file.Cloner); }
+        public PdfIndirectObject AddExternal(PdfIndirectObject obj) => AddExternal(obj, file.Cloner);
 
         /**
           <summary>Registers an <i>external</i> indirect object.</summary>
@@ -179,17 +156,13 @@ namespace PdfClown.Files
             return indirectObject;
         }
 
-        /**
-          <summary>Gets the file associated to this collection.</summary>
-        */
+        /// <summary>Gets the file associated to this collection.</summary>
         public PdfFile File => file;
 
         public bool IsEmpty()
         {
-            /*
-              NOTE: Indirect objects' semantics imply that the collection is considered empty when no
-              in-use object is available.
-            */
+            // NOTE: Indirect objects' semantics imply that the collection is considered empty when no
+            // in-use object is available.
             foreach (PdfIndirectObject obj in this)
             {
                 if (obj.IsInUse())
@@ -214,13 +187,11 @@ namespace PdfClown.Files
         {
             if (this[index].IsInUse())
             {
-                /*
-                  NOTE: Acrobat 6.0 and later (PDF 1.5+) DO NOT use the free list to recycle object numbers;
-                  new objects are assigned new numbers [PDF:1.6:H.3:16].
-                  According to such an implementation note, we simply mark the removed object as 'not-reusable'
-                  newly-freed entry, neglecting both to add it to the linked list of free entries and to
-                  increment by 1 its generation number.
-                */
+                // NOTE: Acrobat 6.0 and later (PDF 1.5+) DO NOT use the free list to recycle object numbers;
+                // new objects are assigned new numbers [PDF:1.6:H.3:16].
+                // According to such an implementation note, we simply mark the removed object as 'not-reusable'
+                // newly-freed entry, neglecting both to add it to the linked list of free entries and to
+                // increment by 1 its generation number.
                 Update(
                   new PdfIndirectObject(
                     file,
@@ -234,10 +205,8 @@ namespace PdfClown.Files
             get
             {
                 if (index < 0 || index >= Count)
-                    /*
-                      NOTE: An indirect reference to an undefined object is not an error; it is simply treated
-                      as a reference to the null object [PDF:1.7:3.2.9] [FIX:59].
-                    */
+                    // NOTE: An indirect reference to an undefined object is not an error; it is simply treated
+                    // as a reference to the null object [PDF:1.7:3.2.9] [FIX:59].
                     return null;
 
                 PdfIndirectObject obj;
@@ -275,16 +244,14 @@ namespace PdfClown.Files
             set => throw new NotSupportedException();
         }
 
-        /**
-          <summary>Registers an <i>external</i> indirect object.</summary>
-          <remarks>
-            <para>External indirect objects come from alien PDF files; therefore, this is a powerful way
-            to import contents from a file into another one.</para>
-            <para>To register and get an external indirect object, use <see
-            cref="AddExternal(PdfIndirectObject)"/></para>
-          </remarks>
-          <returns>Whether the indirect object was successfully registered.</returns>
-        */
+        /// <summary>Registers an <i>external</i> indirect object.</summary>
+        /// <remarks>
+        ///   <para>External indirect objects come from alien PDF files; therefore, this is a powerful way
+        ///   to import contents from a file into another one.</para>
+        ///   <para>To register and get an external indirect object, use <see
+        ///   cref="AddExternal(PdfIndirectObject)"/></para>
+        /// </remarks>
+        /// <returns>Whether the indirect object was successfully registered.</returns>
         public void Add(PdfIndirectObject obj) => AddExternal(obj);
 
         public void Clear()
@@ -297,11 +264,9 @@ namespace PdfClown.Files
 
         public void CopyTo(PdfIndirectObject[] objs, int index) => throw new NotSupportedException();
 
-        /**
-          <summary>Gets the number of entries available (both in-use and free) in the
-          collection.</summary>
-          <returns>The number of entries available in the collection.</returns>
-        */
+        /// <summary>Gets the number of entries available (both in-use and free) in the
+        /// collection.</summary>
+        /// <returns>The number of entries available in the collection.</returns>
         public int Count => lastObjectNumber + 1;
 
         public bool IsReadOnly => false;
@@ -321,8 +286,7 @@ namespace PdfClown.Files
             { yield return this[index]; }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        { return this.GetEnumerator(); }
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
         internal PdfIndirectObject AddVirtual(PdfIndirectObject obj)
         {

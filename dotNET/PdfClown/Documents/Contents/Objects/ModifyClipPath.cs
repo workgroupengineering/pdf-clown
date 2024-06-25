@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -32,45 +31,26 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>Clipping path operation [PDF:1.6:4.4.2].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class ModifyClipPath : Operation
+    public abstract class ModifyClipPath : Operation
     {
-        public const string EvenOddOperatorKeyword = "W*";
-        public const string NonZeroOperatorKeyword = "W";
+        
 
         /**
           <summary>'Modify the current clipping path by intersecting it with the current path,
           using the even-odd rule to determine which regions lie inside the clipping path'
           operation.</summary>
         */
-        public static readonly ModifyClipPath EvenOdd = new ModifyClipPath(EvenOddOperatorKeyword, WindModeEnum.EvenOdd);
+        public static readonly ModifyClipPathEvenOdd EvenOdd = new ModifyClipPathEvenOdd();
         /**
           <summary>'Modify the current clipping path by intersecting it with the current path,
           using the nonzero winding number rule to determine which regions lie inside
           the clipping path' operation.</summary>
         */
-        public static readonly ModifyClipPath NonZero = new ModifyClipPath(NonZeroOperatorKeyword, WindModeEnum.NonZero);
+        public static readonly ModifyClipPathNonZero NonZero = new ModifyClipPathNonZero();
 
-        private WindModeEnum clipMode;
-
-        private ModifyClipPath(string @operator, WindModeEnum clipMode) : base(@operator)
+        protected ModifyClipPath(string @operator) : base(@operator)
         {
-            this.clipMode = clipMode;
-        }
 
-        /**
-          <summary>Gets the clipping rule.</summary>
-        */
-        public WindModeEnum ClipMode => clipMode;
-
-        public override void Scan(GraphicsState state)
-        {
-            var scanner = state.Scanner;
-            var pathObject = scanner.RenderObject;
-            if (pathObject != null)
-            {
-                pathObject.FillType = clipMode.ToSkia();
-                scanner.RenderContext.ClipPath(pathObject, SKClipOperation.Intersect, true);
-            }
-        }
+        }        
     }
 }

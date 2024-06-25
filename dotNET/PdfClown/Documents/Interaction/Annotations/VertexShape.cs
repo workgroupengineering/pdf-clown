@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
 
 using System;
@@ -36,9 +34,7 @@ using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Abstract vertexed shape annotation.</summary>
-    */
+    /// <summary>Abstract vertexed shape annotation.</summary>
     [PDF(VersionEnum.PDF15)]
     public abstract class VertexShape : Shape
     {
@@ -53,9 +49,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the coordinates of each vertex.</summary>
-        */
+        /// <summary>Gets/Sets the coordinates of each vertex.</summary>
         public SKPoint[] Points
         {
             get
@@ -82,15 +76,15 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     points = value;
                 }
-                PdfArray verticesObject = Vertices;
-                verticesObject.Clear();
-                float pageHeight = Page.Box.Height;
+                var array = Vertices;
+                array.Clear();
                 foreach (SKPoint vertex in value)
                 {
-                    verticesObject.Add(PdfReal.Get(vertex.X));
-                    verticesObject.Add(PdfReal.Get(vertex.Y));
+                    array.Add(vertex.X);
+                    array.Add(vertex.Y);
                 }
-                Vertices = verticesObject;
+                OnPropertyChanged(array, array, nameof(Vertices));
+                QueueRefreshAppearance();
             }
         }
 
@@ -108,6 +102,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
         }
+
 
         public SKPoint this[int index]
         {
@@ -201,7 +196,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 return;
             }
-            SKRect box = SKRect.Empty;
+            var box = SKRect.Empty;
             foreach (SKPoint point in Points)
             {
                 if (box == SKRect.Empty)
@@ -209,7 +204,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 else
                 { box.Add(point); }
             }
-            BorderEffect?.ApplyEffect(ref box);
+            ApplyBorderAndEffect(ref box);
             Box = box;
         }
 
@@ -224,7 +219,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override void MoveTo(SKRect newBox)
         {
             var oldBox = Box;
-            //base.MoveTo(newBox);
+            InvertBorderAndEffect(ref oldBox);
+            InvertBorderAndEffect(ref newBox);
             var dif = SKMatrix.CreateIdentity()
                 .PreConcat(SKMatrix.CreateTranslation(newBox.MidX, newBox.MidY))
                 .PreConcat(SKMatrix.CreateScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height))

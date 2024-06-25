@@ -32,15 +32,13 @@ using System.Collections.Generic;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>Object stream containing a sequence of PDF objects [PDF:1.6:3.4.6].</summary>
-      <remarks>The purpose of object streams is to allow a greater number of PDF objects
-      to be compressed, thereby substantially reducing the size of PDF files.
-      The objects in the stream are referred to as compressed objects.</remarks>
-    */
+    /// <summary>Object stream containing a sequence of PDF objects [PDF:1.6:3.4.6].</summary>
+    /// <remarks>The purpose of object streams is to allow a greater number of PDF objects
+    /// to be compressed, thereby substantially reducing the size of PDF files.
+    /// The objects in the stream are referred to as compressed objects.</remarks>
     public sealed class ObjectStream : PdfStream, IDictionary<int, PdfDataObject>
     {
-        private sealed class ObjectEntry
+        internal sealed class ObjectEntry
         {
             internal PdfDataObject dataObject;
             internal int offset;
@@ -78,11 +76,9 @@ namespace PdfClown.Tokens
             }
         }
 
-        /**
-          <summary>Compressed objects map.</summary>
-          <remarks>This map is initially populated with offset values;
-          when a compressed object is required, its offset is used to retrieve it.</remarks>
-        */
+        /// <summary>Compressed objects map.</summary>
+        /// <remarks>This map is initially populated with offset values;
+        /// when a compressed object is required, its offset is used to retrieve it.</remarks>
         private IDictionary<int, ObjectEntry> entries;
         private FileParser parser;
 
@@ -96,11 +92,9 @@ namespace PdfClown.Tokens
 
         public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 
-        /**
-          <summary>Gets/Sets the object stream extended by this one.</summary>
-          <remarks>Both streams are considered part of a collection of object streams  whose links form
-          a directed acyclic graph.</remarks>
-        */
+        /// <summary>Gets/Sets the object stream extended by this one.</summary>
+        /// <remarks>Both streams are considered part of a collection of object streams  whose links form
+        /// a directed acyclic graph.</remarks>
         public ObjectStream BaseStream
         {
             get => (ObjectStream)Header.Resolve(PdfName.Extends);
@@ -193,7 +187,7 @@ namespace PdfClown.Tokens
         IEnumerator IEnumerable.GetEnumerator()
         { return ((IEnumerable<KeyValuePair<int, PdfDataObject>>)this).GetEnumerator(); }
 
-        private IDictionary<int, ObjectEntry> Entries
+        internal IDictionary<int, ObjectEntry> Entries
         {
             get
             {
@@ -218,9 +212,7 @@ namespace PdfClown.Tokens
             }
         }
 
-        /**
-          <summary>Serializes the object stream entries into the stream body.</summary>
-        */
+        /// <summary>Serializes the object stream entries into the stream body.</summary>
         private void Flush(IOutputStream stream)
         {
             // 1. Body.
@@ -240,10 +232,8 @@ namespace PdfClown.Tokens
                     var xrefEntry = indirectObjects[objectNumber].XrefEntry;
                     xrefEntry.Offset = ++objectIndex;
 
-                    /*
-                      NOTE: The entry offset MUST be updated only after its serialization, in order not to
-                      interfere with its possible data-object retrieval from the old serialization.
-                    */
+                    // NOTE: The entry offset MUST be updated only after its serialization, in order not to
+                    // interfere with its possible data-object retrieval from the old serialization.
                     int entryValueOffset = (int)dataBuffer.Length;
 
                     // Index.
@@ -272,8 +262,8 @@ namespace PdfClown.Tokens
             // 2. Header.
             {
                 var header = Header;
-                header.SetInt(PdfName.N, Entries.Count);
-                header.SetInt(PdfName.First, dataByteOffset);
+                header.Set(PdfName.N, Entries.Count);
+                header.Set(PdfName.First, dataByteOffset);
             }
         }
     }

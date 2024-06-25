@@ -26,6 +26,7 @@
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Files;
 using PdfClown.Objects;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -43,8 +44,8 @@ namespace PdfClown.Documents.Contents.Patterns
         public static readonly Pattern Default = new TilingPattern(null);
         private const int PatternType1 = 1;
         private const int PatternType2 = 2;
-        private float[] matrix;
-        private IList<PdfDirectObject> components = new List<PdfDirectObject>();
+        private SKMatrix? matrix;
+        private PdfArray components = new ();
 
         /**
           <summary>Wraps the specified base object into a pattern object.</summary>
@@ -80,7 +81,7 @@ namespace PdfClown.Documents.Contents.Patterns
         protected Pattern(PatternColorSpace colorSpace, PdfDirectObject baseObject) : base(colorSpace, baseObject)
         { }
 
-        public override IList<PdfDirectObject> Components => components;
+        public override PdfArray Components => components;
 
         /**
           <summary>Gets the pattern matrix, a transformation matrix that maps the pattern's
@@ -89,64 +90,13 @@ namespace PdfClown.Documents.Contents.Patterns
           <remarks>The concatenation of the pattern matrix with that of the parent content stream establishes
           the pattern coordinate space, within which all graphics objects in the pattern are interpreted.</remarks>
         */
-        public float[] Matrix
+        public SKMatrix Matrix
         {
-            get
-            {
-                /*
-                  NOTE: Pattern-space-to-user-space matrix is identity [1 0 0 1 0 0] by default.
-                */
-                return matrix ??= Dictionary.Resolve(PdfName.Matrix) is PdfArray array
-                   ? new float[]
-                     {
-                          array.GetFloat(0), // a.
-                          array.GetFloat(1), // b.
-                          array.GetFloat(2), // c.
-                          array.GetFloat(3), // d.
-                          array.GetFloat(4), // e.
-                          array.GetFloat(5) // f.
-                     }
-                   : new float[]
-                     {
-                          1, // a.
-                          0, // b.
-                          0, // c.
-                          1, // d.
-                          0, // e.
-                          0 // f.
-                     };
-            }
-        }
-
-        public SKMatrix SKMatrix
-        {
-            get
-            {
-                /*
-                  NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
-                  but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
-                */
-                return new SKMatrix
-                {
-                    ScaleX = Matrix[0],
-                    SkewY = Matrix[1],
-                    SkewX = Matrix[2],
-                    ScaleY = Matrix[3],
-                    TransX = Matrix[4],
-                    TransY = Matrix[5],
-                    Persp2 = 1
-                };
-            }
-            set => Dictionary[PdfName.Matrix] =
-                 new PdfArray(6)
-                 {
-                    PdfReal.Get(value.ScaleX),
-                    PdfReal.Get(value.SkewY),
-                    PdfReal.Get(value.SkewX),
-                    PdfReal.Get(value.ScaleY),
-                    PdfReal.Get(value.TransX),
-                    PdfReal.Get(value.TransY)
-                };
+            //NOTE: Pattern-space-to-user-space matrix is identity [1 0 0 1 0 0] by default.
+            //NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
+            //  but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
+            get => matrix ??= Dictionary.Get<PdfArray>(PdfName.Matrix)?.ToSkMatrix() ?? SKMatrix.Identity;
+            set => Dictionary[PdfName.Matrix] = value.ToPdfArray();
         }
 
         public override object Clone(PdfDocument context)

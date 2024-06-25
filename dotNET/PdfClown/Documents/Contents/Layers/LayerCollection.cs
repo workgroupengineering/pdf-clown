@@ -35,21 +35,15 @@ namespace PdfClown.Documents.Contents.Layers
     [PDF(VersionEnum.PDF15)]
     public sealed class LayerCollection : UILayers, IUILayerNode
     {
-        #region dynamic
-        #region constructors
         public LayerCollection(PdfDocument context, string title) : base(context)
         { Title = title; }
 
         internal LayerCollection(PdfDirectObject baseObject) : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
         public override string ToString()
         { return Title; }
 
-        #region IUILayerNode
         UILayers IUILayerNode.Children => this;
 
         public string Title
@@ -78,10 +72,6 @@ namespace PdfClown.Documents.Contents.Layers
                 { baseDataObject.Insert(0, titleObject); }
             }
         }
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }
 

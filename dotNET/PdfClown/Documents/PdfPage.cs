@@ -28,7 +28,6 @@ using PdfClown.Bytes;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
-using xObjects = PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
@@ -37,37 +36,27 @@ using System;
 using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Document page [PDF:1.6:3.6.2].</summary>
-    */
+    /// <summary>Document page [PDF:1.6:3.6.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public class PdfPage : PdfObjectWrapper<PdfDictionary>, IContentContext
     {
-        /*
-          NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
-          of the explicit representation of a page. They are retrieved every time
-          clients call.
-        */
-        /**
-          <summary>Annotations tab order [PDF:1.6:3.6.2].</summary>
-        */
+        //NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
+        //of the explicit representation of a page. They are retrieved every time
+        //clients call.
+
+        /// <summary>Annotations tab order [PDF:1.6:3.6.2].</summary>
         [PDF(VersionEnum.PDF15)]
         public enum TabOrderEnum
         {
-            /**
-              <summary>Row order.</summary>
-            */
+            /// <summary>Row order.</summary>
             Row,
-            /**
-              <summary>Column order.</summary>
-            */
+            /// <summary>Column order.</summary>
             Column,
-            /**
-              <summary>Structure order.</summary>
-            */
+            /// <summary>Structure order.</summary>
             Structure
         };
 
@@ -98,22 +87,18 @@ namespace PdfClown.Documents
             };
         }
 
-        /**
-          <summary>Gets the attribute value corresponding to the specified key, possibly recurring to
-          its ancestor nodes in the page tree.</summary>
-          <param name="pageObject">Page object.</param>
-          <param name="key">Attribute key.</param>
-        */
+        /// <summary>Gets the attribute value corresponding to the specified key, possibly recurring to
+        /// its ancestor nodes in the page tree.</summary>
+        /// <param name="pageObject">Page object.</param>
+        /// <param name="key">Attribute key.</param>
         public static PdfDirectObject GetInheritableAttribute(PdfDictionary pageObject, PdfName key)
         {
-            /*
-              NOTE: It moves upward until it finds the inherited attribute.
-            */
+            // NOTE: It moves upward until it finds the inherited attribute.
             PdfDictionary dictionary = pageObject;
             while (true)
             {
-                PdfDirectObject entry = dictionary[key];
-                if (entry != null)
+                if (dictionary.TryGetValue(key, out var entry)
+                    && entry != null)
                     return entry;
 
                 dictionary = dictionary.Get<PdfDictionary>(PdfName.Parent);
@@ -129,17 +114,13 @@ namespace PdfClown.Documents
             }
         }
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(TabOrderEnum value)
         {
             return TabOrderEnumCodes[value];
         }
 
-        /**
-          <summary>Gets the tab order corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the tab order corresponding to the given value.</summary>
         private static TabOrderEnum ToTabOrderEnum(string value)
         {
             if (value == null)
@@ -152,19 +133,15 @@ namespace PdfClown.Documents
             return TabOrderEnum.Row;
         }
 
-        /**
-          <summary>Creates a new page within the specified document context, using the default size.
-          </summary>
-          <param name="context">Document where to place this page.</param>
-        */
+        /// <summary>Creates a new page within the specified document context, using the default size.
+        /// </summary>
+        /// <param name="context">Document where to place this page.</param>
         public PdfPage(PdfDocument context) : this(context, null)
         { }
 
-        /**
-          <summary>Creates a new page within the specified document context.</summary>
-          <param name="context">Document where to place this page.</param>
-          <param name="size">Page size. In case of <code>null</code>, uses the default SKSize.</param>
-        */
+        /// <summary>Creates a new page within the specified document context.</summary>
+        /// <param name="context">Document where to place this page.</param>
+        /// <param name="size">Page size. In case of <code>null</code>, uses the default SKSize.</param>
         public PdfPage(PdfDocument context, SKSize? size)
             : base(context, new PdfDictionary
             {
@@ -179,9 +156,7 @@ namespace PdfClown.Documents
         public PdfPage(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the page's behavior in response to trigger events.</summary>
-        */
+        /// <summary>Gets/Sets the page's behavior in response to trigger events.</summary>
         [PDF(VersionEnum.PDF12)]
         public PageActions Actions
         {
@@ -189,116 +164,86 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.AA] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the annotations associated to the page.</summary>
-        */
+        /// <summary>Gets/Sets the annotations associated to the page.</summary>
         public PageAnnotations Annotations
         {
             get => PageAnnotations.Wrap(BaseDataObject.GetOrCreate<PdfArray>(PdfName.Annots), this);
             set => BaseDataObject[PdfName.Annots] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the extent of the page's meaningful content (including potential white space)
-          as intended by the page's creator [PDF:1.7:10.10.1].</summary>
-          <seealso cref="CropBox"/>
-        */
+        /// <summary>Gets/Sets the extent of the page's meaningful content (including potential white space)
+        /// as intended by the page's creator [PDF:1.7:10.10.1].</summary>
+        /// <seealso cref="CropBox"/>
         [PDF(VersionEnum.PDF13)]
         public Rectangle ArtBox
         {
-            get
-            {
-                /*
-                  NOTE: The default value is the page's crop box.
-                */
-                PdfDirectObject artBoxObject = GetInheritableAttribute(PdfName.ArtBox);
-                return artBoxObject != null ? Wrap<Rectangle>(artBoxObject) : CropBox;
-            }
+            //NOTE: The default value is the page's crop box.
+            get => Wrap<Rectangle>(GetInheritableAttribute(PdfName.ArtBox)) ?? CropBox;
             set => BaseDataObject[PdfName.ArtBox] = value?.BaseDataObject;
         }
 
-        /**
-          <summary>Gets the page article beads.</summary>
-        */
-        public PageArticleElements ArticleElements => PageArticleElements.Wrap(BaseDataObject.GetOrCreate<PdfArray>(PdfName.B), this);
+        /// <summary>Gets the page article beads.</summary>
+        public PageArticleElements ArticleElements
+        {
+            get => PageArticleElements.Wrap(BaseDataObject.GetOrCreate<PdfArray>(PdfName.B), this);
+        }
 
-        /**
-          <summary>Gets/Sets the region to which the contents of the page should be clipped when output
-          in a production environment [PDF:1.7:10.10.1].</summary>
-          <remarks>
-            <para>This may include any extra bleed area needed to accommodate the physical limitations of
-            cutting, folding, and trimming equipment. The actual printed page may include printing marks
-            that fall outside the bleed box.</para>
-          </remarks>
-          <seealso cref="CropBox"/>
-        */
+        /// <summary>Gets/Sets the region to which the contents of the page should be clipped when output
+        /// in a production environment [PDF:1.7:10.10.1].</summary>
+        /// <remarks>
+        ///   <para>This may include any extra bleed area needed to accommodate the physical limitations of
+        ///   cutting, folding, and trimming equipment. The actual printed page may include printing marks
+        ///   that fall outside the bleed box.</para>
+        /// </remarks>
+        /// <seealso cref="CropBox"/>
         [PDF(VersionEnum.PDF13)]
         public Rectangle BleedBox
         {
-            get
-            {
-                /*
-                  NOTE: The default value is the page's crop box.
-                */
-                PdfDirectObject bleedBoxObject = GetInheritableAttribute(PdfName.BleedBox);
-                return bleedBoxObject != null ? Wrap<Rectangle>(bleedBoxObject) : CropBox;
-            }
+            // NOTE: The default value is the page's crop box.
+            get => Wrap<Rectangle>(GetInheritableAttribute(PdfName.BleedBox)) ?? CropBox;
             set => BaseDataObject[PdfName.BleedBox] = value?.BaseDataObject;
         }
 
-        /**
-          <summary>Gets/Sets the region to which the contents of the page are to be clipped (cropped)
-          when displayed or printed [PDF:1.7:10.10.1].</summary>
-          <remarks>
-            <para>Unlike the other boxes, the crop box has no defined meaning in terms of physical page
-            geometry or intended use; it merely imposes clipping on the page contents. However, in the
-            absence of additional information, the crop box determines how the page's contents are to be
-            positioned on the output medium.</para>
-          </remarks>
-          <seealso cref="Box"/>
-        */
+        /// <summary>Gets/Sets the region to which the contents of the page are to be clipped (cropped)
+        /// when displayed or printed [PDF:1.7:10.10.1].</summary>
+        /// <remarks>
+        ///   <para>Unlike the other boxes, the crop box has no defined meaning in terms of physical page
+        ///   geometry or intended use; it merely imposes clipping on the page contents. However, in the
+        ///   absence of additional information, the crop box determines how the page's contents are to be
+        ///   positioned on the output medium.</para>
+        /// </remarks>
+        /// <seealso cref="Box"/>
         public Rectangle CropBox
         {
-            get
-            {
-                /*
-                  NOTE: The default value is the page's media box.
-                */
-                PdfDirectObject cropBoxObject = GetInheritableAttribute(PdfName.CropBox);
-                return cropBoxObject != null ? Wrap<Rectangle>(cropBoxObject) : MediaBox;
-            }
+            //NOTE: The default value is the page's media box.
+            get => Wrap<Rectangle>(GetInheritableAttribute(PdfName.CropBox)) ?? MediaBox;
             set => BaseDataObject[PdfName.CropBox] = value?.BaseDataObject;
         }
 
-        /**
-          <summary>Gets/Sets the page's display duration.</summary>
-          <remarks>
-            <para>The page's display duration (also called its advance timing)
-            is the maximum length of time, in seconds, that the page is displayed
-            during presentations before the viewer application automatically advances
-            to the next page.</para>
-            <para>By default, the viewer does not advance automatically.</para>
-          </remarks>
-        */
+        /// <summary>Gets/Sets the page's display duration.</summary>
+        /// <remarks>
+        ///   <para>The page's display duration (also called its advance timing)
+        ///   is the maximum length of time, in seconds, that the page is displayed
+        ///   during presentations before the viewer application automatically advances
+        ///   to the next page.</para>
+        ///   <para>By default, the viewer does not advance automatically.</para>
+        /// </remarks>
         [PDF(VersionEnum.PDF11)]
         public double Duration
         {
             get => BaseDataObject.GetDouble(PdfName.Dur);
-            set => BaseDataObject.SetDouble(PdfName.Dur, value > 0 ? value : null);
+            set => BaseDataObject.Set(PdfName.Dur, value > 0 ? value : null);
         }
 
-        /**
-          <summary>Gets the index of this page.</summary>
-        */
+        ///  <summary>Gets the index of this page.</summary>
         public int Index => index ??= CalcIndex();
 
         private int CalcIndex()
         {
-            /*
-              NOTE: We'll scan sequentially each page-tree level above this page object
-              collecting page counts. At each level we'll scan the kids array from the
-              lower-indexed item to the ancestor of this page object at that level.
-            */
+            //NOTE: We'll scan sequentially each page-tree level above this page object
+            //collecting page counts.At each level we'll scan the kids array from the
+            //lower - indexed item to the ancestor of this page object at that level.
+
             var ancestorKidReference = (PdfReference)BaseObject;
             var parent = BaseDataObject.Get<PdfDictionary>(PdfName.Parent);
             var kids = parent.Get<PdfArray>(PdfName.Kids);
@@ -336,16 +281,12 @@ namespace PdfClown.Documents
             }
         }
 
-        /**
-          <summary>Gets the page number.</summary>
-        */
+        /// <summary>Gets the page number.</summary>
         public int Number => Index + 1;
 
         public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseDataObject[PdfName.Group]);
 
-        /**
-          <summary>Gets/Sets the page size.</summary>
-        */
+        /// <summary>Gets/Sets the page size.</summary>
         public SKSize Size
         {
             get => Box.Size;
@@ -361,9 +302,7 @@ namespace PdfClown.Documents
             }
         }
 
-        /**
-          <summary>Gets/Sets the tab order to be used for annotations on the page.</summary>
-        */
+        /// <summary>Gets/Sets the tab order to be used for annotations on the page.</summary>
         [PDF(VersionEnum.PDF15)]
         public TabOrderEnum TabOrder
         {
@@ -371,10 +310,8 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.Tabs] = ToCode(value);
         }
 
-        /**
-          <summary>Gets the transition effect to be used
-          when displaying the page during presentations.</summary>
-        */
+        /// <summary>Gets the transition effect to be used
+        /// when displaying the page during presentations.</summary>
         [PDF(VersionEnum.PDF11)]
         public Transition Transition
         {
@@ -382,84 +319,66 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.Trans] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the intended dimensions of the finished page after trimming
-          [PDF:1.7:10.10.1].</summary>
-          <remarks>
-            <para>It may be smaller than the media box to allow for production-related content, such as
-            printing instructions, cut marks, or color bars.</para>
-          </remarks>
-          <seealso cref="CropBox"/>
-        */
+        /// <summary>Gets/Sets the intended dimensions of the finished page after trimming
+        /// [PDF:1.7:10.10.1].</summary>
+        /// <remarks>
+        ///   <para>It may be smaller than the media box to allow for production-related content, such as
+        ///   printing instructions, cut marks, or color bars.</para>
+        /// </remarks>
+        /// <seealso cref="CropBox"/>
         [PDF(VersionEnum.PDF13)]
         public Rectangle TrimBox
         {
-            get
-            {
-                /*
-                  NOTE: The default value is the page's crop box.
-                */
-                PdfDirectObject trimBoxObject = GetInheritableAttribute(PdfName.TrimBox);
-                return trimBoxObject != null ? Wrap<Rectangle>(trimBoxObject) : CropBox;
-            }
+            // NOTE: The default value is the page's crop box.
+            get => Wrap<Rectangle>(GetInheritableAttribute(PdfName.TrimBox)) ?? CropBox;
             set => BaseDataObject[PdfName.TrimBox] = value?.BaseDataObject;
         }
 
+        // NOTE: Mandatory.
         public Rectangle MediaBox
         {
             get => Wrap<Rectangle>(GetInheritableAttribute(PdfName.MediaBox));
-            /* NOTE: Mandatory. */
             set => BaseDataObject[PdfName.MediaBox] = value?.BaseDataObject;
         }
 
         public SKRect Box
         {
-            get => box ??= MediaBox?.ToRect() ?? SKRect.Empty;
-            /* NOTE: Mandatory. */
+            get => box ??= MediaBox?.ToSKRect() ?? SKRect.Empty;
             set => MediaBox = new Rectangle(value);
         }
 
         public SKRect RotatedBox => Box.RotateRect(Rotate);
 
-        public ContentWrapper Contents
-        {
-            get
-            {
-                PdfDirectObject contentsObject = BaseDataObject[PdfName.Contents];
-                if (contentsObject == null)
-                { BaseDataObject[PdfName.Contents] = (contentsObject = File.Register(new PdfStream())); }
-                return ContentWrapper.Wrap(contentsObject, this);
-            }
-        }
+        public ContentWrapper Contents => ContentWrapper.Wrap(BaseDataObject.GetOrCreate<PdfStream>(PdfName.Contents, false), this);
 
-        public void Render(SKCanvas context, SKSize size, bool clearContext = true)
+        public void Render(SKCanvas canvas, SKRect box, SKColor? clearColor = null)
         {
-            ContentScanner scanner = new ContentScanner(Contents)
-            {
-                ClearContext = clearContext
-            };
-            scanner.Render(context, size);
+            var scanner = new ContentScanner(this, canvas, box, clearColor);
+            scanner.Render();
         }
 
         public Resources Resources
         {
-            get
-            {
-                Resources resources = Wrap<Resources>(GetInheritableAttribute(PdfName.Resources));
-                return resources != null ? resources : Wrap<Resources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Resources));
-            }
+            get => Wrap<Resources>(GetInheritableAttribute(PdfName.Resources))
+                    ?? Wrap<Resources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Resources));
         }
 
         public RotationEnum Rotation
         {
             get => RotationEnumExtension.Get((IPdfNumber)GetInheritableAttribute(PdfName.Rotate));
-            set => BaseDataObject[PdfName.Rotate] = PdfInteger.Get((int)value);
+            set => BaseDataObject.Set(PdfName.Rotate, (int)value);
         }
 
         public int Rotate
         {
             get => ((IPdfNumber)GetInheritableAttribute(PdfName.Rotate))?.IntValue ?? 0;
-            set => BaseDataObject[PdfName.Rotate] = PdfInteger.Get(value);
+            set
+            {
+                BaseDataObject.Set(PdfName.Rotate, value);
+                box = null;
+                rotateMatrix = null;
+                invertRotateMatrix = null;
+            }
         }
 
         public SKMatrix RotateMatrix
@@ -506,13 +425,13 @@ namespace PdfClown.Documents
         public void Touch(PdfName appName, DateTime modificationDate)
         {
             GetAppData(appName).ModificationDate = modificationDate;
-            BaseDataObject[PdfName.LastModified] = PdfDate.Get(modificationDate);
+            BaseDataObject.Set(PdfName.LastModified, modificationDate);
         }
 
         public ContentObject ToInlineObject(PrimitiveComposer composer)
         { throw new NotImplementedException(); }
 
-        public xObjects::XObject ToXObject(PdfDocument context)
+        public XObject ToXObject(PdfDocument context)
         {
             FormXObject form;
             {
@@ -531,7 +450,7 @@ namespace PdfClown.Documents
                     { formBody.Write(stream.Body); }
                     else if (contentsDataObject is PdfArray array)
                     {
-                        foreach (PdfDirectObject contentStreamObject in array)
+                        foreach (var contentStreamObject in array)
                         { formBody.Write(((PdfStream)contentStreamObject.Resolve()).Body); }
                     }
                 }

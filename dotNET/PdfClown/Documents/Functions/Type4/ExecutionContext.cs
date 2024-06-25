@@ -15,62 +15,51 @@
  * limitations under the License.
  */
 using PdfClown.Objects;
-using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Functions.Type4
 {
-    /**
-     * Makes up the execution context, holding the available operators and the execution stack.
-     *
-     */
+    /// <summary>Makes up the execution context, holding the available operators and the execution stack.</summary>
     public class ExecutionContext
     {
 
         private readonly Stack<PdfDirectObject> stack = new();
 
-        /**
-         * Creates a new execution context.
-         * @param operatorSet the operator set
-         */
+        /// <summary>Creates a new execution context.</summary>
         public ExecutionContext()
         {
         }
 
-        /**
-         * Returns the stack used by this execution context.
-         * @return the stack
-         */
+        /// <summary>Returns the stack used by this execution context.</summary>
+        /// <value>the stack</value>
         public Stack<PdfDirectObject> Stack
         {
             get => this.stack;
         }
 
-        /**
-         * Pops a number (int or real) from the stack. If it's neither data type, a
-         * ClassCastException is thrown.
-         * @return the number
-         */
+        /// <summary>
+        /// Pops a number (int or real) from the stack. If it's neither data type, a
+        /// ClassCastException is thrown.
+        /// </summary>
+        /// <returns>the number</returns>
         public IPdfNumber PopNumber()
         {
             return (IPdfNumber)stack.Pop();
         }
 
-        /**
-         * Pops a value of type int from the stack. If the value is not of type int, a
-         * ClassCastException is thrown.
-         * @return the int value
-         */
+        /// <summary>
+        /// Pops a value of type int from the stack. If the value is not of type int, a
+        /// ClassCastException is thrown.
+        /// </summary>
+        /// <returns>the int value</returns>
         public int PopInt()
         {
             return ((IPdfNumber)stack.Pop()).IntValue;
         }
 
-        /**
-         * Pops a number from the stack and returns it as a real value. If the value is not of a
-         * numeric type, a ClassCastException is thrown.
-         * @return the real value
-         */
+        /// <summary>Pops a number from the stack and returns it as a real value. If the value is not of a
+        /// numeric type, a ClassCastException is thrown.</summary>
+        /// <returns>the real value</returns>
         public float PopReal()
         {
             return ((IPdfNumber)stack.Pop()).FloatValue;
@@ -88,17 +77,17 @@ namespace PdfClown.Documents.Functions.Type4
 
         public void Push(float value)
         {
-            stack.Push(new PdfReal(value));
+            stack.Push(PdfReal.Get(value));
         }
 
         public void Push(double value)
         {
-            stack.Push(new PdfReal(value));
+            stack.Push(PdfReal.Get(value));
         }
 
         public void Push(int value)
         {
-            stack.Push(new PdfInteger(value));
+            stack.Push(PdfInteger.Get(value));
         }
 
         public void Push(bool value)

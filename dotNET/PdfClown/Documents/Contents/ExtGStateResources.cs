@@ -23,21 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Graphics state parameter resources collection [PDF:1.6:3.7.2].</summary>
-    */
+    ///<summary>Graphics state parameter resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class ExtGStateResources : ResourceItems<ExtGState>
+    public sealed class ExtGStateResources : Dictionary<ExtGState>
     {
         public ExtGStateResources(PdfDocument context) : base(context)
         { }

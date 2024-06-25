@@ -24,23 +24,18 @@
 */
 
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Page annotations [PDF:1.6:3.6.2].</summary>
-    */
+    /// <summary>Page annotations [PDF:1.6:3.6.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class PageAnnotations : PageElements<Annotation>
     {
-        public class AnnotationWrapper : IWrapper<Annotation>
+        public class AnnotationWrapper : IEntryWrapper<Annotation>
         {
             public AnnotationWrapper(PdfPage page)
             {
@@ -60,10 +55,9 @@ namespace PdfClown.Documents
             }
         }
 
-        public static PageAnnotations Wrap(PdfDirectObject baseObject, PdfPage page)
-        {
-            return baseObject?.Wrapper as PageAnnotations ?? new PageAnnotations(baseObject, page);
-        }
+        public static PageAnnotations Wrap(PdfDirectObject baseObject, PdfPage page) => baseObject != null
+                ? baseObject.Wrapper as PageAnnotations ?? new PageAnnotations(baseObject, page)
+                : null;
 
 
         private readonly Dictionary<string, Annotation> nameIndex = new Dictionary<string, Annotation>(StringComparer.Ordinal);

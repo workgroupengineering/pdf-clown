@@ -1,25 +1,16 @@
 using PdfClown.Documents;
-using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to define, read and modify page labels.</summary>
-    */
-    public class PageLabelSample
-      : Sample
+    /// <summary>This sample demonstrates how to define, read and modify page labels.</summary>
+    public class PageLabelSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             string outputFilePath;
             {
@@ -37,11 +28,11 @@ namespace PdfClown.Samples.CLI
                       actual content has therefore to be expected.
                     */
                     int pageCount = document.Pages.Count;
-                    pageLabels[new PdfInteger(0)] = new PageLabel(document, "Introduction ", PageLabel.NumberStyleEnum.UCaseRomanNumber, 5);
+                    pageLabels[PdfInteger.Get(0)] = new PageLabel(document, "Introduction ", PageLabel.NumberStyleEnum.UCaseRomanNumber, 5);
                     if (pageCount > 3)
-                    { pageLabels[new PdfInteger(3)] = new PageLabel(document, PageLabel.NumberStyleEnum.UCaseLetter); }
+                    { pageLabels[PdfInteger.Get(3)] = new PageLabel(document, PageLabel.NumberStyleEnum.UCaseLetter); }
                     if (pageCount > 6)
-                    { pageLabels[new PdfInteger(6)] = new PageLabel(document, "Contents ", PageLabel.NumberStyleEnum.ArabicNumber, 0); }
+                    { pageLabels[PdfInteger.Get(6)] = new PageLabel(document, "Contents ", PageLabel.NumberStyleEnum.ArabicNumber, 0); }
 
                     // 3. Serialize the PDF file!
                     outputFilePath = Serialize(file, "Page labelling", "labelling a document's pages", "page labels");

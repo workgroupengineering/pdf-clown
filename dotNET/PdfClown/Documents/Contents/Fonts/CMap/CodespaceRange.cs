@@ -78,7 +78,8 @@ namespace PdfClown.Documents.Contents.Fonts
         public bool IsFullMatch(ReadOnlySpan<byte> code, int codeLen)
         {
             // code must be the same length as the bounding codes
-            if (codeLength != codeLen)
+            if (codeLength != codeLen
+                || code.Length < codeLength)
             {
                 return false;
             }

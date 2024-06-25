@@ -25,49 +25,36 @@
 
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Util.Math;
-
+using PdfClown.Util.Math.Geom;
+using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using SkiaSharp;
 using System.Text;
-using PdfClown.Documents.Contents.Scanner;
-using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Tools
 {
-    /**
-      <summary>Tool for extracting text from <see cref="IContentContext">content contexts</see>.</summary>
-    */
+    /// <summary>Tool for extracting text from <see cref="IContentContext">content contexts</see>.</summary>
     public sealed class TextExtractor
     {
-        /**
-          <summary>Text-to-area matching mode.</summary>
-        */
+        /// <summary>Text-to-area matching mode.</summary>
         public enum AreaModeEnum
         {
-            /**
-              <summary>Text string must be contained by the area.</summary>
-            */
+            /// <summary>Text string must be contained by the area.</summary>
             Containment,
-            /**
-              <summary>Text string must intersect the area.</summary>
-            */
+            /// <summary>Text string must intersect the area.</summary>
             Intersection
         }
 
-        /**
-          <summary>Text filter by interval.</summary>
-          <remarks>Iterated intervals MUST be ordered.</remarks>
-        */
+        /// <summary>Text filter by interval.</summary>
+        /// <remarks>Iterated intervals MUST be ordered.</remarks>
         public interface IIntervalFilter : IEnumerator<Interval<int>>
         {
-            /**
-              <summary>Notifies current matching.</summary>
-              <param name="interval">Current interval.</param>
-              <param name="match">Text string matching the current interval.</param>
-            */
+            /// <summary>Notifies current matching.</summary>
+            /// <param name="interval">Current interval.</param>
+            /// <param name="match">Text string matching the current interval.</param>
             void Process(Interval<int> interval, ITextString match);
         }
 
@@ -105,21 +92,17 @@ namespace PdfClown.Tools
 
         public static readonly SKRect DefaultArea = SKRect.Create(0, 0, 0, 0);
 
-        /**
-          <summary>Converts text information into plain text.</summary>
-          <param name="textStrings">Text information to convert.</param>
-          <returns>Plain text.</returns>
-        */
+        /// <summary>Converts text information into plain text.</summary>
+        /// <param name="textStrings">Text information to convert.</param>
+        /// <returns>Plain text.</returns>
         public static string ToString(IDictionary<SKRect?, IList<ITextString>> textStrings)
         { return ToString(textStrings, "", ""); }
 
-        /**
-          <summary>Converts text information into plain text.</summary>
-          <param name="textStrings">Text information to convert.</param>
-          <param name="lineSeparator">Separator to apply on line break.</param>
-          <param name="areaSeparator">Separator to apply on area break.</param>
-          <returns>Plain text.</returns>
-        */
+        /// <summary>Converts text information into plain text.</summary>
+        /// <param name="textStrings">Text information to convert.</param>
+        /// <param name="lineSeparator">Separator to apply on line break.</param>
+        /// <param name="areaSeparator">Separator to apply on area break.</param>
+        /// <returns>Plain text.</returns>
         public static string ToString(IDictionary<SKRect?, IList<ITextString>> textStrings, string lineSeparator, string areaSeparator)
         {
             StringBuilder textBuilder = new StringBuilder();
@@ -153,38 +136,30 @@ namespace PdfClown.Tools
             Sorted = sorted;
         }
 
-        /**
-          <summary>Gets the text-to-area matching mode.</summary>
-        */
+        /// <summary>Gets the text-to-area matching mode.</summary>
         public AreaModeEnum AreaMode
         {
             get => areaMode;
             set => areaMode = value;
         }
 
-        /**
-          <summary>Gets the graphic areas whose text has to be extracted.</summary>
-        */
+        /// <summary>Gets the graphic areas whose text has to be extracted.</summary>
         public IList<SKRect> Areas
         {
             get => areas;
             set => areas = (value == null ? new List<SKRect>() : new List<SKRect>(value));
         }
 
-        /**
-          <summary>Gets the admitted outer area (in points) for containment matching purposes.</summary>
-          <remarks>This measure is useful to ensure that text whose boxes overlap with the area bounds
-          is not excluded from the match.</remarks>
-        */
+        /// <summary>Gets the admitted outer area (in points) for containment matching purposes.</summary>
+        /// <remarks>This measure is useful to ensure that text whose boxes overlap with the area bounds
+        /// is not excluded from the match.</remarks>
         public float AreaTolerance
         {
             get => areaTolerance;
             set => areaTolerance = value;
         }
 
-        /**
-          <summary>Gets/Sets whether the text strings have to be dehyphenated.</summary>
-        */
+        /// <summary>Gets/Sets whether the text strings have to be dehyphenated.</summary>
         public bool Dehyphenated
         {
             get => dehyphenated;
@@ -196,10 +171,8 @@ namespace PdfClown.Tools
             }
         }
 
-        /**
-          <summary>Extracts text strings from the specified content context.</summary>
-          <param name="contentContext">Source content context.</param>
-        */
+        /// <summary>Extracts text strings from the specified content context.</summary>
+        /// <param name="contentContext">Source content context.</param>
         public IDictionary<SKRect?, IList<ITextString>> Extract(IContentContext contentContext)
         {
             IDictionary<SKRect?, IList<ITextString>> extractedTextStrings;
@@ -232,19 +205,15 @@ namespace PdfClown.Tools
             return extractedTextStrings;
         }
 
-        /**
-          <summary>Extracts text strings from the specified contents.</summary>
-          <param name="contents">Source contents.</param>
-        */
+        /// <summary>Extracts text strings from the specified contents.</summary>
+        /// <param name="contents">Source contents.</param>
         public IDictionary<SKRect?, IList<ITextString>> Extract(ContentWrapper contents)
         { return Extract(contents.ContentContext); }
 
-        /**
-          <summary>Gets the text strings matching the specified intervals.</summary>
-          <param name="textStrings">Text strings to filter.</param>
-          <param name="intervals">Text intervals to match. They MUST be ordered and not overlapping.</param>
-          <returns>A list of text strings corresponding to the specified intervals.</returns>
-        */
+        /// <summary>Gets the text strings matching the specified intervals.</summary>
+        /// <param name="textStrings">Text strings to filter.</param>
+        /// <param name="intervals">Text intervals to match. They MUST be ordered and not overlapping.</param>
+        /// <returns>A list of text strings corresponding to the specified intervals.</returns>
         public IList<ITextString> Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, IList<Interval<int>> intervals)
         {
             IntervalFilter filter = new IntervalFilter(intervals);
@@ -252,11 +221,9 @@ namespace PdfClown.Tools
             return filter.TextStrings;
         }
 
-        /**
-          <summary>Processes the text strings matching the specified filter.</summary>
-          <param name="textStrings">Text strings to filter.</param>
-          <param name="filter">Matching processor.</param>
-        */
+        /// <summary>Processes the text strings matching the specified filter.</summary>
+        /// <param name="textStrings">Text strings to filter.</param>
+        /// <param name="filter">Matching processor.</param>
         public void Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, IIntervalFilter filter)
         {
             IEnumerator<IList<ITextString>> textStringsIterator = textStrings.Values.GetEnumerator();
@@ -303,19 +270,15 @@ namespace PdfClown.Tools
             }
         }
 
-        /**
-          <summary>Gets the text strings matching the specified area.</summary>
-          <param name="textStrings">Text strings to filter, grouped by source area.</param>
-          <param name="area">Graphic area which text strings have to be matched to.</param>
-        */
+        /// <summary>Gets the text strings matching the specified area.</summary>
+        /// <param name="textStrings">Text strings to filter, grouped by source area.</param>
+        /// <param name="area">Graphic area which text strings have to be matched to.</param>
         public IList<ITextString> Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, SKRect area)
         { return Filter(textStrings, new SKRect[] { area })[area]; }
 
-        /**
-          <summary>Gets the text strings matching the specified areas.</summary>
-          <param name="textStrings">Text strings to filter, grouped by source area.</param>
-          <param name="areas">Graphic areas which text strings have to be matched to.</param>
-        */
+        /// <summary>Gets the text strings matching the specified areas.</summary>
+        /// <param name="textStrings">Text strings to filter, grouped by source area.</param>
+        /// <param name="areas">Graphic areas which text strings have to be matched to.</param>
         public IDictionary<SKRect?, IList<ITextString>> Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, params SKRect[] areas)
         {
             IDictionary<SKRect?, IList<ITextString>> filteredTextStrings = null;
@@ -337,19 +300,15 @@ namespace PdfClown.Tools
             return filteredTextStrings;
         }
 
-        /**
-          <summary>Gets the text strings matching the specified area.</summary>
-          <param name="textStrings">Text strings to filter.</param>
-          <param name="area">Graphic area which text strings have to be matched to.</param>
-        */
+        /// <summary>Gets the text strings matching the specified area.</summary>
+        /// <param name="textStrings">Text strings to filter.</param>
+        /// <param name="area">Graphic area which text strings have to be matched to.</param>
         public IList<ITextString> Filter(IList<ITextString> textStrings, SKRect area)
         { return Filter(textStrings, new SKRect[] { area })[area]; }
 
-        /**
-          <summary>Gets the text strings matching the specified areas.</summary>
-          <param name="textStrings">Text strings to filter.</param>
-          <param name="areas">Graphic areas which text strings have to be matched to.</param>
-*/
+        /// <summary>Gets the text strings matching the specified areas.</summary>
+        /// <param name="textStrings">Text strings to filter.</param>
+        /// <param name="areas">Graphic areas which text strings have to be matched to.</param>
         public IDictionary<SKRect?, IList<ITextString>> Filter(IList<ITextString> textStrings, params SKRect[] areas)
         {
             IDictionary<SKRect?, IList<ITextString>> filteredAreasTextStrings = new Dictionary<SKRect?, IList<ITextString>>();
@@ -386,9 +345,7 @@ namespace PdfClown.Tools
             return filteredAreasTextStrings;
         }
 
-        /**
-          <summary>Gets/Sets whether the text strings have to be sorted.</summary>
-*/
+        /// <summary>Gets/Sets whether the text strings have to be sorted.</summary>
         public bool Sorted
         {
             get => sorted;
@@ -400,9 +357,7 @@ namespace PdfClown.Tools
             }
         }
 
-        /**
-          <summary>Scans a content level looking for text.</summary>
-*/
+        /// <summary>Scans a content level looking for text.</summary>
         private void Extract(ContentScanner level, IList<TextStringWrapper> extractedTextStrings)
         {
             if (level == null)
@@ -411,7 +366,7 @@ namespace PdfClown.Tools
             while (level.MoveNext())
             {
                 ContentObject content = level.Current;
-                if (content is Text)
+                if (content is GraphicsText)
                 {
                     // Collect the text strings!
                     foreach (TextStringWrapper textString in ((TextWrapper)level.CurrentWrapper).TextStrings)
@@ -420,31 +375,27 @@ namespace PdfClown.Tools
                         { extractedTextStrings.Add(textString); }
                     }
                 }
-                else if (content is XObject)
+                else if (content is GraphicsXObject)
                 {
                     // Scan the external level!
                     Extract(
-                      ((XObject)content).GetScanner(level),
-                      extractedTextStrings
-                      );
+                      ((GraphicsXObject)content).GetScanner(level),
+                      extractedTextStrings);
                 }
                 else if (content is ContainerObject)
                 {
                     // Scan the inner level!
                     Extract(
                       level.ChildLevel,
-                      extractedTextStrings
-                      );
+                      extractedTextStrings);
                 }
             }
         }
 
-        /**
-          <summary>Sorts the extracted text strings.</summary>
-          <remarks>Sorting implies text position ordering, integration and aggregation.</remarks>
-          <param name="rawTextStrings">Source (lower-level) text strings.</param>
-          <param name="textStrings">Target (higher-level) text strings.</param>
-*/
+        /// <summary>Sorts the extracted text strings.</summary>
+        /// <remarks>Sorting implies text position ordering, integration and aggregation.</remarks>
+        /// <param name="rawTextStrings">Source (lower-level) text strings.</param>
+        /// <param name="textStrings">Target (higher-level) text strings.</param>
         private void Sort(List<TextStringWrapper> rawTextStrings, List<ITextString> textStrings)
         {
             // Sorting the source text strings...

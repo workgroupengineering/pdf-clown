@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         public int VerticesPerRow
         {
             get => Dictionary.GetInt(PdfName.VerticesPerRow, -1);
-            set => Dictionary.SetInt(PdfName.VerticesPerRow, value);
+            set => Dictionary.Set(PdfName.VerticesPerRow, value);
         }
 
         protected override Vertices LoadTriangles()

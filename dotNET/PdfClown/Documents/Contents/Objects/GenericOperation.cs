@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Contents.Objects
             : base(@operator, operand)
         { }
 
-        public GenericOperation(string @operator, IList<PdfDirectObject> operands)
+        public GenericOperation(string @operator, PdfArray operands)
             : base(@operator, operands)
         { }
     }

@@ -33,9 +33,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interchange.Metadata
 {
-    /**
-      <summary>Document information [PDF:1.6:10.2.1].</summary>
-    */
+    /// <summary>Document information [PDF:1.6:10.2.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class Information : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, object>
     {
@@ -54,7 +52,7 @@ namespace PdfClown.Documents.Interchange.Metadata
         public DateTime? CreationDate
         {
             get => BaseDataObject.GetDate(PdfName.CreationDate);
-            set => BaseDataObject.SetDate(PdfName.CreationDate, value);
+            set => BaseDataObject.Set(PdfName.CreationDate, value);
         }
 
         public string Creator
@@ -74,7 +72,7 @@ namespace PdfClown.Documents.Interchange.Metadata
         public DateTime? ModificationDate
         {
             get => BaseDataObject.GetDate(PdfName.ModDate);
-            set => BaseDataObject.SetDate(PdfName.ModDate, value);
+            set => BaseDataObject.Set(PdfName.ModDate, value);
         }
 
         public string Producer
@@ -151,12 +149,11 @@ namespace PdfClown.Documents.Interchange.Metadata
 
         IEnumerator<KeyValuePair<PdfName, object>> IEnumerable<KeyValuePair<PdfName, object>>.GetEnumerator()
         {
-            foreach (KeyValuePair<PdfName, PdfDirectObject> entry in BaseDataObject)
+            foreach (var entry in BaseDataObject)
             {
                 yield return new KeyValuePair<PdfName, object>(
                   entry.Key,
-                  PdfSimpleObject<object>.GetValue(entry.Value)
-                  );
+                  PdfSimpleObject<object>.GetValue(entry.Value));
             }
         }
 

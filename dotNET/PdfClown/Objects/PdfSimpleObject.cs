@@ -23,21 +23,14 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-
 using System;
-using System.Reflection;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Abstract PDF simple object.</summary>
-    */
-    public abstract class PdfSimpleObject<TValue> : PdfDirectObject, IPdfSimpleObject<TValue>
+    /// <summary>Abstract PDF simple object.</summary>
+    public abstract class PdfSimpleObject<TValue> : PdfWrapableDirectObject, IPdfSimpleObject<TValue>
     {
-        /**
-          <summary>Gets the object equivalent to the given value.</summary>
-        */
+        /// <summary>Gets the object equivalent to the given value.</summary>
         public static PdfDirectObject Get(object value)
         {
             if (value == null)
@@ -72,17 +65,13 @@ namespace PdfClown.Objects
             };
         }
 
-        /**
-          <summary>Gets the value corresponding to the given object.</summary>
-          <param name="obj">Object to extract the value from.</param>
-        */
+        /// <summary>Gets the value corresponding to the given object.</summary>
+        /// <param name="obj">Object to extract the value from.</param>
         public static object GetValue(PdfObject obj) => GetValue(obj, null);
 
-        /**
-          <summary>Gets the value corresponding to the given object.</summary>
-          <param name="obj">Object to extract the value from.</param>
-          <param name="defaultValue">Value returned in case the object's one is undefined.</param>
-        */
+        /// <summary>Gets the value corresponding to the given object.</summary>
+        /// <param name="obj">Object to extract the value from.</param>
+        /// <param name="defaultValue">Value returned in case the object's one is undefined.</param>
         public static object GetValue(PdfObject obj, object defaultValue)
         {
             object value = null;
@@ -99,35 +88,32 @@ namespace PdfClown.Objects
         public PdfSimpleObject()
         { }
 
+        // NOTE: As simple objects are immutable, no parent can be associated.
         public sealed override PdfObject Parent
         {
-            get => null;  // NOTE: As simple objects are immutable, no parent can be associated.
-            internal set {/* NOOP: As simple objects are immutable, no parent can be associated. */}
+            get => null;
+            internal set { }
         }
 
-        /**
-          <summary>Gets/Sets the low-level representation of the value.</summary>
-        */
+        /// <summary>Gets/Sets the low-level representation of the value.</summary>
         public virtual TValue RawValue
         {
             get => value;
             protected set => this.value = value;
         }
 
-        public override PdfObjectStatus Status
+        public sealed override PdfObjectStatus Status
         {
             get => PdfObjectStatus.None; // NOTE: Simple objects are immutable.
             protected internal set { }// NOOP: As simple objects are immutable, no update can be done.
-        }        
+        }
 
-        /**
-          <summary>Gets/Sets the high-level representation of the value.</summary>
-        */
+        /// <summary>Gets/Sets the high-level representation of the value.</summary>
         public virtual object Value
         {
             get => value;
             protected set => this.value = (TValue)value;
-        }       
+        }
 
         public override PdfObject Clone(PdfFile context) => this;  // NOTE: Simple objects are immutable.
 

@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Contents
                 return null;
             if (baseObject.Wrapper is PropertyList propertyList)
                 return propertyList;
-            
+
             var type = ((PdfDictionary)baseObject.Resolve()).Get<PdfName>(PdfName.Type);
             if (Layer.TypeName.Equals(type))
                 return new Layer(baseObject);
@@ -69,5 +69,11 @@ namespace PdfClown.Documents.Contents
             : base(baseObject)
         { }
 
+
+        public int Id
+        {
+            get => BaseDataObject.GetInt(PdfName.MCID);
+            set => BaseDataObject.Set(PdfName.MCID, value);
+        }
     }
 }

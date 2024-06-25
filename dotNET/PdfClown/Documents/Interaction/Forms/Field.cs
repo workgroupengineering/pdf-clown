@@ -24,11 +24,9 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Tokens;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util;
 
@@ -36,120 +34,75 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Interactive form field [PDF:1.6:8.6.2].</summary>
-    */
+    /// <summary>Interactive form field [PDF:1.6:8.6.2].</summary>
     [PDF(VersionEnum.PDF12)]
     public abstract class Field : PdfObjectWrapper2<PdfDictionary>
     {
         private SetFont setFontOperation;
         private string fullName;
 
-        ///NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
-        ///of the explicit representation of a field -- they are retrieved everytime clients call.
+        //NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
+        //of the explicit representation of a field -- they are retrieved everytime clients call.
 
-        /**
-          <summary>Field flags [PDF:1.6:8.6.2].</summary>
-        */
+        /// <summary>Field flags [PDF:1.6:8.6.2].</summary>
         [Flags]
         public enum FlagsEnum
         {
-            /**
-              <summary>The user may not change the value of the field.</summary>
-            */
+            /// <summary>The user may not change the value of the field.</summary>
             ReadOnly = 0x1,
-            /**
-              <summary>The field must have a value at the time it is exported by a submit-form action.</summary>
-            */
+            /// <summary>The field must have a value at the time it is exported by a submit-form action.</summary>
             Required = 0x2,
-            /**
-              <summary>The field must not be exported by a submit-form action.</summary>
-            */
+            /// <summary>The field must not be exported by a submit-form action.</summary>
             NoExport = 0x4,
-            /**
-              <summary>(Text fields only) The field can contain multiple lines of text.</summary>
-            */
+            /// <summary>(Text fields only) The field can contain multiple lines of text.</summary>
             Multiline = 0x1000,
-            /**
-              <summary>(Text fields only) The field is intended for entering a secure password
-              that should not be echoed visibly to the screen.</summary>
-            */
+            /// <summary>(Text fields only) The field is intended for entering a secure password
+            /// that should not be echoed visibly to the screen.</summary>
             Password = 0x2000,
-            /**
-              <summary>(Radio buttons only) Exactly one radio button must be selected at all times.</summary>
-            */
+            /// <summary>(Radio buttons only) Exactly one radio button must be selected at all times.</summary>
             NoToggleToOff = 0x4000,
-            /**
-              <summary>(Button fields only) The field is a set of radio buttons (otherwise, a check box).</summary>
-              <remarks>This flag is meaningful only if the Pushbutton flag isn't selected.</remarks>
-            */
+            /// <summary>(Button fields only) The field is a set of radio buttons (otherwise, a check box).</summary>
+            /// <remarks>This flag is meaningful only if the Pushbutton flag isn't selected.</remarks>
             Radio = 0x8000,
-            /**
-              <summary>(Button fields only) The field is a pushbutton that does not retain a permanent value.</summary>
-            */
+            /// <summary>(Button fields only) The field is a pushbutton that does not retain a permanent value.</summary>
             Pushbutton = 0x10000,
-            /**
-              <summary>(Choice fields only) The field is a combo box (otherwise, a list box).</summary>
-            */
+            /// <summary>(Choice fields only) The field is a combo box (otherwise, a list box).</summary>
             Combo = 0x20000,
-            /**
-              <summary>(Choice fields only) The combo box includes an editable text box as well as a dropdown list
-              (otherwise, it includes only a drop-down list).</summary>
-            */
+            /// <summary>(Choice fields only) The combo box includes an editable text box as well as a dropdown list
+            /// (otherwise, it includes only a drop-down list).</summary>
             Edit = 0x40000,
-            /**
-              <summary>(Choice fields only) The field's option items should be sorted alphabetically.</summary>
-            */
+            /// <summary>(Choice fields only) The field's option items should be sorted alphabetically.</summary>
             Sort = 0x80000,
-            /**
-              <summary>(Text fields only) Text entered in the field represents the pathname of a file
-              whose contents are to be submitted as the value of the field.</summary>
-            */
+            /// <summary>(Text fields only) Text entered in the field represents the pathname of a file
+            /// whose contents are to be submitted as the value of the field.</summary>
             FileSelect = 0x100000,
-            /**
-              <summary>(Choice fields only) More than one of the field's option items may be selected simultaneously.</summary>
-            */
+            /// <summary>(Choice fields only) More than one of the field's option items may be selected simultaneously.</summary>
             MultiSelect = 0x200000,
-            /**
-              <summary>(Choice and text fields only) Text entered in the field is not spell-checked.</summary>
-            */
+            /// <summary>(Choice and text fields only) Text entered in the field is not spell-checked.</summary>
             DoNotSpellCheck = 0x400000,
-            /**
-              <summary>(Text fields only) The field does not scroll to accommodate more text
-              than fits within its annotation rectangle.</summary>
-              <remarks>Once the field is full, no further text is accepted.</remarks>
-            */
+            /// <summary>(Text fields only) The field does not scroll to accommodate more text
+            /// than fits within its annotation rectangle.</summary>
+            /// <remarks>Once the field is full, no further text is accepted.</remarks>
             DoNotScroll = 0x800000,
-            /**
-              <summary>(Text fields only) The field is automatically divided into as many equally spaced positions,
-              or combs, as the value of MaxLen, and the text is laid out into those combs.</summary>
-            */
+            /// <summary>(Text fields only) The field is automatically divided into as many equally spaced positions,
+            /// or combs, as the value of MaxLen, and the text is laid out into those combs.</summary>
             Comb = 0x1000000,
-            /**
-              <summary>(Text fields only) The value of the field should be represented as a rich text string.</summary>
-            */
+            /// <summary>(Text fields only) The value of the field should be represented as a rich text string.</summary>
             RichText = 0x2000000,
-            /**
-              <summary>(Button fields only) A group of radio buttons within a radio button field that use
-              the same value for the on state will turn on and off in unison
-              (otherwise, the buttons are mutually exclusive).</summary>
-            */
+            /// <summary>(Button fields only) A group of radio buttons within a radio button field that use
+            /// the same value for the on state will turn on and off in unison
+            /// (otherwise, the buttons are mutually exclusive).</summary>
             RadiosInUnison = 0x2000000,
-            /**
-              <summary>(Choice fields only) The new value is committed as soon as a selection is made with the pointing device.</summary>
-            */
+            /// <summary>(Choice fields only) The new value is committed as soon as a selection is made with the pointing device.</summary>
             CommitOnSelChange = 0x4000000
         };
 
-        /**
-          <summary>Wraps a field reference into a field object.</summary>
-          <param name="reference">Reference to a field object.</param>
-          <returns>Field object associated to the reference.</returns>
-        */
+        /// <summary>Wraps a field reference into a field object.</summary>
+        /// <param name="reference">Reference to a field object.</param>
+        /// <returns>Field object associated to the reference.</returns>
         public static Field Wrap(PdfReference reference)
         {
             if (reference == null)
@@ -187,9 +140,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         private static PdfDirectObject GetInheritableAttribute(PdfDictionary dictionary, PdfName key)
         {
-            /*
-              NOTE: It moves upwards until it finds the inherited attribute.
-            */
+            // NOTE: It moves upwards until it finds the inherited attribute.
             do
             {
                 PdfDirectObject entry = dictionary[key];
@@ -205,9 +156,7 @@ namespace PdfClown.Documents.Interaction.Forms
                 return null;
         }
 
-        /**
-          <summary>Creates a new field within the given document context.</summary>
-        */
+        /// <summary>Creates a new field within the given document context.</summary>
         protected Field(PdfName fieldType, string name, Widget widget) : this(widget.BaseObject)
         {
             widget.NewField = this;
@@ -219,9 +168,7 @@ namespace PdfClown.Documents.Interaction.Forms
         public Field(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the field's behavior in response to trigger events.</summary>
-        */
+        /// <summary>Gets/Sets the field's behavior in response to trigger events.</summary>
         public FieldActions Actions
         {
             get
@@ -232,10 +179,8 @@ namespace PdfClown.Documents.Interaction.Forms
             set => BaseDataObject[PdfName.AA] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets the default value to which this field reverts when a <see cref="ResetForm">reset
-          -form</see> action} is executed.</summary>
-        */
+        /// <summary>Gets the default value to which this field reverts when a <see cref="ResetForm">reset
+        /// -form</see> action} is executed.</summary>
         public object DefaultValue
         {
             get
@@ -252,18 +197,14 @@ namespace PdfClown.Documents.Interaction.Forms
             }
         }
 
-        /**
-          <summary>Gets/Sets whether the field is exported by a submit-form action.</summary>
-        */
+        /// <summary>Gets/Sets whether the field is exported by a submit-form action.</summary>
         public bool Exportable
         {
             get => (Flags & FlagsEnum.NoExport) != FlagsEnum.NoExport;
             set => Flags = EnumUtils.Mask(Flags, FlagsEnum.NoExport, !value);
         }
 
-        /**
-          <summary>Gets/Sets the field flags.</summary>
-        */
+        /// <summary>Gets/Sets the field flags.</summary>
         public FlagsEnum Flags
         {
             get
@@ -271,10 +212,9 @@ namespace PdfClown.Documents.Interaction.Forms
                 PdfInteger flagsObject = (PdfInteger)PdfObject.Resolve(GetInheritableAttribute(PdfName.Ff));
                 return (FlagsEnum)Enum.ToObject(
                   typeof(FlagsEnum),
-                  (flagsObject == null ? 0 : flagsObject.RawValue)
-                  );
+                  (flagsObject == null ? 0 : flagsObject.RawValue));
             }
-            set => BaseDataObject[PdfName.Ff] = PdfInteger.Get((int)value);
+            set => BaseDataObject.Set(PdfName.Ff, (int)value);
         }
 
         public Field Parent
@@ -287,9 +227,7 @@ namespace PdfClown.Documents.Interaction.Forms
             }
         }
 
-        /**
-          <summary>Gets the fully-qualified field name.</summary>
-        */
+        /// <summary>Gets the fully-qualified field name.</summary>
         public string FullName => fullName ??= ResolveFullName();
 
         private string ResolveFullName()
@@ -320,9 +258,7 @@ namespace PdfClown.Documents.Interaction.Forms
             return name;
         }
 
-        /**
-          <summary>Gets/Sets the partial field name.</summary>
-        */
+        /// <summary>Gets/Sets the partial field name.</summary>
         public string Name
         {
             get => BaseDataObject.GetString(PdfName.T);
@@ -333,37 +269,29 @@ namespace PdfClown.Documents.Interaction.Forms
             }
         }
 
-        /**
-          <summary>Gets/Sets whether the user may not change the value of the field.</summary>
-        */
+        /// <summary>Gets/Sets whether the user may not change the value of the field.</summary>
         public bool ReadOnly
         {
             get => (Flags & FlagsEnum.ReadOnly) == FlagsEnum.ReadOnly;
             set => Flags = EnumUtils.Mask(Flags, FlagsEnum.ReadOnly, value);
         }
 
-        /**
-          <summary>Gets/Sets whether the field must have a value at the time it is exported by a
-          submit-form action.</summary>
-        */
+        /// <summary>Gets/Sets whether the field must have a value at the time it is exported by a
+        /// submit-form action.</summary>
         public bool Required
         {
             get => (Flags & FlagsEnum.Required) == FlagsEnum.Required;
             set => Flags = EnumUtils.Mask(Flags, FlagsEnum.Required, value);
         }
 
-        /**
-          <summary>Gets/Sets the field value.</summary>
-        */
+        /// <summary>Gets/Sets the field value.</summary>
         public abstract object Value
         {
             get;
             set;
         }
 
-        /**
-          <summary>Gets the widget annotations that are associated with this field.</summary>
-        */
+        /// <summary>Gets the widget annotations that are associated with this field.</summary>
         public FieldWidgets Widgets
         {
             get

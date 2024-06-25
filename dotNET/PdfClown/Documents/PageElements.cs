@@ -23,19 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Page elements.</summary>
-    */
+    /// <summary>Page elements.</summary>
     public abstract class PageElements<TItem> : Array<TItem>
         where TItem : PdfObjectWrapper<PdfDictionary>
     {
@@ -47,7 +41,7 @@ namespace PdfClown.Documents
             this.page = page;
         }
 
-        public PageElements(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject, PdfPage page)
+        public PageElements(IEntryWrapper<TItem> itemWrapper, PdfDirectObject baseObject, PdfPage page)
             : base(itemWrapper, baseObject)
         {
             this.page = page;
@@ -70,9 +64,7 @@ namespace PdfClown.Documents
             base.Insert(index, item);
         }
 
-        /**
-          <summary>Gets the page associated to these elements.</summary>
-        */
+        /// <summary>Gets the page associated to these elements.</summary>
         public PdfPage Page => page;
 
         public override void RemoveAt(int index)

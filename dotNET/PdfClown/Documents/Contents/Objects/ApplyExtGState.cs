@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Contents.Objects
         public ApplyExtGState(PdfName name) : base(OperatorKeyword, name)
         { }
 
-        public ApplyExtGState(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public ApplyExtGState(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         /**
@@ -55,8 +55,8 @@ namespace PdfClown.Documents.Contents.Objects
         {
             var pcontext = context;
             ExtGState gstate;
-            while ((gstate = pcontext.ContentContext.Resources.ExtGStates[Name]) == null
-                && (pcontext = pcontext.ParentLevel) != null)
+            while ((gstate = pcontext.Context.Resources.ExtGStates[Name]) == null
+                && (pcontext = pcontext.ResourceParent) != null)
             { }
             return gstate;
         }

@@ -23,16 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the text rendering mode' operation [PDF:1.6:5.2].</summary>
-    */
+    ///<summary>'Set the text rendering mode' operation [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetTextRenderMode : Operation
     {
@@ -42,17 +37,16 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, PdfInteger.Get((int)value))
         { }
 
-        public SetTextRenderMode(IList<PdfDirectObject> operands)
+        public SetTextRenderMode(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state)
-        { state.RenderMode = Value; }
+        public override void Scan(GraphicsState state) => state.RenderMode = Value;
 
         public TextRenderModeEnum Value
         {
-            get => (TextRenderModeEnum)((IPdfNumber)operands[0]).IntValue;
-            set => operands[0] = PdfInteger.Get((int)value);
+            get => (TextRenderModeEnum)operands.GetInt(0);
+            set => operands.Set(0, (int)value);
         }
     }
 }

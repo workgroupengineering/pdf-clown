@@ -17,6 +17,7 @@
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.CCF;
 using PdfClown.Objects;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -26,12 +27,13 @@ using System.Linq;
 namespace PdfClown.Documents.Contents.Fonts
 {
 
-    /**
-     * Type 1-equivalent CFF font.
-     *
-     * @author Villu Ruusmann
-     * @author John Hewson
-     */
+    /// <summary>
+    /// Type 1-equivalent CFF font.
+    /// </summary>
+    /// <remarks> 
+    /// * @author Villu Ruusmann
+    /// * @author John Hewson
+    /// </remarks>
     public class FontType1C : FontSimple//,  PDVectorFont
     {
         private readonly Dictionary<string, float> glyphHeights = new Dictionary<string, float>(StringComparer.Ordinal);
@@ -44,12 +46,6 @@ namespace PdfClown.Documents.Contents.Fonts
         private SKMatrix? fontMatrix;
         private SKRect? fontBBox;
 
-        /**
-         * Constructor.
-         * 
-         * @param fontDictionary the corresponding dictionary
-         * @throws IOException it something went wrong
-         */
         public FontType1C(PdfDirectObject fontDictionary)
             : base(fontDictionary)
         {
@@ -144,7 +140,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 var bbox = FontDescriptor.FontBBox;
                 if (IsNonZeroBoundingBox(bbox))
                 {
-                    return bbox.ToRect();
+                    return bbox.ToSKRect();
                 }
             }
             return genericFont.FontBBox;
@@ -205,11 +201,10 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * Returns the embedded Type 1-equivalent CFF font.
-         * 
-         * @return the cffFont
-         */
+        /// <summary>
+        /// Returns the embedded Type 1-equivalent CFF font.
+        /// </summary>
+        /// <value>the cffFont</value>
         public CFFType1Font CFFType1Font
         {
             get => cffFont;
@@ -371,7 +366,6 @@ namespace PdfClown.Documents.Contents.Fonts
             bytes[0] = (byte)code;
         }
 
-
         public override float GetWidth(string text)
         {
             float width = 0;
@@ -384,11 +378,12 @@ namespace PdfClown.Documents.Contents.Fonts
             return width;
         }
 
-
-        /**
-         * Maps a PostScript glyph name to the name in the underlying font, for example when
-         * using a TTF font we might map "W" to "uni0057".
-         */
+        /// <summary>
+        /// Maps a PostScript glyph name to the name in the underlying font, for example when
+        /// using a TTF font we might map "W" to "uni0057"
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         private string GetNameInFont(string name)
         {
             if (IsEmbedded || genericFont.HasGlyph(name))

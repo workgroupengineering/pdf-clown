@@ -30,7 +30,7 @@ namespace PdfClown.Objects
 {
     public abstract class PdfObjectWrapper3 : PdfObjectWrapper
     {
-        
+
 
         ///<summary>Instantiates an empty wrapper.</summary>
         protected PdfObjectWrapper3()
@@ -44,7 +44,7 @@ namespace PdfClown.Objects
             BaseObject = baseObject;
 
             if (baseObject != null)
-                baseObject.Wrapper3 = this;            
+                baseObject.Wrapper3 = this;
         }
 
         ///<summary>Gets a clone of the object, registered using the specified object cloner.</summary>
@@ -53,7 +53,10 @@ namespace PdfClown.Objects
             var clone = (PdfObjectWrapper3)base.MemberwiseClone();
             clone.BaseObject = (PdfDirectObject)BaseObject.Clone(cloner);
             if (clone.BaseObject != null)
-                clone.BaseObject.wrapper3 = clone;
+            {
+                clone.BaseObject.Wrapper3 = null;
+                clone.BaseObject.Wrapper3 = clone;
+            }
 
             return clone;
         }
@@ -82,14 +85,12 @@ namespace PdfClown.Objects
             : this(context?.File, baseDataObject)
         { }
 
-        /**
-          <summary>Instantiates a wrapper registering the specified base data object into the specified
-          file context.</summary>
-          <param name="context">File context into which the specified data object has to be registered.
-          </param>
-          <param name="baseDataObject">PDF data object backing this wrapper.</param>
-          <seealso cref="PdfObjectWrapper(PdfDocument, PdfDataObject)"/>
-        */
+        /// <summary>Instantiates a wrapper registering the specified base data object into the specified
+        /// file context.</summary>
+        /// <param name="context">File context into which the specified data object has to be registered.
+        /// </param>
+        /// <param name="baseDataObject">PDF data object backing this wrapper.</param>
+        /// <seealso cref="PdfObjectWrapper(PdfDocument, PdfDataObject)"/>
         protected PdfObjectWrapper3(PdfFile context, TDataObject baseDataObject)
             : this(context != null ? context.Register(baseDataObject) : (PdfDirectObject)(PdfDataObject)baseDataObject)
         { }

@@ -20,8 +20,6 @@ using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
-using PdfClown.Util;
-using PdfClown.Util.Parsers;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -137,26 +135,21 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
 
-        public void Render(SKCanvas context, SKSize size, bool clearContext = true)
-        {
-            var scanner = new ContentScanner(Contents)
-            {
-                ClearContext = clearContext
-            };
-            scanner.Render(context, size);
-        }
-
         public SKPicture Render()
         {
             if (picture != null)
                 return picture;
             var box = Box;
-            using (var recorder = new SKPictureRecorder())
-            using (var canvas = recorder.BeginRecording(box))
-            {
-                Render(canvas, box.Size, false);
-                return picture = recorder.EndRecording();
-            }
+            using var recorder = new SKPictureRecorder();
+            using var canvas = recorder.BeginRecording(box);
+            Render(canvas, box, null);
+            return picture = recorder.EndRecording();
+        }
+
+        public void Render(SKCanvas canvas, SKRect box, SKColor? clearColor = null)
+        {
+            var scanner = new ContentScanner(this, canvas, box, clearColor);
+            scanner.Render();
         }
 
         public AppData GetAppData(PdfName appName)
@@ -179,7 +172,7 @@ namespace PdfClown.Documents.Contents.Fonts
             throw new NotImplementedException();
         }
 
-        public XObjects.XObject ToXObject(PdfDocument context)
+        public XObject ToXObject(PdfDocument context)
         {
             throw new NotImplementedException();
         }

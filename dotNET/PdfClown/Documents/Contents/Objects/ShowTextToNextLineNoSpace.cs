@@ -1,5 +1,5 @@
-/*
-  Copyright 2007-2011 Stefano Chizzolini. http://www.pdfclown.org
+﻿/*
+  Copyright 2009-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,42 +23,35 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using Shadings = PdfClown.Documents.Contents.Patterns.Shadings;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Shading object [PDF:1.6:4.6.3].</summary>
-    */
-    [PDF(VersionEnum.PDF13)]
-    public sealed class Shading : GraphicsObject, IResourceReference<Shadings::Shading>
+    public sealed class ShowTextToNextLineNoSpace : ShowTextToNextLine
     {
-        public static readonly string BeginOperatorKeyword = PaintShading.OperatorKeyword;
-        public static readonly string EndOperatorKeyword = BeginOperatorKeyword;
+        /**
+          <summary>Specifies no text state parameter
+          (just uses the current settings).</summary>
+        */
+        public static readonly string OperatorKeyword = "'";
 
-        public Shading(PaintShading operation) : base(operation)
+
+        /**
+          <param name="text">Text encoded using current font's encoding.</param>
+        */
+        public ShowTextToNextLineNoSpace(byte[] text)
+            : base(OperatorKeyword, text)
         { }
 
-        public Shadings::Shading GetResource(ContentScanner scanner) => Operation.GetResource(scanner);
+        public ShowTextToNextLineNoSpace(PdfArray operands)
+            : base(OperatorKeyword, operands)
+        { }
 
-        public PdfName Name
+        protected override PdfString String
         {
-            get => Operation.Name;
-            set => Operation.Name = value;
+            get => (PdfString)operands[0];
+            set => operands[0] = value;
         }
 
-        public override void Scan(GraphicsState state)
-        {
-            var shading = GetResource(state.Scanner);
-            //state.Shading = shading;
-            base.Scan(state);
-        }
-
-        private PaintShading Operation => (PaintShading)Objects[0];
     }
 }

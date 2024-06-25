@@ -14,10 +14,12 @@
     <Description>PDF engine</Description>
     <Copyright>Copyright 2006-2015 Stefano Chizzolini</Copyright>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Documents\Contents\Fonts\CffParser.cs" />    
-    <Compile Remove="Documents\Contents\Fonts\FontFactory.cs" />        
+    <Compile Remove="Documents\Contents\Fonts\FontFactory.cs" />    
+    <Compile Remove="Documents\Contents\Objects\Shading.cs" />        
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\Comment.svg" />
@@ -516,7 +518,7 @@
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.3.1" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
-    <PackageReference Include="SkiaSharp" Version="2.88.7" />
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
     <PackageReference Include="System.DirectoryServices.Protocols" Version="7.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
   </ItemGroup> 

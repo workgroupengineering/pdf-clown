@@ -24,7 +24,6 @@
 */
 
 using bytes = PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
 
 using System;
@@ -32,17 +31,13 @@ using System.IO;
 
 namespace PdfClown.Documents.Files
 {
-    /**
-      <summary>Embedded file [PDF:1.6:3.10.3].</summary>
-    */
+    /// <summary>Embedded file [PDF:1.6:3.10.3].</summary>
     [PDF(VersionEnum.PDF13)]
     public sealed class EmbeddedFile : PdfObjectWrapper<PdfStream>
     {
-        /**
-          <summary>Creates a new embedded file inside the document.</summary>
-          <param name="context">Document context.</param>
-          <param name="path">Path of the file to embed.</param>
-        */
+        /// <summary>Creates a new embedded file inside the document.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="path">Path of the file to embed.</param>
         public static EmbeddedFile Get(PdfDocument context, string path)
         {
             using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -51,11 +46,9 @@ namespace PdfClown.Documents.Files
             }
         }
 
-        /**
-          <summary>Creates a new embedded file inside the document.</summary>
-          <param name="context">Document context.</param>
-          <param name="stream">File stream to embed.</param>
-        */
+        /// <summary>Creates a new embedded file inside the document.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="stream">File stream to embed.</param>
         public static EmbeddedFile Get(PdfDocument context, bytes::IInputStream stream)
         {
             return new EmbeddedFile(context, stream);
@@ -72,50 +65,38 @@ namespace PdfClown.Documents.Files
         public EmbeddedFile(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the creation date of this file.</summary>
-        */
+        /// <summary>Gets/Sets the creation date of this file.</summary>
         public DateTime? CreationDate
         {
             get => Params.GetNDate(PdfName.CreationDate);
-            set => Params.SetDate(PdfName.CreationDate, value);
+            set => Params.Set(PdfName.CreationDate, value);
         }
 
-        /**
-          <summary>Gets the data contained within this file.</summary>
-        */
+        /// <summary>Gets the data contained within this file.</summary>
         public bytes::IByteStream Data => BaseDataObject.Body;
 
-        /**
-          <summary>Gets/Sets the MIME media type name of this file [RFC 2046].</summary>
-        */
+        /// <summary>Gets/Sets the MIME media type name of this file [RFC 2046].</summary>
         public string MimeType
         {
             get => Header.GetString(PdfName.Subtype);
             set => Header.SetName(PdfName.Subtype, value);
         }
 
-        /**
-          <summary>Gets/Sets the modification date of this file.</summary>
-        */
+        /// <summary>Gets/Sets the modification date of this file.</summary>
         public DateTime? ModificationDate
         {
             get => Params.GetNDate(PdfName.ModDate);
-            set => Params.SetDate(PdfName.ModDate, value);
+            set => Params.Set(PdfName.ModDate, value);
         }
 
-        /**
-          <summary>Gets/Sets the size of this file, in bytes.</summary>
-        */
+        /// <summary>Gets/Sets the size of this file, in bytes.</summary>
         public int Size
         {
             get => Params.GetInt(PdfName.Size);
-            set => Params.SetInt(PdfName.Size, value);
+            set => Params.Set(PdfName.Size, value);
         }
 
-        /**
-          <summary>Gets the file parameters.</summary>
-        */
+        /// <summary>Gets the file parameters.</summary>
         private PdfDictionary Params => Header.Resolve<PdfDictionary>(PdfName.Params);
 
         private PdfDictionary Header => BaseDataObject.Header;

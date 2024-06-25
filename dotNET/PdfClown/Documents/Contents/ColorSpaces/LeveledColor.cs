@@ -29,15 +29,13 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Color value defined by numeric-level components.</summary>
-    */
+    ///<summary>Color value defined by numeric-level components.</summary>
     public abstract class LeveledColor : Color
     {
         protected LeveledColor(ColorSpace colorSpace, PdfDirectObject baseObject) : base(colorSpace, baseObject)
         { }
 
-        public sealed override IList<PdfDirectObject> Components => BaseArray;
+        public sealed override PdfArray Components => (PdfArray)BaseDataObject;
 
         public override bool Equals(object obj)
         {
@@ -45,40 +43,23 @@ namespace PdfClown.Documents.Contents.ColorSpaces
               || !obj.GetType().Equals(GetType()))
                 return false;
 
-            IEnumerator<PdfDirectObject> objectIterator = ((LeveledColor)obj).BaseArray.GetEnumerator();
-            IEnumerator<PdfDirectObject> thisIterator = BaseArray.GetEnumerator();
-            while (thisIterator.MoveNext())
-            {
-                objectIterator.MoveNext();
-                if (!thisIterator.Current.Equals(objectIterator.Current))
-                    return false;
-            }
-            return true;
+            return PdfArray.SequenceEquals(Components, ((LeveledColor)obj).Components);
         }
 
         public sealed override int GetHashCode()
         {
             int hashCode = 0;
-            foreach (PdfDirectObject component in BaseArray)
+            foreach (var component in Components)
             { hashCode ^= component.GetHashCode(); }
             return hashCode;
         }
 
-        /*
-          NOTE: This is a workaround to the horrible lack of covariance support in C# 3 which forced me
-          to flatten type parameters at top hierarchy level (see Java implementation). Anyway, suggestions
-          to overcome this issue are welcome!
-        */
-        protected PdfArray BaseArray => (PdfArray)BaseDataObject;
-
-        /**
-          <summary>Gets the specified color component.</summary>
-          <param name="index">Component index.</param>
-        */
+        ///<summary>Gets the specified color component.</summary>
+        ///<param name="index">Component index.</param>
         protected float this[int index]
         {
-            get => BaseArray.GetFloat(index);
-            set => BaseArray.SetDouble(index, NormalizeComponent(value));
+            get => Components.GetFloat(index);
+            set => Components.Set(index, NormalizeComponent(value));
         }
     }
 }

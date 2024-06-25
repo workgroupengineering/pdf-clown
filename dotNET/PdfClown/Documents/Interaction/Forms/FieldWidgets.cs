@@ -23,10 +23,7 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -36,24 +33,17 @@ using System.Linq;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Field widget annotations [PDF:1.6:8.6].</summary>
-    */
+    /// <summary>Field widget annotations [PDF:1.6:8.6].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class FieldWidgets : PdfObjectWrapper3<PdfDataObject>, IList<Widget>
     {
-        public static FieldWidgets Wrap(PdfDirectObject baseObject, Field field)
-        {
-            return baseObject != null
-                ? (baseObject.Wrapper3 as FieldWidgets) ?? new FieldWidgets(baseObject, field)
+        public static FieldWidgets Wrap(PdfDirectObject baseObject, Field field) => baseObject != null
+                ? baseObject.Wrapper3 as FieldWidgets ?? new FieldWidgets(baseObject, field)
                 : null;
-        }
-        /*
-          NOTE: Widget annotations may be singular (either merged to their field or within an array)
-          or multiple (within an array).
-          This implementation hides such a complexity to the user, smoothly exposing just the most
-          general case (array) yet preserving its internal state.
-        */
+        // NOTE: Widget annotations may be singular (either merged to their field or within an array)
+        // or multiple (within an array).
+        // This implementation hides such a complexity to the user, smoothly exposing just the most
+        // general case (array) yet preserving its internal state.
         private Field field;
 
         internal FieldWidgets(PdfDirectObject baseObject, Field field) : base(baseObject)
@@ -64,9 +54,7 @@ namespace PdfClown.Documents.Interaction.Forms
         public override object Clone(PdfDocument context)
         { throw new NotImplementedException(); } // TODO:verify field reference.
 
-        /**
-          <summary>Gets the field associated to these widgets.</summary>
-        */
+        /// <summary>Gets the field associated to these widgets.</summary>
         public Field Field => field;
 
         public int IndexOf(Widget value)

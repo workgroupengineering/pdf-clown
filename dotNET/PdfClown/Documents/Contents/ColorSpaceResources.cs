@@ -23,30 +23,27 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Color spaces collection [PDF:1.6:3.7.2].</summary>
-    */
+    ///<summary>Color spaces collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class ColorSpaceResources : ResourceItems<ColorSpace>
+    public sealed class ColorSpaceResources : Dictionary<ColorSpace>
     {
-        public ColorSpaceResources(PdfDocument context) : base(context)
+        public class ValueWrapper : IEntryWrapper<ColorSpace>
+        {
+            public ColorSpace Wrap(PdfDirectObject baseObject) => ColorSpace.Wrap(baseObject);
+        }
+
+        private static readonly ValueWrapper Wrapper = new ValueWrapper();
+
+        public ColorSpaceResources(PdfDocument context) : base(context, Wrapper)
         { }
 
-        public ColorSpaceResources(PdfDirectObject baseObject) : base(baseObject)
+        public ColorSpaceResources(PdfDirectObject baseObject) : base(baseObject, Wrapper)
         { }
 
-        protected override ColorSpace WrapItem(PdfDirectObject baseObject)
-        { return ColorSpace.Wrap(baseObject); }
     }
 }

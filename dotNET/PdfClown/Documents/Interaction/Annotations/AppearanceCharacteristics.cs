@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.XObjects;
@@ -35,54 +33,34 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Appearance characteristics [PDF:1.6:8.4.5].</summary>
-    */
+    /// <summary>Appearance characteristics [PDF:1.6:8.4.5].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class AppearanceCharacteristics : PdfObjectWrapper<PdfDictionary>
     {
-        /**
-          <summary>Icon fit [PDF:1.6:8.6.6].</summary>
-        */
+        /// <summary>Icon fit [PDF:1.6:8.6.6].</summary>
         public class IconFitObject : PdfObjectWrapper2<PdfDictionary>
         {
-            /**
-              <summary>Scaling mode [PDF:1.6:8.6.6].</summary>
-            */
+            /// <summary>Scaling mode [PDF:1.6:8.6.6].</summary>
             public enum ScaleModeEnum
             {
-                /**
-                  <summary>Always scale.</summary>
-                */
+                /// <summary>Always scale.</summary>
                 Always,
-                /**
-                  <summary>Scale only when the icon is bigger than the annotation box.</summary>
-                */
+                /// <summary>Scale only when the icon is bigger than the annotation box.</summary>
                 Bigger,
-                /**
-                  <summary>Scale only when the icon is smaller than the annotation box.</summary>
-                */
+                /// <summary>Scale only when the icon is smaller than the annotation box.</summary>
                 Smaller,
-                /**
-                  <summary>Never scale.</summary>
-                */
+                /// <summary>Never scale.</summary>
                 Never
             };
 
-            /**
-              <summary>Scaling type [PDF:1.6:8.6.6].</summary>
-            */
+            /// <summary>Scaling type [PDF:1.6:8.6.6].</summary>
             public enum ScaleTypeEnum
             {
-                /**
-                  <summary>Scale the icon to fill the annotation box exactly,
-                  without regard to its original aspect ratio.</summary>
-                */
+                /// <summary>Scale the icon to fill the annotation box exactly,
+                /// without regard to its original aspect ratio.</summary>
                 Anamorphic,
-                /**
-                  <summary>Scale the icon to fit the width or height of the annotation box,
-                  while maintaining the icon's original aspect ratio.</summary>
-                */
+                /// <summary>Scale the icon to fit the width or height of the annotation box,
+                /// while maintaining the icon's original aspect ratio.</summary>
                 Proportional
             };
 
@@ -106,19 +84,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                 };
             }
 
-            /**
-              <summary>Gets the code corresponding to the given value.</summary>
-            */
+            /// <summary>Gets the code corresponding to the given value.</summary>
             private static PdfName ToCode(ScaleModeEnum value) => ScaleModeEnumCodes[value];
 
-            /**
-              <summary>Gets the code corresponding to the given value.</summary>
-            */
+            /// <summary>Gets the code corresponding to the given value.</summary>
             private static PdfName ToCode(ScaleTypeEnum value) => ScaleTypeEnumCodes[value];
 
-            /**
-              <summary>Gets the scaling mode corresponding to the given value.</summary>
-            */
+            /// <summary>Gets the scaling mode corresponding to the given value.</summary>
             private static ScaleModeEnum ToScaleModeEnum(IPdfString value)
             {
                 if (value == null)
@@ -131,9 +103,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return ScaleModeEnum.Always;
             }
 
-            /**
-              <summary>Gets the scaling type corresponding to the given value.</summary>
-            */
+            /// <summary>Gets the scaling type corresponding to the given value.</summary>
             private static ScaleTypeEnum ToScaleTypeEnum(IPdfString value)
             {
                 if (value == null)
@@ -152,27 +122,21 @@ namespace PdfClown.Documents.Interaction.Annotations
             public IconFitObject(PdfDirectObject baseObject) : base(baseObject)
             { }
 
-            /**
-              <summary>Gets/Sets whether not to take into consideration the line width of the border.</summary>
-            */
+            /// <summary>Gets/Sets whether not to take into consideration the line width of the border.</summary>
             public bool BorderExcluded
             {
                 get => BaseDataObject.GetBool(PdfName.FB);
-                set => BaseDataObject.SetBool(PdfName.FB, value);
+                set => BaseDataObject.Set(PdfName.FB, value);
             }
 
-            /**
-              <summary>Gets/Sets the circumstances under which the icon should be scaled inside the annotation box.</summary>
-            */
+            /// <summary>Gets/Sets the circumstances under which the icon should be scaled inside the annotation box.</summary>
             public ScaleModeEnum ScaleMode
             {
                 get => ToScaleModeEnum((IPdfString)BaseDataObject[PdfName.SW]);
                 set => BaseDataObject[PdfName.SW] = ToCode(value);
             }
 
-            /**
-              <summary>Gets/Sets the type of scaling to use.</summary>
-            */
+            /// <summary>Gets/Sets the type of scaling to use.</summary>
             public ScaleTypeEnum ScaleType
             {
                 get => ToScaleTypeEnum((IPdfString)BaseDataObject[PdfName.S]);
@@ -184,9 +148,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                 get => BaseDataObject.Get<PdfArray>(PdfName.A);
                 set => BaseDataObject[PdfName.A] = value;
             }
-            /**
-              <summary>Gets/Sets the horizontal alignment of the icon inside the annotation box.</summary>
-            */
+
+            /// <summary>Gets/Sets the horizontal alignment of the icon inside the annotation box.</summary>
             public XAlignmentEnum XAlignment
             {
                 get
@@ -203,7 +166,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     PdfArray alignmentObject = Alignment;
                     if (alignmentObject == null)
                     {
-                        Alignment = alignmentObject = new PdfArray(2) { PdfReal.Get(0.5), PdfReal.Get(0.5) };
+                        Alignment = alignmentObject = new PdfArray(2) { 0.5D, 0.5D };
                     }
 
                     double objectValue;
@@ -213,13 +176,11 @@ namespace PdfClown.Documents.Interaction.Annotations
                         case XAlignmentEnum.Right: objectValue = 1; break;
                         default: objectValue = 0.5; break;
                     }
-                    alignmentObject.SetDouble(0, objectValue);
+                    alignmentObject.Set(0, objectValue);
                 }
             }
 
-            /**
-              <summary>Gets/Sets the vertical alignment of the icon inside the annotation box.</summary>
-            */
+            /// <summary>Gets/Sets the vertical alignment of the icon inside the annotation box.</summary>
             public YAlignmentEnum YAlignment
             {
                 get
@@ -236,7 +197,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     PdfArray alignmentObject = Alignment;
                     if (alignmentObject == null)
                     {
-                        Alignment = alignmentObject = new PdfArray(2) { PdfReal.Get(0.5), PdfReal.Get(0.5) };
+                        Alignment = alignmentObject = new PdfArray(2) { 0.5D, 0.5D };
                     }
 
                     double objectValue;
@@ -246,31 +207,21 @@ namespace PdfClown.Documents.Interaction.Annotations
                         case YAlignmentEnum.Top: objectValue = 1; break;
                         default: objectValue = 0.5; break;
                     }
-                    alignmentObject.SetDouble(1, objectValue);
+                    alignmentObject.Set(1, objectValue);
                 }
             }
         }
 
-        /**
-          <summary>Annotation orientation [PDF:1.6:8.4.5].</summary>
-        */
+        /// <summary>Annotation orientation [PDF:1.6:8.4.5].</summary>
         public enum OrientationEnum
         {
-            /**
-              <summary>Upward.</summary>
-            */
+            /// <summary>Upward.</summary>
             Up = 0,
-            /**
-              <summary>Leftward.</summary>
-            */
+            /// <summary>Leftward.</summary>
             Left = 90,
-            /**
-              <summary>Downward.</summary>
-            */
+            /// <summary>Downward.</summary>
             Down = 180,
-            /**
-              <summary>Rightward.</summary>
-            */
+            /// <summary>Rightward.</summary>
             Right = 270
         };
 
@@ -280,112 +231,90 @@ namespace PdfClown.Documents.Interaction.Annotations
         public AppearanceCharacteristics(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the widget annotation's alternate (down) caption,
-          displayed when the mouse button is pressed within its active area
-          (Pushbutton fields only).</summary>
-        */
+        /// <summary>Gets/Sets the widget annotation's alternate (down) caption,
+        /// displayed when the mouse button is pressed within its active area
+        /// (Pushbutton fields only).</summary>
         public string AlternateCaption
         {
             get => BaseDataObject.GetString(PdfName.AC);
             set => BaseDataObject.SetText(PdfName.AC, value);
         }
 
-        /**
-          <summary>Gets/Sets the widget annotation's alternate (down) icon definition,
-          displayed when the mouse button is pressed within its active area
-          (Pushbutton fields only).</summary>
-        */
+        /// <summary>Gets/Sets the widget annotation's alternate (down) icon definition,
+        /// displayed when the mouse button is pressed within its active area
+        /// (Pushbutton fields only).</summary>
         public FormXObject AlternateIcon
         {
             get => FormXObject.Wrap(BaseDataObject[PdfName.IX]);
             set => BaseDataObject[PdfName.IX] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the widget annotation's background color.</summary>
-        */
+        /// <summary>Gets/Sets the widget annotation's background color.</summary>
         public DeviceColor BackgroundColor
         {
             get => GetColor(PdfName.BG);
             set => SetColor(PdfName.BG, value);
         }
 
-        /**
-          <summary>Gets/Sets the widget annotation's border color.</summary>
-        */
+        /// <summary>Gets/Sets the widget annotation's border color.</summary>
         public DeviceColor BorderColor
         {
             get => GetColor(PdfName.BC);
             set => SetColor(PdfName.BC, value);
         }
 
-        /**
-          <summary>Gets/Sets the position of the caption relative to its icon (Pushbutton fields only).</summary>
-        */
+        /// <summary>Gets/Sets the position of the caption relative to its icon (Pushbutton fields only).</summary>
         public AppearanceCaptionPosition CaptionPosition
         {
             get => (AppearanceCaptionPosition)BaseDataObject.GetInt(PdfName.TP);
-            set => BaseDataObject.SetInt(PdfName.TP, (int)value);
+            set => BaseDataObject.Set(PdfName.TP, (int)value);
         }
 
-        /**
-          <summary>Gets/Sets the icon fit specifying how to display the widget annotation's icon
-          within its annotation box (Pushbutton fields only).
-          If present, the icon fit applies to all of the annotation's icons
-          (normal, rollover, and alternate).</summary>
-        */
+        /// <summary>Gets/Sets the icon fit specifying how to display the widget annotation's icon
+        /// within its annotation box (Pushbutton fields only).
+        /// If present, the icon fit applies to all of the annotation's icons
+        /// (normal, rollover, and alternate).</summary>
         public IconFitObject IconFit
         {
             get => Wrap2<IconFitObject>(BaseDataObject[PdfName.IF]);
             set => BaseDataObject[PdfName.IF] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the widget annotation's normal caption,
-          displayed when it is not interacting with the user (Button fields only).</summary>
-        */
+        /// <summary>Gets/Sets the widget annotation's normal caption,
+        /// displayed when it is not interacting with the user (Button fields only).</summary>
         public string NormalCaption
         {
             get => BaseDataObject.GetString(PdfName.CA);
             set => BaseDataObject.SetText(PdfName.CA, value);
         }
 
-        /**
-          <summary>Gets/Sets the widget annotation's normal icon definition,
-          displayed when it is not interacting with the user (Pushbutton fields only).</summary>
-        */
+        /// <summary>Gets/Sets the widget annotation's normal icon definition,
+        /// displayed when it is not interacting with the user (Pushbutton fields only).</summary>
         public FormXObject NormalIcon
         {
             get => FormXObject.Wrap(BaseDataObject[PdfName.I]);
             set => BaseDataObject[PdfName.I] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the widget annotation's orientation.</summary>
-        */
+        /// <summary>Gets/Sets the widget annotation's orientation.</summary>
         public OrientationEnum Orientation
         {
             get => (OrientationEnum)BaseDataObject.GetInt(PdfName.R);
-            set => BaseDataObject.SetInt(PdfName.R, (int)value);
+            set => BaseDataObject.Set(PdfName.R, (int)value);
         }
 
-        /**
-          <summary>Gets/Sets the widget annotation's rollover caption,
-          displayed when the user rolls the cursor into its active area
-          without pressing the mouse button (Pushbutton fields only).</summary>
-        */
+        /// <summary>Gets/Sets the widget annotation's rollover caption,
+        /// displayed when the user rolls the cursor into its active area
+        /// without pressing the mouse button (Pushbutton fields only).</summary>
         public string RolloverCaption
         {
             get => BaseDataObject.GetString(PdfName.RC);
             set => BaseDataObject.SetText(PdfName.RC, value);
         }
 
-        /**
-          <summary>Gets/Sets the widget annotation's rollover icon definition,
-          displayed when the user rolls the cursor into its active area
-          without pressing the mouse button (Pushbutton fields only).</summary>
-        */
+        /// <summary>Gets/Sets the widget annotation's rollover icon definition,
+        /// displayed when the user rolls the cursor into its active area
+        /// without pressing the mouse button (Pushbutton fields only).</summary>
         public FormXObject RolloverIcon
         {
             get => FormXObject.Wrap(BaseDataObject[PdfName.RI]);
@@ -397,38 +326,22 @@ namespace PdfClown.Documents.Interaction.Annotations
         private void SetColor(PdfName key, DeviceColor value) => BaseDataObject[key] = PdfObjectWrapper.GetBaseObject(value);
     }
 
-    /**
-      <summary>Caption position relative to its icon [PDF:1.6:8.4.5].</summary>
-    */
+    /// <summary>Caption position relative to its icon [PDF:1.6:8.4.5].</summary>
     public enum AppearanceCaptionPosition
     {
-        /**
-          <summary>Caption only (no icon).</summary>
-        */
+        /// <summary>Caption only (no icon).</summary>
         CaptionOnly = 0,
-        /**
-          <summary>No caption (icon only).</summary>
-        */
+        /// <summary>No caption (icon only).</summary>
         NoCaption = 1,
-        /**
-          <summary>Caption below the icon.</summary>
-        */
+        /// <summary>Caption below the icon.</summary>
         Below = 2,
-        /**
-          <summary>Caption above the icon.</summary>
-        */
+        /// <summary>Caption above the icon.</summary>
         Above = 3,
-        /**
-          <summary>Caption to the right of the icon.</summary>
-        */
+        /// <summary>Caption to the right of the icon.</summary>
         Right = 4,
-        /**
-          <summary>Caption to the left of the icon.</summary>
-        */
+        /// <summary>Caption to the left of the icon.</summary>
         Left = 5,
-        /**
-          <summary>Caption overlaid directly on the icon.</summary>
-        */
+        /// <summary>Caption overlaid directly on the icon.</summary>
         Overlaid = 6
     };
 

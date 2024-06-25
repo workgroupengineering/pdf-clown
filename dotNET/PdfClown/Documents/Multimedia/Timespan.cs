@@ -23,20 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Timespan [PDF:1.7:9.1.5].</summary>
-    */
+    /// <summary>Timespan [PDF:1.7:9.1.5].</summary>
     [PDF(VersionEnum.PDF15)]
     internal sealed class Timespan : PdfObjectWrapper<PdfDictionary>
     {
@@ -51,13 +42,11 @@ namespace PdfClown.Documents.Multimedia
         public Timespan(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the temporal offset (in seconds).</summary>
-        */
+        /// <summary>Gets/Sets the temporal offset (in seconds).</summary>
         public double Time
         {
             get => BaseDataObject.GetDouble(PdfName.V);
-            set => BaseDataObject.SetDouble(PdfName.V, value);
+            set => BaseDataObject.Set(PdfName.V, value);
         }
     }
 }

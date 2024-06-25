@@ -48,11 +48,13 @@ namespace PdfClown.Objects
         ///<summary>Gets a clone of the object, registered using the specified object cloner.</summary>
         public override object Clone(Cloner cloner)
         {
-            var clone = (PdfObjectWrapper2)base.MemberwiseClone();
+            var clone = (PdfObjectWrapper2)MemberwiseClone();
             clone.BaseObject = (PdfDirectObject)BaseObject.Clone(cloner);
             if (clone.BaseObject != null)
-                clone.BaseObject.wrapper2 = clone;
-
+            {
+                clone.BaseObject.Wrapper2 = null;
+                clone.BaseObject.Wrapper2 = clone;
+            }
             return clone;
         }
     }

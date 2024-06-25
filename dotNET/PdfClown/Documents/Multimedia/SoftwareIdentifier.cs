@@ -34,6 +34,7 @@ using PdfClown.Util.Metadata;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PdfClown.Documents.Multimedia
 {
@@ -43,17 +44,17 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class SoftwareIdentifier : PdfObjectWrapper<PdfDictionary>
     {
-        /**
-          <summary>Software version number [PDF:1.7:9.1.6].</summary>
-        */
+        private IList<string> oSes;
+        private Uri url;
+        private Interval<VersionObject> version;
+
+        ///<summary>Software version number [PDF:1.7:9.1.6].</summary>
         public sealed class VersionObject : PdfObjectWrapper<PdfArray>, IVersion
         {
-            public VersionObject(params int[] numbers) : base(new PdfArray())
-            {
-                PdfArray baseDataObject = BaseDataObject;
-                foreach (int number in numbers)
-                { baseDataObject.Add(new PdfInteger(number)); }
-            }
+            private int[] numbers;
+
+            public VersionObject(params int[] numbers) : base(new PdfArray(numbers))
+            { }
 
             public VersionObject(PdfDirectObject baseObject) : base(baseObject)
             { }
@@ -63,12 +64,11 @@ namespace PdfClown.Documents.Multimedia
 
             public IList<int> Numbers
             {
-                get
+                get => numbers ??= BaseDataObject.ToIntArray();
+                set
                 {
-                    IList<int> numbers = new List<int>();
-                    foreach (IPdfNumber numberObject in BaseDataObject)
-                    { numbers.Add(numberObject.IntValue); }
-                    return numbers;
+                    BaseDataObject.Clear();
+                    BaseDataObject.AddRangeDirect(value.Select(x => PdfInteger.Get(x)));
                 }
             }
 
@@ -90,19 +90,8 @@ namespace PdfClown.Documents.Multimedia
         */
         public IList<string> OSes
         {
-            get
-            {
-                IList<string> oses = new List<string>();
-                {
-                    PdfArray osesObject = (PdfArray)BaseDataObject[PdfName.OS];
-                    if (osesObject != null)
-                    {
-                        foreach (PdfDirectObject osObject in osesObject)
-                        { oses.Add(((PdfString)osObject).StringValue); }
-                    }
-                }
-                return oses;
-            }
+            get => oSes ??= BaseDataObject.Get<PdfArray>(PdfName.OS)?.ToStringArray();
+            set => BaseDataObject[PdfName.OS] = new PdfArray(oSes = value);
         }
 
         /**
@@ -115,11 +104,8 @@ namespace PdfClown.Documents.Multimedia
         */
         public Uri URI
         {
-            get
-            {
-                PdfString uriObject = (PdfString)BaseDataObject[PdfName.U];
-                return uriObject != null ? new Uri(uriObject.StringValue) : null;
-            }
+            get => url ??= BaseDataObject.GetString(PdfName.U) is string stringValue ? new Uri(stringValue) : null;
+            set => BaseDataObject.Set(PdfName.U, value?.ToString());
         }
 
         /**
@@ -127,17 +113,19 @@ namespace PdfClown.Documents.Multimedia
         */
         public Interval<VersionObject> Version
         {
-            get
+            get => version ??= new Interval<VersionObject>(
+                  Wrap<VersionObject>(BaseDataObject.Get<PdfArray>(PdfName.L)),
+                  Wrap<VersionObject>(BaseDataObject.Get<PdfArray>(PdfName.H)),
+                  BaseDataObject.GetBool(PdfName.LI, true),
+                  BaseDataObject.GetBool(PdfName.HI, true));
+            set
             {
-                PdfDictionary baseDataObject = BaseDataObject;
-                return new Interval<VersionObject>(
-                  new VersionObject(baseDataObject.Get<PdfArray>(PdfName.L)),
-                  new VersionObject(baseDataObject.Get<PdfArray>(PdfName.H)),
-                  baseDataObject.GetBool(PdfName.LI, true),
-                  baseDataObject.GetBool(PdfName.HI, true));
+                version = value;
+                BaseDataObject[PdfName.L] = value.Low.BaseDataObject;
+                BaseDataObject[PdfName.H] = value.High.BaseDataObject;
+                BaseDataObject.Set(PdfName.LI, value.LowInclusive);
+                BaseDataObject.Set(PdfName.HI, value.HighInclusive);
             }
         }
-
-        //TODO:setters!!!
     }
 }

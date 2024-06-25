@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Multimedia;
 using PdfClown.Util;
 using PdfClown.Util.IO;
 
@@ -35,9 +33,7 @@ using text = System.Text;
 
 namespace PdfClown.Bytes
 {
-    /**
-      <summary>Generic stream.</summary>
-    */
+    ///<summary>Generic stream.</summary>
     public class StreamContainer : Stream, IInputStream, IOutputStream
     {
         private Stream stream;

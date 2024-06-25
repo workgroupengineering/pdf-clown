@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Documents.Contents.Objects;
-using xObjects = PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 
 using System;
@@ -35,17 +35,17 @@ namespace PdfClown.Documents.Contents.Scanner
     /**
       <summary>External object information.</summary>
     */
-    public sealed class XObjectWrapper : GraphicsObjectWrapper<XObject>
+    public sealed class XObjectWrapper : GraphicsObjectWrapper<GraphicsXObject>
     {
         private PdfName name;
-        private xObjects::XObject xObject;
+        private XObject xObject;
 
-        internal XObjectWrapper(ContentScanner scanner) : base((XObject)scanner.Current)
+        internal XObjectWrapper(ContentScanner scanner) : base((GraphicsXObject)scanner.Current)
         {
             SKMatrix ctm = scanner.State.Ctm;
             this.box = SKRect.Create(
               ctm.TransX,
-              scanner.ContextSize.Height - ctm.TransY,
+              scanner.ContextBox.Height - ctm.TransY,
               ctm.ScaleX,
               Math.Abs(ctm.ScaleY));
             this.name = BaseDataObject.Name;
@@ -60,6 +60,6 @@ namespace PdfClown.Documents.Contents.Scanner
         /**
           <summary>Gets the external object.</summary>
         */
-        public xObjects::XObject XObject => xObject;
+        public XObject XObject => xObject;
     }
 }

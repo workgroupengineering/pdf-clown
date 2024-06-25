@@ -36,22 +36,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class CalRGBColor : LeveledColor
     {
-        public static readonly CalRGBColor Black = new CalRGBColor(0, 0, 0);
-        public static readonly CalRGBColor White = new CalRGBColor(1, 1, 1);
-
-        public static readonly CalRGBColor Default = Black;
-
-        public CalRGBColor(double r, double g, double b)
-            : this(new PdfArray(3)
+        public CalRGBColor(CalRGBColorSpace colorSpace, double r, double g, double b)
+            : this(colorSpace, new PdfArray(3)
             {
-                    PdfReal.Get(NormalizeComponent(r)),
-                    PdfReal.Get(NormalizeComponent(g)),
-                    PdfReal.Get(NormalizeComponent(b))
+                NormalizeComponent(r),
+                NormalizeComponent(g),
+                NormalizeComponent(b)
             })
         { }
 
-        internal CalRGBColor(IList<PdfDirectObject> components)//TODO:colorspace?
-            : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
+        internal CalRGBColor(CalRGBColorSpace colorSpace, PdfArray components)
+            : base(colorSpace, components)
         { }
 
         /**

@@ -38,15 +38,12 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, PdfReal.Get(i))
         { }
 
-        public Flatness(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public Flatness(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        public float Value => ((IPdfNumber)operands[0]).FloatValue;
+        public float Value => operands.GetFloat(0);
 
-        public override void Scan(GraphicsState state)
-        {
-            state.Flatness = Value;
-        }
+        public override void Scan(GraphicsState state) => state.Flatness = Value;
 
     }
 }

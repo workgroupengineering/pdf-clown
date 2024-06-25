@@ -24,17 +24,10 @@
 */
 
 using PdfClown.Documents;
-using PdfClown.Files;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Name tree [PDF:1.7:3.8.5].</summary>
-    */
+    /// <summary>Name tree [PDF:1.7:3.8.5].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class NameTree<TValue> : Tree<PdfString, TValue>
         where TValue : PdfObjectWrapper

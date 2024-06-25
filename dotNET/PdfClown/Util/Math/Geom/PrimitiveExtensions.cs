@@ -25,14 +25,141 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Numerics;
 using PdfClown.Documents.Contents.Composition;
+using PdfClown.Objects;
 using SkiaSharp;
+using static PdfClown.Documents.Functions.Type4.BitwiseOperators;
 
 namespace PdfClown.Util.Math.Geom
 {
     public static class PrimitiveExtensions
     {
+        public static SKRect ToSKRect(this Padding padding)
+        {
+            return new SKRect((float)padding.Left, (float)padding.Bottom, (float)padding.Right, (float)padding.Top);
+        }
+
+        public static SKRect ToSKRect(this Rectangle rectangle)
+        {
+            return new SKRect((float)rectangle.Left, (float)rectangle.Bottom, (float)rectangle.Right, (float)rectangle.Top);
+        }
+
+        public static SKRect ToSKRect(this PdfArray array)
+        {
+            Rectangle.Normalize(array);
+            return new SKRect(array.GetFloat(0), array.GetFloat(1), array.GetFloat(2), array.GetFloat(3));
+        }
+
+        public static SKPoint? ToSKPoint(this PdfArray array)
+        {
+            return new SKPoint(array.GetFloat(0), array.GetFloat(1));
+        }
+
+        public static SKMatrix ToSkMatrix(this PdfArray array)
+        {
+            return new SKMatrix
+            {
+                ScaleX = array.GetFloat(0),
+                SkewY = array.GetFloat(1),
+                SkewX = array.GetFloat(2),
+                ScaleY = array.GetFloat(3),
+                TransX = array.GetFloat(4),
+                TransY = array.GetFloat(5),
+                Persp2 = 1
+            };
+        }
+
+        public static SKPath ToSKPath(this PdfArray array)
+        {
+            var path = new SKPath();
+            var pointLength = array.Count;
+            for (int pointIndex = 0; pointIndex < pointLength; pointIndex += 2)
+            {
+                var point = GetPagePoint(array, pointIndex);
+                
+                if (path.IsEmpty)
+                {
+                    path.MoveTo(point);
+                }
+                //else if (pointIndex + 3 < pointLength)
+                //{
+                //    var nextPoint = GetPagePoint(pathObject, pointIndex + 2);                        
+                //    path.QuadTo(, point);
+                //}
+                else
+                {
+                    path.LineTo(point);
+                }
+            }
+            //path.Close();
+            return path;
+            
+            static SKPoint GetPagePoint(PdfArray pathObject, int pointIndex)
+            {
+                return new SKPoint(
+                    pathObject.GetFloat(pointIndex),
+                    pathObject.GetFloat(pointIndex + 1));
+            }
+        }
+
+        public static PdfArray ToPdfArray(this SKRect rect)
+        {
+            return new PdfArray(4) { rect.Left, rect.Bottom, rect.Right, rect.Top };
+        }
+
+        public static PdfArray ToPdfArray(this SKPoint point)
+        {
+            return new PdfArray(2) { point.X, point.Y };
+        }
+
+        public static PdfArray ToPdfArray(this SKMatrix value)
+        {
+            return new PdfArray(6)
+            {
+                value.ScaleX,
+                value.SkewY,
+                value.SkewX,
+                value.ScaleY,
+                value.TransX,
+                value.TransY
+            };
+        }
+
+        public static PdfArray ToPdfArray(this ICollection<SKPoint> points, ref SKRect box)
+        {
+            var array = new PdfArray();
+            foreach (SKPoint point in points)
+            {
+                if (box == SKRect.Empty)
+                { box = SKRect.Create(point.X, point.Y, 0, 0); }
+                else
+                { box.Add(point); }
+                array.Add(point.X); // x.
+                array.Add(point.Y); // y.
+            }
+            return array;
+        }
+
+        public static void UpdatePdfArray(this SKMatrix value, PdfArray array)
+        {
+            array.Set(0, value.ScaleX);
+            array.Set(1, value.SkewY);
+            array.Set(2, value.SkewX);
+            array.Set(3, value.ScaleY);
+            array.Set(4, value.TransX);
+            array.Set(5, value.TransY);
+        }
+
+        public static void Update(this Rectangle rectangle, SKRect skRect)
+        {
+            rectangle.Left = skRect.Left;
+            rectangle.Bottom = skRect.Top;
+            rectangle.Right = skRect.Right;
+            rectangle.Top = skRect.Bottom;
+        }
+
         public static float Cross(this SKPoint u, SKPoint v)
         {
             return u.X * v.Y - u.Y * v.X;
@@ -229,12 +356,20 @@ namespace PdfClown.Util.Math.Geom
             return path;
         }
 
-        public static SKRect Round(SKRect value, int precision = 5)
+        public static SKRect Round(this SKRect value, int precision = 5)
         {
-            return new SKRect((float)System.Math.Round(value.Left, precision),
+            return new SKRect(
+                (float)System.Math.Round(value.Left, precision),
                 (float)System.Math.Round(value.Top, precision),
                 (float)System.Math.Round(value.Right, precision),
                 (float)System.Math.Round(value.Bottom, precision));
+        }
+
+        public static SKPoint Round(this SKPoint value, int precision = 5)
+        {
+            return new SKPoint(
+                (float)System.Math.Round(value.X, precision),
+                (float)System.Math.Round(value.Y, precision));
         }
 
         //public static SKPoint Transform(

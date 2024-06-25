@@ -23,95 +23,77 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
 
-using system = System;
+using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>Action to be performed by the viewer application [PDF:1.6:8.5].</summary>
-    */
+    ///<summary>Action to be performed by the viewer application [PDF:1.6:8.5].</summary>
     [PDF(VersionEnum.PDF11)]
     public class Action : PdfObjectWrapper<PdfDictionary>, ITextDisplayable
     {
-        /**
-          <summary>Wraps an action base object into an action object.</summary>
-          <param name="baseObject">Action base object.</param>
-          <returns>Action object associated to the base object.</returns>
-        */
+        private static readonly Dictionary<PdfName, Func<PdfDirectObject, Action>> nCache = new(4)
+        {
+             { PdfName.NextPage, (baseObject) => new GoToNextPage(baseObject) },
+             { PdfName.PrevPage, (baseObject) => new GoToPreviousPage(baseObject) },
+             { PdfName.FirstPage, (baseObject) => new GoToFirstPage(baseObject) },
+             { PdfName.LastPage, (baseObject) => new GoToLastPage(baseObject) },
+        };
+
+        private static readonly Dictionary<PdfName, Func<PdfDirectObject, Action>> sCache = new(32)
+        {
+            { PdfName.GoTo, (baseObject) => new GoToLocal(baseObject) },
+            { PdfName.GoToR, (baseObject) => new GoToRemote(baseObject) },
+            { PdfName.GoToE, (baseObject) => new GoToEmbedded(baseObject) },
+            { PdfName.Launch, (baseObject) => new Launch(baseObject) },
+            { PdfName.Thread, (baseObject) => new GoToThread(baseObject) },
+            { PdfName.URI, (baseObject) => new GoToURI(baseObject) },
+            { PdfName.Sound, (baseObject) => new PlaySound(baseObject) },
+            { PdfName.Movie, (baseObject) => new PlayMovie(baseObject) },
+            { PdfName.Hide, (baseObject) => new ToggleVisibility(baseObject) },
+            { PdfName.SubmitForm, (baseObject) => new SubmitForm(baseObject) },
+            { PdfName.ResetForm, (baseObject) => new ResetForm(baseObject) },
+            { PdfName.ImportData, (baseObject) => new ImportData(baseObject) },
+            { PdfName.JavaScript, (baseObject) => new JavaScript(baseObject) },
+            { PdfName.SetOCGState, (baseObject) => new SetLayerState(baseObject) },
+            { PdfName.Rendition, (baseObject) => new Render(baseObject) },
+            { PdfName.Trans, (baseObject) => new DoTransition(baseObject) },
+            { PdfName.GoTo3DView, (baseObject) => new GoTo3dView(baseObject) },
+            { PdfName.Named, (baseObject) =>
+            {
+                var dataObject = (PdfDictionary)baseObject.Resolve();
+                var actionName = dataObject.Get<PdfName>(PdfName.N);
+                return nCache.TryGetValue(actionName, out var func)
+                    ? func(baseObject)
+                    : new NamedAction(baseObject);
+            }},
+        };
+
+        ///<summary>Wraps an action base object into an action object.</summary>
+        ///<param name="baseObject">Action base object.</param>
+        ///<returns>Action object associated to the base object.</returns>
         public static Action Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
             if (baseObject.Wrapper is Action action)
                 return action;
-            
+
             var dataObject = (PdfDictionary)baseObject.Resolve();
             var actionType = dataObject.Get<PdfName>(PdfName.S);
             if (actionType == null
               || (dataObject.ContainsKey(PdfName.Type)
-                  && !dataObject[PdfName.Type].Equals(PdfName.Action)))
+                  && !PdfName.Action.Equals(dataObject.Get<PdfName>(PdfName.Type))))
                 return null;
 
-            if (actionType.Equals(PdfName.GoTo))
-                return new GoToLocal(baseObject);
-            else if (actionType.Equals(PdfName.GoToR))
-                return new GoToRemote(baseObject);
-            else if (actionType.Equals(PdfName.GoToE))
-                return new GoToEmbedded(baseObject);
-            else if (actionType.Equals(PdfName.Launch))
-                return new Launch(baseObject);
-            else if (actionType.Equals(PdfName.Thread))
-                return new GoToThread(baseObject);
-            else if (actionType.Equals(PdfName.URI))
-                return new GoToURI(baseObject);
-            else if (actionType.Equals(PdfName.Sound))
-                return new PlaySound(baseObject);
-            else if (actionType.Equals(PdfName.Movie))
-                return new PlayMovie(baseObject);
-            else if (actionType.Equals(PdfName.Hide))
-                return new ToggleVisibility(baseObject);
-            else if (actionType.Equals(PdfName.Named))
-            {
-                var actionName = dataObject.Get<PdfName>(PdfName.N);
-                if (actionName.Equals(PdfName.NextPage))
-                    return new GoToNextPage(baseObject);
-                else if (actionName.Equals(PdfName.PrevPage))
-                    return new GoToPreviousPage(baseObject);
-                else if (actionName.Equals(PdfName.FirstPage))
-                    return new GoToFirstPage(baseObject);
-                else if (actionName.Equals(PdfName.LastPage))
-                    return new GoToLastPage(baseObject);
-                else // Custom named action.
-                    return new NamedAction(baseObject);
-            }
-            else if (actionType.Equals(PdfName.SubmitForm))
-                return new SubmitForm(baseObject);
-            else if (actionType.Equals(PdfName.ResetForm))
-                return new ResetForm(baseObject);
-            else if (actionType.Equals(PdfName.ImportData))
-                return new ImportData(baseObject);
-            else if (actionType.Equals(PdfName.JavaScript))
-                return new JavaScript(baseObject);
-            else if (actionType.Equals(PdfName.SetOCGState))
-                return new SetLayerState(baseObject);
-            else if (actionType.Equals(PdfName.Rendition))
-                return new Render(baseObject);
-            else if (actionType.Equals(PdfName.Trans))
-                return new DoTransition(baseObject);
-            else if (actionType.Equals(PdfName.GoTo3DView))
-                return new GoTo3dView(baseObject);
-            else // Custom action.
-                return new Action(baseObject);
+            return sCache.TryGetValue(actionType, out var func)
+                ? func(baseObject)
+                : new Action(baseObject);
         }
 
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        ///<summary>Creates a new action within the given document context.</summary>
         protected Action(PdfDocument context, PdfName actionType) : base(
             context,
             new PdfDictionary(2)
@@ -124,17 +106,11 @@ namespace PdfClown.Documents.Interaction.Actions
         public Action(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the actions to be performed after the current one.</summary>
-        */
+        ///<summary>Gets/Sets the actions to be performed after the current one.</summary>
         [PDF(VersionEnum.PDF12)]
         public ChainedActions Actions
         {
-            get
-            {
-                PdfDirectObject nextObject = BaseDataObject[PdfName.Next];
-                return nextObject != null ? new ChainedActions(nextObject, this) : null;
-            }
+            get => ChainedActions.Wrap(BaseDataObject[PdfName.Next], this);
             set => BaseDataObject[PdfName.Next] = value.BaseObject;
         }
 

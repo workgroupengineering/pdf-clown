@@ -73,15 +73,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         private Color GetDefaultColor()
         {
-            double[] components = new double[ComponentCount];
-            for (int index = 0, length = components.Length; index < length; index++)
-            { components[index] = 1; }
+            var components = new PdfArray(ComponentCount);
+            for (int index = 0, length = components.Capacity; index < length; index++)
+            { components.Add(1); }
 
-            return new DeviceNColor(components);
+            return new DeviceNColor(this, components);
         }
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
-        { return new DeviceNColor(components); }
+        public override Color GetColor(PdfArray components, IContentContext context) 
+            => components == null ? DefaultColor : components.Wrapper as DeviceNColor ?? new DeviceNColor(this, components);
 
         public override bool IsSpaceColor(Color color)
         { return color is DeviceNColor; }

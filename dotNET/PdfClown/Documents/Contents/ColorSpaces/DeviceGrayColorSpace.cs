@@ -47,7 +47,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public DeviceGrayColorSpace(PdfDocument context) : base(context, PdfName.DeviceGray)
         { }
 
-        internal DeviceGrayColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        public DeviceGrayColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
 
         public override object Clone(PdfDocument context)
@@ -57,8 +57,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color DefaultColor => DeviceGrayColor.Default;
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
-        { return new DeviceGrayColor(components); }
+        public override Color GetColor(PdfArray components, IContentContext context = null) 
+            => components == null ? DefaultColor : components.Wrapper as DeviceGrayColor ?? new DeviceGrayColor(this, components);
 
         public override bool IsSpaceColor(Color color)
         { return color is DeviceGrayColor; }

@@ -4,7 +4,6 @@ using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Documents.Multimedia;
 using PdfClown.Util.Math.Geom;
 using PdfClown.Util.Reflection;
 using SkiaSharp;
@@ -696,7 +695,7 @@ namespace PdfClown.Viewer
             state.Canvas.Save();
             state.Canvas.SetMatrix(state.PageViewMatrix);
             var pageRect = SKRect.Create(pageView.Size);
-            state.Canvas.ClipRect(pageRect);
+            //state.Canvas.ClipRect(pageRect);
             state.Canvas.DrawRect(pageRect, paintPageBackground);
 
             var picture = pageView.GetPicture(this);

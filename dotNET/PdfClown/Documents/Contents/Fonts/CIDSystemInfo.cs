@@ -32,9 +32,9 @@ namespace PdfClown.Documents.Contents.Fonts
         public CIDSystemInfo(PdfDocument document, string registry, string ordering, int supplement)
             : base(document, new PdfDictionary(3)
                 {
-                    { PdfName.Registry, new PdfString(registry) },
-                    { PdfName.Ordering, new PdfString(ordering) },
-                    { PdfName.Supplement, new PdfInteger(supplement) }
+                    { PdfName.Registry, registry },
+                    { PdfName.Ordering, ordering },
+                    { PdfName.Supplement, supplement }
                 })
         {
         }
@@ -46,19 +46,19 @@ namespace PdfClown.Documents.Contents.Fonts
         public string Registry
         {
             get => Dictionary.GetString(PdfName.Registry);
-            set => Dictionary[PdfName.Registry] = new PdfString(value);
+            set => Dictionary.Set(PdfName.Registry, value);
         }
 
         public string Ordering
         {
             get => Dictionary.GetString(PdfName.Ordering);
-            set => Dictionary[PdfName.Ordering] = new PdfString(value);
+            set => Dictionary.Set(PdfName.Ordering, value);
         }
 
         public int Supplement
         {
             get => Dictionary.GetInt(PdfName.Supplement, 0);
-            set => Dictionary[PdfName.Supplement] = new PdfInteger(value);
+            set => Dictionary.Set(PdfName.Supplement, value);
         }
 
         public override string ToString()

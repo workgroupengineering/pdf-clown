@@ -38,13 +38,13 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetDeviceCMYKFillColor : SetFillColor
     {
-        public static readonly new string OperatorKeyword = "k";
+        public static readonly string OperatorKeyword = "k";
 
         public SetDeviceCMYKFillColor(DeviceCMYKColor value)
             : base(OperatorKeyword, value)
         { }
 
-        public SetDeviceCMYKFillColor(IList<PdfDirectObject> operands)
+        public SetDeviceCMYKFillColor(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 

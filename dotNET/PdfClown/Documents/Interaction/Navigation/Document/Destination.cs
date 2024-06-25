@@ -34,127 +34,105 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
-    /**
-      <summary>Interaction target [PDF:1.6:8.2.1].</summary>
-      <remarks>
-        It represents a particular view of a document, consisting of the following items:
-        <list type="bullet">
-          <item>the page of the document to be displayed;</item>
-          <item>the location of the document window on that page;</item>
-          <item>the magnification (zoom) factor to use when displaying the page.</item>
-        </list>
-      </remarks>
-    */
+    /// <summary>Interaction target [PDF:1.6:8.2.1].</summary>
+    /// <remarks>
+    ///   It represents a particular view of a document, consisting of the following items:
+    ///   <list type="bullet">
+    ///     <item>the page of the document to be displayed;</item>
+    ///     <item>the location of the document window on that page;</item>
+    ///     <item>the magnification (zoom) factor to use when displaying the page.</item>
+    ///   </list>
+    /// </remarks>
     [PDF(VersionEnum.PDF10)]
     public abstract class Destination : PdfObjectWrapper<PdfArray>, IPdfNamedObjectWrapper, ITextDisplayable
     {
-        /**
-          <summary>Destination mode [PDF:1.6:8.2.1].</summary>
-        */
+        /// <summary>Destination mode [PDF:1.6:8.2.1].</summary>
         public enum ModeEnum
         {
-            /**
-              <summary>Display the page at the given upper-left position,
-              applying the given magnification.</summary>
-              <remarks>
-                View parameters:
-                <list type="number">
-                  <item>left coordinate</item>
-                  <item>top coordinate</item>
-                  <item>zoom</item>
-                </list>
-              </remarks>
-            */
+            /// <summary>Display the page at the given upper-left position,
+            /// applying the given magnification.</summary>
+            /// <remarks>
+            ///   View parameters:
+            ///   <list type="number">
+            ///     <item>left coordinate</item>
+            ///     <item>top coordinate</item>
+            ///     <item>zoom</item>
+            ///   </list>
+            /// </remarks>
             XYZ,
-            /**
-              <summary>Display the page with its contents magnified just enough to fit
-              the entire page within the window both horizontally and vertically.</summary>
-              <remarks>No view parameters.</remarks>
-            */
+            /// <summary>Display the page with its contents magnified just enough to fit
+            /// the entire page within the window both horizontally and vertically.</summary>
+            /// <remarks>No view parameters.</remarks>
             Fit,
-            /**
-              <summary>Display the page with the vertical coordinate <code>top</code> positioned
-              at the top edge of the window and the contents of the page magnified
-              just enough to fit the entire width of the page within the window.</summary>
-              <remarks>
-                View parameters:
-                <list type="number">
-                  <item>top coordinate</item>
-                </list>
-              </remarks>
-            */
+            /// <summary>Display the page with the vertical coordinate <code>top</code> positioned
+            /// at the top edge of the window and the contents of the page magnified
+            /// just enough to fit the entire width of the page within the window.</summary>
+            /// <remarks>
+            ///   View parameters:
+            ///   <list type="number">
+            ///     <item>top coordinate</item>
+            ///   </list>
+            /// </remarks>
             FitHorizontal,
-            /**
-              <summary>Display the page with the horizontal coordinate <code>left</code> positioned
-              at the left edge of the window and the contents of the page magnified
-              just enough to fit the entire height of the page within the window.</summary>
-              <remarks>
-                View parameters:
-                <list type="number">
-                  <item>left coordinate</item>
-                </list>
-              </remarks>
-            */
+            /// <summary>Display the page with the horizontal coordinate <code>left</code> positioned
+            /// at the left edge of the window and the contents of the page magnified
+            /// just enough to fit the entire height of the page within the window.</summary>
+            /// <remarks>
+            ///   View parameters:
+            ///   <list type="number">
+            ///     <item>left coordinate</item>
+            ///   </list>
+            /// </remarks>
             FitVertical,
-            /**
-              <summary>Display the page with its contents magnified just enough to fit
-              the rectangle specified by the given coordinates entirely
-              within the window both horizontally and vertically.</summary>
-              <remarks>
-                View parameters:
-                <list type="number">
-                  <item>left coordinate</item>
-                  <item>bottom coordinate</item>
-                  <item>right coordinate</item>
-                  <item>top coordinate</item>
-                </list>
-              </remarks>
-            */
+            /// <summary>Display the page with its contents magnified just enough to fit
+            /// the rectangle specified by the given coordinates entirely
+            /// within the window both horizontally and vertically.</summary>
+            /// <remarks>
+            ///   View parameters:
+            ///   <list type="number">
+            ///     <item>left coordinate</item>
+            ///     <item>bottom coordinate</item>
+            ///     <item>right coordinate</item>
+            ///     <item>top coordinate</item>
+            ///   </list>
+            /// </remarks>
             FitRectangle,
-            /**
-              <summary>Display the page with its contents magnified just enough to fit
-              its bounding box entirely within the window both horizontally and vertically.</summary>
-              <remarks>No view parameters.</remarks>
-            */
+            /// <summary>Display the page with its contents magnified just enough to fit
+            /// its bounding box entirely within the window both horizontally and vertically.</summary>
+            /// <remarks>No view parameters.</remarks>
             FitBoundingBox,
-            /**
-              <summary>Display the page with the vertical coordinate <code>top</code> positioned
-              at the top edge of the window and the contents of the page magnified
-              just enough to fit the entire width of its bounding box within the window.</summary>
-              <remarks>
-                View parameters:
-                <list type="number">
-                  <item>top coordinate</item>
-                </list>
-              </remarks>
-            */
+            /// <summary>Display the page with the vertical coordinate <code>top</code> positioned
+            /// at the top edge of the window and the contents of the page magnified
+            /// just enough to fit the entire width of its bounding box within the window.</summary>
+            /// <remarks>
+            ///   View parameters:
+            ///   <list type="number">
+            ///     <item>top coordinate</item>
+            ///   </list>
+            /// </remarks>
             FitBoundingBoxHorizontal,
-            /**
-              <summary>Display the page with the horizontal coordinate <code>left</code> positioned
-              at the left edge of the window and the contents of the page magnified
-              just enough to fit the entire height of its bounding box within the window.</summary>
-              <remarks>
-                View parameters:
-                <list type="number">
-                  <item>left coordinate</item>
-                </list>
-              </remarks>
-            */
+            /// <summary>Display the page with the horizontal coordinate <code>left</code> positioned
+            /// at the left edge of the window and the contents of the page magnified
+            /// just enough to fit the entire height of its bounding box within the window.</summary>
+            /// <remarks>
+            ///   View parameters:
+            ///   <list type="number">
+            ///     <item>left coordinate</item>
+            ///   </list>
+            /// </remarks>
             FitBoundingBoxVertical
         }
 
-        /**
-          <summary>Wraps a destination base object into a destination object.</summary>
-          <param name="baseObject">Destination base object.</param>
-          <returns>Destination object associated to the base object.</returns>
-        */
+        /// <summary>Wraps a destination base object into a destination object.</summary>
+        /// <param name="baseObject">Destination base object.</param>
+        /// <returns>Destination object associated to the base object.</returns>
         public static Destination Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
             if (baseObject.Wrapper is Destination destination)
                 return destination;
-            
+
             PdfArray dataObject = (PdfArray)baseObject.Resolve();
             PdfDirectObject pageObject = dataObject[0];
             if (pageObject is PdfReference)
@@ -165,17 +143,15 @@ namespace PdfClown.Documents.Interaction.Navigation
                 throw new ArgumentException("Not a valid destination object.", "baseObject");
         }
 
-        /**
-          <summary>Creates a new destination within the given document context.</summary>
-          <param name="context">Document context.</param>
-          <param name="page">Page reference. It may be either a <see cref="Page"/> or a page index (int).
-          </param>
-          <param name="mode">Destination mode.</param>
-          <param name="location">Destination location.</param>
-          <param name="zoom">Magnification factor to use when displaying the page.</param>
-        */
+        /// <summary>Creates a new destination within the given document context.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="page">Page reference. It may be either a <see cref="Page"/> or a page index (int).
+        /// </param>
+        /// <param name="mode">Destination mode.</param>
+        /// <param name="location">Destination location.</param>
+        /// <param name="zoom">Magnification factor to use when displaying the page.</param>
         protected Destination(PdfDocument context, object page, ModeEnum mode, object location, double? zoom)
-            : base(context, new PdfArray(2) { null, null })
+            : base(context, new PdfArray(2) { (string)null, (string)null })
         {
             Page = page;
             Mode = mode;
@@ -186,9 +162,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         public Destination(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the page location.</summary>
-        */
+        /// <summary>Gets/Sets the page location.</summary>
         public object Location
         {
             get
@@ -226,22 +200,22 @@ namespace PdfClown.Documents.Interaction.Navigation
                     case ModeEnum.FitBoundingBoxVertical:
                     case ModeEnum.FitHorizontal:
                     case ModeEnum.FitVertical:
-                        baseDataObject[2] = PdfReal.Get(Convert.ToDouble(value));
+                        baseDataObject.Set(2, Convert.ToDouble(value));
                         break;
                     case ModeEnum.FitRectangle:
                         {
                             SKRect rectangle = (SKRect)value;
-                            baseDataObject[2] = PdfReal.Get(rectangle.Left);
-                            baseDataObject[3] = PdfReal.Get(rectangle.Top);
-                            baseDataObject[4] = PdfReal.Get(rectangle.Right);
-                            baseDataObject[5] = PdfReal.Get(rectangle.Bottom);
+                            baseDataObject.Set(2, rectangle.Left);
+                            baseDataObject.Set(3, rectangle.Top);
+                            baseDataObject.Set(4, rectangle.Right);
+                            baseDataObject.Set(5, rectangle.Bottom);
                             break;
                         }
                     case ModeEnum.XYZ:
                         {
                             SKPoint point = (SKPoint)value;
-                            baseDataObject[2] = PdfReal.Get(point.X);
-                            baseDataObject[3] = PdfReal.Get(point.Y);
+                            baseDataObject.Set(2, point.X);
+                            baseDataObject.Set(3, point.Y);
                             break;
                         }
                     default:
@@ -251,12 +225,10 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
         }
 
-        /**
-          <summary>Gets the destination mode.</summary>
-        */
+        /// <summary>Gets the destination mode.</summary>
         public ModeEnum Mode
         {
-            get => ModeEnumExtension.Get((PdfName)BaseDataObject[1]).Value;
+            get => ModeEnumExtension.Get(BaseDataObject.Get<PdfName>(1)).Value;
             set
             {
                 PdfArray baseDataObject = BaseDataObject;
@@ -287,24 +259,20 @@ namespace PdfClown.Documents.Interaction.Navigation
                         throw new NotSupportedException("Mode unknown: " + value);
                 }
                 while (baseDataObject.Count < parametersCount)
-                { baseDataObject.Add(null); }
+                { baseDataObject.AddDirect(null); }
                 while (baseDataObject.Count > parametersCount)
                 { baseDataObject.RemoveAt(baseDataObject.Count - 1); }
             }
         }
 
-        /**
-          <summary>Gets/Sets the target page reference.</summary>
-        */
+        /// <summary>Gets/Sets the target page reference.</summary>
         public abstract object Page
         {
             get;
             set;
         }
 
-        /**
-          <summary>Gets the magnification factor to use when displaying the page.</summary>
-        */
+        /// <summary>Gets the magnification factor to use when displaying the page.</summary>
         public double? Zoom
         {
             get
@@ -322,7 +290,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                 switch (Mode)
                 {
                     case ModeEnum.XYZ:
-                        BaseDataObject[4] = PdfReal.Get(value);
+                        BaseDataObject.Set(4, value);
                         break;
                     default:
                         /* NOOP */
@@ -372,7 +340,6 @@ namespace PdfClown.Documents.Interaction.Navigation
             return mode;
         }
 
-        public static PdfName GetName(this Destination.ModeEnum mode)
-        { return codes[mode]; }
+        public static PdfName GetName(this Destination.ModeEnum mode) => codes[mode];
     }
 }

@@ -36,7 +36,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using static PdfClown.Documents.Contents.Fonts.CCF.CFFParser;
 
 namespace PdfClown.Documents.Contents.Patterns.Shadings
 {
@@ -47,6 +46,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         private int numberOfColorComponents = -1;
         private Vertices vertices;
         private SKRect? box;
+        private SKVertices skVerteces;
 
         internal FreeFormShading(PdfDirectObject baseObject) : base(baseObject)
         { }
@@ -59,31 +59,27 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         public int BitsPerCoordinate
         {
             get => Dictionary.GetInt(PdfName.BitsPerCoordinate);
-            set => Dictionary.SetInt(PdfName.BitsPerCoordinate, value);
+            set => Dictionary.Set(PdfName.BitsPerCoordinate, value);
         }
 
         public int BitsPerComponent
         {
             get => Dictionary.GetInt(PdfName.BitsPerComponent);
-            set => Dictionary.SetInt(PdfName.BitsPerComponent, value);
+            set => Dictionary.Set(PdfName.BitsPerComponent, value);
         }
 
         public int BitsPerFlag
         {
             get => Dictionary.GetInt(PdfName.BitsPerFlag);
-            set => Dictionary.SetInt(PdfName.BitsPerFlag, value);
+            set => Dictionary.Set(PdfName.BitsPerFlag, value);
         }
 
         public float[] Decode
         {
             get => decode ??= Dictionary.Resolve(PdfName.Decode) is PdfArray array
-                        ? array.Select(p => ((IPdfNumber)p).FloatValue).ToArray()
+                        ? array.ToFloatArray()
                         : GenerateDecode();
-            set
-            {
-                decode = value;
-                Dictionary[PdfName.Domain] = new PdfArray(value.Select(p => PdfReal.Get(p)));
-            }
+            set => Dictionary[PdfName.Domain] = new PdfArray(decode = value);
         }
 
         public IList<Interval<float>> Decodes => decodes ??= Decode.GetIntervals<float>();
@@ -103,24 +99,50 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
 
         public Vertices Vertices => vertices ??= LoadTriangles();
 
-        public override SKRect Box => box ??= CalculateBox();
+        public SKVertices SKVertices => skVerteces ??= Vertices != null
+            ? SKVertices.CreateCopy(SKVertexMode.Triangles, Vertices.Points.ToArray(), Vertices.Colors.ToArray())
+            : null;
 
-        public override SKShader GetShader(SKMatrix sKMatrix, GraphicsState state)
+        public override SKRect Box => box ??= CalculateBox();//Dictionary.Get<PdfArray>(PdfName.BBox)?.ToSKRect() ?? 
+
+        public override SKShader GetShader(SKMatrix skMatrix, GraphicsState state)
         {
-            var paint = Render();
-            return paint == null ? null : SKShader.CreatePicture(paint, SKShaderTileMode.Decal, SKShaderTileMode.Decal, sKMatrix, SKRect.Create(SKPoint.Empty, Box.Size));
+            var calcMatrix = CalculateMatrix(skMatrix, state);
+            using var paint = Render(SKMatrix.Identity);
+            var cullRect = paint?.CullRect ?? SKRect.Empty;
+            return paint == null ? null : SKShader.CreatePicture(paint, SKShaderTileMode.Decal, SKShaderTileMode.Decal, calcMatrix, cullRect);//, SKMatrix.Identity, paint.CullRect);
         }
 
-        private SKPicture Render()
+        public override SKMatrix CalculateMatrix(SKMatrix skMatrix, GraphicsState state)
         {
-            var vertices = Vertices;
-            if (vertices == null)
-                return null;
-            var skVerteces = SKVertices.CreateCopy(SKVertexMode.Triangles, vertices.Points.ToArray(), vertices.Colors.ToArray());
+            var box = Box;
+            box = skMatrix.PreConcat(state.Ltm).MapRect(box);
+            var pathRect = (SKRect)state.Scanner.Canvas.DeviceClipBounds;
+            if (state.Scanner.Path is SKPath path)
+            {
+                pathRect = state.Ltm.MapRect(path.Bounds);
+            }
 
+            var scale = pathRect.Width / box.Width;
+            var scaleMAtrix = SKMatrix.CreateScale(scale, scale);
+            var mBox = scaleMAtrix.MapRect(box);
+            if (!mBox.IntersectsWith(pathRect))
+            {
+                scaleMAtrix = scaleMAtrix.PostConcat(SKMatrix.CreateTranslation(pathRect.Left - mBox.Left, pathRect.Top - mBox.Top));
+            }
+            return scaleMAtrix.PreConcat(skMatrix);
+        }
+
+        protected virtual SKPicture Render(SKMatrix spaceMatrix)
+        {
+            var skVertices = SKVertices;
+            if (skVertices == null)
+                return null;
+            var box = spaceMatrix.MapRect(Box);
             using var recorder = new SKPictureRecorder();
-            using var canvas = recorder.BeginRecording(Box);
-            using var paint = new SKPaint { IsAntialias = true };
+            using var canvas = recorder.BeginRecording(box);
+            canvas.SetMatrix(spaceMatrix);
+            using var paint = new SKPaint { IsAntialias = AntiAlias };
             canvas.DrawVertices(skVerteces, SKBlendMode.Modulate, paint);
             return recorder.EndRecording();
         }

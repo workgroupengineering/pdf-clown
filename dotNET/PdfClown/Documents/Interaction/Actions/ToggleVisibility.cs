@@ -23,11 +23,8 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Forms;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -35,15 +32,11 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Toggle the visibility of one or more annotations on the screen' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Toggle the visibility of one or more annotations on the screen' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class ToggleVisibility : Action
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public ToggleVisibility(PdfDocument context, ICollection<PdfObjectWrapper> objects, bool visible)
             : base(context, PdfName.Hide)
         {
@@ -54,9 +47,7 @@ namespace PdfClown.Documents.Interaction.Actions
         internal ToggleVisibility(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the annotations (or associated form fields) to be affected.</summary>
-        */
+        /// <summary>Gets/Sets the annotations (or associated form fields) to be affected.</summary>
         public ICollection<PdfObjectWrapper> Objects
         {
             get
@@ -93,13 +84,11 @@ namespace PdfClown.Documents.Interaction.Actions
             }
         }
 
-        /**
-          <summary>Gets/Sets whether to show the annotations.</summary>
-        */
+        /// <summary>Gets/Sets whether to show the annotations.</summary>
         public bool Visible
         {
             get => !BaseDataObject.GetBool(PdfName.H);
-            set => BaseDataObject.SetBool(PdfName.H, !value);
+            set => BaseDataObject.Set(PdfName.H, !value);
         }
 
         private void FillObjects(PdfDataObject objectObject, ICollection<PdfObjectWrapper> objects)
@@ -107,7 +96,7 @@ namespace PdfClown.Documents.Interaction.Actions
             PdfDataObject objectDataObject = PdfObject.Resolve(objectObject);
             if (objectDataObject is PdfArray pdfArray) // Multiple objects.
             {
-                foreach (PdfDirectObject itemObject in pdfArray)
+                foreach (var itemObject in pdfArray)
                 { FillObjects(itemObject, objects); }
             }
             else // Single object.

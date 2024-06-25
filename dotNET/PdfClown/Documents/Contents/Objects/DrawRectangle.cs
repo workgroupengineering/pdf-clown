@@ -42,43 +42,38 @@ namespace PdfClown.Documents.Contents.Objects
 
         public DrawRectangle(double x, double y, double width, double height)
             : base(OperatorKeyword,
-                  new List<PdfDirectObject>(4) { PdfReal.Get(x), PdfReal.Get(y), PdfReal.Get(width), PdfReal.Get(height) })
+                  new PdfArray(4) { x, y, width, height })
         { }
 
-        public DrawRectangle(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public DrawRectangle(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        public double Height
+        public float Height
         {
-            get => ((IPdfNumber)operands[3]).RawValue;
-            set => operands[3] = PdfReal.Get(value);
+            get => operands.GetFloat(3);
+            set => operands.Set(3, value);
         }
 
-        public override void Scan(GraphicsState state)
+        public float Width
         {
-            var pathObject = state.Scanner.RenderObject;
-            if (pathObject != null)
-            {
-                pathObject.AddRect(SKRect.Create((float)X, (float)Y, (float)Width, (float)Height));
-            }
+            get => operands.GetFloat(2);
+            set => operands.Set(2, value);
         }
 
-        public double Width
+        public float X
         {
-            get => ((IPdfNumber)operands[2]).RawValue;
-            set => operands[2] = PdfReal.Get(value);
+            get => operands.GetFloat(0);
+            set => operands.Set(0, value);
         }
 
-        public double X
+        public float Y
         {
-            get => ((IPdfNumber)operands[0]).RawValue;
-            set => operands[0] = PdfReal.Get(value);
+            get => operands.GetFloat(1);
+            set => operands.Set(1, value);
         }
 
-        public double Y
-        {
-            get => ((IPdfNumber)operands[1]).RawValue;
-            set => operands[1] = PdfReal.Get(value);
-        }
+        public override void Scan(GraphicsState state) => state.Scanner.Path?.AddRect(SKRect.Create(X, Y, Width, Height));
+
+
     }
 }

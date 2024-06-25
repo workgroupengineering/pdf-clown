@@ -1,5 +1,5 @@
-/*
-  Copyright 2007-2012 Stefano Chizzolini. http://www.pdfclown.org
+﻿/*
+  Copyright 2007-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,45 +23,29 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-using PdfClown.Tokens;
-
-using System.Collections.Generic;
+using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Text object [PDF:1.6:5.3].</summary>
-    */
-    [PDF(VersionEnum.PDF10)]
-    public sealed class Text : GraphicsObject
+    public sealed class TranslateTextRelativeNoLead : TranslateTextRelative
     {
-        public static readonly string BeginOperatorKeyword = BeginText.OperatorKeyword;
-        public static readonly string EndOperatorKeyword = EndText.OperatorKeyword;
+        /**
+          <summary>No side effect.</summary>
+        */
+        public static readonly string OperatorKeyword = "Td";
 
-        private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
-        private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
-
-        public Text()
+        public TranslateTextRelativeNoLead(double offsetX, double offsetY)
+            : base(OperatorKeyword, offsetX, offsetY)
         { }
 
-        public Text(IList<ContentObject> objects) : base(objects)
+        public TranslateTextRelativeNoLead(PdfArray operands)
+            : base(OperatorKeyword, operands)
         { }
-
-        public override void WriteTo(IOutputStream stream, PdfDocument context)
-        {
-            stream.Write(BeginChunk);
-            base.WriteTo(stream, context);
-            stream.Write(EndChunk);
-        }
 
         public override void Scan(GraphicsState state)
         {
-            var temp = state.TextState;
-            state.TextState = new TextGraphicsState();
             base.Scan(state);
-            state.TextState = temp;
         }
     }
 }

@@ -42,17 +42,16 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, PdfInteger.Get((int)value))
         { }
 
-        public SetLineCap(IList<PdfDirectObject> operands)
+        public SetLineCap(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state)
-        { state.LineCap = Value; }
+        public override void Scan(GraphicsState state) => state.LineCap = Value;
 
         public LineCapEnum Value
         {
-            get => (LineCapEnum)((IPdfNumber)operands[0]).IntValue;
-            set => operands[0] = PdfInteger.Get((int)value);
+            get => (LineCapEnum)operands.GetInt(0);
+            set => operands.Set(0, (int)value);
         }
     }
 }

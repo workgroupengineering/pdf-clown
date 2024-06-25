@@ -91,7 +91,7 @@ configuration is applied.</summary>
                     }
                     else // Multiple intents.
                     {
-                        PdfArray intentArray = new PdfArray();
+                        var intentArray = new PdfArray();
                         foreach (PdfName valueItem in value)
                         { intentArray.Add(valueItem); }
                     }
@@ -106,10 +106,10 @@ configuration is applied.</summary>
             PdfDataObject intentObject = BaseDataObject.Resolve(PdfName.Intent);
             if (intentObject != null)
             {
-                if (intentObject is PdfArray) // Multiple intents.
+                if (intentObject is PdfArray array) // Multiple intents.
                 {
-                    foreach (PdfDirectObject intentItem in (PdfArray)intentObject)
-                    { intents.Add((PdfName)intentItem); }
+                    foreach (var intentItem in array.OfType<PdfName>())
+                    { intents.Add(intentItem); }
                 }
                 else // Single intent.
                 { intents.Add((PdfName)intentObject); }
@@ -172,10 +172,10 @@ configuration is applied.</summary>
         internal void SetUsageApplication(PdfName @event, PdfName category, Layer layer, bool retain)
         {
             bool matched = false;
-            PdfArray usages = BaseDataObject.Resolve<PdfArray>(PdfName.AS);
-            foreach (PdfDirectObject usage in usages)
+            var usages = BaseDataObject.Resolve<PdfArray>(PdfName.AS);
+            foreach (var usage in usages)
             {
-                PdfDictionary usageDictionary = (PdfDictionary)usage;
+                var usageDictionary = (PdfDictionary)usage;
                 if (usageDictionary[PdfName.Event].Equals(@event)
                   && usageDictionary.Get<PdfArray>(PdfName.Category).Contains(category))
                 {
@@ -195,7 +195,7 @@ configuration is applied.</summary>
             }
             if (!matched && retain)
             {
-                PdfDictionary usageDictionary = new PdfDictionary();
+                var usageDictionary = new PdfDictionary();
                 {
                     usageDictionary[PdfName.Event] = @event;
                     usageDictionary.Resolve<PdfArray>(PdfName.Category).Add(category);

@@ -36,37 +36,24 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class IndexedColor : Color
     {
-        public static readonly IndexedColor Default = new IndexedColor(0);
-
-        /**
-          <summary>Gets the color corresponding to the specified components.</summary>
-          <param name="components">Color components to convert.</param>
-        */
-        public static IndexedColor Get(PdfArray components)
-        {
-            return components != null
-              ? components.Wrapper is IndexedColor color ? color : new IndexedColor(components)
-              : Default;
-        }
-
-        public IndexedColor(int index)
-            : this(new PdfArray(1) { PdfInteger.Get(index) })
+        public IndexedColor(ColorSpace colorSpace, int index)
+            : this(colorSpace, new PdfArray(1) { index })
         { }
 
-        internal IndexedColor(IList<PdfDirectObject> components)//TODO:consider color space reference!
-            : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
+        internal IndexedColor(ColorSpace colorSpace, PdfArray components)//TODO:consider color space reference!
+            : base(colorSpace, components)
         { }
 
 
-        public override IList<PdfDirectObject> Components => (PdfArray)BaseDataObject;
+        public override PdfArray Components => (PdfArray)BaseDataObject;
 
         /**
           <summary>Gets the color index.</summary>
         */
         public int Index
         {
-            get => ((PdfArray)BaseDataObject).GetInt(0);
-            set => ((PdfArray)BaseDataObject).SetInt(0, value);
+            get => Components.GetInt(0);
+            set => Components.Set(0, value);
         }
 
         public override object Clone(PdfDocument context)

@@ -23,22 +23,34 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
-using System.Collections;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Color space [PDF:1.6:4.5].</summary>
-    */
+    ///<summary>Color space [PDF:1.6:4.5].</summary>
     public abstract class ColorSpace : PdfObjectWrapper<PdfDirectObject>
     {
+        private static readonly Dictionary<PdfName, Func<PdfDirectObject, ColorSpace>> wrappers = new()
+        {
+            { PdfName.DeviceRGB, (pdfObject) => new DeviceRGBColorSpace(pdfObject) },
+            { PdfName.RGB, (pdfObject) => new DeviceRGBColorSpace(pdfObject) },
+            { PdfName.DeviceCMYK, (pdfObject) => new DeviceCMYKColorSpace(pdfObject) },
+            { PdfName.CMYK, (pdfObject) => new DeviceCMYKColorSpace(pdfObject) },
+            { PdfName.DeviceGray, (pdfObject) => new DeviceGrayColorSpace(pdfObject) },
+            { PdfName.G, (pdfObject) => DeviceGrayColorSpace.Default },
+            { PdfName.CalRGB, (pdfObject) => new CalRGBColorSpace(pdfObject) },
+            { PdfName.CalGray, (pdfObject) => new CalGrayColorSpace(pdfObject) },
+            { PdfName.ICCBased, (pdfObject) => new ICCBasedColorSpace(pdfObject) },
+            { PdfName.Lab, (pdfObject) => new LabColorSpace(pdfObject) },
+            { PdfName.DeviceN, (pdfObject) => new DeviceNColorSpace(pdfObject) },
+            { PdfName.Indexed, (pdfObject) => new IndexedColorSpace(pdfObject) },
+            { PdfName.I, (pdfObject) => new IndexedColorSpace(pdfObject) },
+            { PdfName.Pattern, (pdfObject) => new PatternColorSpace(pdfObject) },
+            { PdfName.Separation, (pdfObject) => new SeparationColorSpace(pdfObject) },
+        };
         /**
           <summary>Wraps the specified color space base object into a color space object.</summary>
           <param name="baseObject">Base object of a color space object.</param>
@@ -58,37 +70,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
               For families that do not require parameters, the color space CAN be
               specified simply by the family name itself instead of an array.
             */
-            PdfName name = (PdfName)(baseDataObject is PdfArray
-              ? ((PdfArray)baseDataObject)[0]
-              : baseDataObject);
-            if (name.Equals(PdfName.DeviceRGB)
-                || name.Equals(PdfName.RGB))
-                return new DeviceRGBColorSpace(baseObject);
-            else if (name.Equals(PdfName.DeviceCMYK)
-                || name.Equals(PdfName.CMYK))
-                return new DeviceCMYKColorSpace(baseObject);
-            else if (name.Equals(PdfName.DeviceGray)
-                || name.Equals(PdfName.G))
-                return new DeviceGrayColorSpace(baseObject);
-            else if (name.Equals(PdfName.CalRGB))
-                return new CalRGBColorSpace(baseObject);
-            else if (name.Equals(PdfName.CalGray))
-                return new CalGrayColorSpace(baseObject);
-            else if (name.Equals(PdfName.ICCBased))
-                return new ICCBasedColorSpace(baseObject);
-            else if (name.Equals(PdfName.Lab))
-                return new LabColorSpace(baseObject);
-            else if (name.Equals(PdfName.DeviceN))
-                return new DeviceNColorSpace(baseObject);
-            else if (name.Equals(PdfName.Indexed)
-                || name.Equals(PdfName.I))
-                return new IndexedColorSpace(baseObject);
-            else if (name.Equals(PdfName.Pattern))
-                return new PatternColorSpace(baseObject);
-            else if (name.Equals(PdfName.Separation))
-                return new SeparationColorSpace(baseObject);
-            else
-                return null;
+            PdfName name = baseDataObject is PdfArray array
+              ? array.Get<PdfName>(0)
+              : (PdfName)baseDataObject;
+            if (wrappers.TryGetValue(name, out var func))
+                return func(baseObject);
+            return null;
             //throw new NotSupportedException("Color space " + name + " unknown.");
         }
 
@@ -99,17 +86,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public ColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the number of components used to represent a color value.</summary>
-        */
+        ///<summary>Gets the number of components used to represent a color value.</summary>
         public abstract int ComponentCount
         {
             get;
         }
 
-        /**
-          <summary>Gets the initial color value within this color space.</summary>
-        */
+        ///<summary>Gets the initial color value within this color space.</summary>
         public abstract Color DefaultColor
         {
             get;
@@ -119,13 +102,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <summary>Gets the rendering representation of the specified color value.</summary>
           <param name="color">Color value to convert into an equivalent rendering representation.</param>
         */
-        public virtual SKPaint GetPaint(Color color, float? alpha = null, GraphicsState graphicsState = null)
+        public virtual SKPaint GetPaint(Color color, SKPaintStyle paintStyle, float? alpha = null, GraphicsState graphicsState = null)
         {
             var skColor = GetSKColor(color, alpha);
             return new SKPaint
             {
                 Color = skColor,
-                Style = SKPaintStyle.Fill,
+                Style = paintStyle,
                 IsAntialias = true,
                 BlendMode = SKBlendMode.SrcOver
             };
@@ -137,7 +120,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
           <param name="components">Color components.</param>
           <param name="context">Content context.</param>
         */
-        public abstract Color GetColor(IList<PdfDirectObject> components, IContentContext context);
+        public abstract Color GetColor(PdfArray components, IContentContext context);
+
+        public SKColor GetSKColor(PdfArray components, IContentContext context, float? alpha = null) => GetSKColor(GetColor(components, context), alpha);
 
         public abstract SKColor GetSKColor(Color color, float? alpha = null);
 

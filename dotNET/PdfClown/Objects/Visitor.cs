@@ -25,13 +25,9 @@
 
 using PdfClown.Tokens;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Visitor object.</summary>
-    */
+    /// <summary>Visitor object.</summary>
     public class Visitor : IVisitor
     {
         public virtual PdfObject Visit(ObjectStream obj, object data)
@@ -43,7 +39,7 @@ namespace PdfClown.Objects
 
         public virtual PdfObject Visit(PdfArray obj, object data)
         {
-            foreach (PdfDirectObject item in obj)
+            foreach (var item in obj)
             {
                 if (item != null)
                 { item.Accept(this, data); }

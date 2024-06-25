@@ -31,9 +31,7 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Device Red-Green-Blue color value [PDF:1.6:4.5.3].</summary>
-    */
+    ///<summary>Device Red-Green-Blue color value [PDF:1.6:4.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceRGBColor : DeviceColor, IEquatable<DeviceRGBColor>
     {
@@ -50,17 +48,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public static readonly DeviceRGBColor Default = Black;
 
         /**
-          <summary>Gets the color corresponding to the specified components.</summary>
-          <param name="components">Color components to convert.</param>
-        */
-        public static new DeviceRGBColor Get(PdfArray components)
-        {
-            return components != null
-                ? components.Wrapper is DeviceRGBColor color ? color : new DeviceRGBColor(components)
-                : Default;
-        }
-
-        /**
           <summary>Gets the color corresponding to the specified system color.</summary>
           <param name="color">System color to convert.</param>
         */
@@ -72,39 +59,34 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         }
 
         public DeviceRGBColor(double r, double g, double b)
-            : this(new PdfArray(3)
+            : this(DeviceRGBColorSpace.Default,
+                  new PdfArray(3)
             {
-                PdfReal.Get(NormalizeComponent(r)),
-                PdfReal.Get(NormalizeComponent(g)),
-                PdfReal.Get(NormalizeComponent(b))
+                NormalizeComponent(r),
+                NormalizeComponent(g),
+                NormalizeComponent(b)
             })
         { }
 
-        internal DeviceRGBColor(IList<PdfDirectObject> components)
-            : base(DeviceRGBColorSpace.Default, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
+        internal DeviceRGBColor(DeviceColorSpace colorSpace, PdfArray components)
+            : base(colorSpace, components)
         { }
 
-        /**
-          <summary>Gets/Sets the red component.</summary>
-        */
+        ///<summary>Gets/Sets the red component.</summary>
         public float R
         {
             get => this[0];
             set => this[0] = value;
         }
 
-        /**
-          <summary>Gets/Sets the green component.</summary>
-        */
+        ///<summary>Gets/Sets the green component.</summary>
         public float G
         {
             get => this[1];
             set => this[1] = value;
         }
 
-        /**
-          <summary>Gets/Sets the blue component.</summary>
-        */
+        ///<summary>Gets/Sets the blue component.</summary>
         public float B
         {
             get => this[2];

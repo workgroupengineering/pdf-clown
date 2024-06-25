@@ -23,28 +23,19 @@
   this list of conditions.
 */
 
-using Org.BouncyCastle.Utilities;
-using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Field option [PDF:1.6:8.6.3].</summary>
-    */
+    /// <summary>Field option [PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class ChoiceItem : PdfObjectWrapper<PdfDirectObject>
     {
-        public static ChoiceItem Wrap(PdfDirectObject baseObject, ChoiceItems choiceItems)
-        { return baseObject?.Wrapper as ChoiceItem ?? new ChoiceItem(baseObject, choiceItems); }
-
+        public static ChoiceItem Wrap(PdfDirectObject baseObject, ChoiceItems choiceItems) => baseObject != null
+                ? baseObject.Wrapper as ChoiceItem ?? new ChoiceItem(baseObject, choiceItems)
+                : null;
 
         private ChoiceItems items;
 
@@ -64,9 +55,7 @@ namespace PdfClown.Documents.Interaction.Forms
         { throw new NotImplementedException(); }
 
         //TODO:make the class immutable (to avoid needing wiring it up to its collection...)!!!
-        /**
-          <summary>Gets/Sets the displayed text.</summary>
-        */
+        /// <summary>Gets/Sets the displayed text.</summary>
         public string Text
         {
             get
@@ -99,9 +88,7 @@ namespace PdfClown.Documents.Interaction.Forms
             }
         }
 
-        /**
-          <summary>Gets/Sets the export value.</summary>
-        */
+        /// <summary>Gets/Sets the export value.</summary>
         public string Value
         {
             get

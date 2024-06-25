@@ -38,12 +38,12 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetDeviceGrayFillColor : SetFillColor
     {
-        public static readonly new string OperatorKeyword = "g";
+        public static readonly string OperatorKeyword = "g";
 
         public SetDeviceGrayFillColor(DeviceGrayColor value) : base(OperatorKeyword, value)
         { }
 
-        public SetDeviceGrayFillColor(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public SetDeviceGrayFillColor(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         public override void Scan(GraphicsState state)

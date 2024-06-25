@@ -15,11 +15,8 @@
  * limitations under the License.
  */
 
-//using PdfClown.Bytes;
 using Org.BouncyCastle.Security;
 using PdfClown.Bytes;
-using PdfClown.Bytes.Filters.Jpx;
-using PdfClown.Documents.Contents.Fonts.TTF.GSUB;
 using PdfClown.Objects;
 using PdfClown.Tokens;
 using PdfClown.Util.IO;
@@ -28,7 +25,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Security;
 using System.Security.Cryptography;
 
 namespace PdfClown.Documents.Encryption
@@ -53,19 +49,19 @@ namespace PdfClown.Documents.Encryption
 
         private T protectionPolicy = null;
 
-        /** The Length in bits of the secret key used to encrypt the document. */
+        /// <summary>The Length in bits of the secret key used to encrypt the document.</summary>
         private short keyLength = DEFAULT_KEY_LENGTH;
 
-        /** The encryption key that will used to encrypt / decrypt.*/
+        /// <summary>The encryption key that will used to encrypt / decrypt.</summary>
         private byte[] encryptionKey;
 
-        /** The RC4 implementation used for cryptographic functions. */
+        /// <summary>The RC4 implementation used for cryptographic functions.</summary>
         private readonly ConcurrentBag<RC4Cipher> rc4Bag = new();
 
-        /** indicates if the Metadata have to be decrypted of not. */
+        /// <summary> indicates if the Metadata have to be decrypted of not.</summary>
         private bool decryptMetadata;
 
-        /** Can be used to allow stateless AES encryption */
+        /// <summary>Can be used to allow stateless AES encryption</summary>
         private SecureRandom customSecureRandom;
 
         // PDFBOX-4453, PDFBOX-4477: Originally this was just a Set. This failed in rare cases
@@ -77,20 +73,16 @@ namespace PdfClown.Documents.Encryption
 
         private bool useAES;
 
-        /**
-		 * The access permission granted to the current user for the document. These
-		 * permissions are computed during decryption and are in read only mode.
-		 */
+        /// <summary>
+        /// The access permission granted to the current user for the document. These
+        /// permissions are computed during decryption and are in read only mode.
+        /// </summary>
         private AccessPermission currentAccessPermission = null;
 
-        /**
-		 * The stream filter name.
-		 */
+        /// <summary> The stream filter name.</summary>
         private PdfName streamFilterName;
 
-        /**
-		 * The string filter name.
-		 */
+        /// <summary>The string filter name.</summary>
         private PdfName stringFilterName;
 
         protected SecurityHandler()
@@ -102,44 +94,32 @@ namespace PdfClown.Documents.Encryption
             keyLength = protectionPolicy.EncryptionKeyLength;
         }
 
-        /**
-		 * Set whether to decrypt meta data.
-		 *
-		 * @param decryptMetadata true if meta data has to be decrypted.
-		 */
+        /// <summary>The whether to decrypt meta data.</summary>
+        /// value> decryptMetadata true if meta data has to be decrypted.<//value>
         protected bool DecryptMetadata
         {
             get => this.decryptMetadata;
             set => this.decryptMetadata = value;
         }
 
-        /**
-		 * Set the string filter name.
-		 * 
-		 * @param stringFilterName the string filter name.
-		 */
+        /// <summary>The string filter name.</summary>
+        /// <value> stringFilterName the string filter name.</value>
         protected PdfName StringFilterName
         {
             get => stringFilterName;
             set => stringFilterName = value;
         }
 
-        /**
-		 * Set the stream filter name.
-		 * 
-		 * @param streamFilterName the stream filter name.
-		 */
+        /// <summary>The stream filter name.</summary>
+        /// <value>streamFilterName the stream filter name.</value> 
         protected PdfName StreamFilterName
         {
             get => streamFilterName;
             set => streamFilterName = value;
         }
 
-        /**
-        * Set the custom SecureRandom.
-        * 
-        * @param secureRandom the custom SecureRandom for AES encryption
-        */
+        /// <summary>Set the custom SecureRandom.</summary>
+        /// <value> secureRandom the custom SecureRandom for AES encryption</value>
         public SecureRandom CustomSecureRandom
         {
             get => this.customSecureRandom;
@@ -546,7 +526,7 @@ namespace PdfClown.Documents.Encryption
                 return;
             }
 
-            var type = stream.Header.Resolve(PdfName.Type);
+            var type = stream.Header.Get<PdfName>(PdfName.Type);
             if (!decryptMetadata && PdfName.Metadata.Equals(type))
             {
                 stream.encoded = EncodeState.SkipMetadata;

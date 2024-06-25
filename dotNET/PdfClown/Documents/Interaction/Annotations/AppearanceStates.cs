@@ -23,21 +23,16 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
-
+using PdfClown.Util.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Appearance states [PDF:1.6:8.4.4].</summary>
-    */
+    /// <summary>Appearance states [PDF:1.6:8.4.4].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class AppearanceStates : PdfObjectWrapper2<PdfDataObject>, IDictionary<PdfName, FormXObject>
     {
@@ -61,9 +56,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public AppearanceStates(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the appearance associated to these states.</summary>
-        */
+        /// <summary>Gets the appearance associated to these states.</summary>
         public Appearance Appearance => appearance;
 
         public override object Clone(PdfDocument context)
@@ -92,7 +85,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return ((PdfDictionary)baseDataObject).ContainsKey(key);
         }
 
-        public ICollection<PdfName> Keys => throw new NotImplementedException();
+        public ICollection<PdfName> Keys => BaseDataObject is PdfDictionary dict ? dict.Keys 
+            : BaseDataObject is PdfStream ? new SingleItemCollection<PdfName>(null) : EmptyCollection<PdfName>.Default;
 
         public bool Remove(PdfName key)
         {
@@ -161,13 +155,18 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (baseDataObject == null) // No state.
                 return false;
             else if (baseDataObject is PdfStream) // Single state.
-                return ((FormXObject)entry.Value).BaseObject.Equals(BaseObject);
+                return entry.Value.BaseObject.Equals(BaseObject);
             else // Multiple state.
                 return entry.Value.Equals(this[entry.Key]);
         }
 
         public void CopyTo(KeyValuePair<PdfName, FormXObject>[] entries, int index)
-        { throw new NotImplementedException(); }
+        {
+            foreach (var entry in this)
+            {
+                entries[index++] = entry;
+            }
+        }
 
         public int Count
         {
@@ -202,7 +201,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             else // Multiple state.
             {
-                foreach (KeyValuePair<PdfName, PdfDirectObject> entry in ((PdfDictionary)baseDataObject))
+                foreach (var entry in ((PdfDictionary)baseDataObject))
                 {
                     yield return new KeyValuePair<PdfName, FormXObject>(
                       entry.Key,
@@ -217,7 +216,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         private PdfDictionary EnsureDictionary()
         {
             PdfDataObject baseDataObject = BaseDataObject;
-            if (!(baseDataObject is PdfDictionary))
+            if (baseDataObject is not PdfDictionary)
             {
                 /*
                   NOTE: Single states are erased as they have no valid key

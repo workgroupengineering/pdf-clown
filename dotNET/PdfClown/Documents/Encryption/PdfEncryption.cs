@@ -22,79 +22,57 @@ using System.IO;
 namespace PdfClown.Documents.Encryption
 {
 
-    /**
-     * This class is a specialized view of the encryption Dictionary of a PDF document.
-     * It contains a low level Dictionary (PdfDictionary) and provides the methods to
-     * manage its fields.
-     *
-     * The available fields are the ones who are involved by standard security handler
-     * and public key security handler.
-     *
-     * @author Ben Litchfield
-     * @author Benoit Guillon
-     */
+    /// <summary>
+    /// This class is a specialized view of the encryption Dictionary of a PDF document.
+    /// It contains a low level Dictionary (PdfDictionary) and provides the methods to
+    /// manage its fields.
+    /// </summary>
+    /// <remarks>
+    /// The available fields are the ones who are involved by standard security handler
+    ///  and public key security handler.    
+    /// @author Ben Litchfield
+    /// @author Benoit Guillon
+    /// </remarks>
     public class PdfEncryption : PdfObjectWrapper<PdfDictionary>
     {
-        /**
-		 * See PDF Reference 1.4 Table 3.13.
-		 */
+        /// <summary>See PDF Reference 1.4 Table 3.13.</summary>
         public static readonly int VERSION0_UNDOCUMENTED_UNSUPPORTED = 0;
-        /**
-		 * See PDF Reference 1.4 Table 3.13.
-		 */
+        /// <summary>See PDF Reference 1.4 Table 3.13.</summary>
         public static readonly int VERSION1_40_BIT_ALGORITHM = 1;
-        /**
-		 * See PDF Reference 1.4 Table 3.13.
-		 */
+        /// <summary>See PDF Reference 1.4 Table 3.13.</summary>
         public static readonly int VERSION2_VARIABLE_LENGTH_ALGORITHM = 2;
-        /**
-		 * See PDF Reference 1.4 Table 3.13.
-		 */
+        /// <summary>See PDF Reference 1.4 Table 3.13.</summary>
         public static readonly int VERSION3_UNPUBLISHED_ALGORITHM = 3;
-        /**
-		 * See PDF Reference 1.4 Table 3.13.
-		 */
+        /// <summary>See PDF Reference 1.4 Table 3.13.</summary>
         public static readonly int VERSION4_SECURITY_HANDLER = 4;
 
-        /**
-		 * The default security handler.
-		 */
+        /// <summary>The default security handler.</summary>
         public static readonly string DEFAULT_NAME = "Standard";
 
-        /**
-		 * The default length for the encryption key.
-		 */
+        /// <summary>The default length for the encryption key.</summary>
         public static readonly int DEFAULT_LENGTH = 40;
 
-        /**
-		 * The default version, according to the PDF Reference.
-		 */
+        /// <summary>The default version, according to the PDF Reference.</summary>
         public static readonly int DEFAULT_VERSION = VERSION0_UNDOCUMENTED_UNSUPPORTED;
 
         private ISecurityHandler securityHandler;
 
-        /**
-		 * creates a new empty encryption Dictionary.
-		 */
+        /// <summary>creates a new empty encryption Dictionary.</summary>
+        /// <param name="context">File</param>
         public PdfEncryption(PdfFile context) : base(context, new PdfDictionary())
         {
         }
 
-        /**
-		 * creates a new encryption Dictionary from the low level Dictionary provided.
-		 * @param Dictionary a COS encryption Dictionary
-		 */
+        /// <summary>creates a new encryption Dictionary from the low level Dictionary provided.</summary>
+        /// <param name="baseObject">a PDF encryption Dictionary</param>
         public PdfEncryption(PdfDirectObject baseObject)
             : base(baseObject)
         {
             securityHandler = SecurityHandlerFactory.INSTANCE.NewSecurityHandlerForFilter(Filter);
         }
 
-        /**
-		 * Returns the security handler specified in the Dictionary's Filter entry.
-		 * @return a security handler instance
-		 * @throws IOException if there is no security handler available which matches the Filter
-		 */
+        /// <summary>Returns the security handler specified in the Dictionary's Filter entry.</summary>
+        /// <value> a security handler instance</value>
         public ISecurityHandler SecurityHandler
         {
             get
@@ -108,94 +86,65 @@ namespace PdfClown.Documents.Encryption
             set => this.securityHandler = value;// TODO set Filter (currently this is done by the security handlers)
         }
 
-        /**
-		 * Returns true if the security handler specified in the Dictionary's Filter is available.
-		 * @return true if the security handler is available
-		 */
+        /// <summary>Returns true if the security handler specified in the Dictionary's Filter is available.</summary>
+        /// <value> true if the security handler is available </value> 
         public bool HasSecurityHandler
         {
             get => securityHandler == null;
         }
 
-        /**
-		 * Get the name of the filter.
-		 *
-		 * @return The filter name contained in this encryption Dictionary.
-		 */
+        /// <summary>Get the name of the filter.</summary>
+        /// <value>The filter name contained in this encryption Dictionary.</value>>
         public string Filter
         {
             get => Dictionary.GetString(PdfName.Filter);
             set => Dictionary.SetName(PdfName.Filter, value);
 
         }
-        /**
-		 * Get the name of the subfilter.
-		 *
-		 * @return The subfilter name contained in this encryption Dictionary.
-		 */
+
+        /// <summary>Get the name of the subfilter.</summary>
+        /// <value>The subfilter name contained in this encryption Dictionary.</value>
         public string SubFilter
         {
             get => Dictionary.GetString(PdfName.SubFilter);
             set => Dictionary.SetName(PdfName.SubFilter, value);
         }
 
-        /**
-		 * This will return the V entry of the encryption Dictionary.<br><br>
-		 * See PDF Reference 1.4 Table 3.13.
-		 *
-		 * @return The encryption version to use.
-		 */
-        /**
-		 * This will set the V entry of the encryption Dictionary.<br><br>
-		 * See PDF Reference 1.4 Table 3.13.  <br><br>
-		 * <b>Note: This value is used to decrypt the pdf document.  If you change this when
-		 * the document is encrypted then decryption will fail!.</b>
-		 *
-		 * @param version The new encryption version.
-		 */
+        /// <summary> This will return the V entry of the encryption Dictionary.<br></br>
+        /// See PDF Reference 1.4 Table 3.13.  <br></br>
+        /// <b>Note: This value is used to decrypt the pdf document.  If you change this when
+        /// the document is encrypted then decryption will fail!.</b>
+        /// </summary>
+        /// <value>The encryption version to use.</value>
         public int Version
         {
             get => Dictionary.GetInt(PdfName.V, 0);
-            set => Dictionary.SetInt(PdfName.V, value);
+            set => Dictionary.Set(PdfName.V, value);
         }
 
 
-        /**
-		 * This will return the Length entry of the encryption Dictionary.<br><br>
-		 * The length in <b>bits</b> for the encryption algorithm.  This will return a multiple of 8.
-		 *
-		 * @return The length in bits for the encryption algorithm
-		 */
-        /**
-		 * This will set the number of bits to use for the encryption algorithm.
-		 *
-		 * @param length The new key length.
-		 */
+        /// <summary>
+        /// This will return the Length entry of the encryption Dictionary.<br></br>
+        /// The length in <b>bits</b> for the encryption algorithm.  This will return a multiple of 8.
+        /// </summary>
+        /// <value>The length in bits for the encryption algorithm</value>
         public int Length
         {
             get => Dictionary.GetInt(PdfName.Length, 0);
-            set => Dictionary.SetInt(PdfName.Length, value);
+            set => Dictionary.Set(PdfName.Length, value);
         }
 
-        /**
-		 * This will return the R entry of the encryption Dictionary.<br><br>
-		 * See PDF Reference 1.4 Table 3.14.
-		 *
-		 * @return The encryption revision to use.
-		 */
-        /**
-		 * This will set the R entry of the encryption Dictionary.<br><br>
-		 * See PDF Reference 1.4 Table 3.14.  <br><br>
-		 *
-		 * <b>Note: This value is used to decrypt the pdf document.  If you change this when
-		 * the document is encrypted then decryption will fail!.</b>
-		 *
-		 * @param revision The new encryption version.
-		 */
+        /// <summary>
+        /// This will return the R entry of the encryption Dictionary.<br></br>
+        /// See PDF Reference 1.4 Table 3.14.  <br></br>
+        /// <b>Note: This value is used to decrypt the pdf document.  If you change this when
+        /// the document is encrypted then decryption will fail!.</b>
+        ///</summary> 
+        /// <value> The encryption revision to use. </value>
         public int Revision
         {
             get => Dictionary.GetInt(PdfName.R, DEFAULT_VERSION);
-            set => Dictionary.SetInt(PdfName.R, value);
+            set => Dictionary.Set(PdfName.R, value);
         }
 
         /**
@@ -215,7 +164,7 @@ namespace PdfClown.Documents.Encryption
         public Memory<byte> OwnerKey
         {
             get => Dictionary.GetTextBytes(PdfName.O);
-            set => Dictionary.SetTextBytes(PdfName.O, value);
+            set => Dictionary.Set(PdfName.O, value);
         }
 
 
@@ -236,7 +185,7 @@ namespace PdfClown.Documents.Encryption
         public Memory<byte> UserKey
         {
             get => Dictionary.GetTextBytes(PdfName.U);
-            set => Dictionary.SetTextBytes(PdfName.U, value);
+            set => Dictionary.Set(PdfName.U, value);
         }
 
         /**
@@ -256,7 +205,7 @@ namespace PdfClown.Documents.Encryption
         public Memory<byte> OwnerEncryptionKey
         {
             get => Dictionary.GetTextBytes(PdfName.OE);
-            set => Dictionary.SetTextBytes(PdfName.OE, value);
+            set => Dictionary.Set(PdfName.OE, value);
         }
 
         /**
@@ -276,7 +225,7 @@ namespace PdfClown.Documents.Encryption
         public Memory<byte> UserEncryptionKey
         {
             get => Dictionary.GetTextBytes(PdfName.UE);
-            set => Dictionary.SetTextBytes(PdfName.UE, value);
+            set => Dictionary.Set(PdfName.UE, value);
         }
 
         /**
@@ -292,7 +241,7 @@ namespace PdfClown.Documents.Encryption
         public int Permissions
         {
             get => Dictionary.GetInt(PdfName.P, 0);
-            set => Dictionary.SetInt(PdfName.P, value);
+            set => Dictionary.Set(PdfName.P, value);
         }
 
         /**
@@ -317,7 +266,7 @@ namespace PdfClown.Documents.Encryption
 		 */
         public void SetRecipients(byte[][] recipients)
         {
-            Dictionary[PdfName.Recipients] = PdfArray.FromStrings(recipients);
+            Dictionary[PdfName.Recipients] = new PdfArray(recipients);
             //array.setDirect(true);
         }
 

@@ -25,6 +25,7 @@
 
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Objects;
@@ -32,22 +33,21 @@ using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Free text annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It displays text directly on the page. Unlike an ordinary text annotation, a free text
-      annotation has no open or closed state; instead of being displayed in a pop-up window, the text
-      is always visible.</remarks>
-    */
+    /// <summary>Free text annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It displays text directly on the page. Unlike an ordinary text annotation, a free text
+    /// annotation has no open or closed state; instead of being displayed in a pop-up window, the text
+    /// is always visible.</remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class FreeText : Markup
     {
-        /**
-          <summary>Callout line [PDF:1.6:8.4.5].</summary>
-        */
+        /// <summary>Callout line [PDF:1.6:8.4.5].</summary>
         public class CalloutLine : PdfObjectWrapper<PdfArray>
         {
             private SKPoint? end;
@@ -65,17 +65,17 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PdfArray baseDataObject = BaseDataObject;
                 {
                     start = matrix.MapPoint(start);
-                    baseDataObject.Add(PdfReal.Get(start.X));
-                    baseDataObject.Add(PdfReal.Get(start.Y));
+                    baseDataObject.Add(start.X);
+                    baseDataObject.Add(start.Y);
                     if (knee.HasValue)
                     {
                         knee = matrix.MapPoint(knee.Value);
-                        baseDataObject.Add(PdfReal.Get(knee.Value.X));
-                        baseDataObject.Add(PdfReal.Get(knee.Value.Y));
+                        baseDataObject.Add(knee.Value.X);
+                        baseDataObject.Add(knee.Value.Y);
                     }
                     end = matrix.MapPoint(end);
-                    baseDataObject.Add(PdfReal.Get(end.X));
-                    baseDataObject.Add(PdfReal.Get(end.Y));
+                    baseDataObject.Add(end.X);
+                    baseDataObject.Add(end.Y);
                 }
             }
 
@@ -112,13 +112,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PdfArray coordinates = BaseDataObject;
                 if (coordinates.Count < 6)
                 {
-                    coordinates[2] = PdfReal.Get(value.X);
-                    coordinates[3] = PdfReal.Get(value.Y);
+                    coordinates.Set(2, value.X);
+                    coordinates.Set(3, value.Y);
                 }
                 else
                 {
-                    coordinates[4] = PdfReal.Get(value.X);
-                    coordinates[5] = PdfReal.Get(value.Y);
+                    coordinates.Set(4, value.X);
+                    coordinates.Set(5, value.Y);
                 }
                 FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
             }
@@ -146,8 +146,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                 PdfArray coordinates = BaseDataObject;
                 if (value is SKPoint val)
                 {
-                    coordinates[2] = PdfReal.Get(val.X);
-                    coordinates[3] = PdfReal.Get(val.Y);
+                    coordinates.Set(2, val.X);
+                    coordinates.Set(3, val.Y);
                 }
                 FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
             }
@@ -176,8 +176,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 start = value;
                 PdfArray coordinates = BaseDataObject;
-                coordinates[0] = PdfReal.Get(value.X);
-                coordinates[1] = PdfReal.Get(value.Y);
+                coordinates.Set(0, value.X);
+                coordinates.Set(1, value.Y);
                 FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
 
             }
@@ -204,18 +204,16 @@ namespace PdfClown.Documents.Interaction.Annotations
         public FreeText(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the justification to be used in displaying the annotation's text.</summary>
-        */
+        /// <summary>Gets/Sets the justification to be used in displaying the annotation's text.</summary>
         public JustificationEnum Justification
         {
-            get => JustificationEnumExtension.Get((PdfInteger)BaseDataObject[PdfName.Q]);
+            get => (JustificationEnum)BaseDataObject.GetInt(PdfName.Q);
             set
             {
                 var oldValue = Justification;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.Q] = value != DefaultJustification ? value.GetCode() : null;
+                    BaseDataObject.Set(PdfName.Q, value != DefaultJustification ? (int)value : null);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -248,9 +246,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the callout line attached to the free text annotation.</summary>
-        */
+        /// <summary>Gets/Sets the callout line attached to the free text annotation.</summary>
         public CalloutLine Line
         {
             get
@@ -268,10 +264,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                 Callout = value?.BaseDataObject;
                 if (value != null)
                 {
-                    /*
-                      NOTE: To ensure the callout would be properly rendered, we have to declare the
-                      corresponding intent.
-                    */
+                    // NOTE: To ensure the callout would be properly rendered, we have to declare the
+                    // corresponding intent.
                     Intent = MarkupIntent.FreeTextCallout;
                     value.FreeText = this;
                 }
@@ -279,9 +273,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the style of the ending line ending.</summary>
-        */
+        /// <summary>Gets/Sets the style of the ending line ending.</summary>
         public LineEndStyleEnum LineEndStyle
         {
             get => LineEndStyleEnumExtension.Get(BaseDataObject.GetString(PdfName.LE));
@@ -296,9 +288,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Popups not supported.</summary>
-        */
+        /// <summary>Popups not supported.</summary>
         public override Popup Popup
         {
             get => null;
@@ -317,7 +307,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var oldValue = textBox;
-                var newValue = PrimitiveExtensions.Round(PrimitiveExtensions.Normalize(value));
+                var newValue = PrimitiveExtensions.Normalize(value).Round();
                 if (oldValue != newValue)
                 {
                     textBox = newValue;
@@ -330,7 +320,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         private SKRect GetTextBox()
         {
             var bounds = Box;
-            var padding = Padding?.ToRect() ?? SKRect.Empty;
+            var padding = Padding?.ToSKRect() ?? SKRect.Empty;
             return new SKRect(
                 bounds.Left + padding.Left,
                 bounds.Top + padding.Top,
@@ -378,7 +368,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             set => TextBox = new SKRect(TextBox.Left, TextBox.Top, value.X, value.Y);
         }
 
-
         public SKPoint TextMidPoint
         {
             get => new SKPoint(TextBox.MidX, TextBox.MidY);
@@ -392,6 +381,73 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public override bool ShowToolTip => false;
+
+        protected override List<ContentObject> DAOperations
+        {
+            get => daOperation ?? GetDSOperations() ?? base.DAOperations;
+            set => base.DAOperations = value;
+        }
+
+        private List<ContentObject> GetDSOperations()
+        {
+            if (Dictionary.Get<PdfString>(PdfName.DS) is not PdfString ds
+                || string.IsNullOrWhiteSpace(ds.StringValue))
+                return null;
+            daOperation = new List<ContentObject>();
+            var operations = ds.StringValue.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            float fontSize = 0;
+            string fontName = string.Empty;
+            string fontStyle = string.Empty;
+            SKColor? color = null;
+            foreach (var operation in operations)
+            {
+                var parts = operation.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                var key = parts[0].Trim();
+                var value = parts[1].Trim();
+                switch (key)
+                {
+                    case "font":
+                        var fontParts = value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var part in fontParts)
+                        {
+                            if (part.EndsWith("pt", StringComparison.OrdinalIgnoreCase))
+                            {
+                                fontSize = float.Parse(part.Replace("pt", string.Empty).Trim(), CultureInfo.InvariantCulture);
+                            }
+                            else if (fontName == string.Empty)
+                            {
+                                fontName = part.Split(',', StringSplitOptions.RemoveEmptyEntries).First().Trim();
+                            }
+                        }
+                        break;
+                    case "font-family":
+                        fontName = value.Split(',', StringSplitOptions.RemoveEmptyEntries).First().Trim();
+                        break;
+                    case "font-size":
+                        fontSize = float.Parse(value.Replace("pt", string.Empty).Trim(), CultureInfo.InvariantCulture);
+                        break;
+                    case "font-style":
+                        fontStyle = value.Trim();
+                        break;
+                    case "font-weight":
+                        break;
+                    case "color":
+                        if (SKColor.TryParse(value, out var parsed))
+                            color = parsed;
+                        break;
+                }
+            }
+            if (fontName != string.Empty)
+            {
+                if (Appearance.Normal[null].Resources.Fonts.TryGetByName(fontName, out var result))
+                    daOperation.Add(new SetFont(result.Key, fontSize));
+            }
+            //else if (fontSize != 0)
+            //    list.Add(new SetFont(PdfName.Get(fontName), fontSize));
+            if (color is SKColor colorValue)
+                daOperation.Add(new SetDeviceRGBFillColor(DeviceRGBColor.Get(colorValue)));
+            return daOperation;
+        }
 
         protected override void OnPropertyChanged<T>(T oldValue, T newValue, [CallerMemberName] string propertyName = "")
         {
@@ -408,23 +464,35 @@ namespace PdfClown.Documents.Interaction.Annotations
             var normalAppearance = ResetAppearance(out var matrix);
             var textBounds = TextBox;
             SKRect box = Box;
-            var font = DAOperation?.Name ?? normalAppearance.GetDefaultFont(out _);
-            var fontSize = DAOperation?.Size ?? 10;
+            var font = DASetFont?.Name ?? normalAppearance.GetDefaultFont(out _);
+            var fontSize = DASetFont?.Size ?? 10;
             var composer = new PrimitiveComposer(normalAppearance);
             {
                 textBounds = matrix.MapRect(textBounds);
-                composer.SetLineWidth(1);
-                composer.SetStrokeColor(DeviceRGBColor.Default);
-                composer.SetFillColor(Color ?? DeviceRGBColor.White);
-                Border?.Apply(composer);
-                using var path = new SKPath();
-                path.AddRect(textBounds);
-                using var tpath = BorderEffect?.Apply(composer, path) ?? path;
-                composer.DrawPath(tpath);
-                composer.FillStroke();
+
+                if (Border != null || BorderEffect != null || Color != null)
+                {
+                    using var path = new SKPath();
+                    path.AddRect(textBounds);
+
+                    composer.BeginLocalState();
+                    composer.SetStrokeColor(DeviceRGBColor.Default);
+                    composer.SetFillColor(Color ?? DeviceRGBColor.White);
+
+                    using var tpath = ApplyBorderAndEffect(composer, path);
+
+                    composer.DrawPath(tpath);
+                    composer.FillStroke();
+                    composer.End();
+                }
 
                 if (Intent == MarkupIntent.FreeTextCallout && Line != null)
                 {
+                    composer.BeginLocalState();
+                    composer.SetStrokeColor(DeviceRGBColor.Default);
+                    composer.SetFillColor(Color ?? DeviceRGBColor.White);
+                    ApplyBorder(composer);
+
                     var startPoint = matrix.MapPoint(Line.Start);
                     var endPoint = matrix.MapPoint(Line.End);
                     var kneePoint = Line.Knee is SKPoint knee ? matrix.MapPoint(knee) : (SKPoint?)null;
@@ -457,14 +525,34 @@ namespace PdfClown.Documents.Interaction.Annotations
                         composer.AddClosedArrow(startPoint, invertNormal);
                         composer.FillStroke();
                     }
-
+                    composer.End();
                 }
+
                 if (Contents != null)
                 {
                     var block = new BlockComposer(composer);
-                    block.Begin(SKRect.Inflate(textBounds, -0.5F, -0.5F), XAlignmentEnum.Left, YAlignmentEnum.Top);
-                    composer.SetFillColor(DeviceRGBColor.Default);
-                    composer.SetFont(font, fontSize);
+                    block.Begin(textBounds, XAlignmentEnum.Left, YAlignmentEnum.Top);
+                    var isFontSet = false;
+                    var isFillColorSet = false;
+                    if (DAOperations is List<ContentObject> daOperations)
+                    {
+                        foreach (var operation in daOperations)
+                        {
+                            composer.Add(operation);
+                            if (operation is SetFont)
+                                isFontSet = true;
+                            else if (operation is SetColor)
+                                isFillColorSet = true;
+                        }
+                    }
+                    if (!isFontSet)
+                    {
+                        composer.SetFont(font, fontSize);
+                    }
+                    if (!isFillColorSet)
+                    {
+                        composer.SetFillColor(DeviceRGBColor.Default);
+                    }
 
                     block.ShowText(Contents);
                     block.End();
@@ -480,13 +568,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             queueRefresh |= RefreshAppearanceState.Move;
             try
             {
-                var box = Box;
+                var oldBox = Box;
                 var textBox = TextBox;
 
                 var dif = SKMatrix.CreateIdentity()
                     .PreConcat(SKMatrix.CreateTranslation(newBox.MidX, newBox.MidY))
-                    .PreConcat(SKMatrix.CreateScale(newBox.Width / box.Width, newBox.Height / box.Height))
-                    .PreConcat(SKMatrix.CreateTranslation(-box.MidX, -box.MidY));
+                    .PreConcat(SKMatrix.CreateScale(newBox.Width / oldBox.Width, newBox.Height / oldBox.Height))
+                    .PreConcat(SKMatrix.CreateTranslation(-oldBox.MidX, -oldBox.MidY));
 
                 if (Intent == MarkupIntent.FreeTextCallout && Line != null)
                 {
@@ -497,14 +585,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
                 Box = newBox;
                 TextBox = dif.MapRect(textBox);
-                var padding = Padding?.ToRect();
+                var padding = Padding?.ToSKRect();
                 if (padding != null)
                 {
-                    Padding = new Objects.Padding(new SKRect(
+                    Padding = new Padding(new SKRect(
                        TextBox.Left - Box.Left,
                        TextBox.Top - Box.Top,
                        Box.Right - TextBox.Right,
-                       Box.Bottom - TextBox.Bottom)).Round();
+                       Box.Bottom - TextBox.Bottom));
                 }
 
                 GenerateAppearance();
@@ -568,8 +656,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             var textBox = TextBox;
             CalcLine();
             var box = textBox;
-            BorderEffect?.ApplyEffect(ref box);
-            box.Inflate(5, 5);
+            ApplyBorderAndEffect(ref box);
+
 
             if (Intent == MarkupIntent.FreeTextCallout && Line != null)
             {
@@ -577,13 +665,17 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (Line.Knee is SKPoint knee)
                     box.Add(knee);
                 box.Add(Line.End);
+                if (LineEndStyle != LineEndStyleEnum.None)
+                {
+                    box.Inflate(5, 5);
+                }
             }
             Box = box;
-            Padding = new Objects.Padding(new SKRect(
+            Padding = new Padding(new SKRect(
                        textBox.Left - box.Left,
                        textBox.Top - box.Top,
                        box.Right - textBox.Right,
-                       box.Bottom - textBox.Bottom)).Round();
+                       box.Bottom - textBox.Bottom));
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()
@@ -717,67 +809,5 @@ namespace PdfClown.Documents.Interaction.Annotations
             base.SetPoint(point);
             FreeText.TextMidPoint = point;
         }
-    }
-
-    public static class DrawHelper
-    {
-        private static readonly string[] split = new string[] { "\r\n", "\n" };
-
-        public static float DrawLines(this SKCanvas canvas, string text, SKRect textBounds, SKPaint paint)
-        {
-            var left = textBounds.Left + 5;
-            var top = textBounds.Top + paint.FontSpacing;
-
-            if (!string.IsNullOrEmpty(text))
-            {
-                foreach (var line in DrawHelper.GetLines(text.Trim(), textBounds, paint))
-                {
-                    if (line.Length > 0)
-                    {
-                        canvas.DrawText(line, left, top, paint);
-                    }
-                    top += paint.FontSpacing;
-                }
-            }
-
-            return top;
-        }
-
-        public static IEnumerable<string> GetLines(string text, SKRect textBounds, SKPaint paint)
-        {
-            //var builder = new SKTextBlobBuilder();
-            foreach (var line in text.Split(split, StringSplitOptions.None))
-            {
-                var count = line.Length == 0 ? 0 : (int)paint.BreakText(line, textBounds.Width);
-                if (count == line.Length)
-                    yield return line;
-                else
-                {
-
-                    var index = 0;
-                    while (true)
-                    {
-                        if (count == 0)
-                        {
-                            count = 1;
-                        }
-
-                        for (int i = (index + count) - 1; i > index; i--)
-                        {
-                            if (line[i] == ' ')
-                            {
-                                count = (i + 1) - index;
-                                break;
-                            }
-                        }
-                        yield return line.Substring(index, count);
-                        index += count;
-                        if (index >= line.Length)
-                            break;
-                        count = (int)paint.BreakText(line.Substring(index), textBounds.Width);
-                    }
-                }
-            }
-        }
-    }
+    }    
 }

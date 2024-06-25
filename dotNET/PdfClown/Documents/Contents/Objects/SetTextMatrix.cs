@@ -23,13 +23,9 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System;
-using System.Collections.Generic;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
-using PdfClown.Documents.Contents.Scanner;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -42,6 +38,7 @@ namespace PdfClown.Documents.Contents.Objects
     public sealed class SetTextMatrix : Operation
     {
         public static readonly string OperatorKeyword = "Tm";
+        private SKMatrix? matrix;
 
         public SetTextMatrix(SKMatrix value)
             : this(value.ScaleX,
@@ -50,19 +47,16 @@ namespace PdfClown.Documents.Contents.Objects
                   value.ScaleY,
                   value.TransX,
                   value.TransY)
-        { }
+        {
+            matrix = value;
+        }
 
         public SetTextMatrix(double a, double b, double c, double d, double e, double f)
             : base(OperatorKeyword,
-                  PdfReal.Get(a),
-                  PdfReal.Get(b),
-                  PdfReal.Get(c),
-                  PdfReal.Get(d),
-                  PdfReal.Get(e),
-                  PdfReal.Get(f))
+                  new PdfArray(6) { a, b, c, d, e, f })
         { }
 
-        public SetTextMatrix(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public SetTextMatrix(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         public override void Scan(GraphicsState state)
@@ -71,15 +65,6 @@ namespace PdfClown.Documents.Contents.Objects
                 state.TextState.Tlm = Value;
         }
 
-        public SKMatrix Value => new SKMatrix
-        {
-            ScaleX = ((IPdfNumber)operands[0]).FloatValue,
-            SkewY = ((IPdfNumber)operands[1]).FloatValue,
-            SkewX = ((IPdfNumber)operands[2]).FloatValue,
-            ScaleY = ((IPdfNumber)operands[3]).FloatValue,
-            TransX = ((IPdfNumber)operands[4]).FloatValue,
-            TransY = ((IPdfNumber)operands[5]).FloatValue,
-            Persp2 = 1
-        };
+        public SKMatrix Value => matrix ??= operands.ToSkMatrix();
     }
 }

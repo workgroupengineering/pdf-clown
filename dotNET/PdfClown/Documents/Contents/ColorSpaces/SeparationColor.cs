@@ -36,26 +36,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF12)]
     public sealed class SeparationColor : LeveledColor
     {
-        public static readonly SeparationColor Default = new SeparationColor(1);
-
-        /**
-          <summary>Gets the color corresponding to the specified components.</summary>
-          <param name="components">Color components to convert.</param>
-        */
-        public static SeparationColor Get(PdfArray components)
-        {
-            return components != null
-              ? components.Wrapper is SeparationColor color ? color : new SeparationColor(components)
-              : Default;
-        }
-
-        public SeparationColor(double intensity)
-            : this(new PdfArray(1) { PdfReal.Get(intensity) })
+        public SeparationColor(ColorSpace colorSpace, double intensity)
+            : this(colorSpace, new PdfArray(1) { intensity })
         //TODO:normalize value (see devicecolor)!
         { }
 
-        internal SeparationColor(IList<PdfDirectObject> components)//TODO:consider color space reference!
-            : base(null, components is PdfArray pdfArray ? pdfArray : new PdfArray(components))
+        internal SeparationColor(ColorSpace colorSpace, PdfArray components)//TODO:consider color space reference!
+            : base(colorSpace, components)
         { }
 
 

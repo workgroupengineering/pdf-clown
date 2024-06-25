@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 
@@ -31,9 +30,7 @@ using System;
 
 namespace PdfClown.Documents.Interchange.Metadata
 {
-    /**
-      <summary>Private application data dictionary [PDF:1.7:10.4].</summary>
-    */
+    /// <summary>Private application data dictionary [PDF:1.7:10.4].</summary>
     [PDF(VersionEnum.PDF13)]
     public class AppData : PdfObjectWrapper<PdfDictionary>
     {
@@ -43,27 +40,23 @@ namespace PdfClown.Documents.Interchange.Metadata
         public AppData(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the private data associated to the application.</summary>
-          <remarks>It can be any type, although dictionary is its typical form.</remarks>
-        */
+        /// <summary>Gets/Sets the private data associated to the application.</summary>
+        /// <remarks>It can be any type, although dictionary is its typical form.</remarks>
         public PdfDataObject Data
         {
             get => BaseDataObject[PdfName.Private];
             set => BaseDataObject[PdfName.Private] = PdfObject.Unresolve(value);
         }
 
-        /**
-          <summary>Gets the date when the contents of the holder (<see cref="PdfDocument">document</see>,
-          <see cref="PdfPage">page</see>, or <see cref="FormXObject">form</see>) were most recently
-          modified by this application.</summary>
-          <remarks>To update it, use the <see cref="IAppDataHolder.Touch(PdfName)"/> method of the
-          holder.</remarks>
-        */
+        /// <summary>Gets the date when the contents of the holder (<see cref="PdfDocument">document</see>,
+        /// <see cref="PdfPage">page</see>, or <see cref="FormXObject">form</see>) were most recently
+        /// modified by this application.</summary>
+        /// <remarks>To update it, use the <see cref="IAppDataHolder.Touch(PdfName)"/> method of the
+        /// holder.</remarks>
         public DateTime ModificationDate
         {
             get => BaseDataObject.GetDate(PdfName.LastModified) ?? DateTime.MinValue;
-            internal set => BaseDataObject[PdfName.LastModified] = PdfDate.Get(value);
+            internal set => BaseDataObject.Set(PdfName.LastModified, value);
         }
     }
 }

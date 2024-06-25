@@ -23,9 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown;
-using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -34,9 +31,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
-    /**
-      <summary>Collection of bookmarks [PDF:1.6:8.2.2].</summary>
-    */
+    /// <summary>Collection of bookmarks [PDF:1.6:8.2.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class Bookmarks : PdfObjectWrapper<PdfDictionary>, IList<Bookmark>
     {
@@ -82,10 +77,8 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         public void Add(Bookmark bookmark)
         {
-            /*
-              NOTE: Bookmarks imported from alien PDF files MUST be cloned
-              before being added.
-            */
+            // NOTE: Bookmarks imported from alien PDF files MUST be cloned
+            // before being added.
             bookmark.BaseDataObject[PdfName.Parent] = BaseObject;
 
             PdfInteger countObject = EnsureCountObject();
@@ -95,7 +88,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                 BaseDataObject[PdfName.Last]
                   = BaseDataObject[PdfName.First]
                   = bookmark.BaseObject;
-                BaseDataObject[PdfName.Count] = PdfInteger.Get(countObject.IntValue + 1);
+                BaseDataObject.Set(PdfName.Count, countObject.IntValue + 1);
             }
             else // Non-first bookmark.
             {
@@ -105,11 +98,9 @@ namespace PdfClown.Documents.Interaction.Navigation
                   = bookmark.BaseObject;
                 bookmark.BaseDataObject[PdfName.Prev] = oldLastBookmarkReference;
 
-                /*
-                  NOTE: The Count entry is a relative number (whose sign represents
-                  the node open state).
-                */
-                BaseDataObject[PdfName.Count] = PdfInteger.Get(countObject.IntValue + Math.Sign(countObject.IntValue));
+                // NOTE: The Count entry is a relative number (whose sign represents
+                // the node open state).
+                BaseDataObject.Set(PdfName.Count, countObject.IntValue + Math.Sign(countObject.IntValue));
             }
         }
 
@@ -122,9 +113,9 @@ namespace PdfClown.Documents.Interaction.Navigation
         public void CopyTo(Bookmark[] bookmarks, int index)
         { throw new NotImplementedException(); }
 
-        /*
-                  NOTE: The Count entry may be absent [PDF:1.6:8.2.2].
-        */
+        /// <summary>
+        /// NOTE: The Count entry may be absent [PDF:1.6:8.2.2].
+        /// </summary>
         public int Count => BaseDataObject.GetInt(PdfName.Count);
 
         public bool IsReadOnly => false;
@@ -149,10 +140,8 @@ namespace PdfClown.Documents.Interaction.Navigation
         IEnumerator IEnumerable.GetEnumerator()
         { return ((IEnumerable<Bookmark>)this).GetEnumerator(); }
 
-        /**
-          <summary>Gets the count object, forcing its creation if it doesn't
-          exist.</summary>
-        */
+        /// <summary>Gets the count object, forcing its creation if it doesn't
+        /// exist.</summary>
         private PdfInteger EnsureCountObject()
         {
             /*

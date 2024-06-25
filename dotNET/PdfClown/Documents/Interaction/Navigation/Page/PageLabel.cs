@@ -23,55 +23,39 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
 using PdfClown.Util;
 
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
-    /**
-      <summary>Page label range [PDF:1.7:8.3.1].</summary>
-      <remarks>It represents a series of consecutive pages' visual identifiers using the same
-      numbering system.</remarks>
-    */
+    /// <summary>Page label range [PDF:1.7:8.3.1].</summary>
+    /// <remarks>It represents a series of consecutive pages' visual identifiers using the same
+    /// numbering system.</remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class PageLabel : PdfObjectWrapper<PdfDictionary>
     {
         public enum NumberStyleEnum
         {
-            /**
-              <summary>Decimal arabic numerals.</summary>
-            */
+            /// <summary>Decimal arabic numerals.</summary>
             ArabicNumber,
-            /**
-              <summary>Upper-case roman numerals.</summary>
-            */
+            /// <summary>Upper-case roman numerals.</summary>
             UCaseRomanNumber,
-            /**
-              <summary>Lower-case roman numerals.</summary>
-            */
+            /// <summary>Lower-case roman numerals.</summary>
             LCaseRomanNumber,
-            /**
-              <summary>Upper-case letters (A to Z for the first 26 pages, AA to ZZ for the next 26, and so
-              on).</summary>
-            */
+            /// <summary>Upper-case letters (A to Z for the first 26 pages, AA to ZZ for the next 26, and so
+            /// on).</summary>
             UCaseLetter,
-            /**
-              <summary>Lower-case letters (a to z for the first 26 pages, aa to zz for the next 26, and so
-              on).</summary>
-            */
+            /// <summary>Lower-case letters (a to z for the first 26 pages, aa to zz for the next 26, and so
+            /// on).</summary>
             LCaseLetter
         };
 
         private static readonly int DefaultNumberBase = 1;
 
-        /**
-          <summary>Gets an existing page label range.</summary>
-          <param name="baseObject">Base object to wrap.</param>
-        */
+        /// <summary>Gets an existing page label range.</summary>
+        /// <param name="baseObject">Base object to wrap.</param>
 
         public PageLabel(PdfDocument context, NumberStyleEnum numberStyle)
             : this(context, null, numberStyle, DefaultNumberBase)
@@ -88,30 +72,24 @@ namespace PdfClown.Documents.Interaction.Navigation
         public PageLabel(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the value of the numeric suffix for the first page label in this range.
-          Subsequent pages are numbered sequentially from this value.</summary>
-        */
+        /// <summary>Gets/Sets the value of the numeric suffix for the first page label in this range.
+        /// Subsequent pages are numbered sequentially from this value.</summary>
         public int NumberBase
         {
             get => BaseDataObject.GetInt(PdfName.St, DefaultNumberBase);
-            set => BaseDataObject.SetInt(PdfName.St, value <= DefaultNumberBase ? null : value);
+            set => BaseDataObject.Set(PdfName.St, value <= DefaultNumberBase ? null : value);
         }
 
-        /**
-          <summary>Gets/Sets the numbering style to be used for the numeric suffix of each page label in
-          this range.</summary>
-          <remarks>If no style is defined, the numeric suffix isn't displayed at all.</remarks>
-        */
+        /// <summary>Gets/Sets the numbering style to be used for the numeric suffix of each page label in
+        /// this range.</summary>
+        /// <remarks>If no style is defined, the numeric suffix isn't displayed at all.</remarks>
         public NumberStyleEnum NumberStyle
         {
             get => NumberStyleEnumExtension.Get(BaseDataObject.GetString(PdfName.S));
             set => BaseDataObject[PdfName.S] = value.GetCode();
         }
 
-        /**
-          <summary>Gets/Sets the label prefix for page labels in this range.</summary>
-        */
+        /// <summary>Gets/Sets the label prefix for page labels in this range.</summary>
         public string Prefix
         {
             get => BaseDataObject.GetString(PdfName.P);

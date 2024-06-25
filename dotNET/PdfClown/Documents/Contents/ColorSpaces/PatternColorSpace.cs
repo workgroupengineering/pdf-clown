@@ -23,14 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Objects;
-using PdfClown.Util;
-
-using System;
-using System.Collections.Generic;
-using SkiaSharp;
 using PdfClown.Documents.Contents.Patterns;
+using PdfClown.Documents.Contents.Patterns.Shadings;
+using PdfClown.Objects;
+using SkiaSharp;
+using System;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -46,23 +43,30 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         */
         //TODO:verify parameters!!!
         public static readonly PatternColorSpace Default = new PatternColorSpace(null);
+        private ColorSpace underlineColorSpace;
 
         //TODO:IMPL new element constructor!
 
         internal PatternColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
-
         public override int ComponentCount => 0;
 
         public override Color DefaultColor => Pattern.Default;
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context)
+        /**
+          <summary>Gets the color space in which the actual color of the <see cref="Patterns">pattern</see> is to be specified.</summary>
+          <remarks>This feature is applicable to <see cref="TilingPattern">uncolored tiling patterns</see> only.</remarks>
+        */
+        public ColorSpace UnderlyingColorSpace
         {
-            //TODO
+            get => underlineColorSpace ??= BaseDataObject is PdfArray baseArrayObject && baseArrayObject.Count > 1
+                ? ColorSpace.Wrap(baseArrayObject[1])
+                : null;
+        }
 
+        public override Color GetColor(PdfArray components, IContentContext context)
+        {
             Color pattern = context.Resources.Patterns[(PdfName)components[components.Count - 1]];
             if (pattern is TilingPattern tilingPattern)
             {
@@ -72,6 +76,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     if (underlyingColorSpace == null)
                         throw new ArgumentException("Uncolored tiling patterns not supported by this color space because no underlying color space has been defined.");
 
+                    //TODO cache colorized
                     // Get the color to be used for colorizing the uncolored tiling pattern!
                     Color color = underlyingColorSpace.GetColor(components, context);
                     // Colorize the uncolored tiling pattern!
@@ -81,10 +86,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return pattern;
         }
 
-        public override bool IsSpaceColor(Color color)
-        {
-            return color is Pattern;
-        }
+        public override bool IsSpaceColor(Color color) => color is Pattern;
 
         public override SKColor GetSKColor(Color color, float? alpha = null)
         {
@@ -98,43 +100,33 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return SKColors.Black;
         }
 
-        public override SKPaint GetPaint(Color color, float? alpha = null, GraphicsState state = null)
+        public override SKPaint GetPaint(Color color, SKPaintStyle paintStyle, float? alpha = null, GraphicsState state = null)
         {
-            // FIXME: Auto-generated method stub
             if (color is IPattern pattern)
             {
-                return new SKPaint
+                var paint = new SKPaint
                 {
                     Shader = pattern.GetShader(state),
-                    Style = SKPaintStyle.Fill,
+                    Style = paintStyle,
                     IsAntialias = true
                 };
+
+                if (pattern is Shading shading
+                    && shading.BackgroundColor is Color backColor)
+                {
+                    paint.Color = backColor.GetSkColor(alpha);
+                }
+                return paint;
             }
             return new SKPaint
             {
                 Color = GetSKColor(color),
-                Style = SKPaintStyle.Fill,
+                Style = paintStyle,
                 IsAntialias = true,
             };
         }
 
-        /**
-          <summary>Gets the color space in which the actual color of the <see cref="Patterns">pattern</see> is to be specified.</summary>
-          <remarks>This feature is applicable to <see cref="TilingPattern">uncolored tiling patterns</see> only.</remarks>
-        */
-        public ColorSpace UnderlyingColorSpace
-        {
-            get
-            {
-                PdfDirectObject baseDataObject = BaseDataObject;
-                if (baseDataObject is PdfArray)
-                {
-                    PdfArray baseArrayObject = (PdfArray)baseDataObject;
-                    if (baseArrayObject.Count > 1)
-                        return ColorSpace.Wrap(baseArrayObject[1]);
-                }
-                return null;
-            }
-        }
+        public override object Clone(PdfDocument context)
+        { throw new NotImplementedException(); }
     }
 }

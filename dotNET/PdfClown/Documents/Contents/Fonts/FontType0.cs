@@ -23,41 +23,27 @@
   this list of conditions.
 */
 
-using bytes = PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Files;
-using PdfClown.Objects;
-using PdfClown.Util;
-using PdfClown.Util.IO;
-
-using System;
-using System.IO;
-using System.Collections.Generic;
-using SkiaSharp;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using PdfClown.Documents.Contents.Fonts.TTF.Model;
-using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.Fonts.TTF;
+using PdfClown.Documents.Contents.Fonts.TTF.Model;
+using PdfClown.Objects;
+using SkiaSharp;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
-using PdfClown.Documents.Contents.Fonts;
-using System.Xml.Linq;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>Composite font associated to a Type 0 CIDFont,
-      containing glyph descriptions based on the Adobe Type 1 font format [PDF:1.6:5.6.3].</summary>
-    */
-    /*
-      NOTE: Type 0 CIDFonts encompass several formats:
-      * CFF;
-      * OpenFont/CFF (in case "CFF" table's Top DICT has CIDFont operators).
-    */
+    ///<summary>Composite font associated to a Type 0 CIDFont,
+    ///containing glyph descriptions based on the Adobe Type 1 font format [PDF:1.6:5.6.3].</summary>    
     [PDF(VersionEnum.PDF12)]
     public sealed class FontType0 : Font
     {
+        //NOTE: Type 0 CIDFonts encompass several formats:
+        //CFF;
+        //OpenFont/CFF (in case "CFF" table's Top DICT has CIDFont operators).
 
         public static FontType0 Load(PdfDocument doc, Assembly assembly, string resurceFile)
         {
@@ -75,107 +61,86 @@ namespace PdfClown.Documents.Contents.Fonts
             using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return Load(doc, stream);
         }
-        /**
-         * Loads a TTF to be embedded and subset into a document as a Type 0 font. If you are loading a
-         * font for AcroForm, then use the 3-parameter constructor instead.
-         *
-         * @param doc The PDF document that will hold the embedded font.
-         * @param file A TrueType font.
-         * @return A Type0 font with a CIDFontType2 descendant.
-         * @throws IOException If there is an error reading the font file.
-         */
+
+        /// <summary>
+        /// Loads a TTF to be embedded and subset into a document as a Type 0 font. If you are loading a
+        /// font for AcroForm, then use the 3-parameter constructor instead.
+        /// </summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="file">A TrueType font</param>
+        /// <returns>A Type0 font with a CIDFontType2 descendant</returns>
         public static FontType0 Load(PdfDocument doc, Stream file)
         {
             return new FontType0(doc, new OTFParser().Parse(file), false, true, false);
         }
 
-        /**
-         * Loads a TTF to be embedded and subset into a document as a Type 0 font. If you are loading a
-         * font for AcroForm, then use the 3-parameter constructor instead.
-         *
-         * @param doc The PDF document that will hold the embedded font.
-         * @param input An input stream of a TrueType font. It will be closed before returning.
-         * @return A Type0 font with a CIDFontType2 descendant.
-         * @throws IOException If there is an error reading the font stream.
-         */
+        /// <summary>Loads a TTF to be embedded and subset into a document as a Type 0 font. If you are loading a
+        /// font for AcroForm, then use the 3-parameter constructor instead</summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="input">An input stream of a TrueType font. It will be closed before returning</param>
+        /// <returns>A Type0 font with a CIDFontType2 descendant</returns>
         public static FontType0 Load(PdfDocument doc, IInputStream input) => Load(doc, input, false);
 
-        /**
-         * Loads a TTF to be embedded into a document as a Type 0 font.
-         *
-         * @param doc The PDF document that will hold the embedded font.
-         * @param input An input stream of a TrueType font. It will be closed before returning.
-         * @param embedSubset True if the font will be subset before embedding. Set this to false when
-         * creating a font for AcroForm.
-         * @return A Type0 font with a CIDFontType2 descendant.
-         * @throws IOException If there is an error reading the font stream.
-         */
+        /// <summary>Loads a TTF to be embedded into a document as a Type 0 font.</summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="input">An input stream of a TrueType font. It will be closed before returning</param>
+        /// <param name="embedSubset">True if the font will be subset before embedding. 
+        /// Set this to false when creating a font for AcroForm</param>
+        /// <returns>A Type0 font with a CIDFontType2 descendant</returns>
         public static FontType0 Load(PdfDocument doc, IInputStream input, bool embedSubset) => Load(doc, new TTFParser().Parse(input), embedSubset);
 
-        /**
-         * Loads a TTF to be embedded into a document as a Type 0 font.
-         *
-         * @param doc The PDF document that will hold the embedded font.
-         * @param ttf A TrueType font.
-         * @param embedSubset True if the font will be subset before embedding. Set this to false when
-         * creating a font for AcroForm.
-         * @return A Type0 font with a CIDFontType2 descendant.
-         * @throws IOException If there is an error reading the font stream.
-         */
+        /// <summary> Loads a TTF to be embedded into a document as a Type 0 font.</summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="ttf">A TrueType font</param>
+        /// <param name="embedSubset">True if the font will be subset before embedding. 
+        /// Set this to false when creating a font for AcroForm</param>
+        /// <returns>A Type0 font with a CIDFontType2 descendant</returns>
         public static FontType0 Load(PdfDocument doc, TrueTypeFont ttf, bool embedSubset)
         {
             return doc.Type0FontCache.GetOrAdd(ttf, (t) => new FontType0(doc, t, embedSubset, false, false));
         }
 
-        /**
-         * Loads a TTF to be embedded into a document as a vertical Type 0 font.
-         *
-         * @param doc The PDF document that will hold the embedded font.
-         * @param file A TrueType font.
-         * @return A Type0 font with a CIDFontType2 descendant.
-         * @throws IOException If there is an error reading the font file.
-         */
+        /// <summary>
+        /// Loads a TTF to be embedded into a document as a vertical Type 0 font.
+        /// </summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="file">A TrueType font</param>
+        /// <returns>A Type0 font with a CIDFontType2 descendant</returns>
         public static FontType0 LoadVertical(PdfDocument doc, Stream file)
         {
             return new FontType0(doc, new TTFParser().Parse(file), true, true, true);
         }
 
-        /**
-         * Loads a TTF to be embedded into a document as a vertical Type 0 font.
-         *
-         * @param doc The PDF document that will hold the embedded font.
-         * @param input A TrueType font.
-         * @return A Type0 font with a CIDFontType2 descendant.
-         * @throws IOException If there is an error reading the font stream.
-         */
+        /// <summary>
+        /// Loads a TTF to be embedded into a document as a vertical Type 0 font.
+        /// </summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="input">A TrueType font</param>
+        /// <returns>A Type0 font with a CIDFontType2 descendant</returns>
         public static FontType0 LoadVertical(PdfDocument doc, IInputStream input)
         {
             return new FontType0(doc, new TTFParser().Parse(input), true, true, true);
         }
 
-        /**
-         * Loads a TTF to be embedded into a document as a vertical Type 0 font.
-         *
-         * @param doc The PDF document that will hold the embedded font.
-         * @param input A TrueType font.
-         * @param embedSubset True if the font will be subset before embedding
-         * @return A Type0 font with a CIDFontType2 descendant.
-         * @throws IOException If there is an error reading the font stream.
-         */
+        /// <summary>
+        /// Loads a TTF to be embedded into a document as a vertical Type 0 font.
+        /// </summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="input">A TrueType font</param>
+        /// <param name="embedSubset">True if the font will be subset before embedding</param>
+        /// <returns>A Type0 font with a CIDFontType2 descendant</returns>
         public static FontType0 LoadVertical(PdfDocument doc, IInputStream input, bool embedSubset)
         {
             return new FontType0(doc, new TTFParser().Parse(input), embedSubset, true, true);
         }
 
-        /**
-         * Loads a TTF to be embedded into a document as a vertical Type 0 font.
-         *
-         * @param doc The PDF document that will hold the embedded font.
-         * @param ttf A TrueType font.
-         * @param embedSubset True if the font will be subset before embedding
-         * @return A Type0 font with a CIDFontType2 descendant.
-         * @throws IOException If there is an error reading the font stream.
-         */
+        /// <summary>
+        /// Loads a TTF to be embedded into a document as a vertical Type 0 font.
+        /// </summary>
+        /// <param name="doc">The PDF document that will hold the embedded font</param>
+        /// <param name="ttf">A TrueType font</param>
+        /// <param name="embedSubset">True if the font will be subset before embedding</param>
+        /// <returns>A Type0 font with a CIDFontType2 descendant</returns>
         public static FontType0 LoadVertical(PdfDocument doc, TrueTypeFont ttf, bool embedSubset)
         {
             return new FontType0(doc, ttf, embedSubset, false, true);
@@ -252,9 +217,8 @@ namespace PdfClown.Documents.Contents.Fonts
             get => BaseDataObject.Get<PdfArray>(PdfName.DescendantFonts);
             set => BaseDataObject[PdfName.DescendantFonts] = value;
         }
-        /**
-          <summary>Gets the CIDFont dictionary that is the descendant of this composite font.</summary>
-        */
+
+        ///<summary>Gets the CIDFont dictionary that is the descendant of this composite font.</summary>
         public FontCID DescendantFont
         {
             get => FontCID.WrapFont(DescendantFonts?[0], this);
@@ -470,20 +434,19 @@ namespace PdfClown.Documents.Contents.Fonts
         public override int ReadCode(ReadOnlySpan<byte> bytes)
             => CMap?.ReadCode(bytes, out _)
             ?? throw new IOException("required cmap is null");
-        /**
-         * Returns the CID for the given character code. If not found then CID 0 is returned.
-         *
-         * @param code character code
-         * @return CID
-         */
+
+        /// <summary>
+        /// Returns the CID for the given character code. If not found then CID 0 is returned.
+        /// </summary>
+        /// <param name="code">character code</param>
+        /// <returns>CID</returns>
         public int CodeToCID(int code) => DescendantFont.CodeToCID(code);
 
-        /**
-         * Returns the GID for the given character code.
-         *
-         * @param code character code
-         * @return GID
-         */
+        /// <summary>
+        /// Returns the GID for the given character code.
+        /// </summary>
+        /// <param name="code">character code</param>
+        /// <returns>GID</returns>
         public int CodeToGID(int code) => DescendantFont.CodeToGID(code);
 
         public override SKPath GetPath(int code) => DescendantFont.GetPath(code);
@@ -528,9 +491,9 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-     * Fetches the corresponding UCS2 CMap if the font's CMap is predefined.
-     */
+        /// <summary>
+        /// Fetches the corresponding UCS2 CMap if the font's CMap is predefined.
+        /// </summary>
         private void FetchCMapUCS2()
         {
             // if the font is composite and uses a predefined cmap (excluding Identity-H/V)
@@ -578,13 +541,9 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-       
 
-        /**
-     * Returns the CMap lookup table if present.
-     * 
-     * @return the CMap lookup table if present
-     */
+
+        /// <summary>Returns the CMap lookup table if present.</summary>
         public ICmapLookup CmapLookup
         {
             get => cmapLookup;

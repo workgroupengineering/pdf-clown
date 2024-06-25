@@ -34,27 +34,30 @@ namespace PdfClown.Documents.Contents.Scanner
         internal static GraphicsObjectWrapper Get(ContentScanner scanner)
         {
             var obj = scanner.Current;
+            if (obj == null)
+                return null;
             if (obj.Wrapper is GraphicsObjectWrapper exist)
             {
                 return exist;
             }
-            if (obj is ShowText)
-                return new TextStringWrapper(scanner);
-            else if (obj is Text)
-                return new TextWrapper(scanner);
-            else if (obj is XObject)
-                return new XObjectWrapper(scanner);
-            else if (obj is InlineImage)
-                return new InlineImageWrapper(scanner);
-            else
-                return null;
+            switch (obj)
+            {
+                case ShowText:
+                    return new TextStringWrapper(scanner);
+                case GraphicsText:
+                    return new TextWrapper(scanner);
+                case GraphicsXObject:
+                    return new XObjectWrapper(scanner);
+                case GraphicsInlineImage:
+                    return new InlineImageWrapper(scanner);
+                default:
+                    return null;
+            }
         }
 
         protected SKRect? box;
 
-        /**
-          <summary>Gets the object's bounding box.</summary>
-        */
+        ///<summary>Gets the object's bounding box.</summary>
         public virtual SKRect? Box => box;
     }
 }

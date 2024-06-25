@@ -31,14 +31,10 @@ using PdfClown.Objects;
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Name dictionary [PDF:1.6:3.6.3].</summary>
-    */
+    /// <summary>Name dictionary [PDF:1.6:3.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class Names : PdfObjectWrapper<PdfDictionary>, ICompositeDictionary<PdfString>
     {
@@ -48,9 +44,7 @@ namespace PdfClown.Documents
         public Names(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the named destinations.</summary>
-        */
+        /// <summary>Gets/Sets the named destinations.</summary>
         [PDF(VersionEnum.PDF12)]
         public NamedDestinations Destinations
         {
@@ -58,9 +52,7 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.Dests] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the named embedded files.</summary>
-        */
+        /// <summary>Gets/Sets the named embedded files.</summary>
         [PDF(VersionEnum.PDF14)]
         public NamedEmbeddedFiles EmbeddedFiles
         {
@@ -68,9 +60,7 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.EmbeddedFiles] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the named JavaScript actions.</summary>
-        */
+        /// <summary>Gets/Sets the named JavaScript actions.</summary>
         [PDF(VersionEnum.PDF13)]
         public NamedJavaScripts JavaScripts
         {
@@ -78,9 +68,7 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.JavaScript] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the named pages.</summary>
-        */
+        /// <summary>Gets/Sets the named pages.</summary>
         [PDF(VersionEnum.PDF13)]
         public NamedPages Pages
         {
@@ -88,9 +76,7 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.Pages] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the named renditions.</summary>
-        */
+        /// <summary>Gets/Sets the named renditions.</summary>
         [PDF(VersionEnum.PDF15)]
         public NamedRenditions Renditions
         {

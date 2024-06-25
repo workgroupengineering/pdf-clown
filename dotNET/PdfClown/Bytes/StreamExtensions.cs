@@ -330,7 +330,7 @@ namespace PdfClown.Bytes
             }
             else // Multiple filters.
             {
-                IEnumerator<PdfDirectObject> filterIterator = ((PdfArray)filter).GetEnumerator();
+                using var filterIterator = ((PdfArray)filter).GetEnumerator();
                 IEnumerator<PdfDirectObject> parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
                 while (filterIterator.MoveNext())
                 {
@@ -359,8 +359,8 @@ namespace PdfClown.Bytes
             }
             else // Multiple filters.
             {
-                var filterIterator = ((PdfArray)filter).GetEnumerator();
-                var parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
+                using var filterIterator = ((PdfArray)filter).GetEnumerator();
+                IEnumerator<PdfDirectObject> parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
                 while (filterIterator.MoveNext())
                 {
                     PdfDictionary filterParameters;

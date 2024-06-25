@@ -30,9 +30,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the line width' operation [PDF:1.6:4.3.3].</summary>
-    */
+    ///<summary>'Set the line width' operation [PDF:1.6:4.3.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetLineWidth : Operation
     {
@@ -41,18 +39,15 @@ namespace PdfClown.Documents.Contents.Objects
         public SetLineWidth(double value) : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetLineWidth(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public SetLineWidth(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state)
-        {
-            state.LineWidth = Value;
-        }
+        public override void Scan(GraphicsState state) => state.LineWidth = Value;
 
         public float Value
         {
-            get => ((IPdfNumber)operands[0]).FloatValue;
-            set => operands[0] = PdfReal.Get(value);
+            get => operands.GetFloat(0);
+            set => operands.Set(0, value);
         }
     }
 }

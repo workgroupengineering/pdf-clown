@@ -37,34 +37,14 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Set the color to use for stroking operations' operation [PDF:1.6:4.5.7].</summary>
     */
     [PDF(VersionEnum.PDF12)]
-    public class SetStrokeColor : Operation
+    public abstract class SetStrokeColor : SetColor
     {
-        /**
-          <summary>'Set the color to use for stroking operations in any color space' operator.</summary>
-        */
-        [PDF(VersionEnum.PDF12)]
-        public static readonly string ExtendedOperatorKeyword = "SCN";
-        /**
-          <summary>'Set the color to use for stroking operations in a device, CIE-based (other than ICCBased),
-          or Indexed color space' operator.</summary>
-        */
-        [PDF(VersionEnum.PDF11)]
-        public static readonly string OperatorKeyword = "SC";
-
-        public SetStrokeColor(Color value)
-            : this(ExtendedOperatorKeyword, value)
-        { }
-
-        public SetStrokeColor(IList<PdfDirectObject> operands)
-            : this(ExtendedOperatorKeyword, operands)
-        { }
-
-        public SetStrokeColor(string @operator, IList<PdfDirectObject> operands)
+        public SetStrokeColor(string @operator, PdfArray operands)
             : base(@operator, operands)
         { }
 
         protected SetStrokeColor(string @operator, Color value)
-            : base(@operator, new List<PdfDirectObject>(value.Components))
+            : base(@operator, value.Components)
         { }
 
         /**
@@ -81,21 +61,14 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="underlyingColor">Color used to colorize the pattern.</param>
          */
         protected SetStrokeColor(string @operator, PdfName name, Color underlyingColor)
-            : base(@operator, new List<PdfDirectObject>())
+            : base(@operator, new PdfArray(underlyingColor?.Components ?? Enumerable.Empty<PdfDirectObject>()))
         {
-            if (underlyingColor != null)
-            {
-                foreach (PdfDirectObject component in underlyingColor.Components)
-                { operands.Add(component); }
-            }
-            operands.Add(name);
+            operands.AddDirect(name);
         }
-
-        public IList<PdfDirectObject> Components => operands;
 
         public override void Scan(GraphicsState state)
         {
-            state.StrokeColor = state.StrokeColorSpace.GetColor(operands, state.Scanner.ContentContext);
+            state.StrokeColor = state.StrokeColorSpace.GetColor(operands, state.Scanner.Context);
         }
     }
 }

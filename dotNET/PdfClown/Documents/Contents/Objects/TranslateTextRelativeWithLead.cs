@@ -1,5 +1,5 @@
-/*
-  Copyright 2008-2010 Stefano Chizzolini. http://www.pdfclown.org
+﻿/*
+  Copyright 2007-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,46 +23,30 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Path object [PDF:1.6:4.4].</summary>
-    */
-    [PDF(VersionEnum.PDF10)]
-    public sealed class Path : GraphicsObject
+    public sealed class TranslateTextRelativeWithLead : TranslateTextRelative
     {
-        public static readonly string[] BeginOperatorKeywords = new string[]
-          {
-              BeginSubpath.OperatorKeyword,
-              DrawRectangle.OperatorKeyword
-          };
-        public static readonly string[] EndOperatorKeywords = new string[]
-          {
-              PaintPath.CloseFillStrokeEvenOddOperatorKeyword,
-              PaintPath.CloseFillStrokeOperatorKeyword,
-              PaintPath.CloseStrokeOperatorKeyword,
-              PaintPath.EndPathNoOpOperatorKeyword,
-              PaintPath.FillEvenOddOperatorKeyword,
-              PaintPath.FillObsoleteOperatorKeyword,
-              PaintPath.FillOperatorKeyword,
-              PaintPath.FillStrokeEvenOddOperatorKeyword,
-              PaintPath.FillStrokeOperatorKeyword,
-              PaintPath.StrokeOperatorKeyword
-          };
+        /**
+          <summary>Lead parameter setting.</summary>
+        */
+        public static readonly string OperatorKeyword = "TD";
 
-        public Path()
+        public TranslateTextRelativeWithLead(double offsetX, double offsetY)
+            : base(OperatorKeyword, offsetX, offsetY)
         { }
 
-        public Path(IList<ContentObject> operations) : base(operations)
+        public TranslateTextRelativeWithLead(PdfArray operands)
+            : base(OperatorKeyword, operands)
         { }
 
-        protected override SKPath CreateRenderObject()
-        { return new SKPath(); }
+        public override void Scan(GraphicsState state)
+        {            
+            base.Scan(state);
+            state.Lead = -OffsetY;
+        }
     }
 }

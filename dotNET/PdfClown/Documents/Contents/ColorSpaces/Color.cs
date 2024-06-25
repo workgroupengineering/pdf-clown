@@ -31,21 +31,16 @@ using System.Drawing;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Color value [PDF:1.6:4.5.1].</summary>
-    */
+    ///<summary>Color value [PDF:1.6:4.5.1].</summary>
     public abstract class Color : PdfObjectWrapper<PdfDataObject>
     {
-        /**
-          <summary>Gets the normalized value of a color component [PDF:1.6:4.5.1].</summary>
-          <param name="value">Color component value to normalize.</param>
-          <returns>Normalized color component value.</returns>
-        */
-        /*
-          NOTE: Further developments may result in a color-space family-specific
-          implementation of this method; currently this implementation focuses on
-          device colors only.
-        */
+        ///<summary>Gets the normalized value of a color component [PDF:1.6:4.5.1].</summary>
+        ///<param name="value">Color component value to normalize.</param>
+        ///<returns>Normalized color component value.</returns>
+
+        //NOTE: Further developments may result in a color-space family-specific
+        //implementation of this method; currently this implementation focuses on
+        //device colors only.
         protected static double NormalizeComponent(double value)
         {
             if (value < 0D)
@@ -68,34 +63,20 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public Color(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        //TODO:remove? - one dependency
         public virtual ColorSpace ColorSpace => colorSpace;
 
-        /**
-          <summary>Gets the components defining this color value.</summary>
-        */
-        public abstract IList<PdfDirectObject> Components
+        ///<summary>Gets the components defining this color value.</summary>
+        public abstract PdfArray Components
         {
             get;
         }
 
-        public float[] Floats => floats ??= GetFloats();
-
-        public float[] GetFloats()
-        {
-            var components = Components;
-            var floats = new float[components.Count];
-            for (int i = 0; i < components.Count; i++)
-            {
-                floats[i] = ((IPdfNumber)components[i]).FloatValue;
-            }
-            return floats;
-        }
+        public float[] Floats => floats ??= Components.ToFloatArray();
 
         public void CopyTo(Span<float> to) => Floats.CopyTo(to);
 
         public Span<float> AsSpan() => Floats;
 
-        public SKColor GetSkColor() => colorSpace.GetSKColor(this);
+        public SKColor GetSkColor(float? alpha = null) => colorSpace.GetSKColor(this, alpha);
     }
 }

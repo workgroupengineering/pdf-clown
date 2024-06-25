@@ -23,18 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using xObjects = PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
+using PdfClown.Tools;
 using SkiaSharp;
 using System;
-using PdfClown.Tools;
-using PdfClown.Documents.Contents.XObjects;
-using static PdfClown.Documents.Contents.Objects.ShowText;
-using PdfClown.Bytes.Filters.Jpx;
-using PdfClown.Documents.Interaction.Forms;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -42,7 +35,7 @@ namespace PdfClown.Documents.Contents.Objects
       <summary>'Paint the specified XObject' operation [PDF:1.6:4.7].</summary>
     */
     [PDF(VersionEnum.PDF10)]
-    public sealed class PaintXObject : Operation, IResourceReference<xObjects::XObject>
+    public sealed class PaintXObject : Operation, IResourceReference<XObject>
     {
         public static readonly string OperatorKeyword = "Do";
         public static readonly SKPaint ImagePaint = new SKPaint { FilterQuality = SKFilterQuality.Low, BlendMode = SKBlendMode.SrcOver };
@@ -50,7 +43,7 @@ namespace PdfClown.Documents.Contents.Objects
         public PaintXObject(PdfName name) : base(OperatorKeyword, name)
         { }
 
-        public PaintXObject(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public PaintXObject(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         /**
@@ -59,26 +52,26 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public ContentScanner GetScanner(ContentScanner context)
         {
-            xObjects::XObject xObject = GetXObject(context);
+            XObject xObject = GetXObject(context);
             return xObject is FormXObject form
               ? new ContentScanner(form, context)
               : null;
         }
 
         /**
-          <summary>Gets the <see cref="xObjects::XObject">external object</see> resource to be painted.
+          <summary>Gets the <see cref="XObject">external object</see> resource to be painted.
           </summary>
           <param name="context">Content context.</param>
         */
-        public xObjects::XObject GetXObject(ContentScanner scanner) => GetResource(scanner);
+        public XObject GetXObject(ContentScanner scanner) => GetResource(scanner);
 
-        public xObjects::XObject GetResource(ContentScanner scanner)
+        public XObject GetResource(ContentScanner scanner)
         {
             var pscanner = scanner;
-            xObjects::XObject xobj;
+            XObject xobj;
 
-            while ((xobj = pscanner.ContentContext.Resources.XObjects[Name]) == null
-                && (pscanner = pscanner.ParentLevel) != null)
+            while ((xobj = pscanner.Context.Resources.XObjects[Name]) == null
+                && (pscanner = pscanner.ResourceParent) != null)
             { }
             return xobj;
         }
@@ -92,7 +85,7 @@ namespace PdfClown.Documents.Contents.Objects
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
-            var canvas = scanner.RenderContext;
+            var canvas = scanner.Canvas;
             if (canvas == null)
                 return;
             var xObject = GetXObject(scanner);
@@ -114,7 +107,7 @@ namespace PdfClown.Documents.Contents.Objects
                         if (imageObject.ImageMask)
                         {
                             using (var paint = state.CreateFillPaint())
-                            {
+                            {                                
                                 canvas.DrawBitmap(image, 0, 0, paint);
                             }
                         }
@@ -122,6 +115,7 @@ namespace PdfClown.Documents.Contents.Objects
                         {
                             using (var paint = state.CreateFillPaint())
                             {
+                                paint.FilterQuality = SKFilterQuality.Medium;
                                 canvas.DrawBitmap(image, 0, 0, paint);
                             }
                         }
@@ -134,7 +128,7 @@ namespace PdfClown.Documents.Contents.Objects
                     var ctm = state.Ctm;
                     ctm = ctm.PreConcat(formObject.Matrix);
                     canvas.SetMatrix(ctm);
-
+                    //canvas.ClipRect(formObject.Box);
                     using (var paint = state.CreateFillPaint())
                     {
                         canvas.DrawPicture(picture, paint);
@@ -142,7 +136,7 @@ namespace PdfClown.Documents.Contents.Objects
 
                     foreach (var textString in formObject.Strings)
                     {
-                        scanner.ContentContext.Strings.Add(TextString.Transform(textString, ctm, scanner.ContentContext));
+                        scanner.Context.Strings.Add(TextString.Transform(textString, ctm, scanner.Context));
                     }
                 }
             }

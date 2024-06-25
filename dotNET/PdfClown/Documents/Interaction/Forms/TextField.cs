@@ -23,35 +23,24 @@
   this list of conditions.
 */
 
-using bytes = PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Composition;
-using fonts = PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Objects;
-using PdfClown.Documents.Contents.Tokens;
-using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util;
 
 using System;
-using System.Collections.Generic;
 using SkiaSharp;
 using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Text field [PDF:1.6:8.6.3].</summary>
-    */
+    /// <summary>Text field [PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class TextField : Field
     {
-        /**
-          <summary>Creates a new text field within the given document context.</summary>
-        */
+        /// <summary>Creates a new text field within the given document context.</summary>
         public TextField(string name, Widget widget, string value)
             : base(PdfName.Tx, name, widget)
         { Value = value; }
@@ -59,37 +48,29 @@ namespace PdfClown.Documents.Interaction.Forms
         internal TextField(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets whether the field can contain multiple lines of text.</summary>
-        */
+        /// <summary>Gets/Sets whether the field can contain multiple lines of text.</summary>
         public bool IsMultiline
         {
             get => (Flags & FlagsEnum.Multiline) == FlagsEnum.Multiline;
             set => Flags = EnumUtils.Mask(Flags, FlagsEnum.Multiline, value);
         }
 
-        /**
-          <summary>Gets/Sets whether the field is intended for entering a secure password.</summary>
-        */
+        /// <summary>Gets/Sets whether the field is intended for entering a secure password.</summary>
         public bool IsPassword
         {
             get => (Flags & FlagsEnum.Password) == FlagsEnum.Password;
             set => Flags = EnumUtils.Mask(Flags, FlagsEnum.Password, value);
         }
 
-        /**
-          <summary>Gets/Sets the justification to be used in displaying this field's text.</summary>
-        */
+        /// <summary>Gets/Sets the justification to be used in displaying this field's text.</summary>
         public JustificationEnum Justification
         {
-            get => JustificationEnumExtension.Get(BaseDataObject.Get<PdfInteger>(PdfName.Q));
-            set => BaseDataObject[PdfName.Q] = value.GetCode();
+            get => (JustificationEnum)BaseDataObject.GetInt(PdfName.Q);
+            set => BaseDataObject.Set(PdfName.Q, (int)value);
         }
 
-        /**
-          <summary>Gets/Sets the maximum length of the field's text, in characters.</summary>
-          <remarks>It corresponds to the maximum integer value in case no explicit limit is defined.</remarks>
-        */
+        /// <summary>Gets/Sets the maximum length of the field's text, in characters.</summary>
+        /// <remarks>It corresponds to the maximum integer value in case no explicit limit is defined.</remarks>
         public int MaxLength
         {
             get
@@ -97,21 +78,17 @@ namespace PdfClown.Documents.Interaction.Forms
                 PdfInteger maxLengthObject = (PdfInteger)PdfObject.Resolve(GetInheritableAttribute(PdfName.MaxLen));
                 return maxLengthObject != null ? maxLengthObject.IntValue : Int32.MaxValue;
             }
-            set => BaseDataObject[PdfName.MaxLen] = (value != Int32.MaxValue ? PdfInteger.Get(value) : null);
+            set => BaseDataObject.Set(PdfName.MaxLen, value != Int32.MaxValue ? value : null);
         }
 
-        /**
-          <summary>Gets/Sets whether text entered in the field is spell-checked.</summary>
-        */
+        /// <summary>Gets/Sets whether text entered in the field is spell-checked.</summary>
         public bool SpellChecked
         {
             get => (Flags & FlagsEnum.DoNotSpellCheck) != FlagsEnum.DoNotSpellCheck;
             set => Flags = EnumUtils.Mask(Flags, FlagsEnum.DoNotSpellCheck, !value);
         }
 
-        /**
-          <returns>Either a string or an <see cref="IByteStream"/>.</returns>
-        */
+        /// <returns>Either a string or an <see cref="IByteStream"/>.</returns>
         public override object Value
         {
             get
@@ -201,7 +178,7 @@ namespace PdfClown.Documents.Interaction.Forms
                 }
 
                 ContentObject content = currentLevel.Current;
-                if (content is MarkedContent markedContent)
+                if (content is GraphicsMarkedContent markedContent)
                 {
                     if (PdfName.Tx.Equals(((BeginMarkedContent)markedContent.Header).Tag))
                     {
@@ -213,7 +190,7 @@ namespace PdfClown.Documents.Interaction.Forms
                         textShown = true;
                     }
                 }
-                else if (content is Text)
+                else if (content is GraphicsText)
                 { currentLevel.Remove(); }
                 else if (currentLevel.ChildLevel != null)
                 { currentLevel = currentLevel.ChildLevel; }
@@ -231,7 +208,7 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             PrimitiveComposer baseComposer = composer.BaseComposer;
             ContentScanner scanner = baseComposer.Scanner;
-            SKRect textBox = scanner.ContentContext.Box;
+            SKRect textBox = scanner.Context.Box;
             if (scanner.State.Font == null)
             {
                 /*

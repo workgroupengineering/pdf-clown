@@ -27,15 +27,11 @@ using PdfClown.Bytes;
 using PdfClown.Objects;
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>PDF file writer implementing classic cross-reference table [PDF:1.6:3.4.3].</summary>
-    */
+    /// <summary>PDF file writer implementing classic cross-reference table [PDF:1.6:3.4.3].</summary>
     internal sealed class PlainWriter : Writer
     {
         private static readonly byte[] TrailerChunk = Encoding.Pdf.Encode(Keyword.Trailer + Symbol.LineFeed);
@@ -58,21 +54,17 @@ namespace PdfClown.Tokens
             int xrefSize = file.IndirectObjects.Count;
             var xrefBuilder = new StringBuilder(XRefChunk);
             {
-                /*
-                  NOTE: Incremental xref table comprises multiple sections
-                  each one composed by multiple subsections; this update
-                  adds a new section.
-                */
+                // NOTE: Incremental xref table comprises multiple sections
+                // each one composed by multiple subsections; this update
+                // adds a new section.
                 var xrefSubBuilder = new StringBuilder(); // Xref-table subsection builder.
                 int xrefSubCount = 0; // Xref-table subsection counter.
                 int prevKey = 0; // Previous-entry object number.
                 foreach (var indirectObjectEntry in file.IndirectObjects.ModifiedObjects)
                 {
                     // Is the object in the current subsection?
-                    /*
-                      NOTE: To belong to the current subsection, the object entry MUST be contiguous with the
-                      previous (condition 1) or the iteration has to have been just started (condition 2).
-                    */
+                    // NOTE: To belong to the current subsection, the object entry MUST be contiguous with the
+                    // previous (condition 1) or the iteration has to have been just started (condition 2).
                     if (indirectObjectEntry.Key - prevKey == 1
                       || prevKey == 0) // Current subsection continues.
                     { xrefSubCount++; }
@@ -103,11 +95,9 @@ namespace PdfClown.Tokens
                     else // Free entry.
                     {
                         // Add free entry!
-                        /*
-                          NOTE: We purposely neglect the linked list of free entries (see IndirectObjects.remove(int)),
-                          so that this entry links directly back to object number 0, having a generation number of 65535
-                          (not reusable) [PDF:1.6:3.4.3].
-                        */
+                        // NOTE: We purposely neglect the linked list of free entries (see IndirectObjects.remove(int)),
+                        // so that this entry links directly back to object number 0, having a generation number of 65535
+                        // (not reusable) [PDF:1.6:3.4.3].
                         AppendXRefEntry(xrefSubBuilder, indirectObjectEntry.Value.Reference, 0);
                     }
                 }
@@ -135,12 +125,10 @@ namespace PdfClown.Tokens
             int xrefSize = file.IndirectObjects.Count;
             var xrefBuilder = new StringBuilder(XRefChunk);
             {
-                /*
-                  NOTE: A standard xref table comprises just one section composed by just one subsection.
-                  NOTE: As xref-table free entries MUST be arrayed as a linked list,
-                  it's needed to cache intermingled in-use entries in order to properly render
-                  the object number of the next free entry inside the previous one.
-                */
+                // NOTE: A standard xref table comprises just one section composed by just one subsection.
+                // NOTE: As xref-table free entries MUST be arrayed as a linked list,
+                // it's needed to cache intermingled in-use entries in order to properly render
+                // the object number of the next free entry inside the previous one.
                 AppendXRefSubsectionIndexer(xrefBuilder, 0, xrefSize);
 
                 var xrefInUseBlockBuilder = new StringBuilder();
@@ -204,33 +192,27 @@ namespace PdfClown.Tokens
               .Append(usage).Append(XRefEOLChunk);
         }
 
-        /**
-          <summary>Appends the cross-reference subsection to the specified builder.</summary>
-          <param name="xrefBuilder">Target builder.</param>
-          <param name="firstObjectNumber">Object number of the first object in the subsection.</param>
-          <param name="entryCount">Number of entries in the subsection.</param>
-          <param name="xrefSubBuilder">Cross-reference subsection entries.</param>
-        */
+        /// <summary>Appends the cross-reference subsection to the specified builder.</summary>
+        /// <param name="xrefBuilder">Target builder.</param>
+        /// <param name="firstObjectNumber">Object number of the first object in the subsection.</param>
+        /// <param name="entryCount">Number of entries in the subsection.</param>
+        /// <param name="xrefSubBuilder">Cross-reference subsection entries.</param>
         private StringBuilder AppendXRefSubsection(StringBuilder xrefBuilder, int firstObjectNumber, int entryCount, StringBuilder xrefSubBuilder)
         { return AppendXRefSubsectionIndexer(xrefBuilder, firstObjectNumber, entryCount).Append(xrefSubBuilder); }
 
-        /**
-          <summary>Appends the cross-reference subsection indexer to the specified builder.</summary>
-          <param name="xrefBuilder">Target builder.</param>
-          <param name="firstObjectNumber">Object number of the first object in the subsection.</param>
-          <param name="entryCount">Number of entries in the subsection.</param>
-        */
+        /// <summary>Appends the cross-reference subsection indexer to the specified builder.</summary>
+        /// <param name="xrefBuilder">Target builder.</param>
+        /// <param name="firstObjectNumber">Object number of the first object in the subsection.</param>
+        /// <param name="entryCount">Number of entries in the subsection.</param>
         private StringBuilder AppendXRefSubsectionIndexer(StringBuilder xrefBuilder, int firstObjectNumber, int entryCount)
         { return xrefBuilder.Append(firstObjectNumber).Append(Symbol.Space).Append(entryCount).Append(Symbol.LineFeed); }
 
-        /**
-          <summary>Serializes the file trailer [PDF:1.6:3.4.4].</summary>
-          <param name="startxref">Byte offset from the beginning of the file to the beginning
-            of the last cross-reference section.</param>
-          <param name="xrefSize">Total number of entries in the file's cross-reference table,
-            as defined by the combination of the original section and all update sections.</param>
-          <param name="parser">File parser.</param>
-        */
+        /// <summary>Serializes the file trailer [PDF:1.6:3.4.4].</summary>
+        /// <param name="startxref">Byte offset from the beginning of the file to the beginning
+        ///   of the last cross-reference section.</param>
+        /// <param name="xrefSize">Total number of entries in the file's cross-reference table,
+        ///   as defined by the combination of the original section and all update sections.</param>
+        /// <param name="parser">File parser.</param>
         private void WriteTrailer(long startxref, int xrefSize, FileParser parser)
         {
             // 1. Header.
@@ -241,12 +223,12 @@ namespace PdfClown.Tokens
             PdfDictionary trailer = file.Trailer;
             UpdateTrailer(trailer, stream);
             // * Size
-            trailer[PdfName.Size] = PdfInteger.Get(xrefSize);
+            trailer.Set(PdfName.Size, xrefSize);
             // * Prev
             if (parser == null)
             { trailer.Remove(PdfName.Prev); } // [FIX:0.0.4:5] It (wrongly) kept the 'Prev' entry of multiple-section xref tables.
             else
-            { trailer[PdfName.Prev] = PdfInteger.Get((int)parser.RetrieveXRefOffset()); }
+            { trailer.Set(PdfName.Prev, (int)parser.RetrieveXRefOffset()); }
             // Serialize its contents!
             trailer.WriteTo(stream, file); stream.Write(Chunk.LineFeed);
 

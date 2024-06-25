@@ -50,14 +50,14 @@ namespace PdfClown.Documents.Contents.Objects
           <param name="pointY">Current point Y.</param>
         */
         public BeginSubpath(double pointX, double pointY)
-            : base(OperatorKeyword, new List<PdfDirectObject>
+            : base(OperatorKeyword, new PdfArray
               {
-                  PdfReal.Get(pointX),
-                  PdfReal.Get(pointY)
+                  pointX,
+                  pointY
               })
         { }
 
-        public BeginSubpath(IList<PdfDirectObject> operands) : base(OperatorKeyword, operands)
+        public BeginSubpath(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         /**
@@ -65,16 +65,14 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public SKPoint Point
         {
-            get => new SKPoint(
-                  ((IPdfNumber)operands[0]).FloatValue,
-                  ((IPdfNumber)operands[1]).FloatValue);
+            get => new SKPoint(operands.GetFloat(0), operands.GetFloat(1));
             set
             {
-                operands[0] = PdfReal.Get(value.X);
-                operands[1] = PdfReal.Get(value.Y);
+                operands.Set(0, value.X);
+                operands.Set(1, value.Y);
             }
         }
 
-        public override void Scan(GraphicsState state) => state.Scanner.RenderObject?.MoveTo(Point);
+        public override void Scan(GraphicsState state) => state.Scanner.Path?.MoveTo(Point);
     }
 }

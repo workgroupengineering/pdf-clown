@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
@@ -34,9 +32,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Border characteristics [PDF:1.6:8.4.3].</summary>
-    */
+    /// <summary>Border characteristics [PDF:1.6:8.4.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class Border : PdfObjectWrapper<PdfDictionary>, IEquatable<Border>
     {
@@ -72,9 +68,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             return StyleEnumCodes[value];
         }
 
-        /**
-          <summary>Gets the style corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the style corresponding to the given value.</summary>
         private static BorderStyleType ToStyleEnum(string value)
         {
             if (value == null)
@@ -87,39 +81,27 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultStyle;
         }
 
-        /**
-          <summary>Creates a non-reusable instance.</summary>
-        */
+        /// <summary>Creates a non-reusable instance.</summary>
         public Border(double width) : this(null, width)
         { }
 
-        /**
-          <summary>Creates a non-reusable instance.</summary>
-        */
+        /// <summary>Creates a non-reusable instance.</summary>
         public Border(double width, BorderStyleType style) : this(null, width, style)
         { }
 
-        /**
-          <summary>Creates a non-reusable instance.</summary>
-        */
+        /// <summary>Creates a non-reusable instance.</summary>
         public Border(double width, LineDash pattern) : this(null, width, pattern)
         { }
 
-        /**
-          <summary>Creates a reusable instance.</summary>
-        */
+        /// <summary>Creates a reusable instance.</summary>
         public Border(PdfDocument context, double width) : this(context, width, DefaultStyle, null)
         { }
 
-        /**
-          <summary>Creates a reusable instance.</summary>
-        */
+        /// <summary>Creates a reusable instance.</summary>
         public Border(PdfDocument context, double width, BorderStyleType style) : this(context, width, style, null)
         { }
 
-        /**
-          <summary>Creates a reusable instance.</summary>
-        */
+        /// <summary>Creates a reusable instance.</summary>
         public Border(PdfDocument context, double width, LineDash pattern) : this(context, width, BorderStyleType.Dashed, pattern)
         { }
 
@@ -134,9 +116,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Border(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the dash pattern used in case of dashed border.</summary>
-        */
+        /// <summary>Gets/Sets the dash pattern used in case of dashed border.</summary>
         public LineDash Pattern
         {
             get => lineDash ??= (BaseDataObject.Resolve(PdfName.D) is PdfArray dashObject ? LineDash.Get(dashObject, null) : DefaultLineDash);
@@ -145,27 +125,23 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (Pattern != value)
                 {
                     lineDash = value;
-                    BaseDataObject[PdfName.D] = value != null ? PdfArray.FromFloats(value.DashArray) : null;
+                    BaseDataObject[PdfName.D] = value != null ? new PdfArray(value.DashArray) : null;
                 }
             }
         }
 
-        /**
-          <summary>Gets/Sets the border style.</summary>
-        */
+        /// <summary>Gets/Sets the border style.</summary>
         public BorderStyleType Style
         {
             get => ToStyleEnum(BaseDataObject.GetString(PdfName.S));
             set => BaseDataObject[PdfName.S] = value != DefaultStyle ? ToCode(value) : null;
         }
 
-        /**
-          <summary>Gets/Sets the border width in points.</summary>
-        */
+        /// <summary>Gets/Sets the border width in points.</summary>
         public double Width
         {
             get => BaseDataObject.GetDouble(PdfName.W, DefaultWidth);
-            set => BaseDataObject.SetDouble(PdfName.W, value);
+            set => BaseDataObject.Set(PdfName.W, value);
         }
 
         public void Apply(SKPaint paint, BorderEffect borderEffect)
@@ -180,7 +156,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             borderEffect?.Apply(paint);
         }
 
-       public void Apply(PrimitiveComposer paint)
+        public void Apply(PrimitiveComposer paint)
         {
             paint.SetLineWidth((float)Width);
 
@@ -188,6 +164,18 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 Pattern?.Apply(paint);
             }
+        }
+
+        public void Apply(ref SKRect box)
+        {
+            var indent = (float)Width;
+            box.Inflate(indent, indent);
+        }
+
+        public void Invert(ref SKRect box)
+        {
+            var indent = -(float)Width;
+            box.Inflate(indent, indent);
         }
 
         public bool Equals(Border other)
@@ -201,30 +189,18 @@ namespace PdfClown.Documents.Interaction.Annotations
 
     }
 
-    /**
-      <summary>Border style [PDF:1.6:8.4.3].</summary>
-    */
+    /// <summary>Border style [PDF:1.6:8.4.3].</summary>
     public enum BorderStyleType
     {
-        /**
-          <summary>Solid.</summary>
-        */
+        /// <summary>Solid.</summary>
         Solid,
-        /**
-          <summary>Dashed.</summary>
-        */
+        /// <summary>Dashed.</summary>
         Dashed,
-        /**
-          <summary>Beveled.</summary>
-        */
+        /// <summary>Beveled.</summary>
         Beveled,
-        /**
-          <summary>Inset.</summary>
-        */
+        /// <summary>Inset.</summary>
         Inset,
-        /**
-          <summary>Underline.</summary>
-        */
+        /// <summary>Underline.</summary>
         Underline
     };
 }

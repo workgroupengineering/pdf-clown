@@ -1,13 +1,10 @@
 ﻿
 using PdfClown.Bytes;
-using PdfClown.Bytes.Filters;
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -25,7 +22,7 @@ namespace PdfClown.Documents.Contents
                 for (int i = 0; i < filterArray.Count; i++)
                 {
                     var filterItem = (PdfName)filterArray[i];
-                    var parameterItem = parameterArray?[i];
+                    var parameterItem = parameterArray?.TryGet(i);
                     var temp = ExtractImage(imageObject, data, filterItem, parameterItem, imageObject.Header);
                     if (temp is IByteStream tempBuffer)
                     {
@@ -124,7 +121,7 @@ namespace PdfClown.Documents.Contents
         private float max;
         private float interpolateConst;
         private Memory<byte> buffer;
-        private bool imageMask;
+        private bool isMask;
         private float[] decode;
         private IImageObject sMask;
         private BitmapLoader sMaskLoader;
@@ -161,7 +158,7 @@ namespace PdfClown.Documents.Contents
             this.state = state;
             this.image = image;
             this.buffer = buffer;
-            imageMask = image.ImageMask;
+            isMask = image.ImageMask;
             decode = image.Decode;
             matte = image.Matte;
             width = (int)image.Size.Width;
@@ -177,7 +174,7 @@ namespace PdfClown.Documents.Contents
             {
                 sMaskLoader = new BitmapLoader(sMask, state);
             }
-            if (!imageMask)
+            if (!isMask)
             {
                 colorSpace = image.ColorSpace;
                 if (colorSpace == null)// || (image.Filter?.Equals(PdfName.DCTDecode) ?? false) || (image.Filter?.Equals(PdfName.DCT) ?? false))
@@ -219,7 +216,7 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        public void GetColor(int y, int x, int index, Span<float> components, Span<byte> buffer)
+        unsafe public void GetColor(int y, int x, int index, Span<float> components, byte* buffer)
         {
             switch (bitsPerComponent)
             {
@@ -345,7 +342,7 @@ namespace PdfClown.Documents.Contents
 
         public SKBitmap Load()
         {
-            if (imageMask)
+            if (isMask)
             {
                 return LoadMask();
             }
@@ -359,88 +356,94 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        public SKBitmap LoadRgbImage()
+        unsafe public SKBitmap LoadRgbImage()
         {
-            var info = new SKImageInfo(width, height)
+            fixed (byte* buffer = this.buffer.Span)
             {
-                AlphaType = SKAlphaType.Unpremul,
-            };
-            if (iccColorSpace != null)
-            {
-                //info.ColorSpace = iccColorSpace.GetSKColorSpace();
-            }
-            // create the buffer that will hold the pixels
-            var raster = new uint[info.Width * info.Height];//var bitmap = new SKBitmap();
-            Span<float> components = stackalloc float[componentsCount];
-            Span<float> maskComponents = sMaskLoader != null ? stackalloc float[sMaskLoader.componentsCount] : Span<float>.Empty;
-            var buffer = this.buffer.Span;
-            var maskBuffer = sMaskLoader != null ? sMaskLoader.buffer.Span : Span<byte>.Empty;
-            for (int y = 0; y < info.Height; y++)
-            {
-                var row = y * info.Width;
-                for (int x = 0; x < info.Width; x++)
+                var info = new SKImageInfo(width, height)
                 {
-                    var index = row + x;
-                    GetColor(y, x, index, components, buffer);
-                    var skColor = colorSpace.GetSKColor(components, null);
-                    if (sMaskLoader != null)
-                    {
-                        sMaskLoader.GetColor(y, x, index, maskComponents, maskBuffer);
-                        //alfa
-                        skColor = skColor.WithAlpha((byte)(maskComponents[0] * 255));
-                        //shaping
-                        //for (int i = 0; i < color.Components.Count; i++)
-                        //{
-                        //    var m = sMaskLoader.matte == null ? 0D : ((IPdfNumber)sMaskLoader.matte[i]).DoubleValue;
-                        //    var a = ((IPdfNumber)sMaskColor.Components[sMaskColor.Components.Count == color.Components.Count ? i : 0]).DoubleValue;
-                        //    var c = ((IPdfNumber)color.Components[i]).DoubleValue;
-                        //    color.Components[i] = new PdfReal(m + a * (c - m));
-                        //}
-                    }
-                    raster[index] = (uint)skColor;//bitmap.SetPixel(x, y, skColor);
+                    AlphaType = SKAlphaType.Unpremul,
+                };
+                if (iccColorSpace != null)
+                {
+                    //info.ColorSpace = iccColorSpace.GetSKColorSpace();
                 }
+                // create the buffer that will hold the pixels
+                var raster = new uint[info.Width * info.Height];//var bitmap = new SKBitmap();
+                Span<float> components = stackalloc float[componentsCount];
+                Span<float> maskComponents = sMaskLoader != null ? stackalloc float[sMaskLoader.componentsCount] : Span<float>.Empty;
+                fixed (byte* maskBuffer = sMaskLoader != null ? sMaskLoader.buffer.Span : null)
+                {
+                    for (int y = 0; y < info.Height; y++)
+                    {
+                        var row = y * info.Width;
+                        for (int x = 0; x < info.Width; x++)
+                        {
+                            var index = row + x;
+                            GetColor(y, x, index, components, buffer);
+                            var skColor = colorSpace.GetSKColor(components, null);
+                            if (sMaskLoader != null)
+                            {
+                                sMaskLoader.GetColor(y, x, index, maskComponents, maskBuffer);
+                                //alfa
+                                skColor = skColor.WithAlpha((byte)(maskComponents[0] * 255));
+                                //shaping
+                                //for (int i = 0; i < color.Components.Count; i++)
+                                //{
+                                //    var m = sMaskLoader.matte == null ? 0D : ((IPdfNumber)sMaskLoader.matte[i]).DoubleValue;
+                                //    var a = ((IPdfNumber)sMaskColor.Components[sMaskColor.Components.Count == color.Components.Count ? i : 0]).DoubleValue;
+                                //    var c = ((IPdfNumber)color.Components[i]).DoubleValue;
+                                //    color.Components[i] = new PdfReal(m + a * (c - m));
+                                //}
+                            }
+                            raster[index] = (uint)skColor;//bitmap.SetPixel(x, y, skColor);
+                        }
+                    }
+                }
+
+                // get a pointer to the buffer, and give it to the bitmap
+                var handler = GCHandle.Alloc(raster, GCHandleType.Pinned);
+                var ptr = handler.AddrOfPinnedObject();
+
+                var bitmap = new SKBitmap();
+                bitmap.InstallPixels(info, ptr, info.RowBytes, (addr, ctx) => handler.Free(), null);
+
+                return bitmap;
             }
-
-            // get a pointer to the buffer, and give it to the bitmap
-            var handler = GCHandle.Alloc(raster, GCHandleType.Pinned);
-            var ptr = handler.AddrOfPinnedObject();
-
-            var bitmap = new SKBitmap();
-            bitmap.InstallPixels(info, ptr, info.RowBytes, (addr, ctx) => handler.Free(), null);
-
-            return bitmap;
         }
 
-        public SKBitmap LoadGray()
+        unsafe public SKBitmap LoadGray()
         {
-            var info = new SKImageInfo(width, height)
+            fixed (byte* buffer = this.buffer.Span)
             {
-                AlphaType = SKAlphaType.Unpremul,
-                ColorType = SKColorType.Gray8
-            };
-            // create the buffer that will hold the pixels
-            var raster = new byte[info.Width * info.Height];
-            Span<float> components = stackalloc float[componentsCount];
-            var buffer = this.buffer.Span;
-            for (int y = 0; y < info.Height; y++)
-            {
-                var row = y * info.Width;
-                for (int x = 0; x < info.Width; x++)
+                var info = new SKImageInfo(width, height)
                 {
-                    var index = (row + x);
-                    GetColor(y, x, index, components, buffer);
-                    var skColor = colorSpace.GetSKColor(components, null);
+                    AlphaType = SKAlphaType.Unpremul,
+                    ColorType = SKColorType.Gray8
+                };
+                // create the buffer that will hold the pixels
+                var raster = new byte[info.Width * info.Height];
+                Span<float> components = stackalloc float[componentsCount];
+                for (int y = 0; y < info.Height; y++)
+                {
+                    var row = y * info.Width;
+                    for (int x = 0; x < info.Width; x++)
+                    {
+                        var index = (row + x);
+                        GetColor(y, x, index, components, buffer);
+                        var skColor = colorSpace.GetSKColor(components, null);
 
-                    raster[index] = skColor.Red;
+                        raster[index] = skColor.Red;
+                    }
                 }
+
+                // get a pointer to the buffer, and give it to the bitmap
+                var ptr = GCHandle.Alloc(raster, GCHandleType.Pinned);
+                var bitmap = new SKBitmap();
+                bitmap.InstallPixels(info, ptr.AddrOfPinnedObject(), info.RowBytes, (addr, ctx) => ptr.Free(), null);
+
+                return bitmap;
             }
-
-            // get a pointer to the buffer, and give it to the bitmap
-            var ptr = GCHandle.Alloc(raster, GCHandleType.Pinned);
-            var bitmap = new SKBitmap();
-            bitmap.InstallPixels(info, ptr.AddrOfPinnedObject(), info.RowBytes, (addr, ctx) => ptr.Free(), null);
-
-            return bitmap;
         }
 
         public SKMask LoadSKMask()
@@ -451,55 +454,55 @@ namespace PdfClown.Documents.Contents
             return skMask;
         }
 
-        public SKBitmap LoadMask()
+        unsafe public SKBitmap LoadMask()
         {
-            var buffer = this.buffer.Span;
-            var info = new SKImageInfo(width, height)
+            fixed (byte* buffer = this.buffer.Span)
             {
-                AlphaType = SKAlphaType.Unpremul,
-                ColorType = SKColorType.Alpha8
-            };
-            var raster = new byte[width * height];
-
-            for (int y = 0; y < height; y++)
-            {
-                var row = y * width;
-                for (int x = 0; x < width; x++)
+                var info = new SKImageInfo(width, height)
                 {
-                    var index = (row + x);
-                    byte value = 0;
-                    if (bitsPerComponent == 1)
+                    AlphaType = SKAlphaType.Unpremul,
+                    ColorType = SKColorType.Alpha8
+                };
+                var raster = new byte[width * height];
+                var invert = decode[0] == 1;
+                for (int y = 0; y < height; y++)
+                {
+                    var row = y * width;
+                    for (int x = 0; x < width; x++)
                     {
-                        var byteIndex = (rowBytes * y) + x / 8;
-                        var byteValue = buffer[byteIndex];
+                        var index = (row + x);
+                        byte value = 0;
+                        if (bitsPerComponent == 1)
+                        {
+                            var byteIndex = (rowBytes * y) + x / 8;
+                            var byteValue = buffer[byteIndex];
 
-                        var bitIndex = 7 - x % 8;
-                        value = ((byteValue >> bitIndex) & 1) == 0 ? (byte)255 : (byte)0;
-                        if (decode[0] == 1)
-                        {
-                            value = value == 0 ? (byte)255 : (byte)0;
+                            var bitIndex = 7 - x % 8;
+                            value = ((byteValue >> bitIndex) & 1) == 0 ? (byte)255 : (byte)0;
+                            if (invert)
+                            {
+                                value = value == 0 ? (byte)255 : (byte)0;
+                            }
                         }
-                    }
-                    else if (bitsPerComponent == 8)
-                    {
-                        value = buffer[index];
-                        if (decode[0] == 1)
+                        else if (bitsPerComponent == 8)
                         {
-                            value = (byte)(255 - value);
+                            value = buffer[index];
+                            if (invert)
+                            {
+                                value = (byte)(255 - value);
+                            }
                         }
+                        raster[index] = value;// (int)(uint)skColor.WithAlpha(value);
                     }
-                    else
-                    { }
-                    raster[index] = value;// (int)(uint)skColor.WithAlpha(value);
                 }
+
+                // get a pointer to the buffer, and give it to the bitmap
+                var ptr = GCHandle.Alloc(raster, GCHandleType.Pinned);
+                var bitmap = new SKBitmap();
+                bitmap.InstallPixels(info, ptr.AddrOfPinnedObject(), info.RowBytes, (addr, ctx) => ptr.Free(), null);
+
+                return bitmap;
             }
-
-            // get a pointer to the buffer, and give it to the bitmap
-            var ptr = GCHandle.Alloc(raster, GCHandleType.Pinned);
-            var bitmap = new SKBitmap();
-            bitmap.InstallPixels(info, ptr.AddrOfPinnedObject(), info.RowBytes, (addr, ctx) => ptr.Free(), null);
-
-            return bitmap;
         }
 
         public static bool IsImage(byte[] buf)

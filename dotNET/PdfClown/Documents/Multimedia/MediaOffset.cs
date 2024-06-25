@@ -23,26 +23,17 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Media offset [PDF:1.7:9.1.5].</summary>
-    */
+    /// <summary>Media offset [PDF:1.7:9.1.5].</summary>
     [PDF(VersionEnum.PDF15)]
     public abstract class MediaOffset : PdfObjectWrapper<PdfDictionary>
     {
-        /**
-          <summary>Media offset frame [PDF:1.7:9.1.5].</summary>
-        */
+        /// <summary>Media offset frame [PDF:1.7:9.1.5].</summary>
         public sealed class Frame : MediaOffset
         {
             public Frame(PdfDocument context, int value) : base(context, PdfName.F)
@@ -51,9 +42,7 @@ namespace PdfClown.Documents.Multimedia
             public Frame(PdfDirectObject baseObject) : base(baseObject)
             { }
 
-            /**
-              <summary>Gets/Sets the (zero-based) frame within a media object.</summary>
-            */
+            /// <summary>Gets/Sets the (zero-based) frame within a media object.</summary>
             public override object Value
             {
                 get => BaseDataObject.GetInt(PdfName.F);
@@ -63,14 +52,12 @@ namespace PdfClown.Documents.Multimedia
                     if (intValue < 0)
                         throw new ArgumentException("MUST be non-negative.");
 
-                    BaseDataObject.SetInt(PdfName.F, intValue);
+                    BaseDataObject.Set(PdfName.F, intValue);
                 }
             }
         }
 
-        /**
-          <summary>Media offset marker [PDF:1.7:9.1.5].</summary>
-        */
+        ///  <summary>Media offset marker [PDF:1.7:9.1.5].</summary>
         public sealed class Marker : MediaOffset
         {
             public Marker(PdfDocument context, string value)
@@ -81,9 +68,7 @@ namespace PdfClown.Documents.Multimedia
                 : base(baseObject)
             { }
 
-            /**
-              <summary>Gets a named offset within a media object.</summary>
-            */
+            /// <summary>Gets a named offset within a media object.</summary>
             public override object Value
             {
                 get => BaseDataObject.GetString(PdfName.M);
@@ -91,9 +76,7 @@ namespace PdfClown.Documents.Multimedia
             }
         }
 
-        /**
-          <summary>Media offset time [PDF:1.7:9.1.5].</summary>
-        */
+        /// <summary>Media offset time [PDF:1.7:9.1.5].</summary>
         public sealed class Time : MediaOffset
         {
             public Time(PdfDocument context, double value) : base(context, PdfName.T)
@@ -102,9 +85,7 @@ namespace PdfClown.Documents.Multimedia
             internal Time(PdfDirectObject baseObject) : base(baseObject)
             { }
 
-            /**
-              <summary>Gets/Sets the temporal offset (in seconds).</summary>
-            */
+            /// <summary>Gets/Sets the temporal offset (in seconds).</summary>
             public override object Value
             {
                 get => Timespan.Time;
@@ -120,12 +101,12 @@ namespace PdfClown.Documents.Multimedia
                 return null;
             if (baseObject.Wrapper is MediaOffset offset)
                 return offset;
-            
+
             PdfDictionary dataObject = (PdfDictionary)baseObject.Resolve();
             var offsetType = dataObject.Get<PdfName>(PdfName.S);
             if (offsetType == null
               || (dataObject.ContainsKey(PdfName.Type)
-                  && !dataObject[PdfName.Type].Equals(PdfName.MediaOffset)))
+                  && !PdfName.MediaOffset.Equals(dataObject.Get<PdfName>(PdfName.Type))))
                 return null;
 
             if (offsetType.Equals(PdfName.F))
@@ -149,9 +130,7 @@ namespace PdfClown.Documents.Multimedia
         public MediaOffset(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the offset value.</summary>
-        */
+        /// <summary>Gets/Sets the offset value.</summary>
         public abstract object Value
         {
             get;

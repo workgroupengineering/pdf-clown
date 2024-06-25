@@ -1,4 +1,5 @@
-﻿using PdfClown.Documents.Contents.ColorSpaces;
+﻿using PdfClown.Bytes;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
 using SkiaSharp;
 using System.Collections.Generic;
@@ -11,9 +12,10 @@ namespace PdfClown.Documents.Contents
         ColorSpace ColorSpace { get; }
         PdfDirectObject Filter { get; }
         PdfDirectObject Parameters { get; }
-        Bytes.IByteStream Data { get; }
+        IByteStream Data { get; }
         SKSize Size { get; }
         IImageObject SMask { get; }
+        PdfDirectObject Mask { get; }
         bool ImageMask { get; }
         PdfArray Matte { get; }
         IDictionary<PdfName, PdfDirectObject> Header { get; }

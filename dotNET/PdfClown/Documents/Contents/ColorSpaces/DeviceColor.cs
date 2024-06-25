@@ -47,11 +47,11 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             switch (components.Count)
             {
                 case 1:
-                    return DeviceGrayColor.Get(components);
+                    return (DeviceColor)DeviceGrayColorSpace.Default.GetColor(components);
                 case 3:
-                    return DeviceRGBColor.Get(components);
+                    return (DeviceColor)DeviceRGBColorSpace.Default.GetColor(components);
                 case 4:
-                    return DeviceCMYKColor.Get(components);
+                    return (DeviceColor)DeviceCMYKColorSpace.Default.GetColor(components);
                 default:
                     return null;
             }

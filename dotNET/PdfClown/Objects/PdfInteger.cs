@@ -30,17 +30,19 @@ using System.Runtime.CompilerServices;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF integer number object [PDF:1.6:3.2.2].</summary>
-    */
+    /// <summary>PDF integer number object [PDF:1.6:3.2.2].</summary>
     public sealed class PdfInteger : PdfSimpleObject<int>, IPdfNumber
     {
         public static readonly PdfInteger Default = new PdfInteger(0);
 
         ///<summary>Gets the object equivalent to the given value.</summary>
-        public static PdfInteger Get(int? value) => value.HasValue ? new PdfInteger(value.Value) : null;
-        
-        public static PdfInteger Get(long? value) => value.HasValue ? new PdfInteger((int)value.Value) : null;
+        public static PdfInteger Get(int? value) => value.HasValue ? Get(value.Value) : null;
+
+        public static PdfInteger Get(long? value) => value.HasValue ? Get((int)value.Value) : null;
+
+        public static PdfInteger Get(int value) => value == 0 ? Default : new PdfInteger(value);
+
+        public static PdfInteger Get(long value) => value == 0 ? Default : new PdfInteger((int)value);
 
         public PdfInteger(int value) => RawValue = value;
 

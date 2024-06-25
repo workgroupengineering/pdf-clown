@@ -199,8 +199,7 @@ namespace PdfClown.Documents.Contents.Fonts
           IList<KeyValuePair<ByteKey, int>[]> cidRanges,
           IList<KeyValuePair<ByteKey, int>> cidChars,
           KeyValuePair<ByteKey, int> lastEntry,
-          KeyValuePair<ByteKey, int>[] lastRange
-          )
+          KeyValuePair<ByteKey, int>[] lastRange)
         {
             if (lastRange != null) // Range.
             {

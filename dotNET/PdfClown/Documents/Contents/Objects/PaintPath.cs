@@ -43,7 +43,7 @@ namespace PdfClown.Documents.Contents.Objects
         public const string CloseStrokeOperatorKeyword = "s";
         public const string EndPathNoOpOperatorKeyword = "n";
         public const string FillEvenOddOperatorKeyword = "f*";
-        public const string FillObsoleteOperatorKeyword = "F";
+        public const string FillCompatibleOperatorKeyword = "F";
         public const string FillOperatorKeyword = "f";
         public const string FillStrokeEvenOddOperatorKeyword = "B*";
         public const string FillStrokeOperatorKeyword = "B";
@@ -92,19 +92,11 @@ namespace PdfClown.Documents.Contents.Objects
         public PaintPath(string @operator) : base(@operator)
         { }
 
-        ///<summary>Gets the filling rule.</summary>
-        public abstract WindModeEnum FillMode { get; }
-
-        ///<summary>Gets whether the current path has to be closed.</summary>
-        public abstract bool Closed { get; }
-
-        ///<summary>Gets whether the current path has to be filled.</summary>
-        public abstract bool Filled { get; }
-
-        ///<summary>Gets whether the current path has to be stroked.</summary>
-        public abstract bool Stroked { get; }
-
-
+        public override void Scan(GraphicsState state)
+        {
+            state.ModifyClipPath?.Scan(state);
+            state.ModifyClipPath = null;
+        }
     }
 
     public sealed class PaintCloseFillStrokePath : PaintPath
@@ -113,33 +105,24 @@ namespace PdfClown.Documents.Contents.Objects
         {
         }
 
-        public override WindModeEnum FillMode => WindModeEnum.NonZero;
-
-        public override bool Closed => true;
-
-        public override bool Filled => true;
-
-        public override bool Stroked => true;
-
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
-            var pathObject = scanner.RenderObject;
-            var context = scanner.RenderContext;
-            if (pathObject != null)
+            if (scanner.Canvas is SKCanvas canvas)
             {
+                var pathObject = scanner.Path;
                 pathObject.Close();
-                pathObject.FillType = SKPathFillType.Winding;
                 using (var paint = state.CreateFillPaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
 
                 using (var paint = state.CreateStrokePaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
             }
+            base.Scan(state);
         }
     }
 
@@ -149,33 +132,25 @@ namespace PdfClown.Documents.Contents.Objects
         {
         }
 
-        public override WindModeEnum FillMode => WindModeEnum.EvenOdd;
-
-        public override bool Closed => true;
-
-        public override bool Filled => true;
-
-        public override bool Stroked => true;
-
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
-            var pathObject = scanner.RenderObject;
-            var context = scanner.RenderContext;
-            if (pathObject != null)
+            if (scanner.Canvas is SKCanvas canvas)
             {
+                var pathObject = scanner.Path;
                 pathObject.Close();
                 pathObject.FillType = SKPathFillType.EvenOdd;
                 using (var paint = state.CreateFillPaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
 
                 using (var paint = state.CreateStrokePaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
             }
+            base.Scan(state);
         }
     }
 
@@ -185,28 +160,20 @@ namespace PdfClown.Documents.Contents.Objects
         {
         }
 
-        public override WindModeEnum FillMode => (WindModeEnum)(-1);
-
-        public override bool Closed => true;
-
-        public override bool Filled => false;
-
-        public override bool Stroked => true;
-
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
-            var pathObject = scanner.RenderObject;
-            var context = scanner.RenderContext;
-            if (pathObject != null)
+            if (scanner.Canvas is SKCanvas canvas)
             {
+                var pathObject = scanner.Path;
                 pathObject.Close();
 
                 using (var paint = state.CreateStrokePaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
             }
+            base.Scan(state);
         }
     }
 
@@ -216,17 +183,9 @@ namespace PdfClown.Documents.Contents.Objects
         {
         }
 
-        public override WindModeEnum FillMode => (WindModeEnum)(-1);
-
-        public override bool Closed => false;
-
-        public override bool Filled => false;
-
-        public override bool Stroked => false;
-
         public override void Scan(GraphicsState state)
         {
-
+            base.Scan(state);
         }
     }
 
@@ -236,27 +195,18 @@ namespace PdfClown.Documents.Contents.Objects
         {
         }
 
-        public override WindModeEnum FillMode => WindModeEnum.NonZero;
-
-        public override bool Closed => false;
-
-        public override bool Filled => true;
-
-        public override bool Stroked => false;
-
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
-            var pathObject = scanner.RenderObject;
-            var context = scanner.RenderContext;
-            if (pathObject != null)
+            if (scanner.Canvas is SKCanvas canvas)
             {
-                pathObject.FillType = SKPathFillType.Winding;
+                var pathObject = scanner.Path;
                 using (var paint = state.CreateFillPaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
             }
+            base.Scan(state);
         }
     }
 
@@ -266,27 +216,19 @@ namespace PdfClown.Documents.Contents.Objects
         {
         }
 
-        public override WindModeEnum FillMode => WindModeEnum.EvenOdd;
-
-        public override bool Closed => false;
-
-        public override bool Filled => true;
-
-        public override bool Stroked => false;
-
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
-            var pathObject = scanner.RenderObject;
-            var context = scanner.RenderContext;
-            if (pathObject != null)
+            if (scanner.Canvas is SKCanvas canvas)
             {
+                var pathObject = scanner.Path;
                 pathObject.FillType = SKPathFillType.EvenOdd;
                 using (var paint = state.CreateFillPaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
             }
+            base.Scan(state);
         }
     }
 
@@ -296,32 +238,23 @@ namespace PdfClown.Documents.Contents.Objects
         {
         }
 
-        public override WindModeEnum FillMode => WindModeEnum.NonZero;
-
-        public override bool Closed => false;
-
-        public override bool Filled => true;
-
-        public override bool Stroked => true;
-
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
-            var pathObject = scanner.RenderObject;
-            var context = scanner.RenderContext;
-            if (pathObject != null)
+            if (scanner.Canvas is SKCanvas canvas)
             {
-                pathObject.FillType = SKPathFillType.Winding;
+                var pathObject = scanner.Path;
                 using (var paint = state.CreateFillPaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
 
                 using (var paint = state.CreateStrokePaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
             }
+            base.Scan(state);
         }
     }
 
@@ -331,32 +264,24 @@ namespace PdfClown.Documents.Contents.Objects
         {
         }
 
-        public override WindModeEnum FillMode => WindModeEnum.EvenOdd;
-
-        public override bool Closed => false;
-
-        public override bool Filled => true;
-
-        public override bool Stroked => true;
-
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
-            var pathObject = scanner.RenderObject;
-            var context = scanner.RenderContext;
-            if (pathObject != null)
+            if (scanner.Canvas is SKCanvas canvas)
             {
+                var pathObject = scanner.Path;
                 pathObject.FillType = SKPathFillType.EvenOdd;
                 using (var paint = state.CreateFillPaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
 
                 using (var paint = state.CreateStrokePaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
             }
+            base.Scan(state);
         }
     }
 
@@ -366,26 +291,18 @@ namespace PdfClown.Documents.Contents.Objects
         {
         }
 
-        public override WindModeEnum FillMode => (WindModeEnum)(-1);
-
-        public override bool Closed => false;
-
-        public override bool Filled => false;
-
-        public override bool Stroked => true;
-
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
-            var pathObject = scanner.RenderObject;
-            var context = scanner.RenderContext;
-            if (pathObject != null)
+            if (scanner.Canvas is SKCanvas canvas)
             {
+                var pathObject = scanner.Path;
                 using (var paint = state.CreateStrokePaint())
                 {
-                    context.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, paint);
                 }
             }
+            base.Scan(state);
         }
     }
 }

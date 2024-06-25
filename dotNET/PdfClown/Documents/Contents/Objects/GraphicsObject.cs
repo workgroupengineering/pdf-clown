@@ -38,8 +38,8 @@ namespace PdfClown.Documents.Contents.Objects
         protected GraphicsObject()
         { }
 
-        protected GraphicsObject(ContentObject obj)
-        { objects.Add(obj); }
+        protected GraphicsObject(ContentObject obj) : base(obj)
+        { }
 
         protected GraphicsObject(IList<ContentObject> objects) : base(objects)
         { }

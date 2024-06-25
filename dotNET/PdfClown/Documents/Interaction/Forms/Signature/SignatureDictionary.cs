@@ -90,7 +90,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         public DateTime? DateM
         {
             get => BaseDataObject.GetNDate(PdfName.M);
-            set => BaseDataObject.SetDate(PdfName.M, value);
+            set => BaseDataObject.Set(PdfName.M, value);
         }
 
         public string Name
@@ -130,14 +130,11 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         }
 
 
-        /**
-     * Will return the embedded signature between the byterange gap.
-     *
-     * @param pdfFile The signed pdf file as InputStream. It will be closed in this method.
-     * @return a byte array containing the signature
-     * @throws IOException if the pdfFile can't be read
-     * @throws IndexOutOfBoundsException if the byterange array is not long enough
-     */
+        /// <summary>
+        /// Will return the embedded signature between the byterange gap.
+        /// </summary>
+        /// <param name="pdfFile">The signed pdf file as InputStream. It will be closed in this method.</param>
+        /// <returns>a byte array containing the signature</returns>
         public Memory<byte> GetContents(IInputStream pdfFile)
         {
             var byteRange = ByteRange;
@@ -148,14 +145,11 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             return GetConvertedContents(input);
         }
 
-        /**
-     * Will return the embedded signature between the byterange gap.
-     *
-     * @param pdfFile The signed pdf file as byte array
-     * @return a byte array containing the signature
-     * @throws IOException if the pdfFile can't be read
-     * @throws IndexOutOfBoundsException if the byterange array is not long enough
-     */
+        /// <summary>
+        /// Will return the embedded signature between the byterange gap.
+        /// </summary>
+        /// <param name="pdfFile">The signed pdf file as byte array</param>
+        /// <returns>a byte array containing the signature</returns>
         public Memory<byte> GetContents(Memory<byte> pdfFile)
         {
             var byteRange = ByteRange;
@@ -165,7 +159,6 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             using var input = new ByteStream(pdfFile.Slice(begin, len));
             return GetConvertedContents(input);
         }
-
 
         private Memory<byte> GetConvertedContents(IInputStream input)
         {

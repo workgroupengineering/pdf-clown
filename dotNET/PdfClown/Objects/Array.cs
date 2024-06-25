@@ -28,91 +28,59 @@ using PdfClown.Documents;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Collection of sequentially-arranged object wrappers.</summary>
-    */
+
+    ///<summary>Collection of sequentially-arranged object wrappers.</summary>
     public class Array<TItem> : PdfObjectWrapper<PdfArray>, IList<TItem>
         where TItem : IPdfObjectWrapper
     {
-        /**
-          <summary>Item instancer.</summary>
-        */
-        public interface IWrapper<T> where T : TItem
-        {
-            T Wrap(PdfDirectObject baseObject);
-        }
 
-        private class DefaultWrapper<T> : IWrapper<T> where T : TItem
-        {
-            internal DefaultWrapper()
-            { }
+        protected IEntryWrapper<TItem> itemWrapper;
 
-            public T Wrap(PdfDirectObject baseObject)
-            {
-                return PdfObjectWrapper.Wrap<T>(baseObject);
-            }
-        }
-
-        protected IWrapper<TItem> itemWrapper;
-
-        /**
-          <summary>Wraps a new base array using the default wrapper for wrapping its items.</summary>
-          <param name="context">Document context.</param>
-        */
+        ///<summary>Wraps a new base array using the default wrapper for wrapping its items.</summary>
+        ///<param name="context">Document context.</param>
         public Array(PdfDocument context)
             : this(context, new PdfArray())
         { }
 
-        /**
-          <summary>Wraps a new base array using the specified wrapper for wrapping its items.</summary>
-          <param name="context">Document context.</param>
-          <param name="itemWrapper">Item wrapper.</param>
-        */
-        public Array(PdfDocument context, IWrapper<TItem> itemWrapper)
+        ///<summary>Wraps a new base array using the specified wrapper for wrapping its items.</summary>
+        ///<param name="context">Document context.</param>
+        ///<param name="itemWrapper">Item wrapper.</param>
+        public Array(PdfDocument context, IEntryWrapper<TItem> itemWrapper)
             : this(context, itemWrapper, new PdfArray())
         { }
 
-        /**
-          <summary>Wraps the specified base array using the default wrapper for wrapping its items.</summary>
-          <param name="context">Document context.</param>
-          <param name="baseDataObject">Base array.</param>
-        */
+        /// <summary>Wraps the specified base array using the default wrapper for wrapping its items.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="baseDataObject">Base array.</param>
         public Array(PdfDocument context, PdfArray baseDataObject)
-            : this(context, new DefaultWrapper<TItem>(), baseDataObject)
+            : this(context, EntryWrapper<TItem>.Default, baseDataObject)
         { }
 
-        /**
-          <summary>Wraps the specified base array using the specified wrapper for wrapping its items.</summary>
-          <param name="context">Document context.</param>
-          <param name="itemWrapper">Item wrapper.</param>
-          <param name="baseDataObject">Base array.</param>
-        */
-        public Array(PdfDocument context, IWrapper<TItem> itemWrapper, PdfArray baseDataObject)
+        /// <summary>Wraps the specified base array using the specified wrapper for wrapping its items.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="itemWrapper">Item wrapper.</param>
+        /// <param name="baseDataObject">Base array.</param>
+        public Array(PdfDocument context, IEntryWrapper<TItem> itemWrapper, PdfArray baseDataObject)
             : base(context, baseDataObject)
         {
             this.itemWrapper = itemWrapper;
         }
 
-        /**
-          <summary>Wraps an existing base array using the default wrapper for wrapping its items.</summary>
-          <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
-          everytime available.</param>
-        */
+        /// <summary>Wraps an existing base array using the default wrapper for wrapping its items.</summary>
+        /// <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
+        /// everytime available.</param>
         public Array(PdfDirectObject baseObject)
-            : this(new DefaultWrapper<TItem>(), baseObject)
+            : this(EntryWrapper<TItem>.Default, baseObject)
         { }
 
-        /**
-          <summary>Wraps an existing base array using the specified wrapper for wrapping its items.</summary>
-          <param name="itemWrapper">Item wrapper.</param>
-          <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
-          everytime available.</param>
-        */
-        public Array(IWrapper<TItem> itemWrapper, PdfDirectObject baseObject) : base(baseObject)
+        /// <summary>Wraps an existing base array using the specified wrapper for wrapping its items.</summary>
+        /// <param name="itemWrapper">Item wrapper.</param>
+        /// <param name="baseObject">Base array. MUST be a <see cref="PdfReference">reference</see>
+        /// everytime available.</param>
+        public Array(IEntryWrapper<TItem> itemWrapper, PdfDirectObject baseObject) : base(baseObject)
         {
             this.itemWrapper = itemWrapper;
         }
@@ -142,9 +110,9 @@ namespace PdfClown.Objects
 
         public virtual void CopyTo(TItem[] items, int index)
         {
-            for (int i = 0; i < items.Length; i++)
+            foreach (TItem entry in this)
             {
-                items[i] = this[index + i];
+                items[index++] = entry;
             }
         }
 
@@ -154,12 +122,32 @@ namespace PdfClown.Objects
 
         public virtual bool Remove(TItem item) => BaseDataObject.Remove(item.BaseObject);
 
-        public virtual IEnumerator<TItem> GetEnumerator()
-        {
-            for (int index = 0, length = Count; index < length; index++)
-            { yield return this[index]; }
-        }
+        public virtual Enumerator GetEnumerator() => new Enumerator(this);
 
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+        IEnumerator<TItem> IEnumerable<TItem>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public struct Enumerator : IEnumerator<TItem>, IEnumerator, IDisposable
+        {
+            private List<PdfDirectObject>.Enumerator enumer;
+            private IEntryWrapper<TItem> wrapper;
+
+            internal Enumerator(Array<TItem> items)
+            {
+                this.wrapper = items.itemWrapper;
+                this.enumer = items.BaseDataObject.GetEnumerator();
+            }
+
+            public TItem Current => wrapper.Wrap(enumer.Current);
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() => enumer.Dispose();
+
+            public bool MoveNext() => enumer.MoveNext();
+
+            public void Reset() => ((IEnumerator)enumer).Reset();
+        }
     }
 }

@@ -23,15 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using colors = PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Objects;
-using xObjects = PdfClown.Documents.Contents.XObjects;
-using PdfClown.Files;
-using System.Collections;
-using System.Collections.Generic;
-using SkiaSharp;
 using PdfClown.Documents.Contents.Scanner;
+using SkiaSharp;
+using System.Collections.Generic;
+using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Contents
 {
@@ -47,67 +44,46 @@ namespace PdfClown.Documents.Contents
     */
     public sealed partial class ContentScanner
     {
+        //private struct ContentScannerFrame
+        //{
+        //    public GraphicsState State;
+        //    public SKCanvas Cnavas;
+        //    public ContentObject Object;
+        //}
+
         /**
           <summary>Handles the scan start notification.</summary>
           <param name="scanner">Content scanner started.</param>
         */
         public delegate void OnStartEventHandler(ContentScanner scanner);
 
-        /**
-          <summary>Notifies the scan start.</summary>
-        */
+        ///<summary>Notifies the scan start.</summary>
         public event OnStartEventHandler OnStart;
 
         private static readonly int StartIndex = -1;
-        private static readonly SKPaint paintWhiteBackground = new SKPaint { Color = SKColors.White, Style = SKPaintStyle.Fill };
 
-        /**
-          Child level.
-        */
+        ///Child level.
         private ContentScanner childLevel;
-        /**
-          Content objects collection.
-        */
+        ///Content objects collection.
         private ContentWrapper contents;
-        /**
-          Current object index at this level.
-        */
+        ///Current object index at this level.
         private int index = 0;
-        /**
-          Object collection at this level.
-        */
+        ///Object collection at this level.
         private IList<ContentObject> objects;
 
-        /**
-          Parent level.
-        */
+        ///Parent level.
         private ContentScanner parentLevel;
         private ContentScanner resourceParentLevel;
-        /**
-          Current graphics state.
-        */
+        ///Current graphics state.
         private GraphicsState state;
 
-        /**
-          Rendering context.
-        */
-        private SKCanvas renderContext;
-        /**
-          Rendering object.
-        */
-        private SKPath renderObject;
+        ///Rendering context.
+        private SKCanvas canvas;
+        ///Rendering object.
+        private SKPath path;
 
-        /**
-          <summary>Size of the graphics canvas.</summary>
-          <remarks>According to the current processing (whether it is device-independent scanning or
-          device-based rendering), it may be expressed, respectively, in user-space units or in
-          device-space units.</remarks>
-        */
-        private SKSize canvasSize;
-        /**
-          <summary>Device-independent size of the graphics canvas.</summary>
-        */
-        private SKSize contextSize;
+        ///<summary>Device-independent size of the graphics canvas.</summary>
+        private SKRect contextBox;
 
         /**
           <summary>Instantiates a top-level content scanner.</summary>
@@ -115,100 +91,72 @@ namespace PdfClown.Documents.Contents
         */
 
         public ContentScanner(ContentWrapper contents)
-        {
-            parentLevel = null;
-            objects =
-                this.contents = contents;
-
-            canvasSize =
-                contextSize = contents.ContentContext.Box.Size;
-
-            MoveStart();
-        }
+            : this(contents, contents, null, null, contents.ContentContext.Box)
+        { }
 
         /**
           <summary>Instantiates a top-level content scanner.</summary>
-          <param name="contentContext">Content context containing the content objects collection to scan.</param>
+          <param name="context">Content context containing the content objects collection to scan.</param>
         */
-        public ContentScanner(IContentContext contentContext) : this(contentContext.Contents)
+        public ContentScanner(IContentContext context) : this(context.Contents)
         { }
 
         /**
           <summary>Instantiates a child-level content scanner for <see cref="PdfClown.Documents.Contents.XObjects.FormXObject">external form</see>.</summary>
-          <param name="formXObject">External form.</param>
+          <param name="context">External form.</param>
           <param name="parentLevel">Parent scan level.</param>
         */
-        public ContentScanner(xObjects::FormXObject formXObject, ContentScanner parentLevel)
-        {
-            this.parentLevel = parentLevel;
-            objects =
-                contents = formXObject.Contents;
+        public ContentScanner(IContentContext context, ContentScanner parentLevel)
+            : this(context.Contents, parentLevel, parentLevel.Canvas, parentLevel.ContextBox)
+        { }
 
-            canvasSize =
-                contextSize = parentLevel.contextSize;
-
-            renderContext = parentLevel.RenderContext;
-            MoveStart();
-        }
-
-        public ContentScanner(xObjects::FormXObject formXObject, ContentScanner parentLevel, SKCanvas canvas, SKSize size)
-        {
-            this.resourceParentLevel = parentLevel;
-            objects =
-                contents = formXObject.Contents;
-
-            canvasSize =
-                contextSize = size;
-
-            renderContext = canvas;
-            MoveStart();
-        }
+        public ContentScanner(IContentContext context, SKCanvas canvas, SKRect box, SKColor? clearColor = null)
+            : this(context.Contents, null, canvas, box, clearColor)
+        { }
 
         /**
           <summary>Instantiates a child-level content scanner.</summary>
           <param name="parentLevel">Parent scan level.</param>
         */
         private ContentScanner(ContentScanner parentLevel)
+            : this(parentLevel.contents, ((CompositeObject)parentLevel.Current).Objects, parentLevel, parentLevel.Canvas, parentLevel.ContextBox)
+        { }
+
+        private ContentScanner(ContentWrapper contents, ContentScanner parentLevel, SKCanvas canvas, SKRect box, SKColor? clearColor = null)
+            : this(contents, contents, parentLevel, canvas, box, clearColor)
+        { }
+
+        private ContentScanner(ContentWrapper contentWrapper, IList<ContentObject> objects, ContentScanner parentLevel, SKCanvas canvas, SKRect box, SKColor? clearColor = null)
         {
             this.parentLevel = parentLevel;
-            this.contents = parentLevel.contents;
-            this.objects = ((CompositeObject)parentLevel.Current).Objects;
-
-            canvasSize = contextSize = parentLevel.contextSize;
-
+            this.contents = contentWrapper;
+            this.objects = objects;
+            this.canvas = canvas;
+            contextBox = box;
+            ClearColor = clearColor;
+            ClearCanvas();
             MoveStart();
         }
 
-        /**
-          <summary>Gets the size of the current imageable area.</summary>
-          <remarks>It can be either the user-space area (dry scanning) or the device-space area (wet
-          scanning).</remarks>
-        */
-        public SKSize CanvasSize => canvasSize;
+        ///<summary>Size of the graphics canvas.</summary>
+        ///<remarks>According to the current processing (whether it is device-independent scanning or
+        ///device-based rendering), it may be expressed, respectively, in user-space units or in
+        ///device-space units.</remarks>
+        public SKRect CanvasBox => Canvas?.DeviceClipBounds ?? ContextBox;
 
-        /**
-          <summary>Gets the current child scan level.</summary>
-        */
+        ///<summary>Gets the current child scan level.</summary>
         public ContentScanner ChildLevel => childLevel;
 
-        /**
-          <summary>Gets the content context associated to the content objects collection.</summary>
-        */
-        public IContentContext ContentContext => contents.ContentContext;
+        ///<summary>Gets the content context associated to the content objects collection.</summary>
+        public IContentContext Context => contents.ContentContext;
 
-        /**
-          <summary>Gets the content objects collection this scanner is inspecting.</summary>
-        */
+        ///<summary>Gets the content objects collection this scanner is inspecting.</summary>
         public ContentWrapper Contents => contents;
 
-        /**
-          <summary>Gets the size of the current imageable area in user-space units.</summary>
-        */
-        public SKSize ContextSize => contextSize;
+        ///<summary>Gets the size of the current imageable area in user-space units.</summary>
+        public SKRect ContextBox => contextBox;
 
-        /**
-          <summary>Gets/Sets the current content object.</summary>
-        */
+        ///<summary>Gets/Sets the current content object.</summary>
         public ContentObject Current
         {
             get
@@ -225,29 +173,25 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        /**
-          <summary>Gets the current content object's information.</summary>
-        */
+        ///<summary>Gets the current content object's information.</summary>
         public GraphicsObjectWrapper CurrentWrapper => GraphicsObjectWrapper.Get(this);
 
-        /**
-          <summary>Gets the current position.</summary>
-        */
+        ///<summary>Gets the current position.</summary>
         public int Index => index;
 
-        /**
-         <summary>Gets the current parent object.</summary>
-       */
+        ///<summary>Gets the current parent object.</summary>
         public CompositeObject Parent => ParentLevel?.Current as CompositeObject;
 
-        /**
-          <summary>Gets the parent scan level.</summary>
-        */
-        public ContentScanner ParentLevel => parentLevel ?? resourceParentLevel;
+        ///<summary>Gets the parent scan level.</summary>
+        public ContentScanner ParentLevel => parentLevel;
 
-        /**
-          <summary>Inserts a content object at the current position.</summary>
-        */
+        public ContentScanner ResourceParent
+        {
+            get => resourceParentLevel ?? ParentLevel;
+            internal set => resourceParentLevel = value;
+        }
+
+        ///<summary>Inserts a content object at the current position.</summary>
         public void Insert(ContentObject obj)
         {
             if (index == -1)
@@ -257,10 +201,8 @@ namespace PdfClown.Documents.Contents
             Refresh();
         }
 
-        /**
-          <summary>Inserts content objects at the current position.</summary>
-          <remarks>After the insertion is complete, the lastly-inserted content object is at the current position.</remarks>
-        */
+        ///<summary>Inserts content objects at the current position.</summary>
+        ///<remarks>After the insertion is complete, the lastly-inserted content object is at the current position.</remarks>
         public void Insert<T>(ICollection<T> objects) where T : ContentObject
         {
             int index = 0;
@@ -274,16 +216,12 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        /**
-          <summary>Gets whether this level is the root of the hierarchy.</summary>
-        */
-        public bool IsRootLevel() => parentLevel == null;
+        ///<summary>Gets whether this level is the root of the hierarchy.</summary>
+        public bool IsRootLevel => ParentLevel == null;
 
-        /**
-          <summary>Moves to the object at the given position.</summary>
-          <param name="index">New position.</param>
-          <returns>Whether the object was successfully reached.</returns>
-        */
+        ///<summary>Moves to the object at the given position.</summary>
+        ///<param name="index">New position.</param>
+        ///<returns>Whether the object was successfully reached.</returns>
         public bool Move(int index)
         {
             if (this.index > index)
@@ -295,29 +233,23 @@ namespace PdfClown.Documents.Contents
             return Current != null;
         }
 
-        /**
-          <summary>Moves after the last object.</summary>
-        */
+        ///<summary>Moves after the last object.</summary>
         public void MoveEnd()
         {
             MoveLast();
             MoveNext();
         }
 
-        /**
-          <summary>Moves to the first object.</summary>
-          <returns>Whether the first object was successfully reached.</returns>
-        */
+        ///<summary>Moves to the first object.</summary>
+        ///<returns>Whether the first object was successfully reached.</returns>
         public bool MoveFirst()
         {
             MoveStart();
             return MoveNext();
         }
 
-        /**
-          <summary>Moves to the last object.</summary>
-          <returns>Whether the last object was successfully reached.</returns>
-        */
+        ///<summary>Moves to the last object.</summary>
+        ///<returns>Whether the last object was successfully reached.</returns>
         public bool MoveLast()
         {
             int lastIndex = objects.Count - 1;
@@ -327,16 +259,13 @@ namespace PdfClown.Documents.Contents
             return Current != null;
         }
 
-        /**
-          <summary>Moves to the next object.</summary>
-          <returns>Whether the next object was successfully reached.</returns>
-        */
+        ///<summary>Moves to the next object.</summary>
+        ///<returns>Whether the next object was successfully reached.</returns>
         public bool MoveNext()
         {
             // Scanning the current graphics state...
             ContentObject currentObject = Current;
-            if (currentObject != null)
-            { currentObject.Scan(state); }
+            currentObject?.Scan(State);
 
             // Moving to the next object...
             if (index < objects.Count)
@@ -345,35 +274,45 @@ namespace PdfClown.Documents.Contents
             return Current != null;
         }
 
-        /**
-          <summary>Moves before the first object.</summary>
-        */
+        ///<summary>Moves before the first object.</summary>
         public void MoveStart()
         {
             index = StartIndex;
             if (state == null)
             {
-                if (parentLevel == null)
-                { state = new GraphicsState(this); }
-                else
-                { state = parentLevel.state.Clone(this); }
+                state = ParentLevel?.state.Clone(this) ?? new GraphicsState(this);
             }
             else
             {
-                if (parentLevel == null)
-                { state.Initialize(); }
+                if (ParentLevel is ContentScanner parentScanner)
+                {
+                    ParentLevel.state.CopyTo(state);
+                }
                 else
-                { parentLevel.state.CopyTo(state); }
+                {
+                    state.Initialize();
+                }
             }
 
             NotifyStart();
             Refresh();
         }
 
-        /**
-           <summary>Removes the content object at the current position.</summary>
-           <returns>Removed object.</returns>
-         */
+        private void ClearCanvas()
+        {
+            if (Canvas == null
+                || ParentLevel != null)
+                return;
+            //var mapped = state.Ctm.MapRect(ContextBox);
+            Canvas.ClipRect(ContextBox);
+            if (ClearColor is SKColor color)
+            {
+                Canvas.Clear(color);
+            }
+        }
+
+        ///<summary>Removes the content object at the current position.</summary>
+        ///<returns>Removed object.</returns>
         public ContentObject Remove()
         {
             ContentObject removedObject = Current; objects.RemoveAt(index);
@@ -382,35 +321,23 @@ namespace PdfClown.Documents.Contents
             return removedObject;
         }
 
-        /**
-          <summary>Renders the contents into the specified context.</summary>
-          <param name="renderContext">Rendering context.</param>
-          <param name="renderSize">Rendering canvas size.</param>
-        */
-        public void Render(SKCanvas renderContext, SKSize renderSize)
+        ///<summary>Renders the contents into the specified context.</summary>
+        ///<param name="renderContext">Rendering context.</param>
+        ///<param name="box">Rendering canvas size.</param>
+        public void Render()
         {
-            Render(renderContext, renderSize, null);
+            Render(null);
         }
 
-        /**
-          <summary>Renders the contents into the specified object.</summary>
-          <param name="renderContext">Rendering context.</param>
-          <param name="renderSize">Rendering canvas size.</param>
-          <param name="renderObject">Rendering object.</param>
-        */
-        public void Render(SKCanvas renderContext, SKSize renderSize, SKPath renderObject)
+        ///<summary>Renders the contents into the specified object.</summary>
+        ///<param name="renderContext">Rendering context.</param>
+        ///<param name="box">Rendering canvas size.</param>
+        ///<param name="path">Rendering object.</param>
+        public void Render(SKPath path)
         {
-            if (IsRootLevel() && ClearContext)
-            {
-                renderContext.ClipRect(SKRect.Create(renderSize));
-                renderContext.DrawRect(SKRect.Create(renderSize), paintWhiteBackground);
-            }
-
             try
             {
-                this.renderContext = renderContext;
-                this.canvasSize = renderSize;
-                this.renderObject = renderObject;
+                this.path = path;
 
                 // Scan this level for rendering!
                 MoveStart();
@@ -418,31 +345,23 @@ namespace PdfClown.Documents.Contents
             }
             finally
             {
-                this.renderContext = null;
-                this.canvasSize = contextSize;
-                this.renderObject = null;
+                this.path = null;
             }
         }
 
-        /**
-          <summary>Gets the rendering context.</summary>
-          <returns><code>null</code> in case of dry scanning.</returns>
-        */
-        public SKCanvas RenderContext
+        ///<summary>Gets the rendering context.</summary>
+        ///<returns><code>null</code> in case of dry scanning.</returns>
+        public SKCanvas Canvas
         {
-            get => renderContext;
-            internal set => renderContext = value;
+            get => canvas;
+            internal set => canvas = value;
         }
 
-        /**
-          <summary>Gets the rendering object.</summary>
-          <returns><code>null</code> in case of scanning outside a shape.</returns>
-        */
-        public SKPath RenderObject => renderObject;
+        ///<summary>Gets the rendering object.</summary>
+        ///<returns><code>null</code> in case of scanning outside a shape.</returns>
+        public SKPath Path => path;
 
-        /**
-          <summary>Gets the root scan level.</summary>
-        */
+        ///<summary>Gets the root scan level.</summary>
         public ContentScanner RootLevel
         {
             get
@@ -456,27 +375,20 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        /**
-          <summary>Gets the current graphics state applied to the current content object.</summary>
-        */
+        ///<summary>Gets the current graphics state applied to the current content object.</summary>
         public GraphicsState State => state;
 
-        public bool ClearContext { get; set; } = true;
+        public SKColor? ClearColor { get; set; }
 
 #pragma warning disable 0628
-        /**
-          <summary>Notifies the scan start to listeners.</summary>
-        */
+        ///<summary>Notifies the scan start to listeners.</summary>
         protected void NotifyStart()
         {
-            if (OnStart != null)
-            { OnStart(this); }
+            OnStart?.Invoke(this);
         }
 #pragma warning restore 0628
 
-        /**
-          <summary>Synchronizes the scanner state.</summary>
-        */
+        ///<summary>Synchronizes the scanner state.</summary>
         private void Refresh()
         {
             if (Current is CompositeObject)

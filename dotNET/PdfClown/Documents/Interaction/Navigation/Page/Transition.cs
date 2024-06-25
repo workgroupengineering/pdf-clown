@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
 
 using System;
@@ -31,130 +30,76 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
-    /**
-      <summary>Visual transition to use when moving to a page during a presentation [PDF:1.6:8.3.3].</summary>
-    */
+    /// <summary>Visual transition to use when moving to a page during a presentation [PDF:1.6:8.3.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class Transition : PdfObjectWrapper<PdfDictionary>
     {
-        /**
-          <summary>Transition direction (counterclockwise) [PDF:1.6:8.3.3].</summary>
-        */
+        /// <summary>Transition direction (counterclockwise) [PDF:1.6:8.3.3].</summary>
         public enum DirectionEnum
         {
-            /**
-              <summary>Left to right.</summary>
-            */
+            /// <summary>Left to right.</summary>
             LeftToRight,
-            /**
-              <summary>Bottom to top.</summary>
-            */
+            /// <summary>Bottom to top.</summary>
             BottomToTop,
-            /**
-              <summary>Right to left.</summary>
-            */
+            /// <summary>Right to left.</summary>
             RightToLeft,
-            /**
-              <summary>Top to bottom.</summary>
-            */
+            /// <summary>Top to bottom.</summary>
             TopToBottom,
-            /**
-              <summary>Top-left to bottom-right.</summary>
-            */
+            /// <summary>Top-left to bottom-right.</summary>
             TopLeftToBottomRight,
-            /**
-              <summary>None.</summary>
-            */
+            /// <summary>None.</summary>
             None
         };
 
-        /**
-          <summary>Transition orientation [PDF:1.6:8.3.3].</summary>
-        */
+        /// <summary>Transition orientation [PDF:1.6:8.3.3].</summary>
         public enum OrientationEnum
         {
-            /**
-              <summary>Horizontal.</summary>
-            */
+            /// <summary>Horizontal.</summary>
             Horizontal,
-            /**
-              <summary>Vertical.</summary>
-            */
+            /// <summary>Vertical.</summary>
             Vertical
         };
 
-        /**
-          <summary>Transition direction on page [PDF:1.6:8.3.3].</summary>
-        */
+        /// <summary>Transition direction on page [PDF:1.6:8.3.3].</summary>
         public enum PageDirectionEnum
         {
-            /**
-              <summary>Inward (from the edges of the page).</summary>
-            */
+            /// <summary>Inward (from the edges of the page).</summary>
             Inward,
-            /**
-              <summary>Outward (from the center of the page).</summary>
-            */
+            /// <summary>Outward (from the center of the page).</summary>
             Outward
         };
 
-        /**
-          <summary>Transition style [PDF:1.6:8.3.3].</summary>
-        */
+        /// <summary>Transition style [PDF:1.6:8.3.3].</summary>
         public enum StyleEnum
         {
-            /**
-              <summary>Two lines sweep across the screen, revealing the page.</summary>
-            */
+            /// <summary>Two lines sweep across the screen, revealing the page.</summary>
             Split,
-            /**
-              <summary>Multiple lines sweep across the screen, revealing the page.</summary>
-            */
+            /// <summary>Multiple lines sweep across the screen, revealing the page.</summary>
             Blinds,
-            /**
-              <summary>A rectangular box sweeps between the edges of the page and the center.</summary>
-            */
+            /// <summary>A rectangular box sweeps between the edges of the page and the center.</summary>
             Box,
-            /**
-              <summary>A single line sweeps across the screen from one edge to the other.</summary>
-            */
+            /// <summary>A single line sweeps across the screen from one edge to the other.</summary>
             Wipe,
-            /**
-              <summary>The old page dissolves gradually.</summary>
-            */
+            /// <summary>The old page dissolves gradually.</summary>
             Dissolve,
-            /**
-              <summary>The old page dissolves gradually sweeping across the page in a wide band
-              moving from one side of the screen to the other.</summary>
-            */
+            /// <summary>The old page dissolves gradually sweeping across the page in a wide band
+            /// moving from one side of the screen to the other.</summary>
             Glitter,
-            /**
-              <summary>No transition.</summary>
-            */
+            /// <summary>No transition.</summary>
             Replace,
-            /**
-              <summary>Changes are flown across the screen.</summary>
-            */
+            /// <summary>Changes are flown across the screen.</summary>
             [PDF(VersionEnum.PDF15)]
             Fly,
-            /**
-              <summary>The page slides in, pushing away the old one.</summary>
-            */
+            /// <summary>The page slides in, pushing away the old one.</summary>
             [PDF(VersionEnum.PDF15)]
             Push,
-            /**
-              <summary>The page slides on to the screen, covering the old one.</summary>
-            */
+            /// <summary>The page slides on to the screen, covering the old one.</summary>
             [PDF(VersionEnum.PDF15)]
             Cover,
-            /**
-              <summary>The old page slides off the screen, uncovering the new one.</summary>
-            */
+            /// <summary>The old page slides off the screen, uncovering the new one.</summary>
             [PDF(VersionEnum.PDF15)]
             Uncover,
-            /**
-              <summary>The new page reveals gradually.</summary>
-            */
+            /// <summary>The new page reveals gradually.</summary>
             [PDF(VersionEnum.PDF15)]
             Fade
         };
@@ -213,29 +158,19 @@ namespace PdfClown.Documents.Interaction.Navigation
             };
         }
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfDirectObject ToCode(DirectionEnum value) => DirectionEnumCodes[value];
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(OrientationEnum value) => OrientationEnumCodes[value];
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(PageDirectionEnum value) => PageDirectionEnumCodes[value];
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(StyleEnum value) => StyleEnumCodes[value];
 
-        /**
-          <summary>Gets the direction corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the direction corresponding to the given value.</summary>
         private static DirectionEnum ToDirectionEnum(PdfDirectObject value)
         {
             foreach (KeyValuePair<DirectionEnum, PdfDirectObject> direction in DirectionEnumCodes)
@@ -246,9 +181,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             return DefaultDirection;
         }
 
-        /**
-          <summary>Gets the orientation corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the orientation corresponding to the given value.</summary>
         private static OrientationEnum ToOrientationEnum(string value)
         {
             if (value == null)
@@ -261,9 +194,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             return DefaultOrientation;
         }
 
-        /**
-          <summary>Gets the page direction corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the page direction corresponding to the given value.</summary>
         private static PageDirectionEnum ToPageDirectionEnum(string value)
         {
             if (value == null)
@@ -276,9 +207,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             return DefaultPageDirection;
         }
 
-        /**
-          <summary>Gets the style corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the style corresponding to the given value.</summary>
         private static StyleEnum ToStyleEnum(string value)
         {
             if (value == null)
@@ -291,9 +220,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             return DefaultStyle;
         }
 
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public Transition(PdfDocument context)
             : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Trans } })
         { }
@@ -320,9 +247,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         public Transition(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the transition direction.</summary>
-        */
+        /// <summary>Gets/Sets the transition direction.</summary>
         public DirectionEnum Direction
         {
             get => ToDirectionEnum(BaseDataObject[PdfName.Di]);
@@ -335,24 +260,14 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
         }
 
-        /**
-          <summary>Gets/Sets the duration of the transition effect, in seconds.</summary>
-        */
+        /// <summary>Gets/Sets the duration of the transition effect, in seconds.</summary>
         public double Duration
         {
             get => BaseDataObject.GetDouble(PdfName.D, DefaultDuration);
-            set
-            {
-                if (value == DefaultDuration)
-                { BaseDataObject.Remove(PdfName.D); }
-                else
-                { BaseDataObject.SetDouble(PdfName.D, value); }
-            }
+            set => BaseDataObject.Set(PdfName.D, value == DefaultDuration ? null : value);
         }
 
-        /**
-          <summary>Gets/Sets the transition orientation.</summary>
-        */
+        /// <summary>Gets/Sets the transition orientation.</summary>
         public OrientationEnum Orientation
         {
             get => ToOrientationEnum(BaseDataObject.GetString(PdfName.Dm));
@@ -365,9 +280,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
         }
 
-        /**
-          <summary>Gets/Sets the transition direction on page.</summary>
-*/
+        /// <summary>Gets/Sets the transition direction on page.</summary>
         public PageDirectionEnum PageDirection
         {
             get => ToPageDirectionEnum(BaseDataObject.GetString(PdfName.M));
@@ -380,9 +293,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
         }
 
-        /**
-          <summary>Gets/Sets the scale at which the changes are drawn.</summary>
-*/
+        /// <summary>Gets/Sets the scale at which the changes are drawn.</summary>
         [PDF(VersionEnum.PDF15)]
         public double Scale
         {
@@ -392,13 +303,11 @@ namespace PdfClown.Documents.Interaction.Navigation
                 if (value == DefaultScale)
                 { BaseDataObject.Remove(PdfName.SS); }
                 else
-                { BaseDataObject.SetDouble(PdfName.SS, value); }
+                { BaseDataObject.Set(PdfName.SS, value); }
             }
         }
 
-        /**
-          <summary>Gets/Sets the transition style.</summary>
-*/
+        /// <summary>Gets/Sets the transition style.</summary>
         public StyleEnum Style
         {
             get => ToStyleEnum(BaseDataObject.GetString(PdfName.S));

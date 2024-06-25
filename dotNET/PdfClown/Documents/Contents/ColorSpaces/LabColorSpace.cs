@@ -57,6 +57,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private float XB;
         private float YB;
         private float ZB;
+        private Color defaultColor;
 
         //TODO:IMPL new element constructor!
 
@@ -87,11 +88,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color DefaultColor
         {
-            get
-            {
-                IList<Interval<float>> ranges = Ranges;
-                return new LabColor(ranges[0].Low, ranges[1].Low, ranges[2].Low);
-            }
+            get => defaultColor ??= GetDefault();
+        }
+
+        private Color GetDefault()
+        {
+            IList<Interval<float>> ranges = Ranges;
+            return new LabColor(this, ranges[0].Low, ranges[1].Low, ranges[2].Low);
         }
 
         /**
@@ -133,7 +136,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
         }
 
-        public override Color GetColor(IList<PdfDirectObject> components, IContentContext context) => new LabColor(components);
+        public override Color GetColor(PdfArray components, IContentContext context)
+            => components == null ? DefaultColor : components.Wrapper as LabColor ?? new LabColor(this, components);
 
         public override bool IsSpaceColor(Color color) => color is LabColor;
 

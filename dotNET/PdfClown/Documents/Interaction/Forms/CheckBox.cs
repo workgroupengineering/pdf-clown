@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 
@@ -32,15 +30,11 @@ using System;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Check box field [PDF:1.6:8.6.3].</summary>
-    */
+    /// <summary>Check box field [PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class CheckBox : ButtonField
     {
-        /**
-          <summary>Creates a new checkbox within the given document context.</summary>
-        */
+        /// <summary>Creates a new checkbox within the given document context.</summary>
         public CheckBox(string name, Widget widget, bool checked_)
             : base(name, widget)
         { Checked = checked_; }
@@ -92,7 +86,7 @@ namespace PdfClown.Documents.Interaction.Forms
         public override object Value
         {
             get => base.Value;
-            set => Checked = !(value == null || value.Equals(String.Empty) || value.Equals(PdfName.Off.Value));
+            set => Checked = !(value == null || value.Equals(String.Empty) || PdfName.Off.Equals(value));
         }
     }
 }

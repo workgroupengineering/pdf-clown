@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util;
 using PdfClown.Util.Math;
@@ -34,117 +32,73 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Viewer
 {
-    /**
-      <summary>Viewer preferences [PDF:1.7:8.1].</summary>
-    */
+    /// <summary>Viewer preferences [PDF:1.7:8.1].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class ViewerPreferences : PdfObjectWrapper<PdfDictionary>
     {
-        /**
-          <summary>Predominant reading order for text [PDF:1.7:8.1].</summary>
-        */
+        /// <summary>Predominant reading order for text [PDF:1.7:8.1].</summary>
         [PDF(VersionEnum.PDF13)]
         public enum DirectionEnum
         {
-            /**
-              <summary>Left to right.</summary>
-            */
+            /// <summary>Left to right.</summary>
             LeftToRight,
-            /**
-              <summary>Right to left (including vertical writing systems, such as Chinese, Japanese, and
-              Korean).</summary>
-            */
+            /// <summary>Right to left (including vertical writing systems, such as Chinese, Japanese, and
+            /// Korean).</summary>
             RightToLeft
         };
 
-        /**
-          <summary>Page layout to be used when the document is opened [PDF:1.7:3.6.1].</summary>
-        */
+        /// <summary>Page layout to be used when the document is opened [PDF:1.7:3.6.1].</summary>
         [PDF(VersionEnum.PDF10)]
         public enum PageLayoutEnum
         {
-            /**
-              <summary>Displays one page at a time.</summary>
-            */
+            /// <summary>Displays one page at a time.</summary>
             SinglePage,
-            /**
-              <summary>Displays the pages in one column.</summary>
-            */
+            /// <summary>Displays the pages in one column.</summary>
             OneColumn,
-            /**
-              <summary>Displays the pages in two columns, with odd-numbered pages on the left.</summary>
-            */
+            /// <summary>Displays the pages in two columns, with odd-numbered pages on the left.</summary>
             TwoColumnLeft,
-            /**
-              <summary>Displays the pages in two columns, with odd-numbered pages on the right.</summary>
-            */
+            /// <summary>Displays the pages in two columns, with odd-numbered pages on the right.</summary>
             TwoColumnRight,
-            /**
-              <summary>Displays the pages two at a time, with odd-numbered pages on the left.</summary>
-            */
+            /// <summary>Displays the pages two at a time, with odd-numbered pages on the left.</summary>
             [PDF(VersionEnum.PDF15)]
             TwoPageLeft,
-            /**
-              <summary>Displays the pages two at a time, with odd-numbered pages on the right.</summary>
-            */
+            /// <summary>Displays the pages two at a time, with odd-numbered pages on the right.</summary>
             [PDF(VersionEnum.PDF15)]
             TwoPageRight
         };
 
-        /**
-          <summary>Page mode specifying how the document should be displayed when opened [PDF:1.7:3.6.1].
-          </summary>
-        */
+        /// <summary>Page mode specifying how the document should be displayed when opened [PDF:1.7:3.6.1].
+        /// </summary>
         [PDF(VersionEnum.PDF10)]
         public enum PageModeEnum
         {
-            /**
-              <summary>Neither document outline nor thumbnail images visible.</summary>
-            */
+            /// <summary>Neither document outline nor thumbnail images visible.</summary>
             Simple,
-            /**
-              <summary>Document outline visible.</summary>
-            */
+            /// <summary>Document outline visible.</summary>
             Bookmarks,
-            /**
-              <summary>Thumbnail images visible.</summary>
-            */
+            /// <summary>Thumbnail images visible.</summary>
             Thumbnails,
-            /**
-              <summary>Full-screen mode, with no menu bar, window controls, or any other window visible.
-              </summary>
-            */
+            /// <summary>Full-screen mode, with no menu bar, window controls, or any other window visible.
+            /// </summary>
             FullScreen,
-            /**
-              <summary>Optional content group panel visible.</summary>
-            */
+            /// <summary>Optional content group panel visible.</summary>
             [PDF(VersionEnum.PDF15)]
             Layers,
-            /**
-              <summary>Attachments panel visible.</summary>
-            */
+            /// <summary>Attachments panel visible.</summary>
             [PDF(VersionEnum.PDF16)]
             Attachments
         };
 
-        /**
-          <summary>Paper handling option to use when printing the file from the print dialog
-          [PDF:1.7:8.1].</summary>
-        */
+        /// <summary>Paper handling option to use when printing the file from the print dialog
+        /// [PDF:1.7:8.1].</summary>
         [PDF(VersionEnum.PDF17)]
         public enum PaperModeEnum
         {
-            /**
-              <summary>Print single-sided.</summary>
-            */
+            /// <summary>Print single-sided.</summary>
             Simplex,
-            /**
-              <summary>Duplex and flip on the short edge of the sheet.</summary>
-            */
+            /// <summary>Duplex and flip on the short edge of the sheet.</summary>
             DuplexShortEdge,
-            /**
-              <summary>Duplex and flip on the long edge of the sheet.</summary>
-            */
+            /// <summary>Duplex and flip on the long edge of the sheet.</summary>
             DuplexLongEdge
         };
 
@@ -161,9 +115,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         public ViewerPreferences(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the predominant reading order for text.</summary>
-        */
+        /// <summary>Gets/Sets the predominant reading order for text.</summary>
         [PDF(VersionEnum.PDF13)]
         public DirectionEnum Direction
         {
@@ -171,41 +123,33 @@ namespace PdfClown.Documents.Interaction.Viewer
             set => BaseDataObject[PdfName.Direction] = (value != DefaultDirection ? value.Code() : null);
         }
 
-        /**
-          <summary>Gets/Sets whether the window's title bar should display the <see
-          cref="Information.Title">document title</see> (or the name of the PDF file instead).</summary>
-        */
+        /// <summary>Gets/Sets whether the window's title bar should display the <see
+        /// cref="Information.Title">document title</see> (or the name of the PDF file instead).</summary>
         [PDF(VersionEnum.PDF14)]
         public bool DocTitleDisplayed
         {
             get => BaseDataObject.GetBool(PdfName.DisplayDocTitle, DefaultFlag);
-            set => BaseDataObject[PdfName.DisplayDocTitle] = (value != DefaultFlag ? PdfBoolean.Get(value) : null);
+            set => BaseDataObject.Set(PdfName.DisplayDocTitle, value != DefaultFlag ? value : null);
         }
 
-        /**
-          <summary>Gets/Sets whether the viewer application's menu bar is visible when the document is
-          active.</summary>
-        */
+        /// <summary>Gets/Sets whether the viewer application's menu bar is visible when the document is
+        /// active.</summary>
         public bool MenubarVisible
         {
             get => !BaseDataObject.GetBool(PdfName.HideMenubar, DefaultFlag);
-            set => BaseDataObject[PdfName.HideMenubar] = (value != !DefaultFlag ? PdfBoolean.Get(!value) : null);
+            set => BaseDataObject.Set(PdfName.HideMenubar, value != !DefaultFlag ? !value : null);
         }
 
-        /**
-          <summary>Gets/Sets the normal page mode, that is how the document should be displayed on
-          exiting full-screen mode.</summary>
-        */
+        /// <summary>Gets/Sets the normal page mode, that is how the document should be displayed on
+        /// exiting full-screen mode.</summary>
         public PageModeEnum NormalPageMode
         {
             get => ViewerPreferencesPageModeEnumExtension.Get(BaseDataObject.GetString(PdfName.NonFullScreenPageMode), DefaultPageMode).Value;
             set => BaseDataObject[PdfName.NonFullScreenPageMode] = (value != DefaultPageMode ? value.Code() : null);
         }
 
-        /**
-          <summary>Gets/Sets the page layout to be used when the document is opened [PDF:1.7:3.6.1].
-          </summary>
-        */
+        /// <summary>Gets/Sets the page layout to be used when the document is opened [PDF:1.7:3.6.1].
+        /// </summary>
         [PDF(VersionEnum.PDF10)]
         public PageLayoutEnum PageLayout
         {
@@ -213,10 +157,8 @@ namespace PdfClown.Documents.Interaction.Viewer
             set => Document.BaseDataObject[PdfName.PageLayout] = (value != DefaultPageLayout ? value.Code() : null);
         }
 
-        /**
-          <summary>Gets/Sets the page mode, that is how the document should be displayed when is opened
-          [PDF:1.7:3.6.1].</summary>
-        */
+        /// <summary>Gets/Sets the page mode, that is how the document should be displayed when is opened
+        /// [PDF:1.7:3.6.1].</summary>
         [PDF(VersionEnum.PDF10)]
         public PageModeEnum PageMode
         {
@@ -224,10 +166,8 @@ namespace PdfClown.Documents.Interaction.Viewer
             set => Document.BaseDataObject[PdfName.PageMode] = (value != DefaultPageMode ? value.Code() : null);
         }
 
-        /**
-          <summary>Gets/Sets the paper handling option to use when printing the file from the print
-          dialog.</summary>
-        */
+        /// <summary>Gets/Sets the paper handling option to use when printing the file from the print
+        /// dialog.</summary>
         [PDF(VersionEnum.PDF17)]
         public PaperModeEnum? PaperMode
         {
@@ -235,21 +175,17 @@ namespace PdfClown.Documents.Interaction.Viewer
             set => BaseDataObject[PdfName.Duplex] = (value.HasValue ? value.Value.Code() : null);
         }
 
-        /**
-          <summary>Gets/Sets whether the page size is used to select the input paper tray, as defined
-          through the print dialog presented by the viewer application.</summary>
-        */
+        /// <summary>Gets/Sets whether the page size is used to select the input paper tray, as defined
+        /// through the print dialog presented by the viewer application.</summary>
         [PDF(VersionEnum.PDF17)]
         public bool PaperTraySelected
         {
             get => BaseDataObject.GetBool(PdfName.PickTrayByPDFSize, DefaultFlag);
-            set => BaseDataObject[PdfName.PickTrayByPDFSize] = (value != DefaultFlag ? PdfBoolean.Get(value) : null);
+            set => BaseDataObject.Set(PdfName.PickTrayByPDFSize, value != DefaultFlag ? value : null);
         }
 
-        /**
-          <summary>Gets/Sets the number of copies to be printed when the print dialog is opened for this
-          file.</summary>
-        */
+        /// <summary>Gets/Sets the number of copies to be printed when the print dialog is opened for this
+        /// file.</summary>
         [PDF(VersionEnum.PDF17)]
         public int PrintCount
         {
@@ -263,15 +199,13 @@ namespace PdfClown.Documents.Interaction.Viewer
                 { value = 1; }
                 else if (value > 5)
                 { value = 5; }
-                BaseDataObject[PdfName.NumCopies] = (value != DefaultPrintCount ? PdfInteger.Get(value) : null);
+                BaseDataObject.Set(PdfName.NumCopies, value != DefaultPrintCount ? value : null);
             }
         }
 
-        /**
-          <summary>Gets/Sets the page numbers used to initialize the print dialog box when the file is
-          printed.</summary>
-          <remarks>Page numbers are 1-based.</remarks>
-        */
+        /// <summary>Gets/Sets the page numbers used to initialize the print dialog box when the file is
+        /// printed.</summary>
+        /// <remarks>Page numbers are 1-based.</remarks>
         [PDF(VersionEnum.PDF17)]
         public IList<Interval<int>> PrintPageRanges
         {
@@ -312,18 +246,16 @@ namespace PdfClown.Documents.Interaction.Viewer
                         else if (low > high)
                             throw new ArgumentException(String.Format("Last page ({0}) can't be less than first one ({1}).", high, low));
 
-                        printPageRangesObject.Add(PdfInteger.Get(low));
-                        printPageRangesObject.Add(PdfInteger.Get(high));
+                        printPageRangesObject.Add(low);
+                        printPageRangesObject.Add(high);
                     }
                 }
                 BaseDataObject[PdfName.PrintPageRange] = printPageRangesObject;
             }
         }
 
-        /**
-          <summary>Gets/Sets whether the viewer application should use the current print scaling when a
-          print dialog is displayed for this document.</summary>
-        */
+        /// <summary>Gets/Sets whether the viewer application should use the current print scaling when a
+        /// print dialog is displayed for this document.</summary>
         [PDF(VersionEnum.PDF16)]
         public bool PrintScaled
         {
@@ -335,45 +267,37 @@ namespace PdfClown.Documents.Interaction.Viewer
             set => BaseDataObject[PdfName.PrintScaling] = (!value ? PdfName.None : null);
         }
 
-        /**
-          <summary>Gets/Sets whether the viewer application's tool bars are visible when the document is
-          active.</summary>
-        */
+        /// <summary>Gets/Sets whether the viewer application's tool bars are visible when the document is
+        /// active.</summary>
         public bool ToolbarVisible
         {
             get => !BaseDataObject.GetBool(PdfName.HideToolbar, DefaultFlag);
-            set => BaseDataObject[PdfName.HideToolbar] = (value != !DefaultFlag ? PdfBoolean.Get(!value) : null);
+            set => BaseDataObject.Set(PdfName.HideToolbar, value != !DefaultFlag ? !value : null);
         }
 
-        /**
-          <summary>Gets/Sets whether to position the document's window in the center of the screen.
-          </summary>
-        */
+        /// <summary>Gets/Sets whether to position the document's window in the center of the screen.
+        /// </summary>
         public bool WindowCentered
         {
             get => BaseDataObject.GetBool(PdfName.CenterWindow, DefaultFlag);
-            set => BaseDataObject[PdfName.CenterWindow] = (value != DefaultFlag ? PdfBoolean.Get(value) : null);
+            set => BaseDataObject.Set(PdfName.CenterWindow, value != DefaultFlag ? value : null);
         }
 
-        /**
-          <summary>Gets/Sets whether to resize the document's window to fit the size of the first
-          displayed page.</summary>
-        */
+        /// <summary>Gets/Sets whether to resize the document's window to fit the size of the first
+        /// displayed page.</summary>
         public bool WindowFitted
         {
             get => BaseDataObject.GetBool(PdfName.FitWindow, DefaultFlag);
-            set => BaseDataObject[PdfName.FitWindow] = (value != DefaultFlag ? PdfBoolean.Get(value) : null);
+            set => BaseDataObject.Set(PdfName.FitWindow, value != DefaultFlag ? value : null);
         }
 
-        /**
-          <summary>Gets/Sets whether user interface elements in the document's window (such as scroll
-          bars and navigation controls) are visible when the document is active.</summary>
-        */
+        /// <summary>Gets/Sets whether user interface elements in the document's window (such as scroll
+        /// bars and navigation controls) are visible when the document is active.</summary>
         public bool WindowUIVisible
         {
             get => !BaseDataObject.GetBool(PdfName.HideWindowUI, DefaultFlag);
-            set => BaseDataObject[PdfName.HideWindowUI] = (value != !DefaultFlag ? PdfBoolean.Get(!value) : null);
-        }        
+            set => BaseDataObject.Set(PdfName.HideWindowUI, value != !DefaultFlag ? !value : null);
+        }
     }
 
     internal static class ViewerPreferencesDirectionEnumExtension

@@ -23,90 +23,78 @@
   this list of conditions.
 */
 
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.Collections;
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Document pages collection [PDF:1.6:3.6.2].</summary>
-    */
+    /// <summary>Document pages collection [PDF:1.6:3.6.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class Pages : PdfObjectWrapper<PdfDictionary>, IExtList<PdfPage>, IList<PdfPage>
     {
-        private class Enumerator : IEnumerator<PdfPage>
+        public struct Enumerator : IEnumerator<PdfPage>
         {
-            /**
-              <summary>Collection size.</summary>
-            */
+            /// <summary>Collection size.</summary>
             private int count;
-            /**
-              <summary>Index of the next item.</summary>
-            */
-            private int index = 0;
+            /// <summary>Index of the next item.</summary>
+            private int index;
 
-            /**
-              <summary>Current page.</summary>
-            */
+            /// <summary>Current page.</summary>
             private PdfPage current;
 
-            /**
-              <summary>Current level index.</summary>
-            */
-            private int levelIndex = 0;
-            /**
-              <summary>Stacked level indexes.</summary>
-            */
-            private Stack<int> levelIndexes = new Stack<int>();
+            /// <summary>Current level index.</summary>
+            private int levelIndex;
 
-            private HashSet<PdfArray> containers = new HashSet<PdfArray>();
+            /// <summary>Stacked level indexes.</summary>
+            private Stack<int> levelIndexes;
 
-            /**
-              <summary>Current child tree nodes.</summary>
-            */
+            private HashSet<PdfArray> containers;
+
+            /// <summary>Current child tree nodes.</summary>
             private PdfArray kids;
-            /**
-              <summary>Current parent tree node.</summary>
-            */
+            /// <summary>Current parent tree node.</summary>
             private PdfDictionary parent;
 
             internal Enumerator(Pages pages)
             {
+                index = 0;
+                current = null;
+                levelIndex = 0;
+                levelIndexes = new Stack<int>();
+                containers = new HashSet<PdfArray>();
                 count = pages.Count;
                 parent = pages.BaseDataObject;
                 kids = parent.Get<PdfArray>(PdfName.Kids);
             }
 
-            PdfPage IEnumerator<PdfPage>.Current => current;
+            public PdfPage Current => current;
 
-            public object Current => ((IEnumerator<PdfPage>)this).Current;
+            object IEnumerator.Current => current;
 
             public bool MoveNext()
             {
                 if (index == count)
                     return false;
 
-                /*
-                  NOTE: As stated in [PDF:1.6:3.6.2], page retrieval is a matter of diving
-                  inside a B-tree.
-                  This is a special adaptation of the get() algorithm necessary to keep
-                  a low overhead throughout the page tree scan (using the get() method
-                  would have implied a nonlinear computational cost).
-                */
-                /*
-                  NOTE: Algorithm:
-                  1. [Vertical, down] We have to go downward the page tree till we reach
-                  a page (leaf node).
-                  2. [Horizontal] Then we iterate across the page collection it belongs to,
-                  repeating step 1 whenever we find a subtree.
-                  3. [Vertical, up] When leaf-nodes scan is complete, we go upward solving
-                  parent nodes, repeating step 2.
-                */
+                //NOTE: As stated in [PDF:1.6:3.6.2], page retrieval is a matter of diving
+                //  inside a B - tree.
+                //  This is a special adaptation of the get() algorithm necessary to keep
+                //  a low overhead throughout the page tree scan(using the get() method
+                //  would have implied a nonlinear computational cost).
+
+                //NOTE: Algorithm:
+                //  1. [Vertical, down] We have to go downward the page tree till we reach
+                //a page(leaf node).
+                //  2. [Horizontal] Then we iterate across the page collection it belongs to,
+                //  repeating step 1 whenever we find a subtree.
+                //  3. [Vertical, up] When leaf-nodes scan is complete, we go upward solving
+                //  parent nodes, repeating step 2.
+
                 while (true)
                 {
                     // Did we complete current page-tree-branch level?
@@ -126,7 +114,7 @@ namespace PdfClown.Documents
                         if (kidObject is PdfDictionary kid)
                         {
                             // Is current kid a page object?
-                            if (kid[PdfName.Type].Equals(PdfName.Page)) // Page object.
+                            if (PdfName.Page.Equals(kid.Get<PdfName>(PdfName.Type))) // Page object.
                             {
                                 // 2. Page found.
                                 index++; // Absolute page index.
@@ -214,21 +202,19 @@ namespace PdfClown.Documents
         public void RemoveAll<TVar>(ICollection<TVar> pages)
           where TVar : PdfPage
         {
-            /*
-              NOTE: The interface contract doesn't prescribe any relation among the removing-collection's
-              items, so we cannot adopt the optimized approach of the add*(...) methods family,
-              where adding-collection's items are explicitly ordered.
-            */
+            //NOTE: The interface contract doesn't prescribe any relation among the removing-collection's
+            //items, so we cannot adopt the optimized approach of the add* (...) methods family,
+            //where adding-collection's items are explicitly ordered.
+
             foreach (PdfPage page in pages)
             { Remove(page); }
         }
 
         public int RemoveAll(Predicate<PdfPage> match)
         {
-            /*
-              NOTE: Removal is indirectly fulfilled through an intermediate collection
-              in order not to interfere with the enumerator execution.
-            */
+            //NOTE: Removal is indirectly fulfilled through an intermediate collection
+            //in order not to interfere with the enumerator execution.
+
             var removingPages = new List<PdfPage>();
             foreach (PdfPage page in this)
             {
@@ -241,40 +227,33 @@ namespace PdfClown.Documents
             return removingPages.Count;
         }
 
-        public int IndexOf(PdfPage page)
-        {
-            return page.Index;
-        }
+        public int IndexOf(PdfPage page) => page.Index;
 
         public void Insert(int index, PdfPage page)
         {
             CommonAddAll(index, (ICollection<PdfPage>)new PdfPage[] { page });
         }
 
-        public void RemoveAt(int index)
-        {
-            Remove(this[index]);
-        }
+        public void RemoveAt(int index) => Remove(this[index]);
 
         public PdfPage this[int index]
         {
             get
             {
-                /*
-                  NOTE: As stated in [PDF:1.6:3.6.2], to retrieve pages is a matter of diving
-                  inside a B-tree. To keep it as efficient as possible, this implementation
-                  does NOT adopt recursion to deepen its search, opting for an iterative
-                  strategy instead.
-                */
+                //NOTE: As stated in [PDF:1.6:3.6.2], to retrieve pages is a matter of diving
+                //inside a B - tree.To keep it as efficient as possible, this implementation
+                //does NOT adopt recursion to deepen its search, opting for an iterative
+                //strategy instead.
+
                 int pageOffset = 0;
                 PdfDictionary parent = BaseDataObject;
                 var kids = parent.Get<PdfArray>(PdfName.Kids);
                 for (int i = 0; i < kids.Count; i++)
                 {
-                    PdfReference kidReference = kids.Get<PdfReference>(i);
+                    var kidReference = kids.Get<PdfReference>(i);
                     PdfDictionary kid = (PdfDictionary)kidReference.DataObject;
                     // Is current kid a page object?
-                    if (kid[PdfName.Type].Equals(PdfName.Page)) // Page object.
+                    if (PdfName.Page.Equals(kid.Get<PdfName>(PdfName.Type))) // Page object.
                     {
                         // Did we reach the searched position?
                         if (pageOffset == index) // Vertical scan (we finished).
@@ -312,24 +291,21 @@ namespace PdfClown.Documents
             }
         }
 
-        public void Add(PdfPage page)
-        {
-            CommonAddAll(-1, (ICollection<PdfPage>)new PdfPage[] { page });
-        }
+        public void Add(PdfPage page) => CommonAddAll(-1, new PdfPage[] { page });
 
         public void Clear()
         {
             throw new NotImplementedException();
         }
 
-        public bool Contains(PdfPage page)
-        {
-            throw new NotImplementedException();
-        }
+        public bool Contains(PdfPage page) => ((IEnumerable<PdfPage>)this).Contains(page);
 
-        public void CopyTo(PdfPage[] pages, int index)
+        public void CopyTo(PdfPage[] entires, int index)
         {
-            throw new NotImplementedException();
+            foreach (PdfPage entry in this)
+            {
+                entires[index++] = entry;
+            }
         }
 
         public int Count => BaseDataObject.GetInt(PdfName.Count);
@@ -357,7 +333,7 @@ namespace PdfClown.Documents
                 // Get the page collection counter!
                 var count = parentData.GetInt(PdfName.Count);
                 // Decrement the counter at the current level!
-                parentData[PdfName.Count] = PdfInteger.Get(count - 1);
+                parentData.Set(PdfName.Count, count - 1);
 
                 // Iterate upward!
                 parent = parentData[PdfName.Parent];
@@ -367,21 +343,15 @@ namespace PdfClown.Documents
             return true;
         }
 
-        public IEnumerator<PdfPage> GetEnumerator()
-        {
-            return new Enumerator(this);
-        }
+        public Enumerator GetEnumerator() => new Enumerator(this);
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
+        IEnumerator<PdfPage> IEnumerable<PdfPage>.GetEnumerator() => GetEnumerator();
 
-        /**
-          Add a collection of pages at the specified position.
-          <param name="index">Addition position. To append, use value -1.</param>
-          <param name="pages">Collection of pages to add.</param>
-        */
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        /// Add a collection of pages at the specified position.
+        /// <param name="index">Addition position. To append, use value -1.</param>
+        /// <param name="pages">Collection of pages to add.</param>
         private void CommonAddAll<TPage>(int index, ICollection<TPage> pages) where TPage : PdfPage
         {
             PdfDirectObject parent;
@@ -438,7 +408,7 @@ namespace PdfClown.Documents
                 // Get the page collection counter!
                 var count = parentData.GetInt(PdfName.Count);
                 // Increment the counter at the current level!
-                parentData[PdfName.Count] = PdfInteger.Get(count + pages.Count);
+                parentData.Set(PdfName.Count, count + pages.Count);
 
                 // Iterate upward!
                 parent = parentData[PdfName.Parent];

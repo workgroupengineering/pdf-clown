@@ -23,22 +23,18 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
-
-using System;
 using SkiaSharp;
+using System;
 
 namespace PdfClown.Documents.Interaction.Forms.Styles
 {
-    /**
-      <summary>Default field appearance style.</summary>
-    */
+    /// <summary>Default field appearance style.</summary>
     public sealed class DefaultStyle : FieldStyle
     {
         public DefaultStyle()
@@ -72,16 +68,16 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             {
                 {
                     PdfDictionary widgetDataObject = widget.BaseDataObject;
-                    widgetDataObject[PdfName.DA] = new PdfString("/ZaDb 0 Tf 0 0 0 rg");
+                    widgetDataObject.Set(PdfName.DA, "/ZaDb 0 Tf 0 0 0 rg");
                     widgetDataObject[PdfName.MK] = new PdfDictionary(3)
                     {
-                        { PdfName.BG, new PdfArray(3) { PdfReal.Get(0.9412), PdfReal.Get(0.9412), PdfReal.Get(0.9412) } },
-                        { PdfName.BC, new PdfArray(3) { PdfInteger.Default, PdfInteger.Default, PdfInteger.Default } },
-                        { PdfName.CA, new PdfString("4") },
+                        { PdfName.BG, new PdfArray(3) { 0.9412, 0.9412, 0.9412 } },
+                        { PdfName.BC, new PdfArray(3) { 0, 0, 0 } },
+                        { PdfName.CA, "4" },
                     };
                     widgetDataObject[PdfName.BS] = new PdfDictionary(2)
                     {
-                        { PdfName.W, PdfReal.Get(0.8) },
+                        { PdfName.W, 0.8 },
                         { PdfName.S, PdfName.S },
                     };
                     widgetDataObject[PdfName.H] = PdfName.P;
@@ -153,16 +149,16 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             {
                 {
                     PdfDictionary widgetDataObject = widget.BaseDataObject;
-                    widgetDataObject[PdfName.DA] = new PdfString("/ZaDb 0 Tf 0 0 0 rg");
+                    widgetDataObject.Set(PdfName.DA, "/ZaDb 0 Tf 0 0 0 rg");
                     widgetDataObject[PdfName.MK] = new PdfDictionary(3)
                     {
-                        { PdfName.BG, new PdfArray(3) { PdfReal.Get(0.9412), PdfReal.Get(0.9412), PdfReal.Get(0.9412) } },
-                        { PdfName.BC, new PdfArray(3) { PdfInteger.Default, PdfInteger.Default, PdfInteger.Default} },
+                        { PdfName.BG, new PdfArray(3) { 0.9412, 0.9412, 0.9412 } },
+                        { PdfName.BC, new PdfArray(3) { 0, 0, 0 } },
                         { PdfName.CA, new PdfString("l") },
                     };
                     widgetDataObject[PdfName.BS] = new PdfDictionary(2)
                     {
-                        { PdfName.W, PdfReal.Get(0.8) },
+                        { PdfName.W, 0.8 },
                         { PdfName.S, PdfName.S },
                         { PdfName.H, PdfName.P }
                     };
@@ -314,7 +310,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             Widget widget = field.Widgets[0];
 
             Appearance appearance = widget.Appearance;
-            widget.BaseDataObject[PdfName.DA] = new PdfString("/Helv " + FontSize + " Tf 0 0 0 rg");
+            widget.BaseDataObject.Set(PdfName.DA, "/Helv " + FontSize + " Tf 0 0 0 rg");
 
             FormXObject normalAppearanceState;
             {
@@ -356,7 +352,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             Widget widget = field.Widgets[0];
 
             Appearance appearance = widget.Appearance;
-            widget.BaseDataObject[PdfName.DA] = new PdfString("/Helv " + FontSize + " Tf 0 0 0 rg");
+            widget.BaseDataObject.Set(PdfName.DA, "/Helv " + FontSize + " Tf 0 0 0 rg");
 
             FormXObject normalAppearanceState;
             {
@@ -400,11 +396,11 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             Appearance appearance = widget.Appearance;
             {
                 PdfDictionary widgetDataObject = widget.BaseDataObject;
-                widgetDataObject[PdfName.DA] = new PdfString("/Helv " + FontSize + " Tf 0 0 0 rg");
+                widgetDataObject.Set(PdfName.DA, "/Helv " + FontSize + " Tf 0 0 0 rg");
                 widgetDataObject[PdfName.MK] = new PdfDictionary()
                 {
-                    { PdfName.BG,new PdfArray(3) { PdfReal.Get(.9), PdfReal.Get(.9), PdfReal.Get(.9) } },
-                    { PdfName.BC,new PdfArray(3) { PdfInteger.Default, PdfInteger.Default, PdfInteger.Default } }
+                    { PdfName.BG,new PdfArray(3) { .9, .9, .9 } },
+                    { PdfName.BC,new PdfArray(3) { 0, 0, 0 } }
                 };
             }
 

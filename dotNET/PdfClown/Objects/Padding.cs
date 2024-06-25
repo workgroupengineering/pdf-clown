@@ -24,7 +24,6 @@
 */
 
 using System;
-using PdfClown.Files;
 using SkiaSharp;
 
 namespace PdfClown.Objects
@@ -42,10 +41,10 @@ namespace PdfClown.Objects
         public Padding(double left, double top, double right, double bottom)
             : this(new PdfArray(4)
               {
-                  PdfReal.Get(left), // Left (X).
-                  PdfReal.Get(bottom), // Bottom (Y).
-                  PdfReal.Get(right), // Right.
-                  PdfReal.Get(top) // Top.
+                  left, // Left (X).
+                  bottom, // Bottom (Y).
+                  right, // Right.
+                  top // Top.
               })
         { }
 
@@ -57,51 +56,35 @@ namespace PdfClown.Objects
         public double Left
         {
             get => BaseDataObject.GetDouble(0);
-            set => BaseDataObject.SetDouble(0, value);
+            set => BaseDataObject.Set(0, value);
         }
 
         public double Bottom
         {
             get => BaseDataObject.GetDouble(1);
-            set => BaseDataObject.SetDouble(1, value);
+            set => BaseDataObject.Set(1, value);
         }
 
         public double Right
         {
             get => BaseDataObject.GetDouble(2);
-            set => BaseDataObject.SetDouble(2, value);
+            set => BaseDataObject.Set(2, value);
         }
 
         public double Top
         {
             get => BaseDataObject.GetDouble(3);
-            set => BaseDataObject.SetDouble(3, value);
-        }
-
-        public SKRect ToRect()
-        {
-            return new SKRect((float)Left, (float)Bottom, (float)Right, (float)Top);
+            set => BaseDataObject.Set(3, value);
         }
 
         public bool Equals(Padding other)
         {
-            return Math.Round(Left, 5).Equals(Math.Round(other.Left, 5))
-                && Math.Round(Bottom, 5).Equals(Math.Round(other.Bottom, 5))
-                && Math.Round(Right, 5).Equals(Math.Round(other.Right, 5))
-                && Math.Round(Top, 5).Equals(Math.Round(other.Top, 5));
+            return Left.Equals(other.Left)
+                && Bottom.Equals(other.Bottom)
+                && Right.Equals(other.Right)
+                && Top.Equals(other.Top);
         }
-
-        public Padding Round() => Round(File?.Configuration?.RealPrecision ?? 5);
-
-        public Padding Round(int precision)
-        {
-            Left = Math.Round(Left, precision);
-            Bottom = Math.Round(Bottom, precision);
-            Right = Math.Round(Right, precision);
-            Top = Math.Round(Top, precision);
-            return this;
-        }
-
+        
         public double LeftRight
         {
             get => Right + Left;

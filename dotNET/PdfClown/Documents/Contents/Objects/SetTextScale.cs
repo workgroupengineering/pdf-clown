@@ -43,12 +43,9 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, PdfReal.Get(value))
         { }
 
-        public SetTextScale(IList<PdfDirectObject> operands)
+        public SetTextScale(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
-
-        public override void Scan(GraphicsState state)
-        { state.Scale = Value / 100F; }
 
         /**
           <summary>Gets/Sets the horizontal scale expressed as a percentage of the normal width.
@@ -56,8 +53,11 @@ namespace PdfClown.Documents.Contents.Objects
         */
         public float Value
         {
-            get => ((IPdfNumber)operands[0]).FloatValue;
-            set => operands[0] = PdfReal.Get(value);
+            get => operands.GetFloat(0);
+            set => operands.Set(0, value);
         }
+
+        public override void Scan(GraphicsState state) => state.Scale = Value / 100F;
+
     }
 }

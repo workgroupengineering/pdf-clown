@@ -30,14 +30,12 @@ using System.Linq;
 
 namespace PdfClown.Util
 {
-    /**
-      <summary>Bidirectional bijective map.</summary>
-    */
+    /// <summary>Bidirectional bijective map.</summary>
     public class BiDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
         private static IEqualityComparer<T> GetEqualityComparer<T>()
         {
-            if(typeof(T) == typeof(string)) 
+            if (typeof(T) == typeof(string))
                 return (IEqualityComparer<T>)(object)StringComparer.Ordinal;
             return EqualityComparer<T>.Default;
         }
@@ -46,14 +44,14 @@ namespace PdfClown.Util
         private readonly Dictionary<TValue, TKey> inverseDictionary;
 
         public BiDictionary()
-            :this(GetEqualityComparer<TKey>(), GetEqualityComparer<TValue>())
+            : this(GetEqualityComparer<TKey>(), GetEqualityComparer<TValue>())
         {
             dictionary = new Dictionary<TKey, TValue>();
             inverseDictionary = new Dictionary<TValue, TKey>();
         }
 
         public BiDictionary(IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer)
-        {            
+        {
         }
 
         public BiDictionary(int capacity)
@@ -95,12 +93,12 @@ namespace PdfClown.Util
         public bool Remove(TKey key)
         {
             TValue value;
-            if (!dictionary.TryGetValue(key, out value))
-                return false;
-
-            dictionary.Remove(key);
-            inverseDictionary.Remove(value);
-            return true;
+            if (dictionary.Remove(key, out value))
+            {
+                inverseDictionary.Remove(value);
+                return true;
+            }
+            return false;
         }
 
         public virtual TValue this[TKey key]

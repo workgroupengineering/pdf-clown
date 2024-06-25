@@ -65,7 +65,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override SKPath GetPath(SKMatrix sKMatrix)
         {
             var box = sKMatrix.MapRect(Box);
-            BorderEffect?.InvertApplyEffect(ref box);
+            InvertBorderAndEffect(ref box);
             var path = new SKPath();
             path.AddRect(box);
             return path;

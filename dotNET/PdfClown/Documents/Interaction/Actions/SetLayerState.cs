@@ -36,9 +36,7 @@ using System.Collections.ObjectModel;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Set the state of one or more optional content groups' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Set the state of one or more optional content groups' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class SetLayerState : Action
     {
@@ -169,19 +167,16 @@ namespace PdfClown.Documents.Interaction.Actions
                 }
             }
 
-            public override int GetHashCode()
-            { return mode.GetHashCode() ^ layers.Count; }
+            public override int GetHashCode() => HashCode.Combine(layers, mode);
 
-            internal void Attach(LayerStates baseStates)
-            { this.baseStates = baseStates; }
+            internal void Attach(LayerStates baseStates) => this.baseStates = baseStates;
 
-            internal void Detach()
-            { baseStates = null; }
+            internal void Detach() => baseStates = null;
         }
 
         public class LayerStates : PdfObjectWrapper<PdfArray>, IList<LayerState>
         {
-            private IList<LayerState> items;
+            private List<LayerState> items;
 
             public LayerStates() : base(new PdfArray())
             { }
@@ -273,11 +268,15 @@ namespace PdfClown.Documents.Interaction.Actions
                 items.Clear();
             }
 
-            public bool Contains(LayerState item)
-            { return items.Contains(item); }
+            public bool Contains(LayerState item) => items.Contains(item);
 
-            public void CopyTo(LayerState[] items, int index)
-            { throw new NotImplementedException(); }
+            public void CopyTo(LayerState[] entries, int index)
+            {
+                foreach (var entry in this)
+                {
+                    entries[index++] = entry;
+                }
+            }
 
             public int Count => items.Count;
 
@@ -293,18 +292,16 @@ namespace PdfClown.Documents.Interaction.Actions
                 return true;
             }
 
-            public IEnumerator<LayerState> GetEnumerator()
-            { return items.GetEnumerator(); }
+            public List<LayerState>.Enumerator GetEnumerator() => items.GetEnumerator();
 
-            IEnumerator IEnumerable.GetEnumerator()
-            { return this.GetEnumerator(); }
+            IEnumerator<LayerState> IEnumerable<LayerState>.GetEnumerator() => GetEnumerator();
 
-            /**
-              <summary>Gets the position of the initial base item corresponding to the specified layer
-              state index.</summary>
-              <param name="index">Layer state index.</param>
-              <returns>-1, in case <code>index</code> is outside the available range.</returns>
-            */
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            /// <summary>Gets the position of the initial base item corresponding to the specified layer
+            /// state index.</summary>
+            /// <param name="index">Layer state index.</param>
+            /// <returns>-1, in case <code>index</code> is outside the available range.</returns>
             internal int GetBaseIndex(int index)
             {
                 int baseIndex = -1;
@@ -327,12 +324,10 @@ namespace PdfClown.Documents.Interaction.Actions
                 return baseIndex;
             }
 
-            /**
-              <summary>Gets the position of the initial base item corresponding to the specified layer
-              state.</summary>
-              <param name="item">Layer state.</param>
-              <returns>-1, in case <code>item</code> has no match.</returns>
-            */
+            /// <summary>Gets the position of the initial base item corresponding to the specified layer
+            /// state.</summary>
+            /// <param name="item">Layer state.</param>
+            /// <returns>-1, in case <code>item</code> has no match.</returns>
             internal int GetBaseIndex(LayerState item)
             {
                 int baseIndex = -1;
@@ -341,8 +336,8 @@ namespace PdfClown.Documents.Interaction.Actions
                     for (int baseItemIndex = 0, baseItemCount = baseDataObject.Count; baseItemIndex < baseItemCount; baseItemIndex++)
                     {
                         PdfDirectObject baseItem = baseDataObject[baseItemIndex];
-                        if (baseItem is PdfName
-                          && baseItem.Equals(item.Mode.GetName()))
+                        if (baseItem is PdfName baseName
+                          && baseName.Equals(item.Mode.GetName()))
                         {
                             foreach (Layer layer in item.Layers)
                             {
@@ -384,15 +379,11 @@ namespace PdfClown.Documents.Interaction.Actions
             }
         }
 
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public SetLayerState(PdfDocument context) : this(context, (LayerState)null)
         { }
 
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public SetLayerState(PdfDocument context, params LayerState[] states) : base(context, PdfName.SetOCGState)
         {
             States = new LayerStates();

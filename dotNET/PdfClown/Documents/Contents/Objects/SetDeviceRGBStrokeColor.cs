@@ -38,13 +38,13 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class SetDeviceRGBStrokeColor : SetStrokeColor
     {
-        public static readonly new string OperatorKeyword = "RG";
+        public static readonly string OperatorKeyword = "RG";
 
         public SetDeviceRGBStrokeColor(DeviceRGBColor value)
             : base(OperatorKeyword, value)
         { }
 
-        public SetDeviceRGBStrokeColor(IList<PdfDirectObject> operands)
+        public SetDeviceRGBStrokeColor(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
