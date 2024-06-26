@@ -24,15 +24,11 @@
 */
 
 using PdfClown.Objects;
-
-using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Optional content properties [PDF:1.7:4.10.3].</summary>
-    */
+    /// <summary>Optional content properties [PDF:1.7:4.10.3].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class LayerDefinition : PdfObjectWrapper<PdfDictionary>, ILayerConfiguration
     {
@@ -42,28 +38,22 @@ namespace PdfClown.Documents.Contents.Layers
         public LayerDefinition(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the layer configurations used under particular circumstances.</summary>
-        */
+        /// <summary>Gets the layer configurations used under particular circumstances.</summary>
         public Array<LayerConfiguration> AlternateConfigurations
         {
             get => Wrap<Array<LayerConfiguration>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.Configs));
             set => BaseDataObject[PdfName.Configs] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets the default layer configuration, that is the initial state of the optional
-          content groups when a document is first opened.</summary>
-        */
+        /// <summary>Gets the default layer configuration, that is the initial state of the optional
+        /// content groups when a document is first opened.</summary>
         public LayerConfiguration DefaultConfiguration
         {
             get => Wrap<LayerConfiguration>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.D));
             set => BaseDataObject[PdfName.D] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets the collection of all the layers existing in the document.</summary>
-        */
+        /// <summary>Gets the collection of all the layers existing in the document.</summary>
         public Layers Layers => Wrap<Layers>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.OCGs));
 
         public string Creator

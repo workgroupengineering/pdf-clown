@@ -58,8 +58,8 @@ namespace PdfClown.Documents.Contents.Tokens
                     return ParsePath(operation);
                 case BeginText:
                     return new GraphicsText(ParseContentObjects());
-                case SaveGraphicsState:
-                    return new GraphicsLocalState(ParseContentObjects());
+                //case SaveGraphicsState:
+                //    return new GraphicsLocalState(ParseContentObjects());
                 case BeginMarkedContent beginMarkedContent:
                     return new GraphicsMarkedContent(beginMarkedContent, ParseContentObjects(new List<ContentObject> { beginMarkedContent }));
                 case BeginCompatibilityState:
@@ -85,7 +85,7 @@ namespace PdfClown.Documents.Contents.Tokens
                 ContentObject contentObject = ParseContentObject();
                 // Multiple-operation graphics object end?
                 if (contentObject is EndText // Text.
-                  || contentObject is RestoreGraphicsState // Local graphics state.
+                  //|| contentObject is RestoreGraphicsState // Local graphics state.
                   || contentObject is EndMarkedContent // End marked-content sequence.
                   || contentObject is EndCompatibilityState // compatibility state.
                   || contentObject is EndInlineImage // Inline image.

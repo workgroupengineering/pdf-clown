@@ -23,28 +23,19 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Layers;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Private information meaningful to the program (application or plugin extension)
-      creating the marked content [PDF:1.6:10.5.1].</summary>
-    */
+    /// <summary>Private information meaningful to the program (application or plugin extension)
+    /// creating the marked content [PDF:1.6:10.5.1].</summary>
     [PDF(VersionEnum.PDF12)]
     public class PropertyList : PdfObjectWrapper<PdfDictionary>
     {
-        /**
-          <summary>Wraps the specified base object into a property list object.</summary>
-          <param name="baseObject">Base object of a property list object.</param>
-          <returns>Property list object corresponding to the base object.</returns>
-        */
+        /// <summary>Wraps the specified base object into a property list object.</summary>
+        /// <param name="baseObject">Base object of a property list object.</param>
+        /// <returns>Property list object corresponding to the base object.</returns>
         public static PropertyList Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)

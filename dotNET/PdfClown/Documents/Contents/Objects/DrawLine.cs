@@ -23,32 +23,24 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Append a straight line segment from the current point' operation [PDF:1.6:4.4.1].</summary>
-    */
+    /// <summary>'Append a straight line segment from the current point' operation [PDF:1.6:4.4.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class DrawLine : Operation
     {
         public static readonly string OperatorKeyword = "l";
 
-        /**
-          <param name="point">Final endpoint.</param>
-        */
+        /// <param name="point">Final endpoint.</param>
         public DrawLine(SKPoint point) : this(point.X, point.Y)
         { }
 
-        /**
-          <param name="pointX">Final endpoint X.</param>
-          <param name="pointY">Final endpoint Y.</param>
-        */
+        /// <param name="pointX">Final endpoint X.</param>
+        /// <param name="pointY">Final endpoint Y.</param>
         public DrawLine(double pointX, double pointY)
             : base(OperatorKeyword, new PdfArray(2) { pointX, pointY })
         { }
@@ -56,12 +48,10 @@ namespace PdfClown.Documents.Contents.Objects
         public DrawLine(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        /**
-          <summary>Gets/Sets the final endpoint.</summary>
-        */
+        /// <summary>Gets/Sets the final endpoint.</summary>
         public SKPoint Point
         {
-            get => new SKPoint(operands.GetFloat(0), operands.GetFloat(1));
+            get => operands.ToSKPoint();
             set
             {
                 operands.Set(0, value.X);

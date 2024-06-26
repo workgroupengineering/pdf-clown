@@ -28,11 +28,9 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Anonymous container.</summary>
-      <remarks>Having no side effects either running or persisting, this container is useful to group
-      content objects without perturbing the content stream's graphics state.</remarks>
-    */
+    /// <summary>Anonymous container.</summary>
+    /// <remarks>Having no side effects either running or persisting, this container is useful to group
+    /// content objects without perturbing the content stream's graphics state.</remarks>
     public class ContentPlaceholder : ContainerObject
     {
         public ContentPlaceholder()

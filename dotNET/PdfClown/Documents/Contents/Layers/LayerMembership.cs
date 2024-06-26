@@ -31,15 +31,11 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Optional content membership [PDF:1.7:4.10.1].</summary>
-    */
+    /// <summary>Optional content membership [PDF:1.7:4.10.1].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class LayerMembership : LayerEntity
     {
-        /**
-          <summary>Layers whose states determine the visibility of content controlled by a membership.</summary>
-        */
+        /// <summary>Layers whose states determine the visibility of content controlled by a membership.</summary>
         private class VisibilityMembersImpl : PdfObjectWrapper<PdfDirectObject>, IList<Layer>
         {
             private LayerMembership membership;

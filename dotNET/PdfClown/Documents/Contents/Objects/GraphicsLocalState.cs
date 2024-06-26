@@ -24,17 +24,13 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Objects;
 using PdfClown.Tokens;
 
 using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Local graphics state [PDF:1.6:4.3.1].</summary>
-    */
+    /// <summary>Local graphics state [PDF:1.6:4.3.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class GraphicsLocalState : ContainerObject
     {

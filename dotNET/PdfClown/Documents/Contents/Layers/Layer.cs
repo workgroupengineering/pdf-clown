@@ -37,9 +37,7 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Optional content group [PDF:1.7:4.10.1].</summary>
-    */
+    /// <summary>Optional content group [PDF:1.7:4.10.1].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class Layer : LayerEntity, IUILayerNode
     {
@@ -58,26 +56,16 @@ namespace PdfClown.Documents.Contents.Layers
             Organization
         }
 
-        /**
-          <summary>Sublayers location within a configuration structure.</summary>
-        */
+        /// <summary>Sublayers location within a configuration structure.</summary>
         private class LayersLocation
         {
-            /**
-              <summary>Sublayers ordinal position within the parent sublayers.</summary>
-            */
+            /// <summary>Sublayers ordinal position within the parent sublayers.</summary>
             public int Index;
-            /**
-              <summary>Parent layer object.</summary>
-            */
+            /// <summary>Parent layer object.</summary>
             public PdfDirectObject ParentLayerObject;
-            /**
-              <summary>Parent sublayers object.</summary>
-            */
+            /// <summary>Parent sublayers object.</summary>
             public PdfArray ParentLayersObject;
-            /**
-              <summary>Upper levels.</summary>
-            */
+            /// <summary>Upper levels.</summary>
             public Stack<LayerLevel> Levels;
 
             public LayersLocation(PdfDirectObject parentLayerObject, PdfArray parentLayersObject, int index, Stack<LayerLevel> levels)
@@ -89,18 +77,12 @@ namespace PdfClown.Documents.Contents.Layers
             }
         }
 
-        /**
-          <summary>Layer state.</summary>
-        */
+        /// <summary>Layer state.</summary>
         internal enum StateEnum
         {
-            /**
-              <summary>Active.</summary>
-            */
+            /// <summary>Active.</summary>
             On,
-            /**
-              <summary>Inactive.</summary>
-            */
+            /// <summary>Inactive.</summary>
             Off
         }
 
@@ -115,52 +97,40 @@ namespace PdfClown.Documents.Contents.Layers
             Title = title;
 
             // Add this layer to the global collection!
-            /*
-              NOTE: Every layer MUST be included in the global collection [PDF:1.7:4.10.3].
-            */
+            // NOTE: Every layer MUST be included in the global collection [PDF:1.7:4.10.3].
             context.Layer.Layers.BaseDataObject.Add(BaseObject);
         }
 
         internal Layer(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the type of content controlled by this layer.</summary>
-        */
+        /// <summary>Gets/Sets the type of content controlled by this layer.</summary>
         public string ContentType
         {
             get => GetUsageEntry(PdfName.CreatorInfo).GetString(PdfName.Subtype);
             set => GetUsageEntry(PdfName.CreatorInfo).SetName(PdfName.Subtype, value);
         }
 
-        /**
-          <summary>Gets/Sets the name of the application that created this layer.</summary>
-        */
+        /// <summary>Gets/Sets the name of the application that created this layer.</summary>
         public string Creator
         {
             get => GetUsageEntry(PdfName.CreatorInfo).GetString(PdfName.Creator);
             set => GetUsageEntry(PdfName.CreatorInfo).SetText(PdfName.Creator, value);
         }
 
-        /**
-          <summary>Gets the dictionary used by the creating application to store application-specific
-          data associated to this layer.</summary>
-        */
+        /// <summary>Gets the dictionary used by the creating application to store application-specific
+        /// data associated to this layer.</summary>
         public PdfDictionary CreatorInfo => GetUsageEntry(PdfName.CreatorInfo);
 
-        /**
-          <summary>Deletes this layer, removing also its references from the document (contents included).
-          </summary>
-        */
+        /// <summary>Deletes this layer, removing also its references from the document (contents included).
+        /// </summary>
         public override bool Delete()
         {
             return Delete(false);
         }
 
-        /**
-          <summary>Deletes this layer, removing also its references from the document.</summary>
-          <param name="preserveContent">Whether its contents are to be excluded from the removal.</param>
-        */
+        /// <summary>Deletes this layer, removing also its references from the document.</summary>
+        /// <param name="preserveContent">Whether its contents are to be excluded from the removal.</param>
         public bool Delete(bool preserveContent)
         {
             if (Document.Layer.Layers.Contains(this))
@@ -171,10 +141,8 @@ namespace PdfClown.Documents.Contents.Layers
             return base.Delete();
         }
 
-        /**
-          <summary>Gets/Sets whether this layer is visible when the document is saved by a viewer
-          application to a format that does not support layers.</summary>
-        */
+        /// <summary>Gets/Sets whether this layer is visible when the document is saved by a viewer
+        /// application to a format that does not support layers.</summary>
         public bool? Exportable
         {
             get
@@ -189,19 +157,17 @@ namespace PdfClown.Documents.Contents.Layers
             }
         }
 
-        /**
-          <summary>Gets/Sets the intended uses of this layer.</summary>
-          <remarks>For example, many document design applications, such as CAD packages, offer layering
-          features for collecting groups of graphics together and selectively hiding or viewing them for
-          the convenience of the author. However, this layering may be different than would be useful to
-          consumers of the document; therefore, it is possible to specify different intents for layers
-          within a single document: a given application may decide to use only layers that are of a
-          specific intent.</remarks>
-          <returns>Intent collection (it comprises <see cref="IntentEnum"/> names but, for compatibility
-          with future versions, unrecognized names are allowed). To apply any subsequent change, it has
-          to be assigned back.</returns>
-          <seealso cref="IntentEnum"/>
-        */
+        /// <summary>Gets/Sets the intended uses of this layer.</summary>
+        /// <remarks>For example, many document design applications, such as CAD packages, offer layering
+        /// features for collecting groups of graphics together and selectively hiding or viewing them for
+        /// the convenience of the author. However, this layering may be different than would be useful to
+        /// consumers of the document; therefore, it is possible to specify different intents for layers
+        /// within a single document: a given application may decide to use only layers that are of a
+        /// specific intent.</remarks>
+        /// <returns>Intent collection (it comprises <see cref="IntentEnum"/> names but, for compatibility
+        /// with future versions, unrecognized names are allowed). To apply any subsequent change, it has
+        /// to be assigned back.</returns>
+        /// <seealso cref="IntentEnum"/>
         public ISet<PdfName> Intents
         {
             get => intents ??= GetIntents();
@@ -249,10 +215,8 @@ namespace PdfClown.Documents.Contents.Layers
             return intents;
         }
 
-        /**
-          <summary>Gets/Sets the language of the content controlled by this layer.</summary>
-          <remarks>The layer whose language matches the current system language is visible.</remarks>
-        */
+        /// <summary>Gets/Sets the language of the content controlled by this layer.</summary>
+        /// <remarks>The layer whose language matches the current system language is visible.</remarks>
         public LanguageIdentifier Language
         {
             get => LanguageIdentifier.Wrap(GetUsageEntry(PdfName.Language)[PdfName.Lang]);
@@ -265,20 +229,16 @@ namespace PdfClown.Documents.Contents.Layers
             }
         }
 
-        /**
-          <summary>Gets/Sets whether a partial match (that is, the language matches but not the locale)
-          with the current system language is enough to keep this layer visible.</summary>
-        */
+        /// <summary>Gets/Sets whether a partial match (that is, the language matches but not the locale)
+        /// with the current system language is enough to keep this layer visible.</summary>
         public bool LanguagePreferred
         {
             get => PdfName.ON.Equals(GetUsageEntry(PdfName.Language).Get<PdfName>(PdfName.Preferred));
             set => GetUsageEntry(PdfName.Language)[PdfName.Preferred] = value ? PdfName.ON : null;
         }
 
-        /**
-          <summary>Gets/Sets whether the default visibility of this layer cannot be changed through the
-          user interface of a viewer application.</summary>
-        */
+        /// <summary>Gets/Sets whether the default visibility of this layer cannot be changed through the
+        /// user interface of a viewer application.</summary>
         public bool Locked
         {
             get => DefaultConfiguration.BaseDataObject.Resolve<PdfArray>(PdfName.Locked).Contains(BaseObject);
@@ -318,18 +278,14 @@ namespace PdfClown.Documents.Contents.Layers
             }
         }
 
-        /**
-          <summary>Gets/Sets the type of pagination artifact this layer contains.</summary>
-        */
+        /// <summary>Gets/Sets the type of pagination artifact this layer contains.</summary>
         public PageElementTypeEnum? PageElementType
         {
             get => PageElementTypeEnumExtension.Get(GetUsageEntry(PdfName.PageElement).GetString(PdfName.Subtype));
             set => GetUsageEntry(PdfName.PageElement)[PdfName.Subtype] = value.HasValue ? value.Value.GetName() : null;
         }
 
-        /**
-          <summary>Gets the parent layer.</summary>
-        */
+        /// <summary>Gets the parent layer.</summary>
         public Layer Parent
         {
             get
@@ -339,10 +295,8 @@ namespace PdfClown.Documents.Contents.Layers
             }
         }
 
-        /**
-          <summary>Gets/Sets whether this layer is visible when the document is printed from a viewer
-          application.</summary>
-        */
+        /// <summary>Gets/Sets whether this layer is visible when the document is printed from a viewer
+        /// application.</summary>
         public bool? Printable
         {
             get
@@ -357,9 +311,7 @@ namespace PdfClown.Documents.Contents.Layers
             }
         }
 
-        /**
-          <summary>Gets/Sets the type of printable content controlled by this layer.</summary>
-        */
+        /// <summary>Gets/Sets the type of printable content controlled by this layer.</summary>
         public string PrintType
         {
             get => GetUsageEntry(PdfName.Print).GetString(PdfName.Subtype);
@@ -369,9 +321,7 @@ namespace PdfClown.Documents.Contents.Layers
         public override string ToString()
         { return "Layer {\"" + Title + "\" " + BaseObject + "}"; }
 
-        /**
-          <summary>Gets/Sets the names of the users for whom this layer is primarily intended.</summary>
-        */
+        /// <summary>Gets/Sets the names of the users for whom this layer is primarily intended.</summary>
         public IList<string> Users
         {
             get => users ??= GetUsers();
@@ -413,19 +363,15 @@ namespace PdfClown.Documents.Contents.Layers
             return users;
         }
 
-        /**
-          <summary>Gets/Sets the type of the users for whom this layer is primarily intended.</summary>
-        */
+        /// <summary>Gets/Sets the type of the users for whom this layer is primarily intended.</summary>
         public UserTypeEnum? UserType
         {
             get => UserTypeEnumExtension.Get(GetUsageEntry(PdfName.User).GetString(PdfName.Type));
             set => GetUsageEntry(PdfName.User)[PdfName.Type] = value.HasValue ? value.Value.GetName() : null;
         }
 
-        /**
-          <summary>Gets/Sets whether this layer is visible when the document is opened in a viewer
-          application.</summary>
-        */
+        /// <summary>Gets/Sets whether this layer is visible when the document is opened in a viewer
+        /// application.</summary>
         public bool? Viewable
         {
             get
@@ -440,22 +386,18 @@ namespace PdfClown.Documents.Contents.Layers
             }
         }
 
-        /**
-          <remarks>Default membership's <see cref="LayerMembership.VisibilityExpression">
-          VisibilityExpression</see> is undefined as <see cref="VisibilityMembers"/> is used instead.
-          </remarks>
-        */
+        /// <remarks>Default membership's <see cref="LayerMembership.VisibilityExpression">
+        /// VisibilityExpression</see> is undefined as <see cref="VisibilityMembers"/> is used instead.
+        /// </remarks>
         public override VisibilityExpression VisibilityExpression
         {
             get => null;
             set => throw new NotSupportedException();
         }
 
-        /**
-          <remarks>Default membership's <see cref="LayerMembership.VisibilityMembers">VisibilityMembers
-          </see> collection is immutable as it's expected to represent the hierarchical line of this
-          layer.</remarks>
-        */
+        /// <remarks>Default membership's <see cref="LayerMembership.VisibilityMembers">VisibilityMembers
+        /// </see> collection is immutable as it's expected to represent the hierarchical line of this
+        /// layer.</remarks>
         public override IList<Layer> VisibilityMembers
         {
             get
@@ -481,21 +423,17 @@ namespace PdfClown.Documents.Contents.Layers
             }
         }
 
-        /**
-          <summary>Gets/Sets whether this layer is initially visible in any kind of application.</summary>
-        */
+        /// <summary>Gets/Sets whether this layer is initially visible in any kind of application.</summary>
         public bool Visible
         {
             get => DefaultConfiguration.IsVisible(this);
             set => DefaultConfiguration.SetVisible(this, value);
         }
 
-        /**
-          <summary>Gets/Sets the range of magnifications at which the content in this layer is best
-          viewed in a viewer application.</summary>
-          <returns>Zoom interval (minimum included, maximum excluded); valid values range from 0 to
-          <code>double.PositiveInfinity</code>, where 1 corresponds to 100% magnification.</returns>
-        */
+        /// <summary>Gets/Sets the range of magnifications at which the content in this layer is best
+        /// viewed in a viewer application.</summary>
+        /// <returns>Zoom interval (minimum included, maximum excluded); valid values range from 0 to
+        /// <code>double.PositiveInfinity</code>, where 1 corresponds to 100% magnification.</returns>
         public Interval<double> ZoomRange
         {
             get
@@ -532,18 +470,14 @@ namespace PdfClown.Documents.Contents.Layers
 
         private LayerConfiguration DefaultConfiguration => Document.Layer.DefaultConfiguration;
 
-        /**
-          <summary>Finds the location of the sublayers object in the default configuration; in case no
-          sublayers object is associated to this object, its virtual position is indicated.</summary>
-        */
+        /// <summary>Finds the location of the sublayers object in the default configuration; in case no
+        /// sublayers object is associated to this object, its virtual position is indicated.</summary>
         private LayersLocation FindLayersLocation() => FindLayersLocation(DefaultConfiguration);
 
-        /**
-          <summary>Finds the location of the sublayers object in the specified configuration; in case no
-          sublayers object is associated to this object, its virtual position is indicated.</summary>
-          <param name="configuration">Configuration context.</param>
-          <returns><code>null</code>, if this layer is outside the specified configuration.</returns>
-        */
+        /// <summary>Finds the location of the sublayers object in the specified configuration; in case no
+        /// sublayers object is associated to this object, its virtual position is indicated.</summary>
+        /// <param name="configuration">Configuration context.</param>
+        /// <returns><code>null</code>, if this layer is outside the specified configuration.</returns>
         private LayersLocation FindLayersLocation(LayerConfiguration configuration)
         {
             /*

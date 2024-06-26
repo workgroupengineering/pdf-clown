@@ -31,32 +31,20 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Layer entity.</summary>
-    */
+    /// <summary>Layer entity.</summary>
     [PDF(VersionEnum.PDF15)]
     public abstract class LayerEntity : PropertyList
     {
-        /**
-          <summary>Membership visibility policy [PDF:1.7:4.10.1].</summary>
-        */
+        /// <summary>Membership visibility policy [PDF:1.7:4.10.1].</summary>
         public enum VisibilityPolicyEnum
         {
-            /**
-              <summary>Visible only if all of the visibility layers are ON.</summary>
-            */
+            /// <summary>Visible only if all of the visibility layers are ON.</summary>
             AllOn,
-            /**
-              <summary>Visible if any of the visibility layers are ON.</summary>
-            */
+            /// <summary>Visible if any of the visibility layers are ON.</summary>
             AnyOn,
-            /**
-              <summary>Visible if any of the visibility layers are OFF.</summary>
-            */
+            /// <summary>Visible if any of the visibility layers are OFF.</summary>
             AnyOff,
-            /**
-              <summary>Visible only if all of the visibility layers are OFF.</summary>
-            */
+            /// <summary>Visible only if all of the visibility layers are OFF.</summary>
             AllOff
         }
 
@@ -68,41 +56,33 @@ namespace PdfClown.Documents.Contents.Layers
         protected LayerEntity(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the default membership, corresponding to the hierarchical relation between this
-          layer entity and its ascendants; top-level layers return themselves.</summary>
-        */
+        /// <summary>Gets the default membership, corresponding to the hierarchical relation between this
+        /// layer entity and its ascendants; top-level layers return themselves.</summary>
         public abstract LayerEntity Membership
         {
             get;
         }
 
-        /**
-          <summary>Gets the visibility expression.</summary>
-          <remarks><see cref="VisibilityExpression"/> should be preferred to <see cref="VisibilityPolicy"/>
-          and <see cref="VisibilityMembers"/> as a more advanced alternative. However, for compatibility
-          purposes, PDF creators should also provide the latters to approximate the behavior in older
-          consumer software.</remarks>
-        */
+        /// <summary>Gets the visibility expression.</summary>
+        /// <remarks><see cref="VisibilityExpression"/> should be preferred to <see cref="VisibilityPolicy"/>
+        /// and<see cref="VisibilityMembers"/> as a more advanced alternative. However, for compatibility
+        /// purposes, PDF creators should also provide the latters to approximate the behavior in older
+        /// consumer software.</remarks>
         public abstract VisibilityExpression VisibilityExpression
         {
             get;
             set;
         }
 
-        /**
-          <summary>Gets the layers whose states determine the visibility of content controlled by this
-          entity.</summary>
-        */
+        /// <summary>Gets the layers whose states determine the visibility of content controlled by this
+        /// entity.</summary>
         public abstract IList<Layer> VisibilityMembers
         {
             get;
             set;
         }
 
-        /**
-          <summary>Gets/Sets the visibility policy of this entity.</summary>
-        */
+        /// <summary>Gets/Sets the visibility policy of this entity.</summary>
         public abstract VisibilityPolicyEnum VisibilityPolicy
         {
             get;

@@ -23,15 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Container object. It encompasses multiple content objects.</summary>
-    */
+    /// <summary>Container object. It encompasses multiple content objects.</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class ContainerObject : CompositeObject
     {

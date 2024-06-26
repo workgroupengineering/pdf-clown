@@ -27,9 +27,7 @@ using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Begin inline image object' operation [PDF:1.6:4.8.6].</summary>
-    */
+    /// <summary>'Begin inline image object' operation [PDF:1.6:4.8.6].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class BeginInlineImage : Operation
     {

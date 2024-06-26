@@ -23,15 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Objects;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Restore the graphics state by removing the most recently saved state from the stack
-      and making it the current state' operation [PDF:1.6:4.3.3]. Practically, it ends the current
-      local graphics state.</summary>
-    */
+    /// <summary>'Restore the graphics state by removing the most recently saved state from the stack
+    /// and making it the current state' operation [PDF:1.6:4.3.3]. Practically, it ends the current
+    /// local graphics state.</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class RestoreGraphicsState : Operation
     {

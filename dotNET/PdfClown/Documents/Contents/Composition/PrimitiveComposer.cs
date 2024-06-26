@@ -25,7 +25,6 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Documents.Contents.Layers;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
@@ -42,16 +41,14 @@ using objects = PdfClown.Documents.Contents.Objects;
 
 namespace PdfClown.Documents.Contents.Composition
 {
-    /**
-      <summary>
-        <para>Content stream primitive composer.</para>
-        <para>It provides the basic (primitive) operations described by the PDF specification for
-        graphics content composition.</para>
-      </summary>
-      <remarks>This class leverages the object-oriented content stream modelling infrastructure, which
-      encompasses 1st-level content stream objects (operations), 2nd-level content stream objects
-      (graphics objects) and full graphics state support.</remarks>
-    */
+    /// <summary>
+    ///   <para>Content stream primitive composer.</para>
+    ///   <para>It provides the basic (primitive) operations described by the PDF specification for
+    ///   graphics content composition.</para>
+    /// </summary>
+    /// <remarks>This class leverages the object-oriented content stream modelling infrastructure, which
+    /// encompasses 1st-level content stream objects (operations), 2nd-level content stream objects
+    /// (graphics objects) and full graphics state support.</remarks>
     public sealed class PrimitiveComposer
     {
         private const float QuadToQubicKoefficent = 2.0F / 3.0F;
@@ -65,10 +62,8 @@ namespace PdfClown.Documents.Contents.Composition
         public PrimitiveComposer(IContentContext context) : this(new ContentScanner(context.Contents))
         { }
 
-        /**
-          <summary>Adds a content object.</summary>
-          <returns>The added content object.</returns>
-        */
+        /// <summary>Adds a content object.</summary>
+        /// <returns>The added content object.</returns>
         public T Add<T>(T obj) where T : ContentObject
         {
             Scanner.Insert(obj);
@@ -76,27 +71,23 @@ namespace PdfClown.Documents.Contents.Composition
             return obj;
         }
 
-        /**
-          <summary>Applies a transformation to the coordinate system from user space to device space
-          [PDF:1.6:4.3.3].</summary>
-          <remarks>The transformation is applied to the current transformation matrix (CTM) by
-          concatenation, i.e. it doesn't replace it.</remarks>
-          <param name="a">Item 0,0 of the matrix.</param>
-          <param name="b">Item 0,1 of the matrix.</param>
-          <param name="c">Item 1,0 of the matrix.</param>
-          <param name="d">Item 1,1 of the matrix.</param>
-          <param name="e">Item 2,0 of the matrix.</param>
-          <param name="f">Item 2,1 of the matrix.</param>
-          <seealso cref="SetMatrix(double,double,double,double,double,double)"/>
-        */
+        /// <summary>Applies a transformation to the coordinate system from user space to device space
+        /// [PDF:1.6:4.3.3].</summary>
+        /// <remarks>The transformation is applied to the current transformation matrix (CTM) by
+        /// concatenation, i.e. it doesn't replace it.</remarks>
+        /// <param name="a">Item 0,0 of the matrix.</param>
+        /// <param name="b">Item 0,1 of the matrix.</param>
+        /// <param name="c">Item 1,0 of the matrix.</param>
+        /// <param name="d">Item 1,1 of the matrix.</param>
+        /// <param name="e">Item 2,0 of the matrix.</param>
+        /// <param name="f">Item 2,1 of the matrix.</param>
+        /// <seealso cref="SetMatrix(double,double,double,double,double,double)"/>
         public void ApplyMatrix(double a, double b, double c, double d, double e, double f) => Add(new ModifyCTM(a, b, c, d, e, f));
 
         public void ApplyMatrix(SKMatrix matrix) => Add(new ModifyCTM(matrix));
 
-        /**
-          <summary>Applies the specified state parameters [PDF:1.6:4.3.4].</summary>
-          <param name="name">Resource identifier of the state parameters object.</param>
-        */
+        /// <summary>Applies the specified state parameters [PDF:1.6:4.3.4].</summary>
+        /// <param name="name">Resource identifier of the state parameters object.</param>
         public void ApplyState(PdfName name)
         {
             // Doesn't the state exist in the context resources?
@@ -106,20 +97,16 @@ namespace PdfClown.Documents.Contents.Composition
             ApplyState_(name);
         }
 
-        /**
-          <summary>Applies the specified state parameters [PDF:1.6:4.3.4].</summary>
-          <remarks>The <code>value</code> is checked for presence in the current resource dictionary: if
-          it isn't available, it's automatically added. If you need to avoid such a behavior, use
-          <see cref="ApplyState(PdfName)"/>.</remarks>
-          <param name="state">State parameters object.</param>
-        */
+        /// <summary>Applies the specified state parameters [PDF:1.6:4.3.4].</summary>
+        /// <remarks>The <code>value</code> is checked for presence in the current resource dictionary: if
+        /// it isn't available, it's automatically added. If you need to avoid such a behavior, use
+        /// <see cref="ApplyState(PdfName)"/>.</remarks>
+        /// <param name="state">State parameters object.</param>
         public void ApplyState(ExtGState state) => ApplyState_(GetResourceName(state));
 
-        /**
-          <summary>Adds a composite object beginning it.</summary>
-          <returns>Added composite object.</returns>
-          <seealso cref="End()"/>
-        */
+        /// <summary>Adds a composite object beginning it.</summary>
+        /// <returns>Added composite object.</returns>
+        /// <seealso cref="End()"/>
         public CompositeObject Begin(CompositeObject obj)
         {
             // Insert the new object at the current level!
@@ -130,55 +117,43 @@ namespace PdfClown.Documents.Contents.Composition
             return obj;
         }
 
-        /**
-          <summary>Begins a new layered-content sequence [PDF:1.6:4.10.2].</summary>
-          <param name="layer">Layer entity enclosing the layered content.</param>
-          <returns>Added layered-content sequence.</returns>
-          <seealso cref="End()"/>
-        */
+        /// <summary>Begins a new layered-content sequence [PDF:1.6:4.10.2].</summary>
+        /// <param name="layer">Layer entity enclosing the layered content.</param>
+        /// <returns>Added layered-content sequence.</returns>
+        /// <seealso cref="End()"/>
         public GraphicsMarkedContent BeginLayer(LayerEntity layer) => BeginLayer(GetResourceName(layer.Membership));
 
-        /**
-          <summary>Begins a new layered-content sequence [PDF:1.6:4.10.2].</summary>
-          <param name="layerName">Resource identifier of the {@link LayerEntity} enclosing the layered
-          content.</param>
-          <returns>Added layered-content sequence.</returns>
-          <seealso cref="End()"/>
-        */
+        /// <summary>Begins a new layered-content sequence [PDF:1.6:4.10.2].</summary>
+        /// <param name="layerName">Resource identifier of the {@link LayerEntity} enclosing the layered
+        /// content.</param>
+        /// <returns>Added layered-content sequence.</returns>
+        /// <seealso cref="End()"/>
         public GraphicsMarkedContent BeginLayer(PdfName layerName) => BeginMarkedContent(PdfName.OC, layerName);
 
-        /**
-          <summary>Begins a new nested graphics state context [PDF:1.6:4.3.1].</summary>
-          <returns>Added local graphics state object.</returns>
-          <seealso cref="End()"/>
-        */
+        /// <summary>Begins a new nested graphics state context [PDF:1.6:4.3.1].</summary>
+        /// <returns>Added local graphics state object.</returns>
+        /// <seealso cref="End()"/>
         public GraphicsLocalState BeginLocalState() => (GraphicsLocalState)Begin(new GraphicsLocalState());
 
-        /**
-          <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
-          <param name="tag">Marker indicating the role or significance of the marked content.</param>
-          <returns>Added marked-content sequence.</returns>
-          <seealso cref="End()"/>
-        */
+        /// <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
+        /// <param name="tag">Marker indicating the role or significance of the marked content.</param>
+        /// <returns>Added marked-content sequence.</returns>
+        /// <seealso cref="End()"/>
         public GraphicsMarkedContent BeginMarkedContent(PdfName tag) => BeginMarkedContent(tag, (PdfName)null);
 
-        /**
-          <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
-          <param name="tag">Marker indicating the role or significance of the marked content.</param>
-          <param name="propertyList"><see cref="PropertyList"/> describing the marked content.</param>
-          <returns>Added marked-content sequence.</returns>
-          <seealso cref="End()"/>
-        */
+        /// <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
+        /// <param name="tag">Marker indicating the role or significance of the marked content.</param>
+        /// <param name="propertyList"><see cref="PropertyList"/> describing the marked content.</param>
+        /// <returns>Added marked-content sequence.</returns>
+        /// <seealso cref="End()"/>
         public GraphicsMarkedContent BeginMarkedContent(PdfName tag, PropertyList propertyList) => BeginMarkedContent_(tag, GetResourceName(propertyList));
 
-        /**
-          <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
-          <param name="tag">Marker indicating the role or significance of the marked content.</param>
-          <param name="propertyListName">Resource identifier of the <see cref="PropertyList"/> describing
-          the marked content.</param>
-          <returns>Added marked-content sequence.</returns>
-          <seealso cref="End()"/>
-        */
+        /// <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
+        /// <param name="tag">Marker indicating the role or significance of the marked content.</param>
+        /// <param name="propertyListName">Resource identifier of the <see cref="PropertyList"/> describing
+        /// the marked content.</param>
+        /// <returns>Added marked-content sequence.</returns>
+        /// <seealso cref="End()"/>
         public GraphicsMarkedContent BeginMarkedContent(PdfName tag, PdfName propertyListName)
         {
             // Doesn't the property list exist in the context resources?
@@ -188,53 +163,43 @@ namespace PdfClown.Documents.Contents.Composition
             return BeginMarkedContent_(tag, propertyListName);
         }
 
-        /**
-          <summary>Modifies the current clipping path by intersecting it with the current path
-          [PDF:1.6:4.4.1].</summary>
-          <remarks>It can be validly called only just before painting the current path.</remarks>
-        */
+        /// <summary>Modifies the current clipping path by intersecting it with the current path
+        /// [PDF:1.6:4.4.1].</summary>
+        /// <remarks>It can be validly called only just before painting the current path.</remarks>
         public void Clip()
         {
             Add(ModifyClipPath.NonZero);
-            Add(PaintPath.EndPathNoOp);
+            Add(PaintPath.EndNoOp);
         }
 
-        /**
-          <summary>Closes the current subpath by appending a straight line segment from the current point
-          to the starting point of the subpath [PDF:1.6:4.4.1].</summary>
-        */
+        /// <summary>Closes the current subpath by appending a straight line segment from the current point
+        /// to the starting point of the subpath [PDF:1.6:4.4.1].</summary>
         public void ClosePath() => Add(CloseSubpath.Value);
 
-        /**
-          <summary>Draws a circular arc.</summary>
-          <param name="location">Arc location.</param>
-          <param name="startAngle">Starting angle.</param>
-          <param name="endAngle">Ending angle.</param>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a circular arc.</summary>
+        /// <param name="location">Arc location.</param>
+        /// <param name="startAngle">Starting angle.</param>
+        /// <param name="endAngle">Ending angle.</param>
+        /// <seealso cref="Stroke()"/>
         public void DrawArc(SKRect location, double startAngle, double endAngle) => DrawArc(location, startAngle, endAngle, 0, 1);
 
-        /**
-          <summary>Draws an arc.</summary>
-          <param name="location">Arc location.</param>
-          <param name="startAngle">Starting angle.</param>
-          <param name="endAngle">Ending angle.</param>
-          <param name="branchWidth">Distance between the spiral branches. '0' value degrades to a circular
-          arc.</param>
-          <param name="branchRatio">Linear coefficient applied to the branch width. '1' value degrades to
-          a constant branch width.</param>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws an arc.</summary>
+        /// <param name="location">Arc location.</param>
+        /// <param name="startAngle">Starting angle.</param>
+        /// <param name="endAngle">Ending angle.</param>
+        /// <param name="branchWidth">Distance between the spiral branches. '0' value degrades to a circular
+        /// arc.</param>
+        /// <param name="branchRatio">Linear coefficient applied to the branch width. '1' value degrades to
+        /// a constant branch width.</param>
+        /// <seealso cref="Stroke()"/>
         public void DrawArc(SKRect location, double startAngle, double endAngle, double branchWidth, double branchRatio)
             => DrawArc(location, startAngle, endAngle, branchWidth, branchRatio, true);
 
-        /**
-          <summary>Draws a cubic Bezier curve from the current point [PDF:1.6:4.4.1].</summary>
-          <param name="endPoint">Ending point.</param>
-          <param name="startControl">Starting control point.</param>
-          <param name="endControl">Ending control point.</param>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a cubic Bezier curve from the current point [PDF:1.6:4.4.1].</summary>
+        /// <param name="endPoint">Ending point.</param>
+        /// <param name="startControl">Starting control point.</param>
+        /// <param name="endControl">Ending control point.</param>
+        /// <seealso cref="Stroke()"/>
         public void DrawCurve(SKPoint endPoint, SKPoint startControl, SKPoint endControl)
         {
             double contextHeight = Scanner.ContextBox.Height;
@@ -243,81 +208,66 @@ namespace PdfClown.Documents.Contents.Composition
                 endControl.X, contextHeight - endControl.Y));
         }
 
-        /**
-          <summary>Draws a cubic Bezier curve [PDF:1.6:4.4.1].</summary>
-          <param name="startPoint">Starting point.</param>
-          <param name="endPoint">Ending point.</param>
-          <param name="startControl">Starting control point.</param>
-          <param name="endControl">Ending control point.</param>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a cubic Bezier curve [PDF:1.6:4.4.1].</summary>
+        /// <param name="startPoint">Starting point.</param>
+        /// <param name="endPoint">Ending point.</param>
+        /// <param name="startControl">Starting control point.</param>
+        /// <param name="endControl">Ending control point.</param>
+        /// <seealso cref="Stroke()"/>
         public void DrawCurve(SKPoint startPoint, SKPoint endPoint, SKPoint startControl, SKPoint endControl)
         {
             StartPath(startPoint);
             DrawCurve(endPoint, startControl, endControl);
         }
 
-        /**
-          <summary>Draws an ellipse.</summary>
-          <param name="location">Ellipse location.</param>
-          <seealso cref="Fill()"/>
-          <seealso cref="FillStroke()"/>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws an ellipse.</summary>
+        /// <param name="location">Ellipse location.</param>
+        /// <seealso cref="Fill()"/>
+        /// <seealso cref="FillStroke()"/>
+        /// <seealso cref="Stroke()"/>
         public void DrawEllipse(SKRect location) => DrawArc(location, 0, 360);
 
-
-        /**
-         <summary>Draws an circle by square Ellipce.</summary>
-         <param name="center">Circle center.</param>
-         <param name="radius">Circle radius</param>
-         <seealso cref="Fill()"/>
-         <seealso cref="FillStroke()"/>
-         <seealso cref="Stroke()"/>
-       */
+        /// <summary>Draws an circle by square Ellipce.</summary>
+        /// <param name="center">Circle center.</param>
+        /// <param name="radius">Circle radius</param>
+        /// <seealso cref="Fill()"/>
+        /// <seealso cref="FillStroke()"/>
+        /// <seealso cref="Stroke()"/>
         public void DrawCircle(SKPoint center, float radius) => DrawEllipse(new SKRect(center.X - radius, center.Y - radius, center.X + radius, center.Y + radius));
 
-        /**
-          <summary>Draws a line from the current point [PDF:1.6:4.4.1].</summary>
-          <param name="endPoint">Ending point.</param>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a line from the current point [PDF:1.6:4.4.1].</summary>
+        /// <param name="endPoint">Ending point.</param>
+        /// <seealso cref="Stroke()"/>
         public void DrawLine(SKPoint endPoint) => Add(new DrawLine(endPoint.X, Scanner.ContextBox.Height - endPoint.Y));
 
-        /**
-          <summary>Draws a line [PDF:1.6:4.4.1].</summary>
-          <param name="startPoint">Starting point.</param>
-          <param name="endPoint">Ending point.</param>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a line [PDF:1.6:4.4.1].</summary>
+        /// <param name="startPoint">Starting point.</param>
+        /// <param name="endPoint">Ending point.</param>
+        /// <seealso cref="Stroke()"/>
         public void DrawLine(SKPoint startPoint, SKPoint endPoint)
         {
             StartPath(startPoint);
             DrawLine(endPoint);
         }
 
-        /**
-          <summary>Draws a polygon.</summary>
-          <remarks>A polygon is the same as a multiple line except that it's a closed path.</remarks>
-          <param name="points">Points.</param>
-          <seealso cref="Fill()"/>
-          <seealso cref="FillStroke()"/>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a polygon.</summary>
+        /// <remarks>A polygon is the same as a multiple line except that it's a closed path.</remarks>
+        /// <param name="points">Points.</param>
+        /// <seealso cref="Fill()"/>
+        /// <seealso cref="FillStroke()"/>
+        /// <seealso cref="Stroke()"/>
         public void DrawPolygon(SKPoint[] points)
         {
             DrawPolyline(points);
             ClosePath();
         }
 
-        /**
-          <summary>Draws a path.</summary>
-          <remarks>Iterate path</remarks>
-          <param name="path">SKPath.</param>
-          <seealso cref="Fill()"/>
-          <seealso cref="FillStroke()"/>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a path.</summary>
+        /// <remarks>Iterate path</remarks>
+        /// <param name="path">SKPath.</param>
+        /// <seealso cref="Fill()"/>
+        /// <seealso cref="FillStroke()"/>
+        /// <seealso cref="Stroke()"/>
         public void DrawPath(SKPath path)
         {
             //path.ConicTo(point1,)
@@ -362,11 +312,9 @@ namespace PdfClown.Documents.Contents.Composition
             DrawCurve(qp2, controlPoint1, controlPoint2);
         }
 
-        /**
-          <summary>Draws a multiple line.</summary>
-          <param name="points">Points.</param>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a multiple line.</summary>
+        /// <param name="points">Points.</param>
+        /// <seealso cref="Stroke()"/>
         public void DrawPolyline(SKPoint[] points)
         {
             StartPath(points[0]);
@@ -376,13 +324,11 @@ namespace PdfClown.Documents.Contents.Composition
             }
         }
 
-        /**
-          <summary>Draws a rectangle [PDF:1.6:4.4.1].</summary>
-          <param name="location">Rectangle location.</param>
-          <seealso cref="Fill()"/>
-          <seealso cref="FillStroke()"/>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a rectangle [PDF:1.6:4.4.1].</summary>
+        /// <param name="location">Rectangle location.</param>
+        /// <seealso cref="Fill()"/>
+        /// <seealso cref="FillStroke()"/>
+        /// <seealso cref="Stroke()"/>
         public void DrawRectangle(SKRect location) => DrawRectangle(location, 0);
 
         public void DrawQuad(SKPoint location, SKPoint vector)
@@ -406,14 +352,12 @@ namespace PdfClown.Documents.Contents.Composition
             ClosePath();
         }
 
-        /**
-          <summary>Draws a rounded rectangle.</summary>
-          <param name="location">Rectangle location.</param>
-          <param name="radius">Vertex radius, '0' value degrades to squared vertices.</param>
-          <seealso cref="Fill()"/>
-          <seealso cref="FillStroke()"/>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a rounded rectangle.</summary>
+        /// <param name="location">Rectangle location.</param>
+        /// <param name="radius">Vertex radius, '0' value degrades to squared vertices.</param>
+        /// <seealso cref="Fill()"/>
+        /// <seealso cref="FillStroke()"/>
+        /// <seealso cref="Stroke()"/>
         public void DrawRectangle(SKRect location, double radius)
         {
             if (radius == 0)
@@ -485,66 +429,50 @@ namespace PdfClown.Documents.Contents.Composition
             }
         }
 
-        /**
-          <summary>Draws a spiral.</summary>
-          <param name="center">Spiral center.</param>
-          <param name="startAngle">Starting angle.</param>
-          <param name="endAngle">Ending angle.</param>
-          <param name="branchWidth">Distance between the spiral branches.</param>
-          <param name="branchRatio">Linear coefficient applied to the branch width.</param>
-          <seealso cref="Stroke()"/>
-        */
+        /// <summary>Draws a spiral.</summary>
+        /// <param name="center">Spiral center.</param>
+        /// <param name="startAngle">Starting angle.</param>
+        /// <param name="endAngle">Ending angle.</param>
+        /// <param name="branchWidth">Distance between the spiral branches.</param>
+        /// <param name="branchRatio">Linear coefficient applied to the branch width.</param>
+        /// <seealso cref="Stroke()"/>
         public void DrawSpiral(SKPoint center, double startAngle, double endAngle, double branchWidth, double branchRatio)
             => DrawArc(SKRect.Create(center.X, center.Y, 0.0001f, 0.0001f), startAngle, endAngle, branchWidth, branchRatio);
 
-        /**
-          <summary>Ends the current (innermostly-nested) composite object.</summary>
-          <seealso cref="Begin(CompositeObject)"/>
-        */
+        /// <summary>Ends the current (innermostly-nested) composite object.</summary>
+        /// <seealso cref="Begin(CompositeObject)"/>
         public void End()
         {
             Scanner = Scanner.ParentLevel;
             Scanner.MoveNext();
         }
 
-        /**
-          <summary>Fills the path using the current color [PDF:1.6:4.4.2].</summary>
-          <seealso cref="SetFillColor(Color)"/>
-        */
+        /// <summary>Fills the path using the current color [PDF:1.6:4.4.2].</summary>
+        /// <seealso cref="SetFillColor(Color)"/>
         public void Fill() => Add(PaintPath.Fill);
 
-        /**
-          <summary>Fills and then strokes the path using the current colors [PDF:1.6:4.4.2].</summary>
-          <seealso cref="SetFillColor(Color)"/>
-          <seealso cref="SetStrokeColor(Color)"/>
-        */
+        /// <summary>Fills and then strokes the path using the current colors [PDF:1.6:4.4.2].</summary>
+        /// <seealso cref="SetFillColor(Color)"/>
+        /// <seealso cref="SetStrokeColor(Color)"/>
         public void FillStroke() => Add(PaintPath.FillStroke);
 
-        /**
-          <summary>Serializes the contents into the content stream.</summary>
-        */
+        /// <summary>Serializes the contents into the content stream.</summary>
         public void Flush() => Scanner.Contents.Flush();
 
-        /**
-          <summary>Gets/Sets the content stream scanner.</summary>
-        */
+        /// <summary>Gets/Sets the content stream scanner.</summary>
         public ContentScanner Scanner
         {
             get => scanner;
             set => scanner = value;
         }
 
-        /**
-          <summary>Gets the current graphics state [PDF:1.6:4.3].</summary>
-        */
+        /// <summary>Gets the current graphics state [PDF:1.6:4.3].</summary>
         public GraphicsState State => Scanner.State;
 
-        /**
-          <summary>Applies a rotation to the coordinate system from user space to device space
-          [PDF:1.6:4.2.2].</summary>
-          <param name="angle">Rotational counterclockwise angle.</param>
-          <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
-        */
+        /// <summary>Applies a rotation to the coordinate system from user space to device space
+        /// [PDF:1.6:4.2.2].</summary>
+        /// <param name="angle">Rotational counterclockwise angle.</param>
+        /// <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         public void Rotate(double angle)
         {
             double rad = MathUtils.ToRadians(angle);
@@ -553,13 +481,11 @@ namespace PdfClown.Documents.Contents.Composition
             ApplyMatrix(cos, sin, -sin, cos, 0, 0);
         }
 
-        /**
-          <summary>Applies a rotation to the coordinate system from user space to device space
-          [PDF:1.6:4.2.2].</summary>
-          <param name="angle">Rotational counterclockwise angle.</param>
-          <param name="origin">Rotational pivot point; it becomes the new coordinates origin.</param>
-          <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
-        */
+        /// <summary>Applies a rotation to the coordinate system from user space to device space
+        /// [PDF:1.6:4.2.2].</summary>
+        /// <param name="angle">Rotational counterclockwise angle.</param>
+        /// <param name="origin">Rotational pivot point; it becomes the new coordinates origin.</param>
+        /// <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         public void Rotate(double angle, SKPoint origin)
         {
             // Center to the new origin!
@@ -570,24 +496,18 @@ namespace PdfClown.Documents.Contents.Composition
             Translate(0, -Scanner.ContextBox.Height);
         }
 
-        /**
-          <summary>Applies a scaling to the coordinate system from user space to device space
-          [PDF:1.6:4.2.2].</summary>
-          <param name="ratioX">Horizontal scaling ratio.</param>
-          <param name="ratioY">Vertical scaling ratio.</param>
-          <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
-        */
+        /// <summary>Applies a scaling to the coordinate system from user space to device space
+        /// [PDF:1.6:4.2.2].</summary>
+        /// <param name="ratioX">Horizontal scaling ratio.</param>
+        /// <param name="ratioY">Vertical scaling ratio.</param>
+        /// <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         public void Scale(double ratioX, double ratioY) => ApplyMatrix(ratioX, 0, 0, ratioY, 0, 0);
 
-        /**
-          <summary>Sets the character spacing parameter [PDF:1.6:5.2.1].</summary>
-        */
+        /// <summary>Sets the character spacing parameter [PDF:1.6:5.2.1].</summary>
         public void SetCharSpace(double value) => Add(new SetCharSpace(value));
 
-        /**
-          <summary>Sets the nonstroking color value [PDF:1.6:4.5.7].</summary>
-          <seealso cref="SetStrokeColor(Color)"/>
-        */
+        /// <summary>Sets the nonstroking color value [PDF:1.6:4.5.7].</summary>
+        /// <seealso cref="SetStrokeColor(Color)"/>
         public void SetFillColor(colors::Color value)
         {
             if (!State.FillColorSpace.IsSpaceColor(value))
@@ -599,11 +519,9 @@ namespace PdfClown.Documents.Contents.Composition
             Add(new SetFillColorExtended(value));
         }
 
-        /**
-          <summary>Sets the font [PDF:1.6:5.2].</summary>
-          <param name="name">Resource identifier of the font.</param>
-          <param name="size">Scaling factor (points).</param>
-        */
+        /// <summary>Sets the font [PDF:1.6:5.2].</summary>
+        /// <param name="name">Resource identifier of the font.</param>
+        /// <param name="size">Scaling factor (points).</param>
         public void SetFont(PdfName name, double size)
         {
             // Doesn't the font exist in the context resources?
@@ -621,47 +539,35 @@ namespace PdfClown.Documents.Contents.Composition
             SetFont_(name, size);
         }
 
-        /**
-          <summary>Sets the font [PDF:1.6:5.2].</summary>
-          <remarks>The <paramref cref="value"/> is checked for presence in the current resource
-          dictionary: if it isn't available, it's automatically added. If you need to avoid such a
-          behavior, use <see cref="SetFont(PdfName,double)"/>.</remarks>
-          <param name="value">Font.</param>
-          <param name="size">Scaling factor (points).</param>
-        */
+        /// <summary>Sets the font [PDF:1.6:5.2].</summary>
+        /// <remarks>The <paramref cref="value"/> is checked for presence in the current resource
+        /// dictionary: if it isn't available, it's automatically added. If you need to avoid such a
+        /// behavior, use <see cref="SetFont(PdfName,double)"/>.</remarks>
+        /// <param name="value">Font.</param>
+        /// <param name="size">Scaling factor (points).</param>
         public void SetFont(Font value, double size, PdfName defaultName = null) => SetFont_(GetResourceName(value, defaultName), size);
 
-        /**
-          <summary>Sets the line cap style [PDF:1.6:4.3.2].</summary>
-        */
+        /// <summary>Sets the line cap style [PDF:1.6:4.3.2].</summary>
         public void SetLineCap(LineCapEnum value) => Add(new SetLineCap(value));
 
-        /**
-          <summary>Sets the line dash pattern [PDF:1.6:4.3.2].</summary>
-        */
+        /// <summary>Sets the line dash pattern [PDF:1.6:4.3.2].</summary>
         public void SetLineDash(LineDash value) => Add(new SetLineDash(value));
 
-        /**
-          <summary>Sets the line join style [PDF:1.6:4.3.2].</summary>
-        */
+        /// <summary>Sets the line join style [PDF:1.6:4.3.2].</summary>
         public void SetLineJoin(LineJoinEnum value) => Add(new SetLineJoin(value));
 
-        /**
-          <summary>Sets the line width [PDF:1.6:4.3.2].</summary>
-        */
+        /// <summary>Sets the line width [PDF:1.6:4.3.2].</summary>
         public void SetLineWidth(double value) => Add(new SetLineWidth(value));
 
-        /**
-          <summary>Sets the transformation of the coordinate system from user space to device space
-          [PDF:1.6:4.3.3].</summary>
-          <param name="a">Item 0,0 of the matrix.</param>
-          <param name="b">Item 0,1 of the matrix.</param>
-          <param name="c">Item 1,0 of the matrix.</param>
-          <param name="d">Item 1,1 of the matrix.</param>
-          <param name="e">Item 2,0 of the matrix.</param>
-          <param name="f">Item 2,1 of the matrix.</param>
-          <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
-        */
+        /// <summary>Sets the transformation of the coordinate system from user space to device space
+        /// [PDF:1.6:4.3.3].</summary>
+        /// <param name="a">Item 0,0 of the matrix.</param>
+        /// <param name="b">Item 0,1 of the matrix.</param>
+        /// <param name="c">Item 1,0 of the matrix.</param>
+        /// <param name="d">Item 1,1 of the matrix.</param>
+        /// <param name="e">Item 2,0 of the matrix.</param>
+        /// <param name="f">Item 2,1 of the matrix.</param>
+        /// <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         public void SetMatrix(double a, double b, double c, double d, double e, double f)
         {
             // Reset the CTM!
@@ -678,15 +584,11 @@ namespace PdfClown.Documents.Contents.Composition
             Add(new ModifyCTM(matrix));
         }
 
-        /**
-          <summary>Sets the miter limit [PDF:1.6:4.3.2].</summary>
-        */
+        /// <summary>Sets the miter limit [PDF:1.6:4.3.2].</summary>
         public void SetMiterLimit(double value) => Add(new SetMiterLimit(value));
 
-        /**
-          <summary>Sets the stroking color value [PDF:1.6:4.5.7].</summary>
-          <seealso cref="SetFillColor(Color)"/>
-        */
+        /// <summary>Sets the stroking color value [PDF:1.6:4.5.7].</summary>
+        /// <seealso cref="SetFillColor(Color)"/>
         public void SetStrokeColor(colors::Color value)
         {
             if (!State.StrokeColorSpace.IsSpaceColor(value))
@@ -698,82 +600,62 @@ namespace PdfClown.Documents.Contents.Composition
             Add(new SetStrokeColorExtended(value));
         }
 
-        /**
-          <summary>Sets the text leading [PDF:1.6:5.2.4], relative to the current text line height.
-          </summary>
-        */
+        /// <summary>Sets the text leading [PDF:1.6:5.2.4], relative to the current text line height.
+        /// </summary>
         public void SetTextLead(double value) => Add(new SetTextLead(value * State.Font.GetLineHeight(State.FontSize)));
 
-        /**
-          <summary>Sets the text rendering mode [PDF:1.6:5.2.5].</summary>
-        */
+        /// <summary>Sets the text rendering mode [PDF:1.6:5.2.5].</summary>
         public void SetTextRenderMode(TextRenderModeEnum value) => Add(new SetTextRenderMode(value));
 
-        /**
-          <summary>Sets the text rise [PDF:1.6:5.2.6].</summary>
-        */
+        /// <summary>Sets the text rise [PDF:1.6:5.2.6].</summary>
         public void SetTextRise(double value) => Add(new SetTextRise(value));
 
-        /**
-          <summary>Sets the text horizontal scaling [PDF:1.6:5.2.3], normalized to 1.</summary>
-        */
+        /// <summary>Sets the text horizontal scaling [PDF:1.6:5.2.3], normalized to 1.</summary>
         public void SetTextScale(double value) => Add(new SetTextScale(value * 100));
 
-        /**
-          <summary>Sets the word spacing [PDF:1.6:5.2.2].</summary>
-        */
+        /// <summary>Sets the word spacing [PDF:1.6:5.2.2].</summary>
         public void SetWordSpace(double value) => Add(new SetWordSpace(value));
 
-        /**
-          <summary>Shows the specified text on the page at the current location [PDF:1.6:5.3.2].</summary>
-          <param name="value">Text to show.</param>
-          <returns>Bounding box vertices in default user space units.</returns>
-          <exception cref="EncodeException"/>
-        */
+        /// <summary>Shows the specified text on the page at the current location [PDF:1.6:5.3.2].</summary>
+        /// <param name="value">Text to show.</param>
+        /// <returns>Bounding box vertices in default user space units.</returns>
+        /// <exception cref="EncodeException"/>
         public Quad ShowText(string value) => ShowText(value, new SKPoint(0, 0));
 
-        /**
-          <summary>Shows the link associated to the specified text on the page at the current location.
-          </summary>
-          <param name="value">Text to show.</param>
-          <param name="action">Action to apply when the link is activated.</param>
-          <returns>Link.</returns>
-          <exception cref="EncodeException"/>
-        */
+        /// <summary>Shows the link associated to the specified text on the page at the current location.
+        /// </summary>
+        /// <param name="value">Text to show.</param>
+        /// <param name="action">Action to apply when the link is activated.</param>
+        /// <returns>Link.</returns>
+        /// <exception cref="EncodeException"/>
         public Link ShowText(string value, actions::Action action) => ShowText(value, new SKPoint(0, 0), action);
 
-        /**
-          <summary>Shows the specified text on the page at the specified location [PDF:1.6:5.3.2].
-          </summary>
-          <param name="value">Text to show.</param>
-          <param name="location">Position at which showing the text.</param>
-          <returns>Bounding box vertices in default user space units.</returns>
-          <exception cref="EncodeException"/>
-        */
+        /// <summary>Shows the specified text on the page at the specified location [PDF:1.6:5.3.2].
+        /// </summary>
+        /// <param name="value">Text to show.</param>
+        /// <param name="location">Position at which showing the text.</param>
+        /// <returns>Bounding box vertices in default user space units.</returns>
+        /// <exception cref="EncodeException"/>
         public Quad ShowText(string value, SKPoint location) => ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0);
 
-        /**
-          <summary>Shows the link associated to the specified text on the page at the specified location.
-          </summary>
-          <param name="value">Text to show.</param>
-          <param name="location">Position at which showing the text.</param>
-          <param name="action">Action to apply when the link is activated.</param>
-          <returns>Link.</returns>
-          <exception cref="EncodeException"/>
-        */
+        /// <summary>Shows the link associated to the specified text on the page at the specified location.
+        /// </summary>
+        /// <param name="value">Text to show.</param>
+        /// <param name="location">Position at which showing the text.</param>
+        /// <param name="action">Action to apply when the link is activated.</param>
+        /// <returns>Link.</returns>
+        /// <exception cref="EncodeException"/>
         public Link ShowText(string value, SKPoint location, actions::Action action) => ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0, action);
 
-        /**
-          <summary>Shows the specified text on the page at the specified location [PDF:1.6:5.3.2].
-          </summary>
-          <param name="value">Text to show.</param>
-          <param name="location">Anchor position at which showing the text.</param>
-          <param name="xAlignment">Horizontal alignment.</param>
-          <param name="yAlignment">Vertical alignment.</param>
-          <param name="rotation">Rotational counterclockwise angle.</param>
-          <returns>Bounding box vertices in default user space units.</returns>
-          <exception cref="EncodeException"/>
-        */
+        /// <summary>Shows the specified text on the page at the specified location [PDF:1.6:5.3.2].
+        /// </summary>
+        /// <param name="value">Text to show.</param>
+        /// <param name="location">Anchor position at which showing the text.</param>
+        /// <param name="xAlignment">Horizontal alignment.</param>
+        /// <param name="yAlignment">Vertical alignment.</param>
+        /// <param name="rotation">Rotational counterclockwise angle.</param>
+        /// <returns>Bounding box vertices in default user space units.</returns>
+        /// <exception cref="EncodeException"/>
         public Quad ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
         {
             Quad frame = Quad.Empty;
@@ -797,13 +679,12 @@ namespace PdfClown.Documents.Contents.Composition
                 lineHeight += lineSpace;
                 double textHeight = lineHeight * textLines.Length - lineSpace;
                 double ascent = font.GetAscent(fontSize);
-                /*
-                  NOTE: Word spacing is automatically applied by viewers only in case of single-byte
-                  character code 32 [PDF:1.7:5.2.2]. As several bug reports pointed out, mixed-length
-                  encodings aren't properly handled by recent implementations like pdf.js, therefore
-                  composite fonts are always treated as multi-byte encodings which require explicit word
-                  spacing adjustment.
-                */
+
+                // NOTE: Word spacing is automatically applied by viewers only in case of single-byte
+                // character code 32 [PDF:1.7:5.2.2]. As several bug reports pointed out, mixed-length
+                // encodings aren't properly handled by recent implementations like pdf.js, therefore
+                // composite fonts are always treated as multi-byte encodings which require explicit word
+                // spacing adjustment.
                 double wordSpaceAdjust = font is FontType0 ? -state.WordSpace * 1000 * state.Scale / fontSize : 0;
 
                 // Vertical alignment.
@@ -887,18 +768,16 @@ namespace PdfClown.Documents.Contents.Composition
             return frame;
         }
 
-        /**
-          <summary>Shows the link associated to the specified text on the page at the specified location.
-          </summary>
-          <param name="value">Text to show.</param>
-          <param name="location">Anchor position at which showing the text.</param>
-          <param name="xAlignment">Horizontal alignment.</param>
-          <param name="yAlignment">Vertical alignment.</param>
-          <param name="rotation">Rotational counterclockwise angle.</param>
-          <param name="action">Action to apply when the link is activated.</param>
-          <returns>Link.</returns>
-          <exception cref="EncodeException"/>
-        */
+        /// <summary>Shows the link associated to the specified text on the page at the specified location.
+        /// </summary>
+        /// <param name="value">Text to show.</param>
+        /// <param name="location">Anchor position at which showing the text.</param>
+        /// <param name="xAlignment">Horizontal alignment.</param>
+        /// <param name="yAlignment">Vertical alignment.</param>
+        /// <param name="rotation">Rotational counterclockwise angle.</param>
+        /// <param name="action">Action to apply when the link is activated.</param>
+        /// <returns>Link.</returns>
+        /// <exception cref="EncodeException"/>
         public Link ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation, actions::Action action)
         {
             IContentContext contentContext = Scanner.Context;
@@ -912,66 +791,52 @@ namespace PdfClown.Documents.Contents.Composition
             return link;
         }
 
-        /**
-          <summary>Shows the specified external object [PDF:1.6:4.7].</summary>
-          <param name="name">Resource identifier of the external object.</param>
-        */
+        /// <summary>Shows the specified external object [PDF:1.6:4.7].</summary>
+        /// <param name="name">Resource identifier of the external object.</param>
         public void ShowXObject(PdfName name) => Add(new PaintXObject(name));
 
-        /**
-          <summary>Shows the specified external object [PDF:1.6:4.7].</summary>
-          <remarks>The <paramref cref="value"/> is checked for presence in the current resource
-          dictionary: if it isn't available, it's automatically added. If you need to avoid such a
-          behavior, use <see cref="ShowXObject(PdfName)"/>.</remarks>
-          <param name="value">External object.</param>
-        */
+        /// <summary>Shows the specified external object [PDF:1.6:4.7].</summary>
+        /// <remarks>The <paramref cref="value"/> is checked for presence in the current resource
+        /// dictionary: if it isn't available, it's automatically added. If you need to avoid such a
+        /// behavior, use <see cref="ShowXObject(PdfName)"/>.</remarks>
+        /// <param name="value">External object.</param>
         public void ShowXObject(XObject value) => ShowXObject(GetResourceName(value));
 
-        /**
-          <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
-          <param name="name">Resource identifier of the external object.</param>
-          <param name="location">Position at which showing the external object.</param>
-        */
+        /// <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
+        /// <param name="name">Resource identifier of the external object.</param>
+        /// <param name="location">Position at which showing the external object.</param>
         public void ShowXObject(PdfName name, SKPoint location) => ShowXObject(name, location, null);
 
-        /**
-          <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
-          <remarks>The <paramref cref="value"/> is checked for presence in the current resource
-          dictionary: if it isn't available, it's automatically added. If you need to avoid such a
-          behavior, use <see cref="ShowXObject(PdfName,SKPoint)"/>.</remarks>
-          <param name="value">External object.</param>
-          <param name="location">Position at which showing the external object.</param>
-        */
+        /// <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
+        /// <remarks>The <paramref cref="value"/> is checked for presence in the current resource
+        /// dictionary: if it isn't available, it's automatically added. If you need to avoid such a
+        /// behavior, use <see cref="ShowXObject(PdfName,SKPoint)"/>.</remarks>
+        /// <param name="value">External object.</param>
+        /// <param name="location">Position at which showing the external object.</param>
         public void ShowXObject(XObject value, SKPoint location) => ShowXObject(GetResourceName(value), location);
 
-        /**
-          <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
-          <param name="name">Resource identifier of the external object.</param>
-          <param name="location">Position at which showing the external object.</param>
-          <param name="size">Size of the external object.</param>
-        */
+        /// <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
+        /// <param name="name">Resource identifier of the external object.</param>
+        /// <param name="location">Position at which showing the external object.</param>
+        /// <param name="size">Size of the external object.</param>
         public void ShowXObject(PdfName name, SKPoint location, SKSize? size) => ShowXObject(name, location, size, XAlignmentEnum.Left, YAlignmentEnum.Top, 0);
 
-        /**
-          <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
-          <remarks>The <paramref cref="value"/> is checked for presence in the current resource
-          dictionary: if it isn't available, it's automatically added. If you need to avoid such a
-          behavior, use <see cref="ShowXObject(PdfName,SKPoint,SKSize)"/>.</remarks>
-          <param name="value">External object.</param>
-          <param name="location">Position at which showing the external object.</param>
-          <param name="size">Size of the external object.</param>
-        */
+        /// <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
+        /// <remarks>The <paramref cref="value"/> is checked for presence in the current resource
+        /// dictionary: if it isn't available, it's automatically added. If you need to avoid such a
+        /// behavior, use <see cref="ShowXObject(PdfName,SKPoint,SKSize)"/>.</remarks>
+        /// <param name="value">External object.</param>
+        /// <param name="location">Position at which showing the external object.</param>
+        /// <param name="size">Size of the external object.</param>
         public void ShowXObject(XObject value, SKPoint location, SKSize? size) => ShowXObject(GetResourceName(value), location, size);
 
-        /**
-          <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
-          <param name="name">Resource identifier of the external object.</param>
-          <param name="location">Position at which showing the external object.</param>
-          <param name="size">Size of the external object.</param>
-          <param name="xAlignment">Horizontal alignment.</param>
-          <param name="yAlignment">Vertical alignment.</param>
-          <param name="rotation">Rotational counterclockwise angle.</param>
-        */
+        /// <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
+        /// <param name="name">Resource identifier of the external object.</param>
+        /// <param name="location">Position at which showing the external object.</param>
+        /// <param name="size">Size of the external object.</param>
+        /// <param name="xAlignment">Horizontal alignment.</param>
+        /// <param name="yAlignment">Vertical alignment.</param>
+        /// <param name="rotation">Rotational counterclockwise angle.</param>
         public void ShowXObject(PdfName name, SKPoint location, SKSize? size, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
         {
             var xObject = Scanner.Context.Resources.XObjects[name];
@@ -1034,41 +899,33 @@ namespace PdfClown.Documents.Contents.Composition
             { End(); } // Ends the local state.
         }
 
-        /**
-          <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
-          <remarks>The <paramref cref="value"/> is checked for presence in the current resource
-          dictionary: if it isn't available, it's automatically added. If you need to avoid such a
-          behavior, use <see cref="ShowXObject(PdfName,SKPoint,SKSize,XAlignmentEnum,YAlignmentEnum,double)"/>.
-          </remarks>
-          <param name="value">External object.</param>
-          <param name="location">Position at which showing the external object.</param>
-          <param name="size">Size of the external object.</param>
-          <param name="xAlignment">Horizontal alignment.</param>
-          <param name="yAlignment">Vertical alignment.</param>
-          <param name="rotation">Rotational counterclockwise angle.</param>
-        */
+        /// <summary>Shows the specified external object at the specified position [PDF:1.6:4.7].</summary>
+        /// <remarks>The <paramref cref="value"/> is checked for presence in the current resource
+        /// dictionary: if it isn't available, it's automatically added. If you need to avoid such a
+        /// behavior, use <see cref="ShowXObject(PdfName,SKPoint,SKSize,XAlignmentEnum,YAlignmentEnum,double)"/>.
+        /// </remarks>
+        /// <param name="value">External object.</param>
+        /// <param name="location">Position at which showing the external object.</param>
+        /// <param name="size">Size of the external object.</param>
+        /// <param name="xAlignment">Horizontal alignment.</param>
+        /// <param name="yAlignment">Vertical alignment.</param>
+        /// <param name="rotation">Rotational counterclockwise angle.</param>
         public void ShowXObject(XObject value, SKPoint location, SKSize? size, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation)
             => ShowXObject(GetResourceName(value), location, size, xAlignment, yAlignment, rotation);
 
-        /**
-          <summary>Begins a subpath [PDF:1.6:4.4.1].</summary>
-          <param name="startPoint">Starting point.</param>
-        */
+        /// <summary>Begins a subpath [PDF:1.6:4.4.1].</summary>
+        /// <param name="startPoint">Starting point.</param>
         public void StartPath(SKPoint startPoint) => Add(new BeginSubpath(startPoint.X, Scanner.ContextBox.Height - startPoint.Y));
 
-        /**
-          <summary>Strokes the path using the current color [PDF:1.6:4.4.2].</summary>
-          <seealso cref="SetStrokeColor(Color)"/>
-        */
+        /// <summary>Strokes the path using the current color [PDF:1.6:4.4.2].</summary>
+        /// <seealso cref="SetStrokeColor(Color)"/>
         public void Stroke() => Add(PaintPath.Stroke);
 
-        /**
-          <summary>Applies a translation to the coordinate system from user space to device space
-          [PDF:1.6:4.2.2].</summary>
-          <param name="distanceX">Horizontal distance.</param>
-          <param name="distanceY">Vertical distance.</param>
-          <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
-        */
+        /// <summary>Applies a translation to the coordinate system from user space to device space
+        /// [PDF:1.6:4.2.2].</summary>
+        /// <param name="distanceX">Horizontal distance.</param>
+        /// <param name="distanceY">Vertical distance.</param>
+        /// <seealso cref="ApplyMatrix(double,double,double,double,double,double)"/>
         public void Translate(double distanceX, double distanceY) => ApplyMatrix(1, 0, 0, 1, distanceX, distanceY);
 
         private void ApplyState_(PdfName name) => Add(new ApplyExtGState(name));
@@ -1076,21 +933,17 @@ namespace PdfClown.Documents.Contents.Composition
         private GraphicsMarkedContent BeginMarkedContent_(PdfName tag, PdfName propertyListName)
             => (GraphicsMarkedContent)Begin(new GraphicsMarkedContent(new BeginPropertyListMarkedContent(tag, propertyListName)));
 
-        /**
-          <summary>Begins a text object [PDF:1.6:5.3].</summary>
-          <seealso cref="End()"/>
-        */
+        /// <summary>Begins a text object [PDF:1.6:5.3].</summary>
+        /// <seealso cref="End()"/>
         private GraphicsText BeginText() => (GraphicsText)Begin(new GraphicsText());
 
         //TODO: drawArc MUST seamlessly manage already-begun paths.
         private void DrawArc(SKRect location, double startAngle, double endAngle, double branchWidth, double branchRatio, bool beginPath)
         {
-            /*
-              NOTE: Strictly speaking, arc drawing is NOT a PDF primitive;
-              it leverages the cubic bezier curve operator (thanks to
-              G. Adam Stanislav, whose article was greatly inspirational:
-              see http://www.whizkidtech.redprince.net/bezier/circle/).
-            */
+            // NOTE: Strictly speaking, arc drawing is NOT a PDF primitive;
+            // it leverages the cubic bezier curve operator (thanks to
+            // G. Adam Stanislav, whose article was greatly inspirational:
+            // see http://www.whizkidtech.redprince.net/bezier/circle/).
 
             if (startAngle > endAngle)
             {
@@ -1172,7 +1025,7 @@ namespace PdfClown.Documents.Contents.Composition
             {
                 if (parentLevel.Current is GraphicsMarkedContent markedContent)
                 {
-                    var marker = (ContentMarker)markedContent.Header;
+                    var marker = (ContentMarker)markedContent.MarkerHeader;
                     if (PdfName.OC.Equals(marker.Tag))
                         return (LayerEntity)marker.GetProperties(Scanner);
                 }
@@ -1216,11 +1069,9 @@ namespace PdfClown.Documents.Contents.Composition
             }
         }
 
-        /**
-          <summary>Applies a rotation to the coordinate system from text space to user space
-          [PDF:1.6:4.2.2].</summary>
-          <param name="angle">Rotational counterclockwise angle.</param>
-        */
+        /// <summary>Applies a rotation to the coordinate system from text space to user space
+        /// [PDF:1.6:4.2.2].</summary>
+        /// <param name="angle">Rotational counterclockwise angle.</param>
         private void RotateText(double angle)
         {
             double rad = MathUtils.ToRadians(angle);
@@ -1230,49 +1081,39 @@ namespace PdfClown.Documents.Contents.Composition
             SetTextMatrix(cos, sin, -sin, cos, 0, 0);
         }
 
-        /**
-          <summary>Applies a scaling to the coordinate system from text space to user space
-          [PDF:1.6:4.2.2].</summary>
-          <param name="ratioX">Horizontal scaling ratio.</param>
-          <param name="ratioY">Vertical scaling ratio.</param>
-        */
+        /// <summary>Applies a scaling to the coordinate system from text space to user space
+        /// [PDF:1.6:4.2.2].</summary>
+        /// <param name="ratioX">Horizontal scaling ratio.</param>
+        /// <param name="ratioY">Vertical scaling ratio.</param>
         private void ScaleText(double ratioX, double ratioY) => SetTextMatrix(ratioX, 0, 0, ratioY, 0, 0);
 
         private void SetFont_(PdfName name, double size) => Add(new SetFont(name, size));
 
-        /**
-          <summary>Sets the transformation of the coordinate system from text space to user space
-          [PDF:1.6:5.3.1].</summary>
-          <remarks>The transformation replaces the current text matrix.</remarks>
-          <param name="a">Item 0,0 of the matrix.</param>
-          <param name="b">Item 0,1 of the matrix.</param>
-          <param name="c">Item 1,0 of the matrix.</param>
-          <param name="d">Item 1,1 of the matrix.</param>
-          <param name="e">Item 2,0 of the matrix.</param>
-          <param name="f">Item 2,1 of the matrix.</param>
-        */
+        /// <summary>Sets the transformation of the coordinate system from text space to user space
+        /// [PDF:1.6:5.3.1].</summary>
+        /// <remarks>The transformation replaces the current text matrix.</remarks>
+        /// <param name="a">Item 0,0 of the matrix.</param>
+        /// <param name="b">Item 0,1 of the matrix.</param>
+        /// <param name="c">Item 1,0 of the matrix.</param>
+        /// <param name="d">Item 1,1 of the matrix.</param>
+        /// <param name="e">Item 2,0 of the matrix.</param>
+        /// <param name="f">Item 2,1 of the matrix.</param>
         private void SetTextMatrix(double a, double b, double c, double d, double e, double f) => Add(new SetTextMatrix(a, b, c, d, e, f));
 
-        /**
-          <summary>Applies a translation to the coordinate system from text space to user space
-          [PDF:1.6:4.2.2].</summary>
-          <param name="distanceX">Horizontal distance.</param>
-          <param name="distanceY">Vertical distance.</param>
-        */
+        /// <summary>Applies a translation to the coordinate system from text space to user space
+        /// [PDF:1.6:4.2.2].</summary>
+        /// <param name="distanceX">Horizontal distance.</param>
+        /// <param name="distanceY">Vertical distance.</param>
         private void TranslateText(double distanceX, double distanceY) => SetTextMatrix(1, 0, 0, 1, distanceX, distanceY);
 
-        /**
-          <summary>Applies a translation to the coordinate system from text space to user space,
-          relative to the start of the current line [PDF:1.6:5.3.1].</summary>
-          <param name="offsetX">Horizontal offset.</param>
-          <param name="offsetY">Vertical offset.</param>
-        */
+        /// <summary>Applies a translation to the coordinate system from text space to user space,
+        /// relative to the start of the current line [PDF:1.6:5.3.1].</summary>
+        /// <param name="offsetX">Horizontal offset.</param>
+        /// <param name="offsetY">Vertical offset.</param>
         private void TranslateTextRelative(double offsetX, double offsetY) => Add(new TranslateTextRelativeNoLead(offsetX, -offsetY));
 
-        /**
-          <summary>Applies a translation to the coordinate system from text space to user space,
-          moving to the start of the next line [PDF:1.6:5.3.1].</summary>
-        */
+        /// <summary>Applies a translation to the coordinate system from text space to user space,
+        /// moving to the start of the next line [PDF:1.6:5.3.1].</summary>
         private void TranslateTextToNextLine() => Add(objects::TranslateTextToNextLine.Value);
     }
 }

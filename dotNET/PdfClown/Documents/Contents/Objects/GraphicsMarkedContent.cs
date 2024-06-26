@@ -31,9 +31,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Marked-content sequence [PDF:1.6:10.5].</summary>
-    */
+    /// <summary>Marked-content sequence [PDF:1.6:10.5].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class GraphicsMarkedContent : GraphicsObject
     {
@@ -42,16 +40,14 @@ namespace PdfClown.Documents.Contents.Objects
         private BeginMarkedContent header;
 
         public GraphicsMarkedContent(BeginMarkedContent header)
-            : this(header, new List<ContentObject>())
+            : this(header, new List<ContentObject> { header })
         { }
 
         public GraphicsMarkedContent(BeginMarkedContent header, IList<ContentObject> objects)
             : base(objects)
         { this.header = header; }
 
-        /**
-          <summary>Gets/Sets information about this marked-content sequence.</summary>
-        */
+        /// <summary>Gets/Sets information about this marked-content sequence.</summary>
         public override Operation Header
         {
             get => header;
@@ -60,14 +56,18 @@ namespace PdfClown.Documents.Contents.Objects
 
         public string Type => header?.Operands.Count > 0 ? ((header.Operands[0] as PdfName)?.RawValue) : null;
 
+        public ContentMarker MarkerHeader { get => header; }
+
         public override void Scan(GraphicsState state)
         {
+            //if (header.Properties is Layer layer
+            //    && !layer.Visible)
+            //    return;
             base.Scan(state);
         }
 
         public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
-            header.WriteTo(stream, context);
             base.WriteTo(stream, context);
             stream.Write(EndChunk);
         }

@@ -23,17 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
 
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Abstract content marker [PDF:1.6:10.5].</summary>
-    */
+    /// <summary>Abstract content marker [PDF:1.6:10.5].</summary>
     [PDF(VersionEnum.PDF12)]
     public abstract class ContentMarker : Operation, IResourceReference<PropertyList>
     {
@@ -45,7 +41,7 @@ namespace PdfClown.Documents.Contents.Objects
             if (properties != null)
             {
                 operands.Add(properties);
-            }            
+            }
         }
 
         protected ContentMarker(string @operator, PdfArray operands) : base(@operator, operands)
@@ -53,11 +49,9 @@ namespace PdfClown.Documents.Contents.Objects
 
         public PropertyList GetResource(ContentScanner scanner) => GetProperties(scanner);
 
-        /**
-          <summary>Gets the private information meaningful to the program (application or plugin extension)
-          creating the marked content.</summary>
-          <param name="scanner">Content context.</param>
-        */
+        /// <summary>Gets the private information meaningful to the program (application or plugin extension)
+        /// creating the marked content.</summary>
+        /// <param name="scanner">Content context.</param>
         public PropertyList GetProperties(ContentScanner scanner)
         {
             object properties = Properties;
@@ -74,11 +68,9 @@ namespace PdfClown.Documents.Contents.Objects
             return list;
         }
 
-        /**
-          <summary>Gets/Sets the private information meaningful to the program (application or plugin
-          extension) creating the marked content. It can be either an inline <see cref="PropertyList"/>
-          or the <see cref="PdfName">name</see> of an external PropertyList resource.</summary>
-        */
+        /// <summary>Gets/Sets the private information meaningful to the program (application or plugin
+        /// extension) creating the marked content. It can be either an inline <see cref="PropertyList"/>
+        /// or the <see cref="PdfName">name</see> of an external PropertyList resource.</summary>
         public object Properties
         {
             get
@@ -118,9 +110,7 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        /**
-          <summary>Gets/Sets the marker indicating the role or significance of the marked content.</summary>
-        */
+        /// <summary>Gets/Sets the marker indicating the role or significance of the marked content.</summary>
         public PdfName Tag
         {
             get => (PdfName)operands[0];

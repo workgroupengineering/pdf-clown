@@ -32,22 +32,21 @@ using System.Collections.Generic;
 namespace PdfClown.Objects
 {
 
-    ///<summary>Collection of sequentially-arranged object wrappers.</summary>
+    /// <summary>Collection of sequentially-arranged object wrappers.</summary>
     public class Array<TItem> : PdfObjectWrapper<PdfArray>, IList<TItem>
         where TItem : IPdfObjectWrapper
     {
-
         protected IEntryWrapper<TItem> itemWrapper;
 
-        ///<summary>Wraps a new base array using the default wrapper for wrapping its items.</summary>
-        ///<param name="context">Document context.</param>
+        /// <summary>Wraps a new base array using the default wrapper for wrapping its items.</summary>
+        /// <param name="context">Document context.</param>
         public Array(PdfDocument context)
             : this(context, new PdfArray())
         { }
 
-        ///<summary>Wraps a new base array using the specified wrapper for wrapping its items.</summary>
-        ///<param name="context">Document context.</param>
-        ///<param name="itemWrapper">Item wrapper.</param>
+        /// <summary>Wraps a new base array using the specified wrapper for wrapping its items.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="itemWrapper">Item wrapper.</param>
         public Array(PdfDocument context, IEntryWrapper<TItem> itemWrapper)
             : this(context, itemWrapper, new PdfArray())
         { }

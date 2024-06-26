@@ -23,20 +23,14 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Patterns.Shadings;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 using SkiaSharp;
-using System;
-using PdfClown.Documents.Contents.ColorSpaces;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Paint the shape and color shading' operation [PDF:1.6:4.6.3].</summary>
-    */
+    /// <summary>'Paint the shape and color shading' operation [PDF:1.6:4.6.3].</summary>
     [PDF(VersionEnum.PDF13)]
     public sealed class PaintShading : Operation, IResourceReference<Shading>
     {
@@ -48,11 +42,9 @@ namespace PdfClown.Documents.Contents.Objects
         public PaintShading(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        /**
-          <summary>Gets the <see cref="colorSpaces::Shading">shading</see> resource to be painted.
-          </summary>
-          <param name="context">Content context.</param>
-        */
+        /// <summary>Gets the <see cref="colorSpaces::Shading">shading</see> resource to be painted.
+        /// </summary>
+        /// <param name="context">Content context.</param>
         public Shading GetShading(ContentScanner scanner) => GetResource(scanner);
 
         public Shading GetResource(ContentScanner scanner)

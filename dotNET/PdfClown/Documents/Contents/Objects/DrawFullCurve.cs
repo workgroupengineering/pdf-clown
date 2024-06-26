@@ -24,25 +24,22 @@
 */
 
 using PdfClown.Objects;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class DrawFullCurve : DrawCurve
     {
-        /**
-          <summary>Creates a fully-explicit curve.</summary>
-          <param name="point">Final endpoint.</param>
-          <param name="control1">First control point.</param>
-          <param name="control2">Second control point.</param>
-        */
+        /// <summary>Creates a fully-explicit curve.</summary>
+        /// <param name="point">Final endpoint.</param>
+        /// <param name="control1">First control point.</param>
+        /// <param name="control2">Second control point.</param>
         public DrawFullCurve(SKPoint point, SKPoint control1, SKPoint control2)
             : this(point.X, point.Y, control1.X, control1.Y, control2.X, control2.Y)
         { }
 
-        /**
-          <summary>Creates a fully-explicit curve.</summary>
-        */
+        /// <summary>Creates a fully-explicit curve.</summary>
         public DrawFullCurve(double pointX, double pointY, double control1X, double control1Y, double control2X, double control2Y)
             : base(FullOperatorKeyword, new PdfArray(6)
               {
@@ -57,7 +54,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override SKPoint Control1
         {
-            get => new SKPoint(operands.GetFloat(0), operands.GetFloat(1));
+            get => operands.ToSKPoint();
             set
             {
                 operands.Set(0, value.X);

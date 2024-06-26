@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util;
 
@@ -33,31 +32,21 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Optional content configuration [PDF:1.7:4.10.3].</summary>
-    */
+    /// <summary>Optional content configuration [PDF:1.7:4.10.3].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class LayerConfiguration : PdfObjectWrapper<PdfDictionary>, ILayerConfiguration
     {
         private ISet<PdfName> intents;
 
-        /**
-<summary>Base state used to initialize the states of all the layers in a document when this
-configuration is applied.</summary>
-*/
+        /// <summary>Base state used to initialize the states of all the layers in a document when this
+        /// configuration is applied.</summary>
         internal enum BaseStateEnum
         {
-            /**
-              <summary>All the layers are visible.</summary>
-            */
+            /// <summary>All the layers are visible.</summary>
             On,
-            /**
-              <summary>All the layers are invisible.</summary>
-            */
+            /// <summary>All the layers are invisible.</summary>
             Off,
-            /**
-              <summary>All the layers are left unchanged.</summary>
-            */
+            /// <summary>All the layers are left unchanged.</summary>
             Unchanged
         }
 
@@ -140,10 +129,8 @@ configuration is applied.</summary>
             get => BaseStateEnumExtension.Get(BaseDataObject.GetString(PdfName.BaseState)).IsEnabled();
             set
             {
-                /*
-                  NOTE: Base state can be altered only in case of alternate configuration; default ones MUST
-                  be set to default state (that is ON).
-                */
+                // NOTE: Base state can be altered only in case of alternate configuration; default ones MUST
+                // be set to default state (that is ON).
                 if (!(BaseObject.Parent is PdfDictionary)) // Not the default configuration?
                 { BaseDataObject[PdfName.BaseState] = BaseStateEnumExtension.Get(value).GetName(); }
             }
@@ -158,17 +145,15 @@ configuration is applied.</summary>
                 return OnLayersObject.Contains(layer.BaseObject);
         }
 
-        /**
-          <summary>Sets the usage application for the specified factors.</summary>
-          <param name="event">Situation in which this usage application should be used. May be
-            <see cref="PdfName.View">View</see>, <see cref="PdfName.Print">Print</see> or <see
-            cref="PdfName.Export">Export</see>.</param>
-          <param name="category">Layer usage entry to consider when managing the states of the layer.
-          </param>
-          <param name="layer">Layer which should have its state automatically managed based on its usage
-            information.</param>
-          <param name="retain">Whether this usage application has to be kept or removed.</param>
-        */
+        /// <summary>Sets the usage application for the specified factors.</summary>
+        /// <param name="event">Situation in which this usage application should be used. May be
+        ///   <see cref="PdfName.View">View</see>, <see cref="PdfName.Print">Print</see> or <see
+        ///   cref="PdfName.Export">Export</see>.</param>
+        /// <param name="category">Layer usage entry to consider when managing the states of the layer.
+        /// </param>
+        /// <param name="layer">Layer which should have its state automatically managed based on its usage
+        ///   information.</param>
+        /// <param name="retain">Whether this usage application has to be kept or removed.</param>
         internal void SetUsageApplication(PdfName @event, PdfName category, Layer layer, bool retain)
         {
             bool matched = false;
@@ -236,14 +221,10 @@ configuration is applied.</summary>
             }
         }
 
-        /**
-          <summary>Gets the collection of the layer objects whose state is set to OFF.</summary>
-        */
+        /// <summary>Gets the collection of the layer objects whose state is set to OFF.</summary>
         private PdfArray OffLayersObject => BaseDataObject.Resolve<PdfArray>(PdfName.OFF);
 
-        /**
-          <summary>Gets the collection of the layer objects whose state is set to ON.</summary>
-        */
+        /// <summary>Gets the collection of the layer objects whose state is set to ON.</summary>
         private PdfArray OnLayersObject => BaseDataObject.Resolve<PdfArray>(PdfName.ON);
     }
 

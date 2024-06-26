@@ -24,13 +24,10 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util;
-
-using System;
 using SkiaSharp;
+using System;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
@@ -133,8 +130,8 @@ namespace PdfClown.Documents.Interaction.Navigation
             if (baseObject.Wrapper is Destination destination)
                 return destination;
 
-            PdfArray dataObject = (PdfArray)baseObject.Resolve();
-            PdfDirectObject pageObject = dataObject[0];
+            var dataObject = (PdfArray)baseObject.Resolve();
+            var pageObject = dataObject[0];
             if (pageObject is PdfReference)
                 return new LocalDestination(baseObject);
             else if (pageObject is PdfInteger)

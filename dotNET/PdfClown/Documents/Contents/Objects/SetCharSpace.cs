@@ -23,16 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the character spacing' operation [PDF:1.6:5.2].</summary>
-    */
+    /// <summary>'Set the character spacing' operation [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetCharSpace : Operation
     {

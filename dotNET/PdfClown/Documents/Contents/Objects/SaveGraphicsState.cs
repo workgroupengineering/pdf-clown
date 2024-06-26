@@ -23,16 +23,10 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-
-using PdfClown.Objects;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Save the current graphics state on the graphics state stack' operation [PDF:1.6:4.3.3].
-      Practically, it begins a local graphics state.</summary>
-    */
+    /// <summary>'Save the current graphics state on the graphics state stack' operation [PDF:1.6:4.3.3].
+    /// Practically, it begins a local graphics state.</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SaveGraphicsState : Operation
     {

@@ -24,19 +24,18 @@
 */
 
 using PdfClown.Objects;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class DrawFinalCurve : DrawCurve
     {
-        /**
-          <summary>Creates a partially-explicit curve.</summary>
-          <param name="point">Final endpoint.</param>
-          <param name="control">Explicit control point.</param>
-          <param name="operator">Operator (either <code>InitialOperator</code> or <code>FinalOperator</code>).
-          It defines how to interpret the <code>control</code> parameter.</param>
-        */
+        /// <summary>Creates a partially-explicit curve.</summary>
+        /// <param name="point">Final endpoint.</param>
+        /// <param name="control">Explicit control point.</param>
+        /// <param name="operator">Operator (either <code>InitialOperator</code> or <code>FinalOperator</code>).
+        /// It defines how to interpret the <code>control</code> parameter.</param>
         public DrawFinalCurve(SKPoint point, SKPoint control)
             : base(FinalOperatorKeyword, point, control)
         { }
@@ -47,7 +46,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override SKPoint Control1
         {
-            get => new SKPoint(operands.GetFloat(0), operands.GetFloat(1));
+            get => operands.ToSKPoint();
             set
             {
                 operands.Set(0, value.X);

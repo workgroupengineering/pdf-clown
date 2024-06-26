@@ -23,17 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Layers;
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Begin marked-content sequence' operation [PDF:1.6:10.5].</summary>
-    */
+    /// <summary>'Begin marked-content sequence' operation [PDF:1.6:10.5].</summary>
     [PDF(VersionEnum.PDF12)]
     public abstract class BeginMarkedContent : ContentMarker
     {
