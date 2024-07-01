@@ -36,5 +36,6 @@ namespace PdfClown
         void RejectOperations();
         void ScrollTo(Annotation annotation);
         void ScrollTo(PdfPage page);
+        void Reload();
     }
 }

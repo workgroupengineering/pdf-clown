@@ -99,7 +99,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (!string.Equals(oldValue, value, StringComparison.Ordinal))
                 {
                     var typeNameObject = PdfName.Get(value);
-                    BaseDataObject[PdfName.Name] = (typeNameObject != null && !typeNameObject.Equals(DefaultType.GetName()) ? typeNameObject : null);                    
+                    BaseDataObject[PdfName.Name] = (typeNameObject != null && !typeNameObject.Equals(DefaultType.GetName()) ? typeNameObject : null);
+                    QueueRefreshAppearance();
                     OnPropertyChanged(oldValue, value);
                 }
             }
