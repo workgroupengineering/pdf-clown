@@ -44,7 +44,7 @@ using System.Runtime.CompilerServices;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    ///<summary>Annotation [PDF:1.6:8.4].</summary>
+    /// <summary>Annotation [PDF:1.6:8.4].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class Annotation : PdfObjectWrapper<PdfDictionary>, ILayerable, INotifyPropertyChanged
     {
@@ -564,9 +564,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             Box = newBox;
         }
 
-        /**
-          <summary>Deletes this annotation removing also its reference on the page.</summary>
-*/
+        /// <summary>Deletes this annotation removing also its reference on the page.</summary>
         public override bool Delete()
         {
             Remove();

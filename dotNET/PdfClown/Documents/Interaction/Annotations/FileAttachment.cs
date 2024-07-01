@@ -23,24 +23,19 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Files;
 using PdfClown.Objects;
-
+using PdfClown.Tools;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
-using PdfClown.Tools;
-using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>File attachment annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It represents a reference to a file, which typically is embedded in the PDF file.
-      </remarks>
-    */
+    /// <summary>File attachment annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It represents a reference to a file, which typically is embedded in the PDF file.
+    /// </remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class FileAttachment : Markup, IFileResource
     {
@@ -59,17 +54,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             };
         }
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(FileAttachmentImageType value)
         {
             return IconTypeEnumCodes[value];
         }
 
-        /**
-          <summary>Gets the icon type corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the icon type corresponding to the given value.</summary>
         private static FileAttachmentImageType ToImageTypeEnum(IPdfString value)
         {
             if (value == null)
@@ -92,9 +83,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
-        */
+        /// <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
         public FileAttachmentImageType AttachmentName
         {
             get => ToImageTypeEnum((IPdfString)BaseDataObject[PdfName.Name]);
@@ -139,26 +128,16 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
     }
 
-    /**
-      <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
-    */
+    /// <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
     public enum FileAttachmentImageType
     {
-        /**
-          <summary>Graph.</summary>
-        */
+        /// <summary>Graph.</summary>
         Graph,
-        /**
-          <summary>Paper clip.</summary>
-        */
+        /// <summary>Paper clip.</summary>
         PaperClip,
-        /**
-          <summary>Push pin.</summary>
-        */
+        /// <summary>Push pin.</summary>
         PushPin,
-        /**
-          <summary>Tag.</summary>
-        */
+        /// <summary>Tag.</summary>
         Tag
     };
 

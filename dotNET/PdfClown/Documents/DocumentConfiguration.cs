@@ -27,12 +27,11 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 using PdfClown.Util.IO;
-
+using PdfClown.Util.Math.Geom;
 using System;
 using System.Collections.Generic;
-using io = System.IO;
+using System.IO;
 using System.Text.RegularExpressions;
-using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents
 {
@@ -84,7 +83,7 @@ namespace PdfClown.Documents
             { importedStamps = new Dictionary<StandardStampEnum, FormXObject>(); }
             if (stamp == null)
             {
-                if (io::File.GetAttributes(stampPath).HasFlag(io::FileAttributes.Directory)) // Acrobat standard stamps directory.
+                if (File.GetAttributes(stampPath).HasFlag(FileAttributes.Directory)) // Acrobat standard stamps directory.
                 {
                     string stampFileName;
                     switch (type.Value)
@@ -129,19 +128,23 @@ namespace PdfClown.Documents
                         default:
                             throw new NotSupportedException("Unknown stamp type");
                     }
-                    using (var stampFile = new PdfFile(io::Path.Combine(stampPath, stampFileName)))
+                    var path = Path.Combine(stampPath, stampFileName);
+                    if (File.Exists(path))
                     {
-                        var stampPageKey = new PdfString(type.Value.GetName().StringValue + "=" + String.Join(" ", Regex.Split(type.Value.GetName().StringValue.Substring(2), "(?!^)(?=\\p{Lu})")));
-                        var stampPage = stampFile.Document.ResolveName<PdfPage>(stampPageKey);
-                        importedStamps[type.Value] = (stamp = (FormXObject)stampPage.ToXObject(Document));
-                        stamp.Box = stampPage.ArtBox.ToSKRect();
+                        using (var stampFile = new PdfFile(path))
+                        {
+                            var stampPageKey = new PdfString(type.Value.GetName().StringValue + "=" + String.Join(" ", Regex.Split(type.Value.GetName().StringValue.Substring(2), "(?!^)(?=\\p{Lu})")));
+                            var stampPage = stampFile.Document.Names.Pages[stampPageKey];
+                            importedStamps[type.Value] = (stamp = (FormXObject)stampPage.ToXObject(Document));
+                            stamp.Box = stampPage.ArtBox.ToSKRect();
+                        }
                     }
                 }
                 else // Standard stamps template (std-stamps.pdf).
                 {
                     using (var stampFile = new PdfFile(stampPath))
                     {
-                        FormXObject stampXObject = stampFile.Document.Pages[0].Resources.Get<FormXObject>(type.Value.GetName());
+                        var stampXObject = stampFile.Document.Pages[0].Resources.XObjects[type.Value.GetName()] as FormXObject;
                         importedStamps[type.Value] = (stamp = (FormXObject)stampXObject.Clone(Document));
                     }
                 }
@@ -164,7 +167,7 @@ namespace PdfClown.Documents
             set
             {
                 if (!IOUtils.Exists(value))
-                    throw new ArgumentException(null, new io::FileNotFoundException());
+                    throw new ArgumentException(null, new FileNotFoundException());
 
                 stampPath = value;
             }

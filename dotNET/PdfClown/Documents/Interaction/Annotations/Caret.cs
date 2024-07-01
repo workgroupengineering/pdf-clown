@@ -34,25 +34,17 @@ using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Caret annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It displays a visual symbol that indicates the presence of text edits.</remarks>
-    */
+    /// <summary>Caret annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It displays a visual symbol that indicates the presence of text edits.</remarks>
     [PDF(VersionEnum.PDF15)]
     public sealed class Caret : Markup
     {
-        /**
-          <summary>Symbol type [PDF:1.6:8.4.5].</summary>
-        */
+        /// <summary>Symbol type [PDF:1.6:8.4.5].</summary>
         public enum SymbolTypeEnum
         {
-            /**
-              <summary>None.</summary>
-            */
+            /// <summary>None.</summary>
             None,
-            /**
-              <summary>New paragraph.</summary>
-            */
+            /// <summary>New paragraph.</summary>
             NewParagraph
         };
 
@@ -67,17 +59,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             SymbolTypeEnumCodes[SymbolTypeEnum.None] = PdfName.None;
         }
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(SymbolTypeEnum value)
         {
             return SymbolTypeEnumCodes[value];
         }
 
-        /**
-          <summary>Gets the symbol type corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the symbol type corresponding to the given value.</summary>
         private static SymbolTypeEnum ToSymbolTypeEnum(IPdfString value)
         {
             if (value == null)
@@ -96,9 +84,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         internal Caret(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the symbol to be used in displaying the annotation.</summary>
-        */
+        /// <summary>Gets/Sets the symbol to be used in displaying the annotation.</summary>
         public SymbolTypeEnum SymbolType
         {
             get => ToSymbolTypeEnum((IPdfString)BaseDataObject[PdfName.Sy]);

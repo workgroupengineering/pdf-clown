@@ -41,24 +41,21 @@ namespace PdfClown.Documents.Interaction.Annotations
     public sealed class Stamp : Markup
     {
         /// <summary>Predefined stamp type [PDF:1.6:8.4.5].</summary>
-
         private static readonly string CustomTypeName = "Custom";
         private static readonly StandardStampEnum DefaultType = StandardStampEnum.Draft;
 
-        /**
-          <summary>Creates a new predefined stamp on the specified page.</summary>
-          <param name="page">Page where this stamp has to be placed.</param>
-          <param name="location">Position where this stamp has to be centered.</param>
-          <param name="size">Dimension of the stamp:
-            <list type="bullet">
-              <item><c>null</c> to apply the natural size</item>
-              <item><c>size(0, height)</c> to scale the width proportionally to the height</item>
-              <item><c>size(width, 0)</c> to scale the height proportionally to the width</item>
-            </list>
-          </param>
-          <param name="text">Annotation text.</param>
-          <param name="type">Predefined stamp type.</param>
-        */
+        /// <summary>Creates a new predefined stamp on the specified page.</summary>
+        /// <param name="page">Page where this stamp has to be placed.</param>
+        /// <param name="location">Position where this stamp has to be centered.</param>
+        /// <param name="size">Dimension of the stamp:
+        ///   <list type="bullet">
+        ///     <item><c>null</c> to apply the natural size</item>
+        ///     <item><c>size(0, height)</c> to scale the width proportionally to the height</item>
+        ///     <item><c>size(width, 0)</c> to scale the height proportionally to the width</item>
+        ///   </list>
+        /// </param>
+        /// <param name="text">Annotation text.</param>
+        /// <param name="type">Predefined stamp type.</param>
         public Stamp(PdfPage page, SKPoint location, SKSize? size, string text, StandardStampEnum type)
             : base(page,
                   PdfName.Stamp,
@@ -95,26 +92,14 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// so as to embed the corresponding templates.</remarks>
         public string TypeName
         {
-            get
-            {
-                return BaseDataObject.GetString(PdfName.Name, DefaultType.GetName().StringValue);
-            }
+            get => BaseDataObject.GetString(PdfName.Name, DefaultType.GetName().StringValue);
             set
             {
                 var oldValue = TypeName;
                 if (!string.Equals(oldValue, value, StringComparison.Ordinal))
                 {
-                    PdfName typeNameObject = PdfName.Get(value);
-                    BaseDataObject[PdfName.Name] = (typeNameObject != null && !typeNameObject.Equals(DefaultType.GetName()) ? typeNameObject : null);
-
-                    StandardStampEnum? standardType = StampStandardTypeEnumExtension.Get(typeNameObject);
-                    if (standardType.HasValue)
-                    {
-                        /*
-                          NOTE: Standard stamp types leverage predefined appearances.
-                        */
-                        Appearance.Normal[null] = Document.Configuration.GetStamp(standardType.Value);
-                    }
+                    var typeNameObject = PdfName.Get(value);
+                    BaseDataObject[PdfName.Name] = (typeNameObject != null && !typeNameObject.Equals(DefaultType.GetName()) ? typeNameObject : null);                    
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -135,10 +120,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                     // Custom appearance?
                     if (appearance != null)
                     {
-                        /*
-                          NOTE: Custom appearances are responsible of their proper rotation.
-                          NOTE: Rotation must preserve the original scale factor.
-                        */
+                        // NOTE: Custom appearances are responsible of their proper rotation.
+                        // NOTE: Rotation must preserve the original scale factor.
                         SKRect oldBox = Box;
                         SKRect unscaledOldBox = appearance.Matrix.MapRect(appearance.Box);
                         SKSize scale = new SKSize(oldBox.Width / unscaledOldBox.Width, oldBox.Height / unscaledOldBox.Height);
@@ -157,12 +140,20 @@ namespace PdfClown.Documents.Interaction.Annotations
         public override FormXObject ResetAppearance(SKRect box, out SKMatrix zeroMatrix)
         {
             zeroMatrix = SKMatrix.Identity;
-            return Appearance.Normal[null];
+            var typeNameObject = PdfName.Get(TypeName);
+            StandardStampEnum? standardType = StampStandardTypeEnumExtension.Get(typeNameObject);
+            var normalAppearance = Appearance.Normal[null];
+            if (standardType.HasValue)
+            {
+                // NOTE: Standard stamp types leverage predefined appearances.
+                Appearance.Normal[null] = normalAppearance = Document.Configuration.GetStamp(standardType.Value);
+            }
+            return normalAppearance;
         }
 
         protected override FormXObject GenerateAppearance()
         {
-            return null;
+            return ResetAppearance(out _);
         }
 
         public override IEnumerable<ControlPoint> GetControlPoints()
