@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Assets\caret-down.svg" />
+    <None Remove="Assets\caret-left.svg" />
+    <None Remove="Assets\caret-right.svg" />
+    <None Remove="Assets\caret-up.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\caret-down.svg" />
+    <EmbeddedResource Include="Assets\caret-left.svg" />
+    <EmbeddedResource Include="Assets\caret-right.svg" />
+    <EmbeddedResource Include="Assets\caret-up.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp.Views.Forms" Version="2.88.8" />
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2662" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\PdfClown.UI.Core\PdfClown.UI.Core.csproj" />
+  </ItemGroup>
+</Project>

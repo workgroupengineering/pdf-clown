@@ -64,21 +64,13 @@ namespace PdfClown.Documents
 
         internal PageAnnotations(PdfDirectObject baseObject, PdfPage page)
             : base(new AnnotationWrapper(page), baseObject, page)
-        { }
-
-        public Annotation this[string name]
         {
-            get
-            {
-                if (nameIndex.Count < Count)
-                {
-                    RefreshCache();
-                }
-                return nameIndex.TryGetValue(name, out var annotation) ? annotation : null;
-            }
+            RefreshCache();
         }
 
-        public void RefreshCache()
+        public Annotation this[string name] => nameIndex.TryGetValue(name, out var annotation) ? annotation : null;
+
+        private void RefreshCache()
         {
             for (int i = 0, length = Count; i < length; i++)
             {

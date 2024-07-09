@@ -29,9 +29,7 @@ using SkiaSharp;
 
 namespace PdfClown.Util.Math.Geom
 {
-    /**
-      <summary>Quadrilateral shape.</summary>
-    */
+    /// <summary>Quadrilateral shape.</summary>
     public struct Quad : IEquatable<Quad>
     {
         public static readonly Quad Empty = new Quad(SKPoint.Empty, SKPoint.Empty, SKPoint.Empty, SKPoint.Empty);
@@ -157,22 +155,18 @@ namespace PdfClown.Util.Math.Geom
         //    return new SKPathMeasure(Path);
         //}
 
-        /**
-          <summary>Expands the size of this quad stretching around its center.</summary>
-          <param name="value">Expansion extent.</param>
-          <returns>This quad.</returns>
-        */
+        /// <summary>Expands the size of this quad stretching around its center.</summary>
+        /// <param name="value">Expansion extent.</param>
+        /// <returns>This quad.</returns>
         public Quad Inflate(float value)
         {
             return Inflate(value, value);
         }
 
-        /**
-          <summary>Expands the size of this quad stretching around its center.</summary>
-          <param name="valueX">Expansion's horizontal extent.</param>
-          <param name="valueY">Expansion's vertical extent.</param>
-          <returns>This quad.</returns>
-        */
+        /// <summary>Expands the size of this quad stretching around its center.</summary>
+        /// <param name="valueX">Expansion's horizontal extent.</param>
+        /// <param name="valueY">Expansion's vertical extent.</param>
+        /// <returns>This quad.</returns>
         public Quad Inflate(float valueX, float valueY)
         {
             SKRect oldBounds = GetBounds();

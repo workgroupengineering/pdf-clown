@@ -32,9 +32,7 @@ using System.Linq;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Interactive form fields [PDF:1.6:8.6.1].</summary>
-    */
+    /// <summary>Interactive form fields [PDF:1.6:8.6.1].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class Fields : PdfObjectWrapper<PdfArray>, IDictionary<string, Field>, IEnumerable<Field>
     {
