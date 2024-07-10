@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Tokens;
 
@@ -34,9 +33,7 @@ using System.Text;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Content stream instruction [PDF:1.6:3.7.1].</summary>
-    */
+    /// <summary>Content stream instruction [PDF:1.6:3.7.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class Operation : ContentObject
     {
@@ -114,11 +111,10 @@ namespace PdfClown.Documents.Contents.Objects
             { BeginCompatibilityState.OperatorKeyword, (operands) => BeginCompatibilityState.Value },
             { EndCompatibilityState.OperatorKeyword, (operands) => EndCompatibilityState.Value },
         };
-        /**
-          <summary>Gets an operation.</summary>
-          <param name="@operator">Operator.</param>
-          <param name="operands">List of operands.</param>
-        */
+
+        /// <summary>Gets an operation.</summary>
+        /// <param name="@operator">Operator.</param>
+        /// <param name="operands">List of operands.</param>
         public static Operation Get(string @operator, PdfArray operands)
         {
             if (string.IsNullOrEmpty(@operator))

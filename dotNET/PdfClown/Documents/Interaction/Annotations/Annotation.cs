@@ -179,7 +179,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF14)]
         public virtual float Alpha
         {
-            get => BaseDataObject.GetFloat(PdfName.CA, 1F);
+            get => Document.PageAlpha ?? BaseDataObject.GetFloat(PdfName.CA, 1F);
             set
             {
                 var oldValue = Alpha;
@@ -781,8 +781,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             queueRefresh |= RefreshAppearanceState.User;
         }
-
-
     }
 
     [Flags]

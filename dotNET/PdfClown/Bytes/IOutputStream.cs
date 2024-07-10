@@ -27,39 +27,29 @@ using System;
 
 namespace PdfClown.Bytes
 {
-    /**
-      <summary>Output stream interface.</summary>
-    */
+    /// <summary>Output stream interface.</summary>
     public interface IOutputStream : IStream
     {
-        /**
-          <summary>Clears the buffer of any data.</summary>
-        */
+        /// <summary>Clears the buffer of any data.</summary>
         void Clear();
 
         void WriteByte(byte value);
 
         void Write(int number, int size);
 
-        /**
-          <summary>Writes a byte array into the stream.</summary>
-          <param name="data">Byte array to write into the stream.</param>
-        */
+        /// <summary>Writes a byte array into the stream.</summary>
+        /// <param name="data">Byte array to write into the stream.</param>
         void Write(byte[] data);
 
-        /**
-          <summary>Writes a byte span into the stream.</summary>
-          <param name="data">Byte span to write into the stream.</param>
-        */
+        /// <summary>Writes a byte span into the stream.</summary>
+        /// <param name="data">Byte span to write into the stream.</param>
         void Write(ReadOnlySpan<byte> data);
 
-        /**
-          <summary>Writes a byte range into the stream.</summary>
-          <param name="data">Byte array to write into the stream.</param>
-          <param name="offset">Location in the byte array at which writing begins.</param>
-          <param name="length">Number of bytes to write.</param>
-        */
-        void Write(byte[] data, int offset, int length);               
+        /// <summary>Writes a byte range into the stream.</summary>
+        /// <param name="data">Byte array to write into the stream.</param>
+        /// <param name="offset">Location in the byte array at which writing begins.</param>
+        /// <param name="length">Number of bytes to write.</param>
+        void Write(byte[] data, int offset, int length);
 
     }
 }

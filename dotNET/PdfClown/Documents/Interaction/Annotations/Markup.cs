@@ -23,28 +23,17 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
 using PdfClown.Util;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
-using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Util.Math.Geom;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Contents.Objects;
-using Org.BouncyCastle.Pqc.Crypto.Lms;
-using PdfClown.Documents.Contents.Composition;
+using System;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Markup annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It represents text-based annotations used primarily to mark up documents.</remarks>
-    */
+    /// <summary>Markup annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It represents text-based annotations used primarily to mark up documents.</remarks>
     [PDF(VersionEnum.PDF11)]
     public abstract class Markup : Annotation
     {
@@ -58,11 +47,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the annotation editor. It is displayed as a text label in the title bar of
-          the annotation's pop-up window when open and active. By convention, it identifies the user who
-          added the annotation.</summary>
-        */
+        /// <summary>Gets/Sets the annotation editor. It is displayed as a text label in the title bar of
+        /// the annotation's pop-up window when open and active. By convention, it identifies the user who
+        /// added the annotation.</summary>
         [PDF(VersionEnum.PDF11)]
         public override string Author
         {
@@ -78,9 +65,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the date and time when the annotation was created.</summary>
-        */
+        /// <summary>Gets/Sets the date and time when the annotation was created.</summary>
         [PDF(VersionEnum.PDF15)]
         public override DateTime? CreationDate
         {
@@ -96,12 +81,10 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the annotation that this one is in reply to. Both annotations must be on the
-          same page of the document.</summary>
-          <remarks>The relationship between the two annotations is specified by the
-          <see cref="ReplyType"/> property.</remarks>
-        */
+        /// <summary>Gets/Sets the annotation that this one is in reply to. Both annotations must be on the
+        /// same page of the document.</summary>
+        /// <remarks>The relationship between the two annotations is specified by the
+        /// <see cref="ReplyType"/> property.</remarks>
         [PDF(VersionEnum.PDF15)]
         public virtual Annotation ReplyTo
         {
@@ -117,11 +100,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the pop-up annotation associated with this one.</summary>
-          <exception cref="InvalidOperationException">If pop-up annotations can't be associated with
-          this markup.</exception>
-        */
+        /// <summary>Gets/Sets the pop-up annotation associated with this one.</summary>
+        /// <exception cref="InvalidOperationException">If pop-up annotations can't be associated with
+        /// this markup.</exception>
         [PDF(VersionEnum.PDF13)]
         public virtual Popup Popup
         {
@@ -141,10 +122,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the relationship between this annotation and one specified by
-          <see cref="ReplyTo"/> property.</summary>
-        */
+        /// <summary>Gets/Sets the relationship between this annotation and one specified by
+        /// <see cref="ReplyTo"/> property.</summary>
         [PDF(VersionEnum.PDF16)]
         public virtual ReplyTypeEnum? ReplyType
         {
@@ -205,9 +184,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the color with which to fill the interior of following markups: Line Ending, Circle, Square.</summary>
-        */
+        /// <summary>Gets/Sets the color with which to fill the interior of following markups: Line Ending, Circle, Square.</summary>
         public DeviceColor InteriorColor
         {
             get => DeviceColor.Get(BaseDataObject.Get<PdfArray>(PdfName.IC));
@@ -236,9 +213,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the border effect.</summary>
-        */
+        /// <summary>Gets/Sets the border effect.</summary>
         [PDF(VersionEnum.PDF15)]
         public BorderEffect BorderEffect
         {
@@ -290,15 +265,16 @@ namespace PdfClown.Documents.Interaction.Annotations
         protected void InvertBorder(ref SKRect rect)
         {
             if (Border == null)
-                rect.Inflate(-1, -1);
+            {
+                if (rect.Width > 2 && rect.Height > 2)
+                    rect.Inflate(-1, -1);
+            }
             else
                 Border.Invert(ref rect);
         }
     }
 
-    /**
-      <summary>Annotation relationship [PDF:1.6:8.4.5].</summary>
-    */
+    // <summary>Annotation relationship [PDF:1.6:8.4.5].</summary>
     [PDF(VersionEnum.PDF16)]
     public enum ReplyTypeEnum
     {

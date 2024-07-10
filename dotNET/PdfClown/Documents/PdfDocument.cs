@@ -357,6 +357,8 @@ namespace PdfClown.Documents
 
         public bool HasSignatureDictionaries => GetSignatureDictionaries().Any();
 
+        public float? PageAlpha { get; set; }
+
         internal IEnumerable<SignatureDictionary> GetSignatureDictionaries()
         {
             if (!BaseDataObject.ContainsKey(PdfName.AcroForm))

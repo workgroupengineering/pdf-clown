@@ -23,25 +23,17 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Objects;
-
-using System;
 using SkiaSharp;
 using System.Collections.Generic;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Objects;
-using PdfClown.Documents.Contents.XObjects;
-using System.IO;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Abstract shape annotation.</summary>
-    */
+    /// <summary>Abstract shape annotation.</summary>
     [PDF(VersionEnum.PDF13)]
     public abstract class Shape : Markup
     {
@@ -117,7 +109,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             var canvas = new PrimitiveComposer(appearance);
             {
                 using var path = GetPath(zeroMatrix);
-                if (path != null)
+                if (path != null && !path.IsEmpty)
                 {
                     DrawPath(canvas, path);
                 }

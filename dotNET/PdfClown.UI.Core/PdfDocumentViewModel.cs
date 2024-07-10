@@ -161,6 +161,9 @@ namespace PdfClown.UI
                     temp = pageForegroundPaint;
                     pageForegroundPaint = null;
                     temp?.Dispose();
+
+                    Document.PageAlpha = value.Alpha == 255 ? null : value.Alpha / 255F;
+
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(PageAlpha));
                     OnPropertyChanged(nameof(PageBackgroundPaint));

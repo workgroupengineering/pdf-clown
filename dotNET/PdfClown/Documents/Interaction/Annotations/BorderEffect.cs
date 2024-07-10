@@ -180,7 +180,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (Type == BorderEffectType.Cloudy)
             {
                 var intensity = 5 * (float)Math.Abs(Intensity);
-                box.Inflate(-intensity, -intensity);
+                var doubleIntensity = intensity + intensity;
+                if (box.Width > doubleIntensity && box.Height > doubleIntensity)
+                    box.Inflate(-intensity, -intensity);
             }
         }
 

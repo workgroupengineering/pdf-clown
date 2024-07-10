@@ -23,26 +23,21 @@
   this list of conditions.
 */
 
-using bytes = PdfClown.Bytes;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Tokens;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Content stream [PDF:1.6:3.7.1].</summary>
-      <remarks>During its loading, this content stream is parsed and its instructions
-      are exposed as a list; in case of modifications, it's user responsability
-      to call the <see cref="Flush()"/> method in order to serialize back the instructions
-      into this content stream.</remarks>
-    */
+    /// <summary>Content stream [PDF:1.6:3.7.1].</summary>
+    /// <remarks>During its loading, this content stream is parsed and its instructions
+    /// are exposed as a list; in case of modifications, it's user responsability
+    /// to call the <see cref="Flush()"/> method in order to serialize back the instructions
+    /// into this content stream.</remarks>
     [PDF(VersionEnum.PDF10)]
     public sealed class ContentWrapper : PdfObjectWrapper<PdfDataObject>, IList<ContentObject>
     {
@@ -64,9 +59,7 @@ namespace PdfClown.Documents.Contents
         public override object Clone(PdfDocument context)
         { throw new NotSupportedException(); }
 
-        /**
-          <summary>Serializes the contents into the content stream.</summary>
-        */
+        /// <summary>Serializes the contents into the content stream.</summary>
         public void Flush()
         {
             PdfStream stream;

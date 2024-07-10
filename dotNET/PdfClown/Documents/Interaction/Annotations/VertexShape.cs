@@ -210,8 +210,10 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override SKPath GetPath(SKMatrix sKMatrix)
         {
+            if (Points.Length <= 1)
+                return null;
             var path = new SKPath();
-            path.AddPoly(Points.ToArray(), ClosePath);
+            path.AddPoly(Points, ClosePath);
             path.Transform(sKMatrix);
             return path;
         }

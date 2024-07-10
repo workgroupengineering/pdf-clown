@@ -23,31 +23,23 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Objects;
-
+using PdfClown.Util;
+using PdfClown.Util.Math;
+using PdfClown.Util.Math.Geom;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
-using PdfClown.Util.Math.Geom;
-using PdfClown.Documents.Interaction.Actions;
-using PdfClown.Util;
-using System.Net;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Util.Math;
-using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Line annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It displays displays a single straight line on the page.
-      When opened, it displays a pop-up window containing the text of the associated note.</remarks>
-    */
+    /// <summary>Line annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It displays displays a single straight line on the page.
+    /// When opened, it displays a pop-up window containing the text of the associated note.</remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class Line : Markup
     {
@@ -90,9 +82,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets whether the contents should be shown as a caption.</summary>
-        */
+        /// <summary>Gets/Sets whether the contents should be shown as a caption.</summary>
         [PDF(VersionEnum.PDF16)]
         public bool CaptionVisible
         {
@@ -142,9 +132,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the style of the starting line ending.</summary>
-        */
+        /// <summary>Gets/Sets the style of the starting line ending.</summary>
         [PDF(VersionEnum.PDF14)]
         public LineEndStyleEnum StartStyle
         {
@@ -158,13 +146,12 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     EnsureLineEndStylesObject().SetName(0, value.GetName());
                     OnPropertyChanged(oldValue, value);
+                    QueueRefreshAppearance();
                 }
             }
         }
 
-        /**
-          <summary>Gets/Sets the style of the ending line ending.</summary>
-        */
+        /// <summary>Gets/Sets the style of the ending line ending.</summary>
         [PDF(VersionEnum.PDF14)]
         public LineEndStyleEnum EndStyle
         {
@@ -178,14 +165,13 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     EnsureLineEndStylesObject().SetName(1, value.GetName());
                     OnPropertyChanged(oldValue, value);
+                    QueueRefreshAppearance();
                 }
             }
         }
 
-        /**
-          <summary>Gets/Sets the length of leader line extensions that extend
-          in the opposite direction from the leader lines.</summary>
-        */
+        /// <summary>Gets/Sets the length of leader line extensions that extend
+        /// in the opposite direction from the leader lines.</summary>
         [PDF(VersionEnum.PDF16)]
         public double LeaderLineExtension
         {
@@ -196,9 +182,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (oldValue != value)
                 {
                     BaseDataObject.Set(PdfName.LLE, value);
-                    /*
-                      NOTE: If leader line extension entry is present, leader line MUST be too.
-                    */
+                    // NOTE: If leader line extension entry is present, leader line MUST be too.
                     if (!BaseDataObject.ContainsKey(PdfName.LL))
                     {
                         LeaderLineLength = DefaultLeaderLineLength;
@@ -219,9 +203,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (oldValue != value)
                 {
                     BaseDataObject.Set(PdfName.LLO, value);
-                    /*
-                      NOTE: If leader line extension entry is present, leader line MUST be too.
-                    */
+                    // NOTE: If leader line extension entry is present, leader line MUST be too.
                     if (!BaseDataObject.ContainsKey(PdfName.LL))
                     {
                         LeaderLineLength = DefaultLeaderLineLength;
@@ -232,13 +214,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the length of leader lines that extend from each endpoint
-          of the line perpendicular to the line itself.</summary>
-          <remarks>A positive value means that the leader lines appear in the direction
-          that is clockwise when traversing the line from its starting point
-          to its ending point; a negative value indicates the opposite direction.</remarks>
-        */
+        /// <summary>Gets/Sets the length of leader lines that extend from each endpoint
+        /// of the line perpendicular to the line itself.</summary>
+        /// <remarks>A positive value means that the leader lines appear in the direction
+        /// that is clockwise when traversing the line from its starting point
+        /// to its ending point; a negative value indicates the opposite direction.</remarks>
         [PDF(VersionEnum.PDF16)]
         public double LeaderLineLength
         {
@@ -274,9 +254,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the starting coordinates.</summary>
-        */
+        /// <summary>Gets/Sets the starting coordinates.</summary>
         public SKPoint StartPoint
         {
             get => startPoint ??= new SKPoint(LineData.GetFloat(0), LineData.GetFloat(1));
@@ -296,9 +274,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
 
-        /**
-          <summary>Gets/Sets the ending coordinates.</summary>
-        */
+        /// <summary>Gets/Sets the ending coordinates.</summary>
         public SKPoint EndPoint
         {
             get => endPoint ??= new SKPoint(LineData.GetFloat(2), LineData.GetFloat(3));
@@ -306,7 +282,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 var oldValue = EndPoint;
                 if (oldValue != value)
-                {
+                {                   
                     endPoint = value;
                     var coordinatesObject = LineData;
                     coordinatesObject.Set(2, value.X);

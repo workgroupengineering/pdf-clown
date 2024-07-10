@@ -28,9 +28,7 @@ using PdfClown.Objects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Common annotation actions [PDF:1.6:8.5.2].</summary>
-    */
+    /// <summary>Common annotation actions [PDF:1.6:8.5.2].</summary>
     public sealed class CommonAnnotationActions : AnnotationActions
     {
         public static CommonAnnotationActions Wrap(Annotation annotation, PdfDirectObject baseObject)

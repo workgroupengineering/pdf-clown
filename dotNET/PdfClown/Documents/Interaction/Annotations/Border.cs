@@ -60,9 +60,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         //    return baseObject?.Wrapper as Border ?? new Border(baseObject);
         //}
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(BorderStyleType value)
         {
             return StyleEnumCodes[value];
@@ -174,8 +172,10 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public void Invert(ref SKRect box)
         {
-            var indent = -(float)Width;
-            box.Inflate(indent, indent);
+            var indent = (float)Width;
+            var doubleIndent = indent + indent;
+            if (box.Width > doubleIndent && box.Height > doubleIndent)
+                box.Inflate(-indent, -indent);
         }
 
         public bool Equals(Border other)
