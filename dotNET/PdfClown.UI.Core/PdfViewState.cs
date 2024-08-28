@@ -253,7 +253,7 @@ namespace PdfClown.UI
             if (ToolTipAnnotation != null)
             {
                 var pageView = Viewer.Document.GetPageView(ToolTipAnnotation.Page);
-                if (pageView.Bounds.IntersectsWith(NavigationArea))
+                if (pageView?.Bounds.IntersectsWith(NavigationArea) ?? false)
                 {
                     ToolTipRenderer?.Draw(this);
                 }
