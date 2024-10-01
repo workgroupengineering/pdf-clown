@@ -70,7 +70,8 @@ namespace PdfClown.UI.Droid
             {
                 if (_view.Element is SKScrollView scrollView)
                 {
-                    scrollView.OnScrolled((int)detector.CurrentSpan, KeyModifiers.Ctrl);
+                    scrollView.KeyModifiers = KeyModifiers.Ctrl;
+                    scrollView.OnScrolled((int)detector.CurrentSpan);
                 }
                 return true;
             }

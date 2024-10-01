@@ -87,7 +87,7 @@ namespace PdfClown.UI.Operations
             }
         }
 
-        public IPdfDocumentViewModel DocumentView
+        public IPdfDocumentViewModel Document
         {
             get => document;
             set
@@ -98,14 +98,12 @@ namespace PdfClown.UI.Operations
                     document = value;
                     if (oldValue != null)
                     {
-                        oldValue.BoundsChanged -= OnDocumentBoundsChanged;
                         oldValue.AnnotationAdded -= OnDocumentAnnotationAdded;
                         oldValue.AnnotationRemoved -= OnDocumentAnnotationRemoved;
                         oldValue.EndOperation -= OnDocumentEndOperation;
                     }
                     if (document != null)
                     {
-                        document.BoundsChanged += OnDocumentBoundsChanged;
                         document.AnnotationAdded += OnDocumentAnnotationAdded;
                         document.AnnotationRemoved += OnDocumentAnnotationRemoved;
                         document.EndOperation += OnDocumentEndOperation;
@@ -113,6 +111,7 @@ namespace PdfClown.UI.Operations
                 }
             }
         }
+        
 
         public event EventHandler<AnnotationEventArgs> AnnotationAdded;
 
@@ -126,10 +125,7 @@ namespace PdfClown.UI.Operations
 
         public event EventHandler<EventArgs> SizeComplete;
 
-        private void OnDocumentBoundsChanged(object sender, EventArgs e)
-        {
-            Viewer.UpdateMaximums();
-        }
+        
 
         private void OnDocumentAnnotationAdded(object sender, AnnotationEventArgs e)
         {
@@ -502,6 +498,51 @@ namespace PdfClown.UI.Operations
                     Viewer.Cursor = CursorType.Arrow;
                     break;
             }
+        }
+
+        public bool OnKeyDown(string keyName, KeyModifiers modifiers)
+        {
+            if (string.Equals(keyName, "Delete", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!Viewer.IsReadOnly)
+                {
+                    if (Viewer.SelectedPoint is IndexControlPoint indexControlPoint)
+                    {
+                        BeginOperation(indexControlPoint.Annotation, OperationType.PointRemove, indexControlPoint, indexControlPoint.MappedPoint, indexControlPoint.MappedPoint);
+                        ((VertexShape)indexControlPoint.Annotation).RemovePoint(indexControlPoint.Index);
+                        return true;
+                    }
+                    else if (Viewer.SelectedAnnotation is Annotation annotation)
+                    {
+                        RemoveAnnotation(annotation);
+                        return true;
+                    }
+                }
+            }
+            else if (string.Equals(keyName, "Escape", StringComparison.OrdinalIgnoreCase))
+            {
+                if (Viewer.SelectedPoint != null
+                    && Viewer.SelectedAnnotation is VertexShape vertexShape
+                    && Viewer.Operations.Current == OperationType.PointAdd)
+                {
+                    CloseVertextShape(vertexShape);
+                    return true;
+                }
+            }
+            else if (string.Equals(keyName, "Z", StringComparison.OrdinalIgnoreCase))
+            {
+                if (modifiers == KeyModifiers.Ctrl)
+                {
+                    Undo();
+                    return true;
+                }
+                else if (modifiers == (KeyModifiers.Ctrl | KeyModifiers.Shift))
+                {
+                    Redo();
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void MoveToLast()

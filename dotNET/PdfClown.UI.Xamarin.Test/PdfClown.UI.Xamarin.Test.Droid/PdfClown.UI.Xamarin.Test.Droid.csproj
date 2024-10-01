@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net7.0-android</TargetFrameworks>
+    <TargetFrameworks>net8.0-android</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <AssemblyTitle>PdfClown.UI.Test.Droid</AssemblyTitle>
     <Product>PdfClown.UI.Test.Droid</Product>

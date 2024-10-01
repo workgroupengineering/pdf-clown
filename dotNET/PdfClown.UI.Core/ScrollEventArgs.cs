@@ -1,16 +1,14 @@
-﻿using System;
+﻿using System.ComponentModel;
 
 namespace PdfClown.UI
 {
-    public class ScrollEventArgs : EventArgs
+    public class ScrollEventArgs : HandledEventArgs
     {
-        public ScrollEventArgs(int delta, KeyModifiers keyModifiers)
+        public ScrollEventArgs(int delta) : base(false)
         {
-            Delta = delta;
-            Modifiers = keyModifiers;
+            WheelDelta = delta;
         }
 
-        public int Delta { get; }
-        public KeyModifiers Modifiers { get; }
+        public int WheelDelta { get; }
     }
 }

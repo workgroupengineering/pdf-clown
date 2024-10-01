@@ -1,0 +1,17 @@
+﻿
+<div @attributes="AdditionalAttributes">
+    <SKCanvasView @ref="canvasView" id="@CanvasId" tabindex="1"
+                  OnPaintSurface="OnPaintSurface" IgnorePixelScaling="false"
+                  @onpointerdown="OnPointerDown" 
+                  __internal_preventDefault_onpointerdown="true"
+                  __internal_stopPropagation_onpointerdown="true"
+                  @onpointerup="OnPointerUp"                  
+                  @onpointerenter="OnPointerEnter"
+                  @onpointerleave="OnPointerLeave"                                 
+                  @onwheel="OnMouseWheel"                  
+                  @onkeydown="OnKeyDown"/>
+                  
+</div>
+@* @onpointermove="OnPointerMove"
+__internal_preventDefault_onpointermove="true"
+__internal_stopPropagation_onpointermove="true" *@

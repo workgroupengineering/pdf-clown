@@ -339,6 +339,7 @@ namespace PdfClown.UI
                 fileStream.Close();
                 stream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
             }
+            
             File = new PdfFile(stream);
             fields = null;
             LoadPages();

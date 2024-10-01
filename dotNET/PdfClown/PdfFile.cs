@@ -71,7 +71,7 @@ namespace PdfClown
         }
 
         public PdfFile(string path)
-            : this((IInputStream)new StreamContainer(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            : this(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
             this.path = path;
         }

@@ -294,7 +294,8 @@ namespace PdfClown.UI
                 var positionComparator = new TextStringPositionComparer<ITextString>();
                 Page.Strings.Sort(positionComparator);
 
-                Envir.MainContext.Send((s) => ((IPdfView)s).InvalidateSurface(), canvasView);
+                canvasView.InvalidateSurface();
+                //Envir.MainContext.Send((s) => ((IPdfView)s).InvalidateSurface(), canvasView);
             }
             finally
             {

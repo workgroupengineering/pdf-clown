@@ -514,7 +514,7 @@
     <EmbeddedResource Include="Assets\PushPin.svg" />
     <EmbeddedResource Include="Assets\Tag.svg" />
   </ItemGroup>
-   
+	
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />

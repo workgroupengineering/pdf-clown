@@ -1,5 +1,4 @@
 ﻿using SkiaSharp;
-using System.Threading;
 
 namespace PdfClown.UI
 {
@@ -12,19 +11,10 @@ namespace PdfClown.UI
         public static readonly SKPaint PaintTextSelectionFill = new SKPaint { Color = SKColors.LightBlue, Style = SKPaintStyle.Fill, BlendMode = SKBlendMode.Multiply, IsAntialias = true };
         public static readonly SKPaint PaintBorderDefault = new SKPaint { Color = SKColors.Silver, Style = SKPaintStyle.Stroke, StrokeWidth = 0, IsAntialias = true };
         public static readonly SKPaint PaintBorderSelection = new SKPaint { Color = SKColors.Blue, Style = SKPaintStyle.Stroke, StrokeWidth = 0, IsAntialias = true };
-    }
 
-    public static class Envir
-    {
-        public static void Init()
-        {
-            if (MainContext == null)
-            {
-                MainContext = SynchronizationContext.Current;
-            }
-        }
-
-        public static SynchronizationContext MainContext { get; set; }
+        public const int MinSize = 8;
+        public const int MaxSize = 16;
+        public const int StepSize = MaxSize;
     }
 
 }

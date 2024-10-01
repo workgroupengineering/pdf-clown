@@ -6,6 +6,9 @@ using PdfClown.UI.ToolTip;
 using SkiaSharp;
 using System;
 using System.Linq;
+using System.IO;
+using System.Xml.Linq;
+using PdfClown.UI.Operations;
 
 namespace PdfClown.UI
 {
@@ -18,9 +21,95 @@ namespace PdfClown.UI
         private Annotation toolTipAnnotation;
         private MarkupToolTipRenderer markupToolTipRenderer;
         private LinkToolTipRenderer linkToolTipRenderer;
+        private float xScaleFactor = 1F;
+        private float yScaleFactor = 1F;
+        private float scale = 1;
+        private IPdfDocumentViewModel document;
+        private IPdfPageViewModel currentPage;
 
         //Common
         public IPdfView Viewer;
+
+        public IPdfDocumentViewModel Document
+        {
+            get => document;
+            set
+            {
+                if (document == value)
+                    return;
+
+                if (document != null)
+                {
+                    document.BoundsChanged -= OnDocumentBoundsChanged;
+                }
+                Viewer.Operations.Document = value;
+                Viewer.SelectedAnnotation = null;
+                Viewer.SelectedPoint = null;
+                document = value;
+                UpdateMaximums();
+                Viewer.PagesCount = document?.PagesCount ?? 0;
+                if (document != null)
+                {
+                    document.BoundsChanged += OnDocumentBoundsChanged;
+                    CurrentPage = Viewer.Page = document.PageViews.FirstOrDefault();
+                    Viewer.ScrollTo(CurrentPage);
+                }
+                else
+                {
+                    Viewer.InvalidateSurface();
+                }
+            }
+        }
+
+        public IPdfPageViewModel CurrentPage
+        {
+            get
+            {
+                if (currentPage == null
+                    || currentPage.Document != Document)
+                {
+                    currentPage = GetCenterPage();
+                }
+                return currentPage;
+            }
+            set
+            {
+                if (currentPage != value)
+                {
+                    currentPage = value;                    
+                }
+            }
+        }
+
+        public float XScaleFactor
+        {
+            get => xScaleFactor;
+            set
+            {
+                if (xScaleFactor != value)
+                {
+                    xScaleFactor = value;
+                    OnWindowScaleChanged();
+                }
+            }
+        }
+
+        public float YScaleFactor
+        {
+            get => yScaleFactor;
+            set
+            {
+                if (yScaleFactor != value)
+                {
+                    yScaleFactor = value;
+                    OnWindowScaleChanged();
+                }
+            }
+        }
+
+        public bool VerticalScrollBarVisible => Viewer.VerticalMaximum >= (Viewer.Height + DefaultSKStyles.StepSize);
+
+        public bool HorizontalScrollBarVisible => Viewer.HorizontalMaximum >= (Viewer.Width + DefaultSKStyles.StepSize);
 
         public SKMatrix WindowScaleMatrix
         {
@@ -31,7 +120,7 @@ namespace PdfClown.UI
                 {
                     windowScaleMatrix = value;
                     windowScaleMatrix.TryInvert(out InvertWindowScaleMatrix);
-                    
+
                 }
             }
         }
@@ -47,7 +136,7 @@ namespace PdfClown.UI
                 {
                     navigationMatrix = value;
                     NavigationMatrix.TryInvert(out InvertNavigationMatrix);
-                    
+
                     ViewMatrix = NavigationMatrix.PostConcat(windowScaleMatrix);
                     ViewMatrix.TryInvert(out InvertViewMatrix);
 
@@ -84,7 +173,7 @@ namespace PdfClown.UI
         public SKMatrix PageMatrix = SKMatrix.Identity;
         public SKMatrix InvertPageMatrix = SKMatrix.Identity;
 
-        public PdfPage Page => PageView.Page;
+        public PdfPage Page => PageView?.Page;
 
         //Touch
         //public SKTouchEventArgs TouchEvent;
@@ -113,7 +202,7 @@ namespace PdfClown.UI
         public Annotation DrawAnnotation;
         public SKRect DrawAnnotationBound;
 
-        public SKRect ToolTipBounds;       
+        public SKRect ToolTipBounds;
 
         public Annotation ToolTipAnnotation
         {
@@ -140,6 +229,20 @@ namespace PdfClown.UI
                         ToolTipRenderer = null;
                     }
                     Viewer.InvalidateSurface();
+                }
+            }
+        }
+
+        public float ScaleContent
+        {
+            get => scale; set
+            {
+                if (value != scale)
+                {
+                    var oldScale = scale; 
+                    scale = value;
+                    UpdateMaximums();
+                    Viewer.ScaleContent = value;
                 }
             }
         }
@@ -273,6 +376,166 @@ namespace PdfClown.UI
                 }
             }
             return false;
+        }
+
+        protected void OnWindowScaleChanged()
+        {
+            WindowScaleMatrix = SKMatrix.CreateScale(XScaleFactor, YScaleFactor);
+        }
+
+        public void UpdateMaximums()
+        {
+            UpdateCurrentMatrix();
+            var size = Viewer.Document?.Size ?? SKSize.Empty;
+            Viewer.HorizontalMaximum = size.Width * scale;
+            Viewer.VerticalMaximum = size.Height * scale;
+            Viewer.InvalidateSurface();
+        }
+
+        public void UpdateCurrentMatrix() => UpdateCurrentMatrix((float)Viewer.Width, (float)Viewer.Height);
+
+        public void UpdateCurrentMatrix(float width, float height)
+        {
+            var horizontalValue = (float)Viewer.HorizontalValue;
+            var verticalValue = (float)Viewer.VerticalValue;
+            var size = Viewer.Document?.Size ?? SKSize.Empty;
+            WindowArea = SKRect.Create(0, 0, width, height);
+            var maximumWidth = size.Width * scale;
+            var maximumHeight = size.Height * scale;
+            var dx = 0F; var dy = 0F;
+            if (maximumWidth < WindowArea.Width)
+            {
+                dx = (float)((width - 10) - maximumWidth) / 2;
+            }
+
+            if (maximumHeight < WindowArea.Height)
+            {
+                dy = (float)(height - maximumHeight) / 2;
+            }
+            NavigationMatrix = new SKMatrix(
+                scale, 0, (-horizontalValue) + dx,
+                0, scale, (-verticalValue) + dy,
+                0, 0, 1);
+        }
+
+        public SKPoint ScrollTo(IPdfPageViewModel page)
+        {
+            if (page == null || Viewer.Document == null)
+            {
+                return SKPoint.Empty;
+            }
+
+            if (Viewer.FitMode == PdfViewFitMode.DocumentWidth)
+            {
+                ScaleContent = (float)Viewer.Width / Viewer.Document.Size.Width;
+            }
+            else if (Viewer.FitMode == PdfViewFitMode.PageWidth)
+            {
+                ScaleContent = (float)Viewer.Width / (page.Bounds.Width + 10);
+            }
+            else if (Viewer.FitMode == PdfViewFitMode.PageSize)
+            {
+                var vScale = (float)Viewer.Height / (page.Bounds.Height + 10);
+                var hScale = (float)Viewer.Width / (page.Bounds.Width + 10);
+                ScaleContent = hScale < vScale ? hScale : vScale;
+            }
+
+            var matrix = SKMatrix.CreateScale(ScaleContent, ScaleContent);
+            var bound = matrix.MapRect(page.Bounds);
+            return new SKPoint(bound.Left - (WindowArea.MidX - bound.Width / 2),
+                               bound.Top - (WindowArea.MidY - bound.Height / 2));
+
+        }
+
+        public SKPoint ScrollTo(Annotation annotation)
+        {
+            if (annotation?.Page == null)
+            {
+                return SKPoint.Empty;
+            }
+
+            var pageView = Viewer.Document.GetPageView(annotation.Page);
+            if (pageView == null)
+            {
+                return SKPoint.Empty;
+            }
+            var matrix = SKMatrix.CreateScale(scale, scale)
+                .PreConcat(pageView.Matrix)
+                .PreConcat(pageView.Document.Matrix);
+            var bound = annotation.GetViewBounds(matrix);
+            return new SKPoint(bound.Left - (WindowArea.MidX - bound.Width / 2),
+                               bound.Top - (WindowArea.MidY - bound.Height / 2));
+        }
+
+        public void Scale(float delta)
+        {
+            var scaleStep = 0.06F * Math.Sign(delta);
+            var newScale = scale + scaleStep + scaleStep * scale;
+            if (newScale < 0.01F)
+                newScale = 0.01F;
+            if (newScale > 60F)
+                newScale = 60F;
+            if (newScale != scale)
+            {
+                var unscaleLocations = new SKPoint(PointerLocation.X / XScaleFactor, PointerLocation.Y / YScaleFactor);
+                var oldSpacePoint = InvertNavigationMatrix.MapPoint(unscaleLocations);
+
+                ScaleContent = newScale;
+
+                var newCurrentLocation = NavigationMatrix.MapPoint(oldSpacePoint);
+
+                var vector = newCurrentLocation - unscaleLocations;
+                if (HorizontalScrollBarVisible)
+                {
+                    Viewer.HorizontalValue += vector.X;
+                }
+                if (VerticalScrollBarVisible)
+                {
+                    Viewer.VerticalValue += vector.Y;
+                }
+            }
+        }
+
+        public void OnTouch(TouchAction actionType, MouseButton mouseButton, SKPoint location)
+        {
+            TouchAction = actionType;
+            TouchButton = mouseButton;
+            PointerLocation = location;
+
+            if (TouchButton == MouseButton.Middle)
+            {
+                if (TouchAction == TouchAction.Pressed)
+                {
+                    MoveLocation = PointerLocation;
+                    Viewer.Cursor = CursorType.ScrollAll;
+                    return;
+                }
+                else if (TouchAction == TouchAction.Moved)
+                {
+                    var vector = PointerLocation - MoveLocation;
+                    Viewer.HorizontalValue -= vector.X;
+                    Viewer.VerticalValue -= vector.Y;
+                    MoveLocation = PointerLocation;
+                    return;
+                }
+            }
+            if (Viewer.Document == null || !Viewer.Document.IsPaintComplete)
+            {
+                return;
+            }
+            if (Touch())
+            {
+                return;
+            }
+
+            if (Viewer.Operations.Current != OperationType.AnnotationDrag)
+                Viewer.Cursor = CursorType.Arrow;
+            PageView = null;
+        }        
+
+        private void OnDocumentBoundsChanged(object sender, EventArgs e)
+        {
+            UpdateMaximums();
         }
     }
 }

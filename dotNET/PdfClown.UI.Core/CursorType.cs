@@ -1,4 +1,5 @@
-﻿namespace PdfClown.UI
+﻿
+namespace PdfClown.UI
 {
     public enum CursorType
     {

@@ -127,6 +127,8 @@
     <ProjectReference Include="..\..\PdfClown.UI.Xamarin\PdfClown.UI.Xamarin.iOS\PdfClown.UI.Xamarin.iOS.csproj">
       <Project>{de7256c7-e047-4bd0-b172-a040274e3611}</Project>
       <Name>PdfClown.UI.Xamarin.iOS</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
     <ProjectReference Include="..\PdfClown.UI.Xamarin.Test\PdfClown.UI.Xamarin.Test.csproj">
       <Project>{1168a66e-be43-4c6f-b081-81c55d04960c}</Project>

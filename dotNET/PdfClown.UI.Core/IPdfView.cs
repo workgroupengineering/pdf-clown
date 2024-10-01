@@ -18,11 +18,21 @@ namespace PdfClown.UI
         ControlPoint SelectedPoint { get; set; }
         ControlPoint HoverPoint { get; set; }
         bool IsReadOnly { get; set; }
-        int PagesCount { get; }
+        int PagesCount { get; set; }
         int PageNumber { get; set; }
 
         Annotation SelectedAnnotation { get; set; }
         TextSelection TextSelection { get; }
+
+        double Width { get; }
+        double Height { get; }
+
+        double HorizontalMaximum { get; set; }
+        double VerticalMaximum { get; set; }
+        double HorizontalValue { get; set; }
+        double VerticalValue { get; set; }
+        PdfViewFitMode FitMode { get; set; }
+        float ScaleContent { get; set; }
 
         event EventHandler<AnnotationEventArgs> SelectedAnnotationChanged;
         event EventHandler<EventArgs> DocumentChanged;
@@ -33,6 +43,5 @@ namespace PdfClown.UI
         void ScrollTo(PdfPage page);
         void ScrollTo(IPdfPageViewModel currentPageView);
         void Reload();
-        void UpdateMaximums();
     }
 }

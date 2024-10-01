@@ -111,7 +111,8 @@ namespace PdfClown.UI.WPF
         {
             if (Element is SKScrollView scrollView)
             {
-                scrollView.OnScrolled(e.Delta, GetModifiers());
+                scrollView.KeyModifiers = GetModifiers();
+                scrollView.OnScrolled(e.Delta);
             }
         }
 
