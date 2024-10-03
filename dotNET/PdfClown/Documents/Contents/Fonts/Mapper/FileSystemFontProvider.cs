@@ -32,6 +32,8 @@ using Org.BouncyCastle.Utilities.Encoders;
 using System.Security.Cryptography;
 using System.Buffers;
 using PdfClown.Util.Collections;
+using PdfClown.Util.IO;
+using Org.BouncyCastle.Crypto.Digests;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
@@ -791,14 +793,18 @@ namespace PdfClown.Documents.Contents.Fonts
             var buffer = ArrayPool<byte>.Shared.Rent(4 * 1024);
             try
             {
+#if __BLAZOR__
+                var md = new Sha512Digest();
+#else
                 using var md = IncrementalHash.CreateHash(HashAlgorithmName.SHA512);
+#endif
                 using var file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, buffer.Length);
                 var read = 0;
                 while ((read = file.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    md.AppendData(buffer.AsSpan(0, read));
+                    md.Update(buffer, 0, read);
                 }
-                var sha512 = md.GetHashAndReset();
+                var sha512 = md.Digest();
                 return Hex.ToHexString(sha512);
             }
             catch (CryptographicException)
@@ -809,8 +815,6 @@ namespace PdfClown.Documents.Contents.Fonts
             finally
             {
                 ArrayPool<byte>.Shared.Return(buffer);
-
-
             }
         }
     }

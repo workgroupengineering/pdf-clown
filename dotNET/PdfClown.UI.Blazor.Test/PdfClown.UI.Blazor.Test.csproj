@@ -4,6 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <!--<Nullable>enable</Nullable>-->
     <ImplicitUsings>enable</ImplicitUsings>
+	<!--<WasmEnableThreads>true</WasmEnableThreads>-->
+	<WasmBuildNative>true</WasmBuildNative>
   </PropertyGroup> 
 	
   <ItemGroup>
@@ -14,5 +16,14 @@
   <ItemGroup>
     <ProjectReference Include="..\PdfClown.UI.Blazor\PdfClown.UI.Blazor.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<!-- remove all previous native files -->
+		<NativeFileReference Remove="@(SkiaSharpStaticLibrary)" />
+		<!-- include the multi-threaded build if WasmEnableThreads=true -->
+		<NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\3.1.34\mt\*.a" Condition="'$(WasmEnableThreads)' == 'True'" />
+		<!-- otherwise use the single threaded build -->
+		<NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\3.1.34\st\*.a" Condition="'$(WasmEnableThreads)' != 'True'" />
+	</ItemGroup>
 
 </Project>

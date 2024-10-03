@@ -294,7 +294,7 @@ namespace PdfClown.UI
                 var positionComparator = new TextStringPositionComparer<ITextString>();
                 Page.Strings.Sort(positionComparator);
 
-                canvasView.InvalidateSurface();
+                canvasView.InvalidatePaint();
                 //Envir.MainContext.Send((s) => ((IPdfView)s).InvalidateSurface(), canvasView);
             }
             finally
@@ -378,7 +378,7 @@ namespace PdfClown.UI
                 state.Viewer.Operations.Current = OperationType.None;
             }
 
-            state.Viewer.InvalidateSurface();
+            state.Viewer.InvalidatePaint();
         }
 
         private void OnTouchPointAdd(PdfViewState state)
@@ -410,7 +410,7 @@ namespace PdfClown.UI
                 state.Viewer.Operations.Current = OperationType.None;
             }
 
-            state.Viewer.InvalidateSurface();
+            state.Viewer.InvalidatePaint();
         }
 
         private void OnTouchSized(PdfViewState state)
@@ -431,7 +431,7 @@ namespace PdfClown.UI
             {
                 state.Viewer.Operations.Current = OperationType.None;
             }
-            state.Viewer.InvalidateSurface();
+            state.Viewer.InvalidatePaint();
         }
 
         private void OnTouchDragged(PdfViewState state)
@@ -469,7 +469,7 @@ namespace PdfClown.UI
                 }
                 selectedAnnotation.SetBounds(state.InvertPageViewMatrix.MapRect(bound));
 
-                state.Viewer.InvalidateSurface();
+                state.Viewer.InvalidatePaint();
             }
             else if (state.TouchAction == TouchAction.Pressed)
             {

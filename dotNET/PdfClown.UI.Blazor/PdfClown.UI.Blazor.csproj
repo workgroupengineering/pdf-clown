@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <!--<Nullable>enable</Nullable>-->
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>enable</ImplicitUsings>	
   </PropertyGroup> 
 	
   <ItemGroup>
@@ -14,7 +14,7 @@
     <ProjectReference Include="..\PdfClown.UI.Core\PdfClown.UI.Core.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
-    <ProjectReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="2.88.8" />
+	<PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="2.88.8"/>
   </ItemGroup>
 
 

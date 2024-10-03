@@ -260,7 +260,7 @@ namespace PdfClown.UI.Blazor
         private void OnShowMarkupChanged(bool oldValue, bool newValue)
         {
             showMarkup = newValue;
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         private void OnHoverAnnotationChanged(Annotation oldValue, Annotation newValue)
@@ -273,7 +273,7 @@ namespace PdfClown.UI.Blazor
             Operations.Annotation = newValue;
             SelectedMarkup = newValue as Markup;
             SelectedAnnotationChanged?.Invoke(this, new AnnotationEventArgs(newValue));
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         private void OnSelectedMarkupChanged(Markup oldValue, Markup newValue)
@@ -311,13 +311,13 @@ namespace PdfClown.UI.Blazor
         private void OnShowCharBoundChanged(bool oldValue, bool newValue)
         {
             showCharBound = newValue;
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         private void OnIsReadOnlyChanged(bool oldValue, bool newValue)
         {
             isReadOnly = newValue;
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         protected override void OnVerticalValueChanged(double oldValue, double newValue)
@@ -364,7 +364,7 @@ namespace PdfClown.UI.Blazor
 
         private void OnTextSelectionChanged(object sender, EventArgs args)
         {
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         private void OnOperationsChanged(object sender, EventArgs e)
@@ -404,7 +404,7 @@ namespace PdfClown.UI.Blazor
             Operations.MoveToLast();
             Close();
             Document = newDocument;
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         public void Load(string filePath)

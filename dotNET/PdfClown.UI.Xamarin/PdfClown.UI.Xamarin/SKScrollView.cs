@@ -2,6 +2,7 @@
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
+using System.Threading;
 using Xamarin.Forms;
 
 namespace PdfClown.UI
@@ -96,6 +97,7 @@ namespace PdfClown.UI
 
         public SKScrollView()
         {
+            Envir.Init();
             IsTabStop = true;
             IgnorePixelScaling = false;
             EnableTouchEvents = true;
@@ -549,7 +551,7 @@ namespace PdfClown.UI
         public virtual bool OnScrolled(int delta)
         {
             var temp = VerticalValue;
-            VerticalValue = VerticalValue - delta;
+            VerticalAnimateScroll(VerticalValue - (delta * 2), 16, 160);
             return temp != VerticalValue;
         }
 
@@ -763,6 +765,14 @@ namespace PdfClown.UI
         }
 
         public Func<double, double, bool> CheckCaptureBox;
+
+        public virtual void InvalidatePaint()
+        {
+            if (Envir.MainContext == SynchronizationContext.Current)
+                InvalidateSurface();
+            else
+                Device.BeginInvokeOnMainThread(InvalidateSurface);
+        }
 
     }
 }

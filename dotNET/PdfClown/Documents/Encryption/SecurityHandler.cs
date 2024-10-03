@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Security;
 using PdfClown.Bytes;
 using PdfClown.Objects;
@@ -225,7 +226,11 @@ namespace PdfClown.Documents.Encryption
             newKey[newKey.Length - 2] = (byte)(genNumber & 0xff);
             newKey[newKey.Length - 1] = (byte)(genNumber >> 8 & 0xff);
             // step 3
+#if __BLAZOR__
+            var md = new MD5Digest();
+#else
             using var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+#endif
             md.Update(newKey);
             if (useAES)
             {
@@ -309,7 +314,7 @@ namespace PdfClown.Documents.Encryption
             {
                 if (!(exception is CryptographicException))
                 {
-                    throw exception;
+                    throw;
                 }
                 Debug.WriteLine("debug: A CryptographicException occurred when decrypting some stream data " + exception);
             }
@@ -336,7 +341,7 @@ namespace PdfClown.Documents.Encryption
             {
                 if (!(exception is CryptographicException))
                 {
-                    throw exception;
+                    throw;
                 }
                 Debug.WriteLine("debug: A CryptographicException occurred when decrypting some stream data " + exception);
             }
@@ -375,7 +380,7 @@ namespace PdfClown.Documents.Encryption
                 // it should be safe to swallow a GeneralSecurityException
                 if (!(exception is CryptographicException))
                 {
-                    throw exception;
+                    throw;
                 }
                 Debug.WriteLine("debug: A CryptographicException occurred when decrypting some stream data " + exception);
             }
@@ -404,7 +409,7 @@ namespace PdfClown.Documents.Encryption
                 // it should be safe to swallow a GeneralSecurityException
                 if (!(exception is CryptographicException))
                 {
-                    throw exception;
+                    throw;
                 }
                 Debug.WriteLine("debug: A CryptographicException occurred when decrypting some stream data " + exception);
             }

@@ -124,27 +124,21 @@ namespace PdfClown.Documents.Files
             return path;
         }
 
-        /**
-          <summary>Gets an input stream to read from the file.</summary>
-        */
+        /// <summary>Gets an input stream to read from the file.</summary>
         public virtual IInputStream GetInputStream()
         {
             return new StreamContainer(
               new FileStream(GetAbsolutePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
         }
 
-        /**
-          <summary>Gets an output stream to write into the file.</summary>
-        */
+        /// <summary>Gets an output stream to write into the file.</summary>
         public virtual IOutputStream GetOutputStream()
         {
             return new StreamContainer(
               new FileStream(GetAbsolutePath(), FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
         }
 
-        /**
-          <summary>Gets the file path.</summary>
-        */
+        /// <summary>Gets the file path.</summary>
         public abstract string Path { get; set; }
 
         public PdfString Name => RetrieveName();

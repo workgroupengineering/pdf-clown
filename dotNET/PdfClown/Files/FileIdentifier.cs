@@ -83,52 +83,48 @@ namespace PdfClown.Files
         {
             // NOTE: To help ensure the uniqueness of file identifiers, it is recommended that they are
             // computed by means of a message digest algorithm such as MD5 [PDF:1.7:10.3].
-            using (var md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5))
+            using var md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+            using var buffer = new BinaryWriter(new MemoryStream(), Charset.ISO88591, false);
+            var file = writer.File;
+            try
             {
-                using (BinaryWriter buffer = new BinaryWriter(new MemoryStream(), Charset.ISO88591, false))
+                // File identifier computation is fulfilled with this information:
+                // a) Current time.
+                Digest(buffer, DateTime.Now.Ticks);
+
+                // b) File location.
+                if (file.Path != null)
+                { Digest(buffer, file.Path); }
+
+                // c) File size.
+                Digest(buffer, writer.Stream.Length);
+
+                // d) Entries in the document information dictionary.
+                foreach (var informationObjectEntry in file.Document.Information.BaseDataObject)
                 {
-                    var file = writer.File;
-                    try
-                    {
-                        // File identifier computation is fulfilled with this information:
-                        // a) Current time.
-                        Digest(buffer, DateTime.Now.Ticks);
-
-                        // b) File location.
-                        if (file.Path != null)
-                        { Digest(buffer, file.Path); }
-
-                        // c) File size.
-                        Digest(buffer, writer.Stream.Length);
-
-                        // d) Entries in the document information dictionary.
-                        foreach (var informationObjectEntry in file.Document.Information.BaseDataObject)
-                        {
-                            Digest(buffer, informationObjectEntry.Key);
-                            Digest(buffer, informationObjectEntry.Value);
-                        }
-                    }
-                    catch (Exception e)
-                    { throw new Exception("File identifier digest failed.", e); }
-
-
-                    //NOTE: File identifier is an array of two byte strings [PDF:1.7:10.3]:
-                    //1) a permanent identifier based on the contents of the file at the time it was
-                    // originally created. It does not change when the file is incrementally updated;
-                    //2) a changing identifier based on the file's contents at the time it was last updated.
-                    // When a file is first written, both identifiers are set to the same value. If both
-                    // identifiers match when a file reference is resolved, it is very likely that the correct
-                    // file has been found. If only the first identifier matches, a different version of the
-                    // correct file has been found.
-
-                    PdfString versionID = new PdfString(
-                      md5.Digest(((MemoryStream)buffer.BaseStream).AsSpan()),
-                      PdfString.SerializationModeEnum.Hex);
-                    BaseDataObject[1] = versionID;
-                    if (BaseDataObject[0].Equals(PdfString.Default))
-                    { BaseDataObject[0] = versionID; }
+                    Digest(buffer, informationObjectEntry.Key);
+                    Digest(buffer, informationObjectEntry.Value);
                 }
             }
+            catch (Exception e)
+            { throw new Exception("File identifier digest failed.", e); }
+
+
+            //NOTE: File identifier is an array of two byte strings [PDF:1.7:10.3]:
+            //1) a permanent identifier based on the contents of the file at the time it was
+            // originally created. It does not change when the file is incrementally updated;
+            //2) a changing identifier based on the file's contents at the time it was last updated.
+            // When a file is first written, both identifiers are set to the same value. If both
+            // identifiers match when a file reference is resolved, it is very likely that the correct
+            // file has been found. If only the first identifier matches, a different version of the
+            // correct file has been found.
+
+            var versionID = new PdfString(
+              md5.Digest(((MemoryStream)buffer.BaseStream).AsSpan()),
+              PdfString.SerializationModeEnum.Hex);
+            BaseDataObject[1] = versionID;
+            if (BaseDataObject[0].Equals(PdfString.Default))
+            { BaseDataObject[0] = versionID; }
         }
     }
 }

@@ -264,7 +264,7 @@ namespace PdfClown.UI.Blazor
                 {
                     verticalHovered = value;
                     OnVerticalMaximumChanged(1, VerticalMaximum);
-                    InvalidateSurface();
+                    InvalidatePaint();
                 }
             }
         }
@@ -278,7 +278,7 @@ namespace PdfClown.UI.Blazor
                 {
                     нorizontalHovered = value;
                     OnHorizontalMaximumChanged(1, HorizontalMaximum);
-                    InvalidateSurface();
+                    InvalidatePaint();
                 }
             }
         }
@@ -291,7 +291,7 @@ namespace PdfClown.UI.Blazor
                 if (pressedButton != value)
                 {
                     pressedButton = value;
-                    InvalidateSurface();
+                    InvalidatePaint();
                 }
             }
         }
@@ -304,7 +304,7 @@ namespace PdfClown.UI.Blazor
                 if (hoverButton != value)
                 {
                     hoverButton = value;
-                    InvalidateSurface();
+                    InvalidatePaint();
                 }
             }
         }
@@ -331,7 +331,7 @@ namespace PdfClown.UI.Blazor
             }
         }
 
-        public void InvalidateSurface()
+        public void InvalidatePaint()
         {
             canvasView?.Invalidate();
         }
@@ -569,7 +569,7 @@ namespace PdfClown.UI.Blazor
             {
                 verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
             }
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         protected virtual void OnHorizontalValueChanged(double oldValue, double newValue)
@@ -579,7 +579,7 @@ namespace PdfClown.UI.Blazor
             {
                 нorizontalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
             }
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         public virtual bool OnScrolled(double delta)

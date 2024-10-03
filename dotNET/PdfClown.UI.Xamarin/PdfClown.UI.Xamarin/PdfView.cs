@@ -47,7 +47,6 @@ namespace PdfClown.UI
 
         public PdfView()
         {
-            Envir.Init();
             state = new PdfViewState { Viewer = this };
 
             TextSelection = new TextSelection();

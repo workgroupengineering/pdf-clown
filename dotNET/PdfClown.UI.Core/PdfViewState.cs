@@ -56,7 +56,7 @@ namespace PdfClown.UI
                 }
                 else
                 {
-                    Viewer.InvalidateSurface();
+                    Viewer.InvalidatePaint();
                 }
             }
         }
@@ -228,7 +228,7 @@ namespace PdfClown.UI
                     {
                         ToolTipRenderer = null;
                     }
-                    Viewer.InvalidateSurface();
+                    Viewer.InvalidatePaint();
                 }
             }
         }
@@ -389,7 +389,7 @@ namespace PdfClown.UI
             var size = Viewer.Document?.Size ?? SKSize.Empty;
             Viewer.HorizontalMaximum = size.Width * scale;
             Viewer.VerticalMaximum = size.Height * scale;
-            Viewer.InvalidateSurface();
+            Viewer.InvalidatePaint();
         }
 
         public void UpdateCurrentMatrix() => UpdateCurrentMatrix((float)Viewer.Width, (float)Viewer.Height);

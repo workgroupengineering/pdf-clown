@@ -23,15 +23,15 @@
   this list of conditions.
 */
 
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Digests;
 using System;
 using System.IO;
 using System.Security.Cryptography;
 
 namespace PdfClown.Util.IO
 {
-    /**
-      <summary>IO utilities.</summary>
-    */
+    /// <summary>IO utilities.</summary>
     public static class IOUtils
     {
         public static bool Exists(string path)
@@ -48,80 +48,120 @@ namespace PdfClown.Util.IO
             stream.SetLength(0);
         }
 
-        public static void Update(this HashAlgorithm hash, byte oneByte)
+        public static void Update(this HashAlgorithm digest, byte oneByte)
         {
-            Update(hash, new byte[] { oneByte });
+            Update(digest, new byte[] { oneByte });
         }
 
-        public static void Update(this HashAlgorithm hash, byte[] bytes)
+        public static void Update(this HashAlgorithm digest, byte[] bytes)
         {
-            Update(hash, bytes, 0, bytes.Length);
+            Update(digest, bytes, 0, bytes.Length);
         }
 
-        public static void Update(this HashAlgorithm hash, byte[] bytes, int offcet, int count)
+        public static void Update(this HashAlgorithm digest, byte[] bytes, int offcet, int count)
         {
-            hash.TransformBlock(bytes, offcet, count, null, 0);
+            digest.TransformBlock(bytes, offcet, count, null, 0);
         }
 
-        public static void Update(this IncrementalHash hash, byte oneByte)
+        public static void Update(this IncrementalHash digest, byte oneByte)
         {
-            Update(hash, new byte[] { oneByte });
+            Update(digest, new byte[] { oneByte });
         }
 
-        public static void Update(this IncrementalHash hash, byte[] bytes)
+        public static void Update(this IncrementalHash digest, byte[] bytes)
         {
-            Update(hash, bytes, 0, bytes.Length);
+            Update(digest, bytes, 0, bytes.Length);
         }
 
-        public static void Update(this IncrementalHash hash, byte[] bytes, int offcet, int count)
+        public static void Update(this IncrementalHash digest, byte[] bytes, int offcet, int count)
         {
-            hash.AppendData(bytes, offcet, count);
+            digest.AppendData(bytes, offcet, count);
         }
 
-        public static void Update(this IncrementalHash hash, ReadOnlySpan<byte> bytes)
+        public static void Update(this IncrementalHash digest, ReadOnlySpan<byte> bytes)
         {
-            hash.AppendData(bytes);
+            digest.AppendData(bytes);
         }
 
-        public static byte[] Digest(this HashAlgorithm hash)
+        public static void Update(this IDigest digest, byte[] bytes)
         {
-            return Digest(hash, Array.Empty<byte>());
+            Update(digest, bytes, 0, bytes.Length);
         }
 
-        public static byte[] Digest(this HashAlgorithm hash, byte[] bytes)
+        public static void Update(this IDigest digest, byte[] bytes, int offcet, int count)
         {
-            return Digest(hash, bytes, 0, bytes.Length);
+            digest.BlockUpdate(bytes, offcet, count);
         }
 
-        public static byte[] Digest(this HashAlgorithm hash, byte[] bytes, int offcet, int count)
+        public static void Update(this IDigest digest, ReadOnlySpan<byte> bytes)
         {
-            hash.TransformFinalBlock(bytes, offcet, count);
-            var digest = hash.Hash;
-            return digest;
+            digest.BlockUpdate(bytes);
         }
 
-        public static byte[] Digest(this IncrementalHash hash)
+        public static byte[] Digest(this HashAlgorithm digest)
         {
-            return Digest(hash, Array.Empty<byte>());
+            return Digest(digest, Array.Empty<byte>());
         }
 
-        public static byte[] Digest(this IncrementalHash hash, byte[] bytes)
+        public static byte[] Digest(this HashAlgorithm digest, byte[] bytes)
         {
-            return Digest(hash, bytes, 0, bytes.Length);
+            return Digest(digest, bytes, 0, bytes.Length);
         }
 
-        public static byte[] Digest(this IncrementalHash hash, byte[] bytes, int offcet, int count)
+        public static byte[] Digest(this HashAlgorithm digest, byte[] bytes, int offcet, int count)
         {
-            hash.Update(bytes, offcet, count);
-            var digest = hash.GetHashAndReset();
-            return digest;
+            digest.TransformFinalBlock(bytes, offcet, count);
+            return digest.Hash;
         }
 
-        public static byte[] Digest(this IncrementalHash hash, ReadOnlySpan<byte> bytes)
+        public static byte[] Digest(this IncrementalHash digest)
         {
-            hash.Update(bytes);
-            var digest = hash.GetHashAndReset();
-            return digest;
+            return digest.GetHashAndReset();
+        }
+
+        public static byte[] Digest(this IncrementalHash digest, byte[] bytes)
+        {
+            return Digest(digest, bytes, 0, bytes.Length);
+        }
+
+        public static byte[] Digest(this IncrementalHash digest, byte[] bytes, int offcet, int count)
+        {
+            digest.Update(bytes, offcet, count);
+            return digest.GetHashAndReset();
+        }
+
+        public static byte[] Digest(this IncrementalHash digest, ReadOnlySpan<byte> bytes)
+        {
+            digest.Update(bytes);
+            return digest.GetHashAndReset();
+        }
+
+        public static byte[] Digest(this IDigest digest, byte[] bytes, int offset, int count)
+        {
+            var result = new byte[digest.GetDigestSize()];
+            digest.BlockUpdate(bytes, offset, count);
+            digest.DoFinal(result, 0);
+            return result;
+        }
+
+        public static byte[] Digest(this IDigest digest, ReadOnlySpan<byte> bytes)
+        {
+            var result = new byte[digest.GetDigestSize()];
+            digest.BlockUpdate(bytes);
+            digest.DoFinal(result, 0);
+            return result;
+        }
+
+        public static byte[] Digest(this IDigest digest)
+        {
+            var result = new byte[digest.GetDigestSize()];
+            digest.DoFinal(result, 0);
+            return result;
+        }
+
+        public static void Dispose(this IDigest digest)
+        {
+            //digest.Finish();
         }
 
         public static byte[] DoFinal(this ICryptoTransform transform, byte[] bytes)

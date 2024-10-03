@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
@@ -480,25 +481,27 @@ namespace PdfClown.Documents.Encryption
             //check if the document has an id yet.  If it does not then generate one
             if (idArray == null || idArray.BaseDataObject.Count < 2)
             {
-                using (var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5))
-                {
-                    var time = new BigInteger((DateTime.UtcNow - Jan1st1970).TotalMilliseconds.ToString());
-                    md.Update(time.ToByteArray());
-                    md.Update(Charset.ISO88591.GetBytes(ownerPassword));
-                    md.Update(Charset.ISO88591.GetBytes(userPassword));
-                    md.Update(Charset.ISO88591.GetBytes(document.Information.ToString()));
+#if __BLAZOR__
+                var md = new MD5Digest();
+#else
+                using var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+#endif
+                var time = new BigInteger((DateTime.UtcNow - Jan1st1970).TotalMilliseconds.ToString());
+                md.Update(time.ToByteArray());
+                md.Update(Charset.ISO88591.GetBytes(ownerPassword));
+                md.Update(Charset.ISO88591.GetBytes(userPassword));
+                md.Update(Charset.ISO88591.GetBytes(document.Information.ToString()));
 
-                    var finBlock = Charset.ISO88591.GetBytes(this.ToString());
-                    PdfString idString = new PdfString(md.Digest(finBlock));
+                var finBlock = Charset.ISO88591.GetBytes(this.ToString());
+                var idString = new PdfString(md.Digest(finBlock));
 
-                    idArray = new FileIdentifier();
-                    idArray.BaseID = idString;
-                    idArray.VersionID = idString;
-                    document.File.ID = idArray;
-                }
+                idArray = new FileIdentifier();
+                idArray.BaseID = idString;
+                idArray.VersionID = idString;
+                document.File.ID = idArray;
             }
 
-            PdfString id = idArray.BaseID;
+            var id = idArray.BaseID;
 
             var ownerBytes = ComputeOwnerPassword(
                     Charset.ISO88591.GetBytes(ownerPassword),
@@ -688,8 +691,11 @@ namespace PdfClown.Documents.Encryption
 
             //PDFReference 1.4 pg 78
             var padded = TruncateOrPad(password);
-
+#if __BLAZOR__
+            var md = new MD5Digest();
+#else
             using var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+#endif
             md.Update(padded);
 
             md.Update(o);
@@ -807,7 +813,11 @@ namespace PdfClown.Documents.Encryption
             }
             else if (encRevision == Revision3 || encRevision == Revision4)
             {
-                var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+#if __BLAZOR__
+                var md = new MD5Digest();
+#else
+                using var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+#endif
                 md.Update(ENCRYPT_PADDING);
                 md.Update(id);
                 result.Write(md.Digest());
@@ -882,8 +892,12 @@ namespace PdfClown.Documents.Encryption
         // steps (a) to (d) of "Algorithm 3: Computing the encryption dictionary’s O (owner password) value".
         private ReadOnlySpan<byte> ComputeRC4key(ReadOnlySpan<byte> ownerPassword, int encRevision, int length)
         {
+#if __BLAZOR__
+            var md = new MD5Digest();
+#else
             using var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
-            byte[] digest = md.Digest(TruncateOrPad(ownerPassword));
+#endif
+            var digest = md.Digest(TruncateOrPad(ownerPassword));
             if (encRevision == Revision3 || encRevision == Revision4)
             {
                 for (int i = 0; i < 50; i++)
@@ -898,13 +912,9 @@ namespace PdfClown.Documents.Encryption
         }
 
 
-        /**
-		 * This will take the password and truncate or pad it as necessary.
-		 *
-		 * @param password The password to pad or truncate.
-		 *
-		 * @return The padded or truncated password.
-		 */
+        /// <summary> This will take the password and truncate or pad it as necessary.
+        /// password The password to pad or truncate.
+        /// The padded or truncated password.</summary>
         private ReadOnlySpan<byte> TruncateOrPad(ReadOnlySpan<byte> password)
         {
             byte[] padded = new byte[ENCRYPT_PADDING.Length];
@@ -1035,7 +1045,11 @@ namespace PdfClown.Documents.Encryption
         {
             try
             {
+#if __BLAZOR__
+                IDigest md = new Sha256Digest();
+#else
                 var md = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+#endif
                 Span<byte> k = md.Digest(input);
 
                 byte[] e = null;
@@ -1070,15 +1084,10 @@ namespace PdfClown.Documents.Encryption
 
                     var bi = new BigInteger(1, e.AsSpan(0, 16).ToArray());
                     var remainder = bi.Mod(new BigInteger("3"));
-                    string nextHash = HASHES_2B[remainder.IntValue];
-                    //md = MessageDigest.getInstance(nextHash);
+                    string nextHash = HASHES_2B[remainder.IntValue];                    
                     md.Dispose();
-                    switch (nextHash)
-                    {
-                        case "SHA256": md = IncrementalHash.CreateHash(HashAlgorithmName.SHA256); break;
-                        case "SHA384": md = IncrementalHash.CreateHash(HashAlgorithmName.SHA384); break;
-                        case "SHA512": md = IncrementalHash.CreateHash(HashAlgorithmName.SHA512); break;
-                    }
+                    md = GetDigest(nextHash);
+                    
                     k = md.Digest(e);
                 }
                 md.Dispose();
@@ -1093,11 +1102,52 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
+#if __BLAZOR__
+        private static IDigest GetDigest(string hashName)
+        {
+            switch (hashName)
+            {
+                case "SHA1":
+                    return new Sha256Digest();    
+                case "SHA256":
+                    return new Sha256Digest();    
+                case "SHA384":
+                    return new Sha384Digest(); 
+                case "SHA512":
+                    return new Sha512Digest(); 
+                case "MD5":
+                default:
+                    return new MD5Digest(); 
+            }
+        }
+#else
+        private static IncrementalHash GetDigest(string hashName)
+        {
+            switch (hashName)
+            {
+                case "SHA1":
+                    return IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+                case "SHA256":
+                    return IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+                case "SHA384":
+                    return IncrementalHash.CreateHash(HashAlgorithmName.SHA384);
+                case "SHA512":
+                    return IncrementalHash.CreateHash(HashAlgorithmName.SHA512);
+                case "MD5":
+                default:
+                    return IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+            }
+        }
+#endif
         private static ReadOnlySpan<byte> ComputeSHA256(ReadOnlySpan<byte> input, ReadOnlySpan<byte> password, ReadOnlySpan<byte> userKey)
         {
             try
             {
+#if __BLAZOR__
+                var md = new Sha256Digest();
+#else
                 using var md = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+#endif
                 md.Update(input);
                 md.Update(password);
                 return md.Digest(AdjustUserKey(userKey));

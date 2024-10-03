@@ -130,7 +130,7 @@ namespace PdfClown.UI.Operations
         private void OnDocumentAnnotationAdded(object sender, AnnotationEventArgs e)
         {
             AnnotationAdded?.Invoke(this, e);
-            Viewer.InvalidateSurface();
+            Viewer.InvalidatePaint();
         }
 
         private void OnDocumentAnnotationRemoved(object sender, AnnotationEventArgs e)
@@ -138,7 +138,7 @@ namespace PdfClown.UI.Operations
             if (e.Annotation == Annotation)
                 Viewer.SelectedAnnotation = null;
             AnnotationRemoved?.Invoke(this, e);
-            Viewer.InvalidateSurface();
+            Viewer.InvalidatePaint();
         }
 
         private void OnDocumentEndOperation(object sender, EventArgs e)
@@ -233,7 +233,7 @@ namespace PdfClown.UI.Operations
                     BeginOperation(annotation, OperationType.AnnotationProperty, invoker, lineEndDetails.OldValue, lineEndDetails.NewValue);
                     break;
             }
-            Envir.MainContext.Post((s) => Viewer.InvalidateSurface(), null);
+            Envir.MainContext.Post((s) => Viewer.InvalidatePaint(), null);
         }
 
         public bool Undo()
@@ -263,7 +263,7 @@ namespace PdfClown.UI.Operations
                     handlePropertyChanged = true;
                 }
                 OnChanged();
-                Viewer.InvalidateSurface();
+                Viewer.InvalidatePaint();
                 return true;
             }
             return false;
@@ -297,7 +297,7 @@ namespace PdfClown.UI.Operations
                     handlePropertyChanged = true;
                 }
                 OnChanged();
-                Viewer.InvalidateSurface();
+                Viewer.InvalidatePaint();
                 return true;
             }
             return false;
@@ -362,7 +362,7 @@ namespace PdfClown.UI.Operations
                 Viewer.SelectedAnnotation = null;
 
             AnnotationRemoved?.Invoke(this, new AnnotationEventArgs(annotation));
-            Viewer.InvalidateSurface();
+            Viewer.InvalidatePaint();
             return list;
         }
 

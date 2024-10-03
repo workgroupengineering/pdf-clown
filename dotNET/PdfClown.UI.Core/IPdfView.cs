@@ -37,7 +37,7 @@ namespace PdfClown.UI
         event EventHandler<AnnotationEventArgs> SelectedAnnotationChanged;
         event EventHandler<EventArgs> DocumentChanged;
 
-        void InvalidateSurface();
+        void InvalidatePaint();
 
         void ScrollTo(Annotation annotation);
         void ScrollTo(PdfPage page);
