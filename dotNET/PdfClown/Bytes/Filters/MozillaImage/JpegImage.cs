@@ -1207,7 +1207,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
                                 Debug.WriteLine($"warn{ex.Message} -- ignoring the rest of the image data.");
                                 goto markerLoop;
                             }
-                            throw ex;
+                            throw;
                         }
                         break;
 

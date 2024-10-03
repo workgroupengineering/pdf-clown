@@ -79,10 +79,10 @@ namespace PdfClown.Util
             dictionary.Add(key, value); // Adds the entry.
             try
             { inverseDictionary.Add(value, key); } // Adds the inverse entry.
-            catch (Exception exception)
+            catch (Exception)
             {
                 dictionary.Remove(key); // Reverts the entry addition.
-                throw exception;
+                throw;
             }
         }
 

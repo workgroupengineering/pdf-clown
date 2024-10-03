@@ -154,9 +154,9 @@ namespace PdfClown.Documents.Interaction.Forms.Signature.Sertificate
             {
                 throw new CertificateVerificationException($"error: building certification path: " + cert.SubjectDN, certPathEx);
             }
-            catch (CertificateVerificationException cvex)
+            catch (CertificateVerificationException)
             {
-                throw cvex;
+                throw;
             }
             catch (Exception ex)
             {

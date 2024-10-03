@@ -420,9 +420,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             {
                 return float.Parse(sb.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 

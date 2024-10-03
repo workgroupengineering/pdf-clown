@@ -309,13 +309,13 @@ namespace PdfClown.Tokens
                 securityHandler.PrepareForDecryption(encryption, file.ID.BaseDataObject, decryptionMaterial);
                 accessPermission = securityHandler.CurrentAccessPermission;
             }
-            catch (IOException e)
+            catch (IOException)
             {
-                throw e;
+                throw;
             }
             catch (Org.BouncyCastle.Security.GeneralSecurityException e)
             {
-                throw new IOException($"Error ({e.GetType().Name}) while creating security handler for decryption", e);
+                throw new IOException($"Error ({e.Message}) while creating security handler for decryption", e);
             }
             finally
             {
