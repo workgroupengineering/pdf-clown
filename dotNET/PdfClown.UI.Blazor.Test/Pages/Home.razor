@@ -1,7 +1,22 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+@using PdfClown.UI.Blazor
 
-<h1>Hello, world!</h1>
+<PageTitle>Pdf View</PageTitle>
 
-Welcome to your new app.
+<h1>Pdf View</h1>
+<div><InputFile OnChange="OnInputFileChange">Open File</InputFile></div>
+<PdfView @ref="pdfView" class="canvas-container" />
+
+@code {
+    PdfView pdfView = null;
+
+    private async void OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        using var stream = e.File.OpenReadStream(512 * 1024 * 1024);
+        var fileStream = new MemoryStream();
+        await stream.CopyToAsync(fileStream);
+        fileStream.Position = 0;
+        pdfView.Load(fileStream);
+    }
+}

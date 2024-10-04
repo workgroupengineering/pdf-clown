@@ -233,7 +233,7 @@ namespace PdfClown.UI.Operations
                     BeginOperation(annotation, OperationType.AnnotationProperty, invoker, lineEndDetails.OldValue, lineEndDetails.NewValue);
                     break;
             }
-            Envir.MainContext.Post((s) => Viewer.InvalidatePaint(), null);
+            Viewer.InvalidatePaint();
         }
 
         public bool Undo()

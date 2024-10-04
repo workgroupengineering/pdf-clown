@@ -771,7 +771,7 @@ namespace PdfClown.UI
             if (Envir.MainContext == SynchronizationContext.Current)
                 InvalidateSurface();
             else
-                Device.BeginInvokeOnMainThread(InvalidateSurface);
+                Envir.MainContext.Post(state => InvalidateSurface(), null);
         }
 
     }

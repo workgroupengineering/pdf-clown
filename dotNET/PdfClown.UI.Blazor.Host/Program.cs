@@ -24,7 +24,7 @@ app.Use(async (context, next) => {
     context.Response.OnStarting(() => {
         context.Response.Headers.Append("Cross-Origin-Embedder-Policy", "require-corp");
         context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin");
-        return Task.FromResult(0);
+        return Task.CompletedTask;
     });
 
     await next();

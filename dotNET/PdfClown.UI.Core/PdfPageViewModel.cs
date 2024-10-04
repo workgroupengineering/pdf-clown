@@ -234,7 +234,7 @@ namespace PdfClown.UI
             if (picture == null && Document.LockObject.IsSet)
             {
                 Document.LockObject.Reset();
-                var task = new Task(() => Paint(canvasView));
+                var task = new Task(state => Paint((IPdfView)state), canvasView);
                 task.Start();
             }
             return picture;

@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	<!--<WasmEnableThreads>true</WasmEnableThreads>-->
 	<WasmBuildNative>true</WasmBuildNative>
+	<!--<PublishTrimmed>true</PublishTrimmed>
+	<TrimMode>full</TrimMode>-->
   </PropertyGroup> 
 	
   <ItemGroup>
