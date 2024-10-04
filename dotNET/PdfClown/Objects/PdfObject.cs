@@ -111,7 +111,6 @@ namespace PdfClown.Objects
             internal set;
         }
 
-
         public IContentContext GetContentContext()
         {
             var parent = this;
@@ -123,7 +122,6 @@ namespace PdfClown.Objects
             }
             return null;
         }
-
 
         /// <summary>Creates a shallow copy of this object.</summary>
         public object Clone()
