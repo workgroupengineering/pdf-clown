@@ -32,17 +32,15 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Device Cyan-Magenta-Yellow-Key color space [PDF:1.6:4.5.3].</summary>
-    */
+    /// <summary>Device Cyan-Magenta-Yellow-Key color space [PDF:1.6:4.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceCMYKColorSpace : DeviceColorSpace
     {
-        /*
-          NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
-          of the contextual resource dictionary) [PDF:1.6:4.5.7].
-        */
-        public static readonly DeviceCMYKColorSpace Default = (DeviceCMYKColorSpace)Wrap(PdfName.DeviceCMYK);
+        // NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
+        // of the contextual resource dictionary) [PDF:1.6:4.5.7].
+        public static readonly DeviceCMYKColorSpace Default = new(PdfName.DeviceCMYK);
+
+        public static readonly DeviceCMYKColorSpace DefaultShort = new(PdfName.CMYK);
 
         public DeviceCMYKColorSpace(PdfDocument context) : base(context, PdfName.DeviceCMYK)
         { }
@@ -57,7 +55,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color DefaultColor => DeviceCMYKColor.Default;
 
-        public override Color GetColor(PdfArray components, IContentContext context = null) 
+        public override Color GetColor(PdfArray components, IContentContext context = null)
             => components == null ? DefaultColor : components.Wrapper as DeviceCMYKColor ?? new DeviceCMYKColor(this, components);
 
         public override bool IsSpaceColor(Color color)

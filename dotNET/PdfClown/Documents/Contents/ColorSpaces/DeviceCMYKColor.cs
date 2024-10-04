@@ -30,11 +30,9 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Device Cyan-Magenta-Yellow-Key color value [PDF:1.6:4.5.3].</summary>
-      <remarks>The 'Key' component is renamed 'Black' to avoid semantic
-      ambiguities.</remarks>
-    */
+    /// <summary>Device Cyan-Magenta-Yellow-Key color value [PDF:1.6:4.5.3].</summary>
+    /// <remarks>The 'Key' component is renamed 'Black' to avoid semantic
+    /// ambiguities.</remarks>
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceCMYKColor : DeviceColor, IEquatable<DeviceCMYKColor>
     {
@@ -58,28 +56,28 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             : base(colorSpace, components)
         { }
 
-        ///<summary>Gets/Sets the cyan component.</summary>
+        /// <summary>Gets/Sets the cyan component.</summary>
         public float C
         {
             get => this[0];
             set => this[0] = value;
         }
 
-        ///<summary>Gets/Sets the magenta component.</summary>
+        /// <summary>Gets/Sets the magenta component.</summary>
         public float M
         {
             get => this[1];
             set => this[1] = value;
         }
 
-        ///<summary>Gets/Sets the yellow component.</summary>
+        /// <summary>Gets/Sets the yellow component.</summary>
         public float Y
         {
             get => this[2];
             set => this[2] = value;
         }
 
-        ///<summary>Gets/Sets the black (key) component.</summary>
+        /// <summary>Gets/Sets the black (key) component.</summary>
         public float K
         {
             get => this[3];
