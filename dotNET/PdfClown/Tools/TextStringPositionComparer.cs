@@ -31,22 +31,16 @@ using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Tools
 {
-    /**
-      <summary>Text string position comparer.</summary>
-    */
+    /// <summary>Text string position comparer.</summary>
     public class TextStringPositionComparer<T> : IComparer<T>
       where T : ITextString
     {
-        /**
-          <summary>Gets whether the specified boxes lay on the same text line.</summary>
-        */
+        /// <summary>Gets whether the specified boxes lay on the same text line.</summary>
         public static bool IsOnTheSameLine(Quad box1, Quad box2)
         {
-            /*
-              NOTE: In order to consider the two boxes being on the same line,
-              we apply a simple rule of thumb: at least 25% of a box's height MUST
-              lay on the horizontal projection of the other one.
-            */
+            // NOTE: In order to consider the two boxes being on the same line,
+            // we apply a simple rule of thumb: at least 25% of a box's height MUST
+            // lay on the horizontal projection of the other one.
             double minHeight = Math.Min(box1.Height, box2.Height);
             double yThreshold = minHeight * .75;
             return ((box1.Top > box2.Top - yThreshold
@@ -61,10 +55,8 @@ namespace PdfClown.Tools
             var quad2 = textString2.Quad;
             if (IsOnTheSameLine(quad1, quad2))
             {
-                /*
-                  [FIX:55:0.1.3] In order not to violate the transitive condition, equivalence on x-axis
-                  MUST fall back on y-axis comparison.
-                */
+                // [FIX:55:0.1.3] In order not to violate the transitive condition, equivalence on x-axis
+                // MUST fall back on y-axis comparison.
                 int xCompare = quad1.Left.CompareTo(quad2.Left);
                 if (xCompare != 0)
                     return xCompare;

@@ -33,7 +33,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 {
     /// <summary>Collection of bookmarks [PDF:1.6:8.2.2].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class Bookmarks : PdfObjectWrapper<PdfDictionary>, IList<Bookmark>
+    public sealed class Bookmarks : PdfObjectWrapper2<PdfDictionary>, IList<Bookmark>
     {
         public Bookmarks(PdfDocument context)
             : base(context, new PdfDictionary

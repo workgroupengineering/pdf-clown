@@ -66,19 +66,17 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             long maxSrcCoord = (long)Math.Pow(2, BitsPerCoordinate) - 1;
             long maxSrcColor = (long)Math.Pow(2, BitsPerComponent) - 1;
             var vertextLength = GetVertextBitLength() / 8;
-            using (var mciis = stream.ExtractBody(true))
+            var mciis = stream.GetInputStream();
+            while (mciis.Position + vertextLength <= mciis.Length)
             {
-                while (mciis.Position + vertextLength <= mciis.Length)
+                try
                 {
-                    try
-                    {
-                        var p = ReadVertex(mciis, maxSrcCoord, maxSrcColor);
-                        vlist.Add(p);
-                    }
-                    catch (Exception)
-                    {
-                        break;
-                    }
+                    var p = ReadVertex(mciis, maxSrcCoord, maxSrcColor);
+                    vlist.Add(p);
+                }
+                catch (Exception)
+                {
+                    break;
                 }
             }
             int rowNum = vlist.Count / numPerRow;

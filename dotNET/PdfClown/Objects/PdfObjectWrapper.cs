@@ -29,13 +29,14 @@ using PdfClown.Documents.Interchange.Metadata;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
 namespace PdfClown.Objects
 {
 
-    ///<summary>Base high-level representation of a weakly-typed PDF object.</summary>
+    /// <summary>Base high-level representation of a weakly-typed PDF object.</summary>
     public abstract class PdfObjectWrapper : IPdfObjectWrapper
     {
         /// <summary>Gets the PDF object backing the specified wrapper.</summary>
@@ -55,7 +56,7 @@ namespace PdfClown.Objects
                 return null;
         }
 
-        public static T Wrap<T>(PdfDirectObject baseObject)
+        public static T Wrap<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(PdfDirectObject baseObject)
             where T : IPdfObjectWrapper
         {
             return baseObject != null
@@ -64,7 +65,7 @@ namespace PdfClown.Objects
                 : default(T);
         }
 
-        public static T Wrap2<T>(PdfDirectObject baseObject)
+        public static T Wrap2<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(PdfDirectObject baseObject)
             where T : PdfObjectWrapper2
         {
             return baseObject != null
@@ -73,7 +74,7 @@ namespace PdfClown.Objects
                   : default(T);
         }
 
-        public static T Wrap3<T>(PdfDirectObject baseObject)
+        public static T Wrap3<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(PdfDirectObject baseObject)
             where T : PdfObjectWrapper3
         {
             return baseObject != null
@@ -297,8 +298,8 @@ namespace PdfClown.Objects
         }
     }
 
-    ///<summary>High-level representation of a strongly-typed PDF object.</summary>
-    ///<remarks>
+    /// <summary>High-level representation of a strongly-typed PDF object.</summary>
+    /// <remarks>
     ///  <para>Specialized objects don't inherit directly from their low-level counterparts (e.g.
     ///    <see cref="PdfClown.Documents.Contents.ContentWrapper">Contents</see> extends <see
     ///    cref="PdfClown.Objects.PdfStream">PdfStream</see>, <see
@@ -315,7 +316,7 @@ namespace PdfClown.Objects
     ///    Nonetheless, users can navigate through the low-level structure getting the <see
     ///    cref="BaseDataObject">BaseDataObject</see> backing this object.
     ///  </para>
-    ///</remarks>
+    /// </remarks>
     public abstract class PdfObjectWrapper<TDataObject> : PdfObjectWrapper
       where TDataObject : PdfDataObject
     {

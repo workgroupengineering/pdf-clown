@@ -218,7 +218,7 @@ namespace PdfClown.Objects
 
             KeyValuePair<TKey, TValue> IEnumerator<KeyValuePair<TKey, TValue>>.Current => current.Value;
 
-            public object Current => Current;
+            public object Current => current.Value;
 
             public bool MoveNext() => (current = GetNext()) != null;
 

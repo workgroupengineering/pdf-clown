@@ -96,53 +96,51 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             long maxSrcCoord = (long)Math.Pow(2, BitsPerCoordinate) - 1;
             long maxSrcColor = (long)Math.Pow(2, BitsPerComponent) - 1;
 
-            using (var input = stream.ExtractBody(true))
-            {
-                Span<SKPoint> implicitEdge = stackalloc SKPoint[4];
-                Span<SKColor> implicitCornerColor = stackalloc SKColor[2];
-                Span<float> colorBuffer = stackalloc float[NumberOfColorComponents];
-                byte flag = 0;
-                Patch current = null;
+            var input = stream.GetInputStream();
+            Span<SKPoint> implicitEdge = stackalloc SKPoint[4];
+            Span<SKColor> implicitCornerColor = stackalloc SKColor[2];
+            Span<float> colorBuffer = stackalloc float[NumberOfColorComponents];
+            byte flag = 0;
+            Patch current = null;
 
-                while (input.IsAvailable)
+            while (input.IsAvailable)
+            {
+                try
                 {
-                    try
+                    flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
+                    if (current != null)
                     {
-                        flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
-                        if (current != null)
+                        switch (flag)
                         {
-                            switch (flag)
-                            {
-                                case 0:
-                                    break;
-                                case 1:
-                                    current.GetFlag1Edge(implicitEdge);
-                                    current.GetFlag1Color(implicitCornerColor);
-                                    break;
-                                case 2:
-                                    current.GetFlag2Edge(implicitEdge);
-                                    current.GetFlag2Color(implicitCornerColor);
-                                    break;
-                                case 3:
-                                    current.GetFlag3Edge(implicitEdge);
-                                    current.GetFlag3Color(implicitCornerColor);
-                                    break;
-                                default:
-                                    return list;
-                            }
+                            case 0:
+                                break;
+                            case 1:
+                                current.GetFlag1Edge(implicitEdge);
+                                current.GetFlag1Color(implicitCornerColor);
+                                break;
+                            case 2:
+                                current.GetFlag2Edge(implicitEdge);
+                                current.GetFlag2Color(implicitCornerColor);
+                                break;
+                            case 3:
+                                current.GetFlag3Edge(implicitEdge);
+                                current.GetFlag3Color(implicitCornerColor);
+                                break;
+                            default:
+                                return list;
                         }
-                        current = ReadPatch(input, flag == 0, colorBuffer, implicitEdge, implicitCornerColor,
-                                maxSrcCoord, maxSrcColor);
-                        if (current == null)
-                        {
-                            break;
-                        }
-                        list.Add(current);
                     }
-                    catch (Exception)
+                    current = ReadPatch(input, flag == 0, colorBuffer, implicitEdge, implicitCornerColor,
+                            maxSrcCoord, maxSrcColor);
+                    if (current == null)
                     {
                         break;
                     }
+                    list.Add(current);
+                }
+                catch (Exception)
+                {
+                    break;
                 }
             }
             return list;

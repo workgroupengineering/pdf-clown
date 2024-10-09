@@ -6,7 +6,6 @@
     <RootNamespace>PdfClown</RootNamespace>
     <TargetFrameworks>net6.0</TargetFrameworks>
     <Version>0.2.2.0</Version>
-    <LangVersion>9</LangVersion>
     <Company>Stefano Chizzolini</Company>
     <Product>PDF Clown for .NET Core</Product>
     <PackageId>PDFClown.NETCore</PackageId>
@@ -15,7 +14,8 @@
     <Copyright>Copyright 2006-2015 Stefano Chizzolini</Copyright>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-	<DefineConstants>__BLAZOR__</DefineConstants>
+	<DefineConstants>__BC_HASH__</DefineConstants>
+	<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Documents\Contents\Fonts\CffParser.cs" />    

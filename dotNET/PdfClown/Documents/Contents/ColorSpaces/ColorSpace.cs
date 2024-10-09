@@ -98,7 +98,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         /// <summary>Gets the rendering representation of the specified color value.</summary>
         /// <param name="color">Color value to convert into an equivalent rendering representation.</param>
         public virtual SKPaint GetPaint(Color color, SKPaintStyle paintStyle, float? alpha = null, GraphicsState graphicsState = null)
-        {
+        {            
             var skColor = GetSKColor(color, alpha);
             return new SKPaint
             {

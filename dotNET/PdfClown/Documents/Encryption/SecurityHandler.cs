@@ -226,7 +226,7 @@ namespace PdfClown.Documents.Encryption
             newKey[newKey.Length - 2] = (byte)(genNumber & 0xff);
             newKey[newKey.Length - 1] = (byte)(genNumber >> 8 & 0xff);
             // step 3
-#if __BLAZOR__
+#if __BC_HASH__
             var md = new MD5Digest();
 #else
             using var md = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
@@ -419,7 +419,7 @@ namespace PdfClown.Documents.Encryption
         private SymmetricAlgorithm CreateCipher(byte[] key, byte[] iv)
         {
             //@SuppressWarnings({ "squid:S4432"}) // PKCS#5 padding is requested by PDF specification
-            var cipher = Aes.Create("AES");
+            var cipher = Aes.Create();
             cipher.Mode = CipherMode.CBC;
             cipher.Padding = PaddingMode.PKCS7;
             cipher.Key = key;
@@ -547,7 +547,7 @@ namespace PdfClown.Documents.Encryption
             {
                 byte[] buf;
                 // PDFBOX-3229 check case where metadata is not encrypted despite /EncryptMetadata missing
-                var metadata = stream.GetBody(false);
+                var metadata = stream.GetInputStreamNoDecode();
                 buf = new byte[10];
                 long isResult = metadata.Read(buf, 0, 10);
 
@@ -565,11 +565,11 @@ namespace PdfClown.Documents.Encryption
             }
 
             DecryptDictionary(stream.Header, objNum, genNum);
-            var encryptedStream = (Stream)stream.GetBody(false);
-            using var output = new MemoryStream();
+            var encryptedStream = (Stream)stream.GetInputStreamNoDecode();
+            var output = new ByteStream();
             if (DecryptData(objNum, genNum, encryptedStream, output))
             {
-                stream.GetBody(false).SetBuffer(output.AsMemory());
+                stream.SetStream(output);
                 stream.encoded = EncodeState.Decoded;
             }
         }
@@ -588,16 +588,16 @@ namespace PdfClown.Documents.Encryption
         public void EncryptStream(PdfStream stream, long objNum, int genNum)
         {
             // empty streams don't need to be encrypted
-            if (stream.GetBody(false) is not IInputStream body
+            if (stream.GetInputStreamNoDecode() is not IInputStream body
                 || body.Length == 0)
             {
                 return;
             }
             var encryptedStream = (Stream)body;
-            using var output = new MemoryStream();
+            var output = new ByteStream();
             if (EncryptData(objNum, genNum, encryptedStream, output))
             {
-                stream.GetBody(false).SetBuffer(output.AsMemory());
+                stream.SetStream(output);
             }
         }
 

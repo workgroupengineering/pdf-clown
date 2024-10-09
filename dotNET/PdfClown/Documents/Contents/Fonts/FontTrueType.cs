@@ -80,7 +80,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     try
                     {
                         // embedded
-                        using var input = ff2Stream.BaseDataObject.ExtractBody(true);
+                        using var input = ff2Stream.BaseDataObject.GetExtractedStream();
                         var ttfParser = GetParser(input, true);
                         ttfFont = ttfParser.Parse(input);
                     }

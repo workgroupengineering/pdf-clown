@@ -5,7 +5,11 @@
     <!--<Nullable>enable</Nullable>-->
     <ImplicitUsings>enable</ImplicitUsings>
 	<!--<WasmEnableThreads>true</WasmEnableThreads>-->
+	<!--<WasmProfilers>browser;</WasmProfilers>-->
 	<WasmBuildNative>true</WasmBuildNative>
+	<InvariantTimezone>true</InvariantTimezone>
+	<InvariantGlobalization>true</InvariantGlobalization>  
+	<!--<RunAOTCompilation>true</RunAOTCompilation>-->
 	<!--<PublishTrimmed>true</PublishTrimmed>
 	<TrimMode>full</TrimMode>-->
   </PropertyGroup> 

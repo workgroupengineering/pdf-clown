@@ -33,7 +33,7 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
-    ///<summary>Image external object [PDF:1.6:4.8.4].</summary>
+    /// <summary>Image external object [PDF:1.6:4.8.4].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class ImageXObject : XObject, IImageObject
     {
@@ -55,13 +55,13 @@ namespace PdfClown.Documents.Contents.XObjects
         public ImageXObject(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        ///<summary>Gets the number of bits per color component.</summary>
+        /// <summary>Gets the number of bits per color component.</summary>
         public int BitsPerComponent => bitsPerComponent ??= BaseDataObject.Header.GetInt(PdfName.BitsPerComponent, 8);
 
-        ///<summary>Gets the color space in which samples are specified.</summary>
+        /// <summary>Gets the color space in which samples are specified.</summary>
         public ColorSpace ColorSpace => colorSpace ??= ColorSpace.Wrap(BaseDataObject.Header[PdfName.ColorSpace]);
 
-        public IByteStream Data => Stream.GetBody(false);
+        public IInputStream Data => Stream.GetInputStreamNoDecode();
 
         public PdfDirectObject Filter => Stream.Filter;
 
@@ -87,7 +87,7 @@ namespace PdfClown.Documents.Contents.XObjects
 
         IDictionary<PdfName, PdfDirectObject> IImageObject.Header => Header;
 
-        ///<summary>Gets the size of the image (in samples).</summary>
+        /// <summary>Gets the size of the image (in samples).</summary>
         public override SKSize Size
         {
             get => size ??= new SKSize(

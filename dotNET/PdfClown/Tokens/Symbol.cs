@@ -23,11 +23,12 @@
   this list of conditions.
 */
 
+using PdfClown.Util.Collections;
+using System.Collections.Generic;
+
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>PDF symbols.</summary>
-    */
+    /// <summary>PDF symbols.</summary>
     public static class Symbol
     {
         public const char CapitalR = 'R';
@@ -42,5 +43,63 @@ namespace PdfClown.Tokens
         public const char Percent = '%';
         public const char Slash = '/';
         public const char Space = ' ';
+        public const char HorizontalTabulation = '\t';
+        public const char FormFeed = '\f';
+        public const char Null = '\u0000';
+
+        private static readonly HashSet<int> whitespaces = new(6) 
+        {
+            Space, 
+            Null, 
+            HorizontalTabulation, 
+            LineFeed, 
+            FormFeed, 
+            CarriageReturn
+        };
+
+        private static readonly HashSet<int> delimeters = new(8)
+        {
+            OpenRoundBracket,
+            CloseRoundBracket,
+            OpenAngleBracket,
+            CloseAngleBracket,
+            OpenSquareBracket,
+            CloseSquareBracket,
+            Slash,
+            Percent
+        };
+
+        private static readonly HashSet<int> delimetersAndWhitespaces = new(14)
+        {
+            OpenRoundBracket,
+            CloseRoundBracket,
+            OpenAngleBracket,
+            CloseAngleBracket,
+            OpenSquareBracket,
+            CloseSquareBracket,
+            Slash,
+            Percent,
+            Space,
+            Null,
+            HorizontalTabulation,
+            LineFeed,
+            FormFeed,
+            CarriageReturn
+        };
+
+
+
+        /// <summary>Evaluate whether a character is a delimiter.</summary>
+        public static bool IsDelimiter(int c) => delimeters.Contains(c);
+
+        /// <summary>Evaluate whether a character is an EOL marker.</summary>
+        public static bool IsEOL(int c) => (c == 10 || c == 13);
+
+        /// <summary>Evaluate whether a character is a white-space.</summary>
+        public static bool IsWhitespace(int c)// => whitespaces.Contains(c);
+            => c == 32 || c == 10 || c == 13 || c == 0 || c == 9 || c == 12;
+
+        public static bool IsDelimiterOrWhitespace(int c) => delimetersAndWhitespaces.Contains(c);
+
     }
 }

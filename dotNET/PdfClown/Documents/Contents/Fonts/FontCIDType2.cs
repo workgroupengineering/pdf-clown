@@ -105,8 +105,8 @@ namespace PdfClown.Documents.Contents.Fonts
                     try
                     {
                         // embedded OTF or TTF
-                        using var input = stream.BaseDataObject.ExtractBody(true);
-                        TTFParser otfParser = GetParser(input, true);
+                        using var input = stream.BaseDataObject.GetExtractedStream();
+                        var otfParser = GetParser(input, true);
                         ttfFont = otfParser.Parse(input);
 
                     }

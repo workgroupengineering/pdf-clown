@@ -551,7 +551,7 @@ namespace PdfClown.UI
         public virtual bool OnScrolled(int delta)
         {
             var temp = VerticalValue;
-            VerticalAnimateScroll(VerticalValue - (delta * 2), 16, 160);
+            VerticalAnimateScroll(VerticalValue - (delta * 1.5), 16, 160);
             return temp != VerticalValue;
         }
 

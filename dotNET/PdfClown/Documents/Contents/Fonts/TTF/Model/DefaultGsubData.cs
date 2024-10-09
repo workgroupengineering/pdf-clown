@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,18 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+using System;
 using System.Collections.Generic;
 
-namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
+namespace PdfClown.Documents.Contents.Fonts.TTF.Model
 {
-    /**
-     * This class splits an array of GlyphIds with a prospective match.
-     * 
-     * @author Palash Ray
-     *
-     */
-    public interface GlyphArraySplitter
+    public class DefaultGsubData : IGsubData
     {
-        List<List<int>> Split(List<int> glyphIds);
+        public static readonly IGsubData NO_DATA_FOUND = new DefaultGsubData();
+        public bool IsFeatureSupported(string featureName)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Language Language
+        {
+            get => throw new NotSupportedException();
+        }
+
+        public string ActiveScriptName
+        {
+            get => throw new NotSupportedException();
+        }
+
+        public ICollection<string> SupportedFeatures
+        {
+            get => throw new NotSupportedException();
+        }
+
+        public IScriptFeature GetFeature(string featureName)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace PdfClown.UI.Blazor.Internal
@@ -43,6 +44,8 @@ namespace PdfClown.UI.Blazor.Internal
 
         public bool IsCancel => cancel || (Parent?.IsCancel ?? false);
 
+        public bool IsIncrease => newValue > currentValue;
+
         internal void Add(int v1, int v2, Animation animation)
         {
             animations ??= new List<Animation>();
@@ -54,8 +57,17 @@ namespace PdfClown.UI.Blazor.Internal
         {
             if (!cache.TryGetValue(component, out var names))
                 cache[component] = names = new Dictionary<string, Animation>();
-            //if (names.TryGetValue(name, out var animation))
-            //    throw new Exception("Dublicat");
+            if (names.TryGetValue(name, out var animation))
+            {
+                if (IsIncrease == animation.IsIncrease
+                    && (IsIncrease && newValue > animation.newValue
+                        || !IsIncrease && newValue < animation.newValue))
+                {
+                    animation.newValue = newValue;
+                    animation.step = CalculateStep(rate, length);
+                }
+                return;
+            }
             this.name = name;
             this.names = names;
             names[name] = this;
@@ -81,30 +93,35 @@ namespace PdfClown.UI.Blazor.Internal
             }
         }
 
+        private double CalculateStep(uint rate, uint legth)
+        {
+            var expectedTicks = legth / rate;
+            var diff = newValue - currentValue;
+            return diff / expectedTicks;
+        }
+
         private void Run(uint rate, uint legth, Action<double, bool> finished)
         {
             this.finished = finished;
-            var expectedTicks = legth / rate;
-            var diff = newValue - currentValue;
-            step = diff / expectedTicks;
-            if (Math.Abs(diff) < 0.001 || step == 0D || IsCancel)
+            step = CalculateStep(rate, legth);
+            if (Math.Abs(step) < 0.001
+                || IsCancel)
             {
                 action(newValue);
                 Finish();
                 return;
             }
-            timer = new Timer(TimerTick, this, 0, rate);
+            timer = new Timer(TimerTick, null, 0, rate);
         }
-
-        public static void TimerTick(object state)
+        
+        public void TimerTick(object sender)
         {
-            var animation = (Animation)state;
-            animation.currentValue += animation.step;
-            animation.action(animation.currentValue);
-            if (Math.Abs(animation.currentValue - animation.newValue) < 0.001
-                || animation.IsCancel)
+            currentValue += step;
+            action(currentValue);
+            if (Math.Abs(currentValue - newValue) < 0.001
+                || IsCancel)
             {
-                animation.Finish();
+                Finish();
             }
         }
 
@@ -114,12 +131,14 @@ namespace PdfClown.UI.Blazor.Internal
             timer = null;
             names?.Remove(name);
             names = null;
-            finished?.Invoke(currentValue, !IsCancel);            
+            finished?.Invoke(currentValue, !IsCancel);
         }
 
         private void Cancel()
         {
             cancel = true;
+            names?.Remove(name);
+            names = null;
         }
 
 

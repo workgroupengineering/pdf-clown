@@ -23,9 +23,12 @@
   this list of conditions.
 */
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace PdfClown.Objects
 {
-    public class EntryWrapper<T> : IEntryWrapper<T> where T : IPdfObjectWrapper
+    public class EntryWrapper<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T> : IEntryWrapper<T> 
+        where T : IPdfObjectWrapper
     {
         public static readonly EntryWrapper<T> Default = new EntryWrapper<T> { };
 

@@ -65,17 +65,17 @@ namespace PdfClown.Tools
             {
                 if (quad == null)
                 {
+                    var result = new Quad();
                     foreach (TextChar textChar in textChars)
                     {
                         if (textChar.Quad.IsEmpty)
                             continue;
-                        if (quad == null)
-                        { quad = textChar.Quad; }
+                        if (result.IsEmpty)
+                        { result = textChar.Quad; }
                         else
-                        { quad = Quad.Union(quad.Value, textChar.Quad); }
+                        { result.Union(textChar.Quad); }
                     }
-                    if (quad == null)
-                        quad = Quad.Empty;
+                    quad = result;
                 }
                 return quad.Value;
             }

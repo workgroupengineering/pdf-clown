@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,23 +20,28 @@ using System;
 namespace PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB
 {
     /// <summary>
-    /// @author Tilman Hausherr
+    /// Lookup Type 3: Alternate Substitution Subtable
+    /// as described in OpenType spec: <a href="https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#31-alternate-substitution-format-1">...</a>
     /// </summary>
-    public class LookupTypeMultipleSubstitutionFormat1 : LookupSubTable
+    public class LookupTypeAlternateSubstitutionFormat1 : LookupSubTable
     {
-        private readonly SequenceTable[] sequenceTables;
+        private readonly AlternateSetTable[] alternateSetTables;
 
-        public LookupTypeMultipleSubstitutionFormat1(ushort substFormat, CoverageTable coverageTable, SequenceTable[] sequenceTables)
-            : base(substFormat, coverageTable)
+        public LookupTypeAlternateSubstitutionFormat1(ushort substFormat, CoverageTable coverageTable, AlternateSetTable[] alternateSetTables)
+                    : base(substFormat, coverageTable)
         {
-            this.sequenceTables = sequenceTables;
+            ;
+            this.alternateSetTables = alternateSetTables;
         }
 
-        public SequenceTable[] SequenceTables => sequenceTables;
+        public AlternateSetTable[] AlternateSetTables
+        {
+            get => alternateSetTables;
+        }
 
         public override ushort DoSubstitution(ushort gid, int coverageIndex)
         {
-            throw new InvalidOperationException("not applicable");
+            throw new Exception("not applicable");
         }
     }
 }

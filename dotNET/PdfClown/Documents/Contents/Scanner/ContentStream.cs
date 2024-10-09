@@ -33,25 +33,17 @@ using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-          <summary>Content stream wrapper.</summary>
-    */
+    /// <summary>Content stream wrapper.</summary>
     internal class ContentStream : Stream, IInputStream
     {
         private readonly PdfDataObject baseDataObject;
 
-        /**
-          Current stream base position (cumulative size of preceding streams).
-        */
+        // Current stream base position (cumulative size of preceding streams).
         private long basePosition;
         private long? length;
-        /**
-          Current stream.
-        */
+        // Current stream.
         private IInputStream stream;
-        /**
-          Current stream index.
-        */
+        // Current stream index.
         private int streamIndex = -1;
         private long mark;
 
@@ -71,25 +63,10 @@ namespace PdfClown.Documents.Contents
 
         public override long Length => length ??= GetLength();
 
-        private long GetLength()
-        {
-            if (baseDataObject is PdfStream pdfStream) // Single stream.
-                return pdfStream.Body.Length;
-            else // Array of streams.
-            {
-                long length = 0;
-                foreach (PdfReference reference in (PdfArray)baseDataObject)
-                {
-                    length += ((PdfStream)reference.DataObject).Body.Length;
-                }
-                return length;
-            }
-        }
-
         public override long Position
         {
             get => basePosition + (stream?.Position ?? 0);
-            set { }
+            set => Seek(value);
         }
 
         public override bool CanRead => true;
@@ -97,6 +74,12 @@ namespace PdfClown.Documents.Contents
         public override bool CanSeek => true;
 
         public override bool CanWrite => false;
+
+        public bool Dirty
+        {
+            get => false;
+            set { }
+        }
 
         public int Read(byte[] data) => Read(data, 0, data.Length);
 
@@ -155,6 +138,21 @@ namespace PdfClown.Documents.Contents
         public Memory<byte> ReadMemory(int length)
         {
             return GetStream().ReadMemory(length);
+        }
+
+        private long GetLength()
+        {
+            if (baseDataObject is PdfStream pdfStream) // Single stream.
+                return pdfStream.GetInputStream().Length;
+            else // Array of streams.
+            {
+                long length = 0;
+                foreach (PdfReference reference in (PdfArray)baseDataObject)
+                {
+                    length += ((PdfStream)reference.DataObject).GetInputStream().Length;
+                }
+                return length;
+            }
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -228,8 +226,8 @@ namespace PdfClown.Documents.Contents
             GetStream().SetBuffer(data);
         }
 
-        ///<summary>Ensures stream availability, moving to the next stream in case the current 
-        ///one hasrun out of data.</summary>
+        /// <summary>Ensures stream availability, moving to the next stream in case the current 
+        /// one hasrun out of data.</summary>
         private bool EnsureStream()
         {
             return !(stream == null
@@ -242,9 +240,7 @@ namespace PdfClown.Documents.Contents
         private bool MoveNextStream()
         {
             // Is the content stream just a single stream?
-            /*
-              NOTE: A content stream may be made up of multiple streams [PDF:1.6:3.6.2].
-            */
+            // NOTE: A content stream may be made up of multiple streams [PDF:1.6:3.6.2].
             if (baseDataObject is PdfStream pdfStream) // Single stream.
             {
                 if (streamIndex < 1)
@@ -256,7 +252,7 @@ namespace PdfClown.Documents.Contents
                       : basePosition + stream.Length);
 
                     stream = streamIndex < 1
-                      ? pdfStream.Body
+                      ? pdfStream.GetInputStream()
                       : null;
                 }
             }
@@ -271,7 +267,7 @@ namespace PdfClown.Documents.Contents
                       : basePosition + stream.Length;
 
                     stream = streamIndex < streams.Count
-                      ? streams.Get<PdfStream>(streamIndex).Body
+                      ? streams.Get<PdfStream>(streamIndex).GetInputStream()
                       : null;
                 }
             }
@@ -297,14 +293,14 @@ namespace PdfClown.Documents.Contents
             // Is the content stream just a single stream?
             if (baseDataObject is PdfStream pdfStream) // Single stream.
             {
-                stream = pdfStream.Body;
+                stream = pdfStream.GetInputStream();
                 basePosition = 0;
             }
             else // Array of streams.
             {
                 PdfArray streams = (PdfArray)baseDataObject;
 
-                stream = ((PdfStream)((PdfReference)streams[streamIndex]).DataObject).Body;
+                stream = streams.Get<PdfStream>(streamIndex).GetInputStream();
                 basePosition -= stream.Length;
             }
 
@@ -327,8 +323,6 @@ namespace PdfClown.Documents.Contents
         }
 
         public byte PeekUByte(int offset) => GetStream().PeekUByte(offset);
-
-        public byte ReadUByte() => GetStream().ReadUByte();
 
         public void ByteAlign() => GetStream().ByteAlign();
 

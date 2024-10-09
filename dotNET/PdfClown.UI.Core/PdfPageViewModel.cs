@@ -276,17 +276,15 @@ namespace PdfClown.UI
                     }
                     catch (Exception ex)
                     {
-                        using (var paint = new SKPaint { Color = SKColors.DarkRed })
+                        using var paint = new SKPaint { Color = SKColors.DarkRed };
+                        canvas.Save();
+                        if (canvas.TotalMatrix.ScaleY < 0)
                         {
-                            canvas.Save();
-                            if (canvas.TotalMatrix.ScaleY < 0)
-                            {
-                                var matrix = SKMatrix.CreateScale(1, -1);
-                                canvas.Concat(ref matrix);
-                            }
-                            canvas.DrawText(ex.Message, 0, 0, paint);
-                            canvas.Restore();
+                            var matrix = SKMatrix.CreateScale(1, -1);
+                            canvas.Concat(ref matrix);
                         }
+                        canvas.DrawText(ex.Message, 0, 0, paint);
+                        canvas.Restore();
                     }
                     picture = recorder.EndRecording();
                 }

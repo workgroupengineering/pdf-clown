@@ -27,6 +27,7 @@ using PdfClown.Util;
 using PdfClown.Util.IO;
 
 using System;
+using System.IO;
 
 namespace PdfClown.Bytes
 {
@@ -43,6 +44,12 @@ namespace PdfClown.Bytes
 
         /// <summary>Gets the pointer position.</summary>
         long Position { get; set; }
+
+        /// <summary>Gets/Sets whether this buffer has changed.</summary>
+        bool Dirty { get; set; }
+
+        void CopyTo(Stream destination);
+        void CopyTo(Stream destination, int bufferSize);
 
         /// <summary>Reads a sequence of bytes.</summary>
         /// <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
@@ -102,19 +109,7 @@ namespace PdfClown.Bytes
         /// <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
         ulong ReadUInt64();
 
-        /// <summary>Reads a signed byte integer.</summary>
-        /// <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-        sbyte ReadSByte();
-
-        /// <summary>Reads a unsigned byte integer.</summary>
-        /// <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-        byte ReadUByte();
-
-        /// <summary>Reads a string.</summary>
-        /// <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
-        /// <param name="length">Number of bytes to read.</param>
-        string ReadString(int length);
-
+        
         Span<byte> ReadSpan(int length);
 
         Memory<byte> ReadMemory(int length);

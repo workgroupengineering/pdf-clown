@@ -29,10 +29,11 @@ using PdfClown.Util.IO;
 using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace PdfClown.Util.Parsers
 {
-    ///<summary>PostScript (non-procedural subset) parser [PS].</summary>
+    /// <summary>PostScript (non-procedural subset) parser [PS].</summary>
     public class PostScriptParser : IDisposable
     {
         public struct Reference
@@ -81,31 +82,12 @@ namespace PdfClown.Util.Parsers
                 return -1;
         }
 
-        ///<summary>Evaluate whether a character is a delimiter.</summary>
-        protected static bool IsDelimiter(int c)
-        {
-            return c == Symbol.OpenRoundBracket
-              || c == Symbol.CloseRoundBracket
-              || c == Symbol.OpenAngleBracket
-              || c == Symbol.CloseAngleBracket
-              || c == Symbol.OpenSquareBracket
-              || c == Symbol.CloseSquareBracket
-              || c == Symbol.Slash
-              || c == Symbol.Percent;
-        }
-
-        ///<summary>Evaluate whether a character is an EOL marker.</summary>
-        protected static bool IsEOL(int c)
-        { return (c == 10 || c == 13); }
-
-        ///<summary>Evaluate whether a character is a white-space.</summary>
-        protected static bool IsWhitespace(int c)
-        { return c == 32 || IsEOL(c) || c == 0 || c == 9 || c == 12; }
+        
 
         private IInputStream stream;
         private TokenTypeEnum tokenType;
-        private StringStream sBuffer = new StringStream(64);
-        private MemoryStream mBuffer = new MemoryStream();
+        private StringStream sBuffer = new StringStream(128);
+        private MemoryStream mBuffer = new MemoryStream(256);
         private bool booleanToken;
         private int integerToken;
         private DateTime? dateToken;
@@ -128,8 +110,16 @@ namespace PdfClown.Util.Parsers
 
         public long Length => stream.Length;
 
-        ///<summary>Moves the pointer to the next token.</summary>
-        ///<param name="offset">Number of tokens to skip before reaching the intended one.</param>
+        public long Position
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => stream.Position;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => stream.Position = value;
+        }
+
+        /// <summary>Moves the pointer to the next token.</summary>
+        /// <param name="offset">Number of tokens to skip before reaching the intended one.</param>
         public bool MoveNext(int offset)
         {
             for (int index = 0; index < offset; index++)
@@ -140,11 +130,11 @@ namespace PdfClown.Util.Parsers
             return true;
         }
 
-        ///<summary>Moves the pointer to the next token.</summary>
-        ///<remarks>To properly parse the current token, the pointer MUST be just before its starting
-        ///(leading whitespaces are ignored). When this method terminates, the pointer IS
-        ///at the last byte of the current token.</remarks>
-        ///<returns>Whether a new token was found.</returns>
+        /// <summary>Moves the pointer to the next token.</summary>
+        /// <remarks>To properly parse the current token, the pointer MUST be just before its starting
+        /// (leading whitespaces are ignored). When this method terminates, the pointer IS
+        /// at the last byte of the current token.</remarks>
+        /// <returns>Whether a new token was found.</returns>
         public virtual bool MoveNext()
         {
             mBuffer.Reset();
@@ -170,7 +160,7 @@ namespace PdfClown.Util.Parsers
                             c = stream.ReadByte();
                             if (c == -1)
                                 break; // NOOP.
-                            if (IsDelimiter(c) || IsWhitespace(c))
+                            if (Symbol.IsDelimiterOrWhitespace(c))
                                 break;
 
                             sBuffer.Append((char)c);
@@ -235,7 +225,7 @@ namespace PdfClown.Util.Parsers
                         // Hexadecimal string (single angle bracket).
                         tokenType = TokenTypeEnum.Hex;
 
-                        c = IsWhitespace(c) ? ReadIgnoreWhitespace() : c;
+                        c = Symbol.IsWhitespace(c) ? ReadIgnoreWhitespace() : c;
                         while (c != Symbol.CloseAngleBracket)  // NOT string end.
                         {
                             var c2 = ReadIgnoreWhitespace();
@@ -367,7 +357,7 @@ namespace PdfClown.Util.Parsers
                         {
                             c = stream.ReadByte();
                             if (c == -1
-                              || IsEOL(c))
+                              || Symbol.IsEOL(c))
                                 break;
 
                             sBuffer.Append((char)c);
@@ -384,7 +374,7 @@ namespace PdfClown.Util.Parsers
                             c = stream.ReadByte();
                             if (c == -1)
                                 break;
-                        } while (!IsDelimiter(c) && !IsWhitespace(c));
+                        } while (!Symbol.IsDelimiterOrWhitespace(c));
                         if (c > -1)
                         { stream.Skip(-1); } // Restores the first byte after the current token.
                     }
@@ -430,8 +420,6 @@ namespace PdfClown.Util.Parsers
             return true;
         }
 
-        public long Position => stream.Position;
-
         ///<summary>Moves the pointer to the given absolute byte position.</summary>
         public void Seek(long offset) => stream.Seek(offset);
 
@@ -450,7 +438,7 @@ namespace PdfClown.Util.Parsers
                 c = stream.ReadByte();
                 if (c == -1)
                     return false;
-                else if (IsEOL(c))
+                else if (Symbol.IsEOL(c))
                 {
                     if (found && c == 10)
                         return true;
@@ -529,7 +517,7 @@ namespace PdfClown.Util.Parsers
                 c = stream.ReadByte();
                 if (c == -1)
                     return false;
-            } while (IsWhitespace(c)); // Keeps going till there's a whitespace character.
+            } while (Symbol.IsWhitespace(c)); // Keeps going till there's a whitespace character.
             stream.Skip(-1); // Moves back to the first non-whitespace character position (ready to read the next token).
             return true;
         }
@@ -543,7 +531,7 @@ namespace PdfClown.Util.Parsers
                 if (c == -1)
                     return -1;
             }
-            while (IsWhitespace(c));// Keep goin' till there's a white-space character...
+            while (Symbol.IsWhitespace(c));// Keep goin' till there's a white-space character...
             return c;
         }
 

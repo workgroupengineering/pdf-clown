@@ -14,7 +14,7 @@ namespace PdfClown.UI.Blazor
 
         private bool showCharBound;
         private PdfViewFitMode fitMode = PdfViewFitMode.PageSize;
-        private bool showMarkup;
+        private bool showMarkup = true;
         private Annotation hoverAnnotation;
         private bool isReadOnly;
         private Markup selectedMarkup;

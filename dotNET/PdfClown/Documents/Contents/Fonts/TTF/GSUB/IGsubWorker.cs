@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,25 +15,23 @@
  * limitations under the License.
  */
 
-using System.Diagnostics;
-
 namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 {
-    /// <summary>
-    /// A default implementation of { @link GsubWorker }
-    /// that actually does not transform the glyphs yet allows to correctly
-    /// {@linkplain GlyphSubstitutionTable#getGsubData(String) load} GSUB table data even from fonts for which a complete
-    /// glyph substitution is not implemented.
-    /// @author Vladimir Plizga
-    /// </summary>
-    class DefaultGsubWorker : IGsubWorker
-    {
 
-        public HashList<ushort> ApplyTransforms(HashList<ushort> originalGlyphIds)
-        {
-            Debug.Write($"warn: {nameof(DefaultGsubWorker)} class does not perform actual GSUB substitutions. Perhaps the selected language is not yet supported by the FontBox library.");
-            // Make the result read-only to prevent accidental modifications of the source list
-            return originalGlyphIds;
-        }
+    /// <summary>
+    /// This class is responsible for replacing GlyphIDs with new ones according to the GSUB tables.Each language should
+    /// have an implementation of this.
+    /// @author Palash Ray
+    /// </summary>
+    public interface IGsubWorker
+    {
+        /// <summary>
+        /// Applies language-specific transforms including GSUB and any other pre or post-processing necessary for displaying
+        /// Glyphs correctly.
+        /// </summary>
+        /// <param name="originalGlyphIds"></param>
+        /// <returns></returns>
+        HashList<ushort> ApplyTransforms(HashList<ushort> originalGlyphIds);
+
     }
 }

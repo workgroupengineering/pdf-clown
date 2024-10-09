@@ -27,14 +27,11 @@ using PdfClown.Documents.Contents.Objects;
 
 namespace PdfClown.Documents.Contents.Scanner
 {
-
-    /**
-      <summary>Object information.</summary>
-      <remarks>
-        <para>This class provides derivative (higher-level) information
-        about the currently scanned object.</para>
-      </remarks>
-    */
+    /// <summary>Object information.</summary>
+    /// <remarks>
+    ///    <para>This class provides derivative (higher-level) information
+    ///    about the currently scanned object.</para>
+    /// </remarks>
     public abstract class GraphicsObjectWrapper<TDataObject> : GraphicsObjectWrapper where TDataObject : ContentObject
     {
         private TDataObject baseDataObject;
@@ -45,9 +42,7 @@ namespace PdfClown.Documents.Contents.Scanner
             baseDataObject.Wrapper = this;
         }
 
-        /**
-          <summary>Gets the underlying data object.</summary>
-        */
+        /// <summary>Gets the underlying data object.</summary>
         public TDataObject BaseDataObject => baseDataObject;
     }
 }

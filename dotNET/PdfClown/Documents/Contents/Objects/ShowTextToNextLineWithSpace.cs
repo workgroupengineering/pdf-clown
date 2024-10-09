@@ -31,17 +31,13 @@ namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class ShowTextToNextLineWithSpace : ShowTextToNextLine
     {
-        /**
-         <summary>Specifies the word spacing and the character spacing
-         (setting the corresponding parameters in the text state).</summary>
-       */
+        /// <summary>Specifies the word spacing and the character spacing
+        /// (setting the corresponding parameters in the text state).</summary>
         public static readonly string OperatorKeyword = "''";
 
-        /**
-          <param name="text">Text encoded using current font's encoding.</param>
-          <param name="wordSpace">Word spacing.</param>
-          <param name="charSpace">Character spacing.</param>
-        */
+        /// <param name="text">Text encoded using current font's encoding.</param>
+        /// <param name="wordSpace">Word spacing.</param>
+        /// <param name="charSpace">Character spacing.</param>
         public ShowTextToNextLineWithSpace(byte[] text, double wordSpace, double charSpace)
             : base(OperatorKeyword, text, wordSpace, charSpace)
         { }
@@ -56,9 +52,7 @@ namespace PdfClown.Documents.Contents.Objects
             set => operands[2] = value;
         }
 
-        /**
-          <summary>Gets/Sets the character spacing.</summary>
-        */
+        /// <summary>Gets/Sets the character spacing.</summary>
         public float CharSpace
         {
             get => operands.GetFloat(1);
@@ -69,9 +63,7 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        /**
-          <summary>Gets/Sets the word spacing.</summary>
-        */
+        /// <summary>Gets/Sets the word spacing.</summary>
         public float WordSpace
         {
             get => operands.GetFloat(0);

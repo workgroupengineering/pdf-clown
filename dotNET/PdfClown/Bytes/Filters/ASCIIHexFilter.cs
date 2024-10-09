@@ -30,6 +30,7 @@
 using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace PdfClown.Bytes.Filters
 {
@@ -41,28 +42,9 @@ namespace PdfClown.Bytes.Filters
         // Reference: 3.3.1  ASCIIHexDecode Filter / Page 69
 
         /// <summary>
-        /// Encodes the specified data.
-        /// </summary>
-        public override Memory<byte> Encode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
-        {
-            if (data == null)
-                throw new ArgumentNullException("data");
-            var dataBuffer = data.AsMemory().Span;
-            var length = dataBuffer.Length;
-            byte[] bytes = new byte[2 * length];
-            for (int i = 0, j = 0; i < length; i++)
-            {
-                byte b = dataBuffer[i];
-                bytes[j++] = (byte)((b >> 4) + ((b >> 4) < 10 ? (byte)'0' : (byte)('A' - 10)));
-                bytes[j++] = (byte)((b & 0xF) + ((b & 0xF) < 10 ? (byte)'0' : (byte)('A' - 10)));
-            }
-            return bytes;
-        }
-
-        /// <summary>
         /// Decodes the specified data.
         /// </summary>
-        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (data == null)
                 throw new ArgumentNullException("data");
@@ -98,6 +80,27 @@ namespace PdfClown.Bytes.Filters
             }
             return bytes;
         }
+
+        /// <summary>
+        /// Encodes the specified data.
+        /// </summary>
+        public override Memory<byte> Encode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        {
+            if (data == null)
+                throw new ArgumentNullException("data");
+            var dataBuffer = data.AsMemory().Span;
+            var length = dataBuffer.Length;
+            byte[] bytes = new byte[2 * length];
+            for (int i = 0, j = 0; i < length; i++)
+            {
+                byte b = dataBuffer[i];
+                bytes[j++] = (byte)((b >> 4) + ((b >> 4) < 10 ? (byte)'0' : (byte)('A' - 10)));
+                bytes[j++] = (byte)((b & 0xF) + ((b & 0xF) < 10 ? (byte)'0' : (byte)('A' - 10)));
+            }
+            return bytes;
+        }
+
+
 
         /// <summary>
         /// Removes all white spaces from the data. The function assumes that the bytes are characters.

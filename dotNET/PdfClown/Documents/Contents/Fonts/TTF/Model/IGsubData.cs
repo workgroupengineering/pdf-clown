@@ -15,35 +15,31 @@
  * limitations under the License.
  */
 
-namespace PdfClown.Documents.Contents.Fonts.TTF.Table.Common
+using System.Collections.Generic;
+
+namespace PdfClown.Documents.Contents.Fonts.TTF.Model
 {
-
     /// <summary>
-    /// This class models the
-    /// <a href = "https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#lookup-table" > Lookup Sub-Table</a> in the
-    /// Open Type layout common tables.
+    /// Model for data from the GSUB tables
+    /// @author Palash Ray
     /// </summary>
-    public abstract class LookupSubTable
+    public interface IGsubData
     {
-        private readonly ushort substFormat;
-        private readonly CoverageTable coverageTable;
+        Language Language { get; }
 
-        public LookupSubTable(ushort substFormat, CoverageTable coverageTable)
-        {
-            this.substFormat = substFormat;
-            this.coverageTable = coverageTable;
-        }
+        /// <summary>
+        /// The name of the script that is active
+        /// A {@link Language}
+        /// can have more than one script that is supported.However, at any given
+        /// point, only one of the many scripts are active.
+        /// </summary>
+        string ActiveScriptName { get; }
 
-        public abstract ushort DoSubstitution(ushort gid, int coverageIndex);
+        ICollection<string> SupportedFeatures { get; }
 
-        public int SubstFormat
-        {
-            get => substFormat;
-        }
+        bool IsFeatureSupported(string featureName);
 
-        public CoverageTable CoverageTable
-        {
-            get => coverageTable;
-        }
+        IScriptFeature GetFeature(string featureName);
+
     }
 }

@@ -90,7 +90,8 @@ namespace PdfClown.Objects
                 // UT Hour offset (HH').
                 dateBuilder.Append(length < 19 ? "00" : value.Slice(17, 2));
                 // UT Minute offset (mm').
-                dateBuilder.Append(':').Append(length < 22 ? "00" : value.Slice(20, 2));
+                dateBuilder.Append(':');
+                dateBuilder.Append(length < 22 ? "00" : value.Slice(20, 2));
             }
             catch
             {

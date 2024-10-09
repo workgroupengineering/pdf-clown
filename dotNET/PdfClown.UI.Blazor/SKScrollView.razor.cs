@@ -5,10 +5,11 @@ using SkiaSharp;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+using System.Diagnostics;
 
 namespace PdfClown.UI.Blazor
 {
-    public partial class SKScrollView : ComponentBase//, IDisposable
+    public partial class SKScrollView : ComponentBase, IDisposable
     {
         protected EventHandler<ScrollEventArgs> verticalScrolledHandler;
         protected EventHandler<ScrollEventArgs> нorizontalScrolledHandler;
@@ -186,23 +187,23 @@ namespace PdfClown.UI.Blazor
             get => verticalValue;
             set
             {
-                if (!VerticalScrollBarVisible && value != 0)
+                value = NormalizeVerticalValue(value);
+                if (verticalValue != value)
                 {
-                    if (verticalValue != 0)
-                    {
-                        OnVerticalValueChanged(verticalValue, 0);
-                    }
-                }
-                else
-                {
-                    var max = VerticalMaximum - Height + DefaultSKStyles.StepSize;
-                    value = value < 0 || max < 0 ? 0 : value > max ? max : value;
-                    if (verticalValue != value)
-                    {
-                        OnVerticalValueChanged(verticalValue, value);
-                    }
+                    OnVerticalValueChanged(verticalValue, value);
                 }
             }
+        }
+
+        double NormalizeVerticalValue(double value)
+        {
+            if (!VerticalScrollBarVisible)
+            {
+                return 0;
+            }
+
+            var max = VerticalMaximum - Height;// + DefaultSKStyles.StepSize;
+            return value < 0 || max < 0 ? 0 : value > max ? max : value;
         }
 
         public double HorizontalValue
@@ -210,13 +211,18 @@ namespace PdfClown.UI.Blazor
             get => horizontalValue;
             set
             {
-                var max = HorizontalMaximum - Width + DefaultSKStyles.StepSize;
-                value = value < 0 || max < 0 ? 0 : value > max ? max : value;
+                value = NormalizeHorizontalValue(value);
                 if (horizontalValue != value)
                 {
                     OnHorizontalValueChanged(horizontalValue, value);
                 }
             }
+        }
+
+        private double NormalizeHorizontalValue(double value)
+        {
+            var max = HorizontalMaximum - Width;// + DefaultSKStyles.StepSize;
+            return value < 0 || max < 0 ? 0 : value > max ? max : value;
         }
 
         public KeyModifiers KeyModifiers { get; set; }
@@ -565,6 +571,7 @@ namespace PdfClown.UI.Blazor
         protected virtual void OnVerticalValueChanged(double oldValue, double newValue)
         {
             verticalValue = newValue;
+            //_ = JS.InvokeVoidAsync("console.log", $"Vertical: {Math.Round(newValue)}");
             if (VerticalScrollAnimation == null)
             {
                 verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
@@ -587,7 +594,7 @@ namespace PdfClown.UI.Blazor
             if (delta == 0)
                 return false;
             var temp = VerticalValue;
-            VerticalAnimateScroll(VerticalValue + delta * 2, 16, 160);
+            VerticalAnimateScroll(delta * 1.5, 16, 160);
             return temp != VerticalValue;
         }
 
@@ -725,22 +732,25 @@ namespace PdfClown.UI.Blazor
             VerticalValue = top;
         }
 
-        public void HorizontalAnimateScroll(double newValue, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = Easing.SinOut)
+        public void HorizontalAnimateScroll(double delta, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = Easing.SinOut)
         {
             if (HorizontalScrollAnimation != null)
             {
-                this.AbortAnimation(ahHorizontalScroll);
+                AbortAnimation(ahHorizontalScroll);
             }
+            var newValue = NormalizeHorizontalValue(VerticalValue + delta);
             HorizontalScrollAnimation = new Animation(v => HorizontalValue = v, HorizontalValue, newValue, asing);
             HorizontalScrollAnimation.Commit(this, ahHorizontalScroll, rate, legth, finished: OnScrollComplete);
         }
 
-        public void VerticalAnimateScroll(double newValue, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = Easing.SinOut)
+        public void VerticalAnimateScroll(double delta, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = Easing.SinOut)
         {
             if (VerticalScrollAnimation != null)
             {
-                this.AbortAnimation(ahVerticalScroll);
+                AbortAnimation(ahVerticalScroll);
             }
+            var newValue = NormalizeVerticalValue(VerticalValue + delta);
+            //_ = JS.InvokeVoidAsync("console.log", $"Scroll Animation: from {Math.Round(VerticalValue)} to {Math.Round(newValue)}");
             VerticalScrollAnimation = new Animation(v => VerticalValue = v, VerticalValue, newValue, asing);
             VerticalScrollAnimation.Commit(this, ahVerticalScroll, rate, legth, finished: OnScrollComplete);
         }
@@ -752,7 +762,7 @@ namespace PdfClown.UI.Blazor
                 return;
             if (ScrollAnimation != null)
             {
-                this.AbortAnimation(ahScroll);
+                AbortAnimation(ahScroll);
             }
             ScrollAnimation = new Animation();
             ScrollAnimation.Add(0, 1, new Animation(v => VerticalValue = v, VerticalValue, top, Easing.SinOut));
@@ -928,7 +938,7 @@ namespace PdfClown.UI.Blazor
         }
 
         private void OnKeyDown(KeyboardEventArgs e)
-        {            
+        {
             OnKeyDown(e.Key, GetKeyModifiers(e));
         }
 

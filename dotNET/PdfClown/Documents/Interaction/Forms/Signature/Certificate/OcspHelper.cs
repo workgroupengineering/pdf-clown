@@ -221,7 +221,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature.Sertificate
             var info = certHolder.CertificateStructure.SubjectPublicKeyInfo;
             try
             {
-#if __BLAZOR__
+#if __BC_HASH__
                 var hash = new Sha1Digest();
 #else
                 using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);

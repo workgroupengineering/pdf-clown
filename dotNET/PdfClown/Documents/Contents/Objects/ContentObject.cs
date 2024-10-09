@@ -28,30 +28,22 @@ using PdfClown.Documents.Contents.Scanner;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Abstract content object [PDF:1.6:4.1].</summary>
-    */
+    /// <summary>Abstract content object [PDF:1.6:4.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class ContentObject
     {
-        /**
-          <summary>Get the graphics wrapper cache.</summary>
-        */
+        /// <summary>Get the graphics wrapper cache.</summary>
         public GraphicsObjectWrapper Wrapper { get; set; }
 
-        /**
-          <summary>Applies this object to the specified graphics context, updating the specified
-          graphics state.</summary>
-          <param name="state">Graphics state.</param>
-        */
+        /// <summary>Applies this object to the specified graphics context, updating the specified
+        /// graphics state.</summary>
+        /// <param name = "state" > Graphics state.</param>
         public virtual void Scan(GraphicsState state)
         {/* Do nothing by default. */}
 
-        /**
-          <summary>Serializes this object to the specified stream.</summary>
-          <param name="stream">Target stream.</param>
-          <param name="context">Document context.</param>
-        */
+        /// <summary>Serializes this object to the specified stream.</summary>
+        /// <param name="stream">Target stream.</param>
+        /// <param name="context">Document context.</param>
         public abstract void WriteTo(IOutputStream stream, PdfDocument context);
 
     }

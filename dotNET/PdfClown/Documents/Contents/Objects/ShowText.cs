@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using Org.BouncyCastle.Crypto;
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Scanner;
@@ -34,20 +35,17 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    ///<summary>Abstract 'show a text string' operation [PDF:1.6:5.3.2].</summary>
+    /// <summary>Abstract 'show a text string' operation [PDF:1.6:5.3.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class ShowText : Operation
     {
         public interface IScanner
         {
-            /**
-              <summary>Notifies the scanner about a text character.</summary>
-              <param name="textChar">Scanned character.</param>
-              <param name="textCharBox">Bounding box of the scanned character.</param>
-            */
+            /// <summary>Notifies the scanner about a text character.</summary>
+            /// <param name="textChar">Scanned character.</param>
+            /// <param name="textCharBox">Bounding box of the scanned character.</param>
             void ScanChar(char textChar, Quad textCharBox);
         }
-        private TextStringWrapper textString;
 
         protected ShowText(string @operator) : base(@operator)
         { }
@@ -57,29 +55,25 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected ShowText(string @operator, PdfArray operands) : base(@operator, operands) { }
 
-        /**
-         <summary>Gets/Sets the encoded text.</summary>
-         <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
-         to the decode method of the corresponding font.</remarks>
-       */
+        /// <summary>Gets/Sets the encoded text.</summary>
+        /// <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
+        /// to the decode method of the corresponding font.</remarks>
         public abstract Memory<byte> Text
         {
             get;
             set;
         }
 
-        /**
-          <summary>Gets/Sets the encoded text elements along with their adjustments.</summary>
-          <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
-          to the decode method of the corresponding font.</remarks>
-          <returns>Each element can be either a byte array or a number:
-            <list type="bullet">
-              <item>if it's a byte array (encoded text), the operator shows text glyphs;</item>
-              <item>if it's a number (glyph adjustment), the operator inversely adjusts the next glyph position
-              by that amount (that is: a positive value reduces the distance between consecutive glyphs).</item>
-            </list>
-          </returns>
-        */
+        /// <summary>Gets/Sets the encoded text elements along with their adjustments.</summary>
+        /// <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
+        /// to the decode method of the corresponding font.</remarks>
+        /// <returns>Each element can be either a byte array or a number:
+        ///  <list type="bullet">
+        ///   <item>if it's a byte array (encoded text), the operator shows text glyphs;</item>
+        ///   <item>if it's a number (glyph adjustment), the operator inversely adjusts the next glyph position
+        ///   by that amount (that is: a positive value reduces the distance between consecutive glyphs).</item>
+        /// </list>
+        /// </returns>
         public abstract IEnumerable<PdfDirectObject> Value
         {
             get;
@@ -88,23 +82,23 @@ namespace PdfClown.Documents.Contents.Objects
 
         public TextStringWrapper TextString
         {
-            get => textString;
-            set => textString = value;
+            get => Wrapper as TextStringWrapper;
+            set => Wrapper = value;
         }
 
         public override void Scan(GraphicsState state)
         {
-            textString ??= new TextStringWrapper(state.Scanner, false);
-            textString.TextChars.Clear();
-            Scan(state, new TextStringWrapper.ShowTextScanner(textString));
+            if (TextString == null)
+            {
+                new TextStringWrapper(this, state.Scanner, false);
+            }
+            Scan(state, new TextStringWrapper.ShowTextScanner(TextString));
         }
 
-        /**
-          <summary>Executes scanning on this operation.</summary>
-          <param name="state">Graphics state context.</param>
-          <param name="textScanner">Scanner to be notified about text contents.
-          In case it's null, the operation is applied to the graphics state context.</param>
-        */
+        /// <summary>Executes scanning on this operation.</summary>
+        /// <param name="state">Graphics state context.</param>
+        /// <param name="textScanner">Scanner to be notified about text contents.
+        /// In case it's null, the operation is applied to the graphics state context.</param>
         public virtual void Scan(GraphicsState state, IScanner textScanner)
         {
             //TODO: I really dislike this solution -- it's a temporary hack until the event-driven
@@ -143,7 +137,7 @@ namespace PdfClown.Documents.Contents.Objects
                 0f, 0f, 1f);
             var uparameters = new SKMatrix(
                 1f, 0f, 0f,
-                0f, 1f, state.Rise,
+                0f, -1f, state.Rise,
                 0f, 0f, 1f);
 
             var clip = state.GetClipPath();
@@ -192,18 +186,14 @@ namespace PdfClown.Documents.Contents.Objects
                             }
 
                             var w = font.GetDisplacement(code);
-                            /*
-                              NOTE: After the glyph is painted, the text matrix is updated
-                              according to the glyph displacement and any applicable spacing parameter.
-                            */
+                            // NOTE: After the glyph is painted, the text matrix is updated
+                            // according to the glyph displacement and any applicable spacing parameter.
                             // calculate the combined displacements
                             float tx = (float)((w.X * fontSize + charSpace + wordSpacing) * horizontalScaling);
                             float ty = 0;
-                            SKRect charBox = SKRect.Create(0, -charAscent, tx, charHeight);
 
-                            //Text Scanner
-                            utm = utm.PreConcat(SKMatrix.CreateScale(1, -1));
-                            var quad = new Quad(charBox);
+                            //Text Scanner                            
+                            var quad = new Quad(0, -charAscent, tx, charHeight - charAscent);
                             quad.Transform(ref utm);
                             textScanner.ScanChar(textChar, quad);
 
@@ -247,7 +237,7 @@ namespace PdfClown.Documents.Contents.Objects
                 0f, 0f, 1f);
             var uparameters = new SKMatrix(
                 1f, 0f, 0f,
-                0f, 1f, state.Rise,
+                0f, -1f, state.Rise,
                 0f, 0f, 1f);
 
             var clip = state.GetClipPath();
@@ -302,19 +292,15 @@ namespace PdfClown.Documents.Contents.Objects
                             }
 
                             var w = font.GetDisplacement(code);
-                            /*
-                              NOTE: After the glyph is painted, the text matrix is updated
-                              according to the glyph displacement and any applicable spacing parameter.
-                            */
+                            // NOTE: After the glyph is painted, the text matrix is updated
+                            // according to the glyph displacement and any applicable spacing parameter.
                             // calculate the combined displacements
                             float tx = 0;
                             float ty = (float)(w.Y * fontSize + charSpace + wordSpacing);
                             var fw = font.GetWidth(code) / 1000;
-                            SKRect charBox = SKRect.Create(0, ty, fw, charHeight);
 
                             //Text Scanner
-                            utm = utm.PreConcat(SKMatrix.CreateScale(1, -1));
-                            var quad = new Quad(charBox);
+                            var quad = new Quad(0, ty, fw, ty + charHeight);
                             quad.Transform(ref utm);
                             textScanner.ScanChar(textChar, quad);
 

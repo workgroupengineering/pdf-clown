@@ -23,17 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Scanner;
-using PdfClown.Objects;
 using PdfClown.Util.Math.Geom;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Text character.</summary>
-      <remarks>It describes a text element extracted from content streams.</remarks>
-    */
+    /// <summary>Text character.</summary>
+    /// <remarks>It describes a text element extracted from content streams.</remarks>
     public sealed class TextChar
     {
         private readonly Quad quad;

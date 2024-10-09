@@ -14,10 +14,10 @@ namespace PdfClown.UI.ToolTip
         private Dictionary<SKPaint, SKFont> fontCache = new Dictionary<SKPaint, SKFont>();
         protected List<LineOfText> ContentLines;
         protected SKRect ContentBound;
-        protected readonly SKPaint paintToolTipText = new SKPaint { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 14, IsAntialias = true };
-        protected readonly SKPaint paintToolTipHeadText = new SKPaint { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 12, IsAntialias = true, FakeBoldText = true };
-        protected readonly SKPaint paintToolTipBackground = new SKPaint() { Color = SKColors.LightGoldenrodYellow, Style = SKPaintStyle.Fill, IsAntialias = true };
-        protected readonly SKPaint paintToolTipBorder = new SKPaint() { Color = SKColors.DarkGray, Style = SKPaintStyle.Stroke, IsAntialias = true };
+        protected readonly SKPaint paintToolTipText = new() { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 14, IsAntialias = true };
+        protected readonly SKPaint paintToolTipHeadText = new() { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 12, IsAntialias = true, FakeBoldText = true };
+        protected readonly SKPaint paintToolTipBackground = new() { Color = SKColors.LightGoldenrodYellow, Style = SKPaintStyle.Fill, IsAntialias = true };
+        protected readonly SKPaint paintToolTipBorder = new() { Color = SKColors.DarkGray, Style = SKPaintStyle.Stroke, IsAntialias = true };
 
         protected ToolTipRenderer()
         {

@@ -23,42 +23,28 @@ namespace PdfClown.Documents.Contents.Fonts
 {
     public abstract class BaseFont
     {
-        /**
-         * The PostScript name of the font.
-         */
+        /// <summary>The PostScript name of the font.</summary>
         public abstract string Name { get; }
 
-        /**
-         * Returns the font's bounding box in PostScript units.
-         */
+        /// <summary>Returns the font's bounding box in PostScript units.</summary>
         public abstract SKRect FontBBox { get; }
 
-        /**
-         * Returns the FontMatrix in PostScript units.
-         */
+        /// <summary>Returns the FontMatrix in PostScript units.</summary>
         public abstract List<float> FontMatrix { get; }
 
-        /**
-         * Returns the path for the character with the given name.
-         *
-         * @return glyph path
-         * @throws IOException if the path could not be read
-         */
+        /// <summary>Returns the path for the character with the given name.</summary>
+        /// <param name="name"></param>
+        /// <returns>glyph path</returns>
         public abstract SKPath GetPath(string name);
 
-        /**
-         * Returns the advance width for the character with the given name.
-         *
-         * @return glyph advance width
-         * @throws IOException if the path could not be read
-         */
+        /// <summary>Returns the advance width for the character with the given name.</summary>
+        /// <param name="name"></param>
+        /// <returns>glyph advance width</returns>
         public abstract float GetWidth(string name);
 
-        /**
-         * Returns true if the font contains the given glyph.
-         * 
-         * @param name PostScript glyph name
-         */
+        /// <summary>Returns true if the font contains the given glyph.</summary>
+        /// <param name="name">PostScript glyph name</param>
+        /// <returns></returns>
         public abstract bool HasGlyph(string name);
     }
 }

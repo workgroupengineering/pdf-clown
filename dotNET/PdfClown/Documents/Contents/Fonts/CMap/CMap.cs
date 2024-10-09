@@ -84,7 +84,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         ///<summary>Gets the character map extracted from the given data.</summary>
         ///<param name="stream">Character map data.</param>
-        public static CMap Get(PdfStream stream) => Get(stream.Body);
+        public static CMap Get(PdfStream stream) => Get(stream.GetInputStream());
 
         ///<summary>Gets the character map corresponding to the given name.</summary>
         ///<param name="name">Predefined character map name.</param>

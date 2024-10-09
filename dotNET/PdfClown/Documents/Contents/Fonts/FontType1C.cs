@@ -59,7 +59,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     try
                     {
-                        using var bytes = ff3Stream.BaseDataObject.ExtractBody(true);
+                        using var bytes = ff3Stream.BaseDataObject.GetExtractedStream();
                         if (bytes.Length == 0)
                         {
                             Debug.WriteLine($"error: Invalid data for embedded Type1C font {Name}");

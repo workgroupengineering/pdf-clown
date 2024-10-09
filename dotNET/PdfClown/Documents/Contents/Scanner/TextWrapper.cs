@@ -70,17 +70,17 @@ namespace PdfClown.Documents.Contents.Scanner
             {
                 if (quad == null)
                 {
+                    var result = new Quad();
                     foreach (TextStringWrapper textString in textStrings)
                     {
                         if (textString.Quad.IsEmpty)
                             continue;
-                        if (quad == null)
-                        { quad = textString.Quad; }
+                        if (result.IsEmpty)
+                        { result = textString.Quad; }
                         else
-                        { quad = Quad.Union(quad.Value, textString.Quad); }
+                        { result.Union(textString.Quad); }
                     }
-                    if (quad == null)
-                        quad = Quad.Empty;
+                    quad = result;
                 }
                 return quad.Value;
             }

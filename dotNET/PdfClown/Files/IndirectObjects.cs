@@ -63,21 +63,24 @@ namespace PdfClown.Files
         ///   matching internal indirect object.</para>
         /// </remarks>
         private Dictionary<int, PdfIndirectObject> importedObjects = new();
+
         /// <summary>Collection of newly-registered indirect objects.</summary>
-        private SortedDictionary<int, PdfIndirectObject> modifiedObjects = new();
+        private Dictionary<int, PdfIndirectObject> modifiedObjects = new();
+
         /// <summary>Collection of instantiated original indirect objects.</summary>
         /// <remarks>This collection is used as a cache to avoid unconsistent parsing duplications.</remarks>
-        private SortedDictionary<int, PdfIndirectObject> wokenObjects = new();
+        private Dictionary<int, PdfIndirectObject> wokenObjects = new();
 
         /// <summary>Object counter.</summary>
         private int lastObjectNumber;
+
         /// <summary>Offsets of the original indirect objects inside the associated file
         /// (to say: implicit collection of the original indirect objects).</summary>
         /// <remarks>This information is vital to randomly retrieve the indirect-object
         /// persistent representation inside the associated file.</remarks>
-        private SortedDictionary<int, XRefEntry> xrefEntries;
+        private IDictionary<int, XRefEntry> xrefEntries;
 
-        internal IndirectObjects(PdfFile file, SortedDictionary<int, XRefEntry> xrefEntries)
+        internal IndirectObjects(PdfFile file, IDictionary<int, XRefEntry> xrefEntries)
         {
             this.file = file;
             this.xrefEntries = xrefEntries;
@@ -95,7 +98,7 @@ namespace PdfClown.Files
             else
             {
                 // Adjust the object counter!
-                lastObjectNumber = xrefEntries.Keys.Last();
+                lastObjectNumber = xrefEntries.Keys.Max();
             }
         }
 
@@ -114,29 +117,25 @@ namespace PdfClown.Files
             return indirectObject;
         }
 
-        /**
-          <summary>Registers an <i>external</i> indirect object.</summary>
-          <remarks>
-            <para>External indirect objects come from alien PDF files; therefore, this is a powerful way
-            to import contents from a file into another one.</para>
-            <para>To register an internal data object, use <see cref="Add(PdfDataObject)"/>.</para>
-          </remarks>
-          <param nme="obj">External indirect object to import.</param>
-          <returns>Indirect object imported from the external indirect object.</returns>
-        */
+        /// <summary>Registers an<i>external</i> indirect object.</summary>
+        /// <remarks>
+        ///   <para>External indirect objects come from alien PDF files; therefore, this is a powerful way
+        ///   to import contents from a file into another one.</para>
+        ///   <para>To register an internal data object, use<see cref = "Add(PdfDataObject)" />.</ para >
+        /// </ remarks >
+        /// < param nme="obj">External indirect object to import.</param>
+        /// <returns>Indirect object imported from the external indirect object.</returns>
         public PdfIndirectObject AddExternal(PdfIndirectObject obj) => AddExternal(obj, file.Cloner);
 
-        /**
-          <summary>Registers an <i>external</i> indirect object.</summary>
-          <remarks>
-            <para>External indirect objects come from alien PDF files; therefore, this is a powerful way
-            to import contents from a file into another one.</para>
-            <para>To register an internal data object, use <see cref="Add(PdfDataObject)"/>.</para>
-          </remarks>
-          <param nme="obj">External indirect object to import.</param>
-          <param nme="cloner">Import rules.</param>
-          <returns>Indirect object imported from the external indirect object.</returns>
-        */
+        /// <summary>Registers an<i>external</i> indirect object.</summary>
+        /// <remarks>
+        ///   <para>External indirect objects come from alien PDF files; therefore, this is a powerful way
+        ///   to import contents from a file into another one.</para>
+        ///   <para>To register an internal data object, use<see cref = "Add(PdfDataObject)" />.</ para >
+        /// </ remarks >
+        /// < param nme="obj">External indirect object to import.</param>
+        /// <param nme = "cloner" > Import rules.</param>
+        /// <returns>Indirect object imported from the external indirect object.</returns>
         public PdfIndirectObject AddExternal(PdfIndirectObject obj, Cloner cloner)
         {
             if (cloner.Context != file)
@@ -217,13 +216,11 @@ namespace PdfClown.Files
                         XRefEntry xrefEntry;
                         if (!xrefEntries.TryGetValue(index, out xrefEntry))
                         {
-                            /*
-                              NOTE: The cross-reference table (comprising the original cross-reference section and
-                              all update sections) MUST contain one entry for each object number from 0 to the
-                              maximum object number used in the file, even if one or more of the object numbers in
-                              this range do not actually occur in the file. However, for resilience purposes
-                              missing entries are treated as free ones.
-                            */
+                            // NOTE: The cross-reference table (comprising the original cross-reference section and
+                            // all update sections) MUST contain one entry for each object number from 0 to the
+                            // maximum object number used in the file, even if one or more of the object numbers in
+                            // this range do not actually occur in the file. However, for resilience purposes
+                            // missing entries are treated as free ones.
                             xrefEntries[index] = xrefEntry = new XRefEntry(
                               index,
                               XRefEntry.GenerationUnreusable,
@@ -232,10 +229,8 @@ namespace PdfClown.Files
                         }
 
                         // Awake the object!
-                        /*
-                          NOTE: This operation allows to keep a consistent state across the whole session,
-                          avoiding multiple incoherent instantiations of the same original indirect object.
-                        */
+                        // NOTE: This operation allows to keep a consistent state across the whole session,
+                        // avoiding multiple incoherent instantiations of the same original indirect object.
                         wokenObjects[index] = obj = new PdfIndirectObject(file, null, xrefEntry);
                     }
                 }
@@ -286,7 +281,7 @@ namespace PdfClown.Files
             { yield return this[index]; }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         internal PdfIndirectObject AddVirtual(PdfIndirectObject obj)
         {
@@ -299,7 +294,7 @@ namespace PdfClown.Files
             return obj;
         }
 
-        internal SortedDictionary<int, PdfIndirectObject> ModifiedObjects => modifiedObjects;
+        internal IDictionary<int, PdfIndirectObject> ModifiedObjects => modifiedObjects;
 
         internal PdfIndirectObject Update(PdfIndirectObject obj)
         {

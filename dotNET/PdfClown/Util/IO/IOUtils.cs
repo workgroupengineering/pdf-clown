@@ -44,7 +44,6 @@ namespace PdfClown.Util.IO
 
         public static void Reset(this MemoryStream stream)
         {
-            stream.Seek(0, SeekOrigin.Begin);
             stream.SetLength(0);
         }
 

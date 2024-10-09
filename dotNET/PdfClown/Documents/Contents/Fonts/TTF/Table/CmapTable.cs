@@ -14,21 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    using PdfClown.Bytes;
-    using System.IO;
-
-    /**
-     * The "cmap" table of a true type font.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// The "cmap" table of a true type font.
+    /// @author Ben Litchfield
+    /// </summary>
     public class CmapTable : TTFTable
     {
-        /**
-         * A tag used to identify this table.
-         */
+        /// <summary>A tag used to identify this table.</summary>
         public const string TAG = "cmap";
 
         // platform
@@ -60,9 +56,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public CmapTable()
         { }
 
-        /**
-         * @return Returns the cmaps.
-         */
+        /// <summary>The cmaps.</summary>
         public CmapSubtable[] Cmaps
         {
             get => cmaps;

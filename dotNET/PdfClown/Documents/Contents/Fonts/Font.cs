@@ -223,7 +223,7 @@ namespace PdfClown.Documents.Contents.Fonts
         ///<value> The fonts bounding box.</value>
         public Rectangle FontBBox
         {
-            get => Wrap<Rectangle>(BaseDataObject.Get<PdfArray>(PdfName.FontBBox));
+            get => Rectangle.Wrap(BaseDataObject.Get<PdfArray>(PdfName.FontBBox));
             set => BaseDataObject[PdfName.FontBBox] = value?.BaseObject;
         }
 
@@ -260,11 +260,11 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public virtual FontDescriptor FontDescriptor
         {
-            get => fontDescriptor ??= Wrap<FontDescriptor>(BaseDataObject.Get<PdfDictionary>(PdfName.FontDescriptor));
+            get => fontDescriptor ??= FontDescriptor.Wrap(BaseDataObject.Get<PdfDictionary>(PdfName.FontDescriptor));
             set => BaseDataObject[PdfName.FontDescriptor] = (fontDescriptor = value)?.BaseObject;
         }
 
-        ///<summary>Gets the font descriptor flags.</summary>
+        /// <summary>Gets the font descriptor flags.</summary>
         public virtual FlagsEnum Flags
         {
             get
@@ -910,7 +910,7 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             var name = fontDescription.BaseDataObject.Resolve(PdfName.FontName)?.ToString();
 
-            var body = stream.GetBody(true).ToArray();
+            var body = stream.GetInputStream().GetArrayBuffer();
             //System.IO.File.WriteAllBytes($"export{name}.ttf", body);
 
             var data = new SKMemoryStream(body);

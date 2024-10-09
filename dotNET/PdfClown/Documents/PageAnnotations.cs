@@ -101,18 +101,26 @@ namespace PdfClown.Documents
 
         private void AddIndex(Annotation annotation)
         {
-            //Recovery
-            if (annotation.Page == null)
+            if (annotation is Markup)
             {
-                LinkPage(annotation);
+                //Recovery
+                if (annotation.Page == null)
+                {
+                    LinkPageNoUpdate(annotation);
+                }
+
+                if (string.IsNullOrEmpty(annotation.Name)
+                    || (nameIndex.TryGetValue(annotation.Name, out var existing)
+                    && existing != annotation))
+                {
+                    annotation.GenerateExistingName();
+                }
+                nameIndex[annotation.Name] = annotation;
             }
-            if (string.IsNullOrEmpty(annotation.Name)
-                || (nameIndex.TryGetValue(annotation.Name, out var existing)
-                && existing != annotation))
+            else if(annotation.Page == null)
             {
-                annotation.GenerateExistingName();
+                annotation.page = Page;
             }
-            nameIndex[annotation.Name] = annotation;
         }
 
         public override void Add(Annotation item)

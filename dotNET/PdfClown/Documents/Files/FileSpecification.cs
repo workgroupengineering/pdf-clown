@@ -23,39 +23,30 @@
   this list of conditions.
 */
 
-using bytes = PdfClown.Bytes;
-using PdfClown.Files;
-using PdfClown.Objects;
-
-using System;
-using io = System.IO;
 using PdfClown.Bytes;
+using PdfClown.Objects;
+using System;
 using System.IO;
+using io = System.IO;
 
 namespace PdfClown.Documents.Files
 {
-    /**
-      <summary>Reference to the contents of another file (file specification) [PDF:1.6:3.10.2].</summary>
-    */
+    /// <summary>Reference to the contents of another file (file specification) [PDF:1.6:3.10.2].</summary>
     [PDF(VersionEnum.PDF11)]
     public abstract class FileSpecification : PdfObjectWrapper<PdfDirectObject>, IPdfNamedObjectWrapper
     {
-        /**
-          <summary>Creates a new reference to an external file.</summary>
-          <param name="context">Document context.</param>
-          <param name="path">File path.</param>
-        */
+        /// <summary>Creates a new reference to an external file.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="path">File path.</param>
         public static SimpleFileSpecification Get(PdfDocument context, string path)
         {
             return (SimpleFileSpecification)Get(context, path, false);
         }
 
-        /**
-          <summary>Creates a new reference to a file.</summary>
-          <param name="context">Document context.</param>
-          <param name="path">File path.</param>
-          <param name="full">Whether the reference is able to support extended dependencies.</param>
-        */
+        /// <summary>Creates a new reference to a file.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="path">File path.</param>
+        /// <param name="full">Whether the reference is able to support extended dependencies.</param>
         public static FileSpecification Get(PdfDocument context, string path, bool full)
         {
             return full
@@ -63,37 +54,31 @@ namespace PdfClown.Documents.Files
               : (FileSpecification)new SimpleFileSpecification(context, path);
         }
 
-        /**
-          <summary>Creates a new reference to an embedded file.</summary>
-          <param name="embeddedFile">Embedded file corresponding to the reference.</param>
-          <param name="filename">Name corresponding to the reference.</param>
-        */
+        /// <summary>Creates a new reference to an embedded file.</summary>
+        /// <param name="embeddedFile">Embedded file corresponding to the reference.</param>
+        /// <param name="filename">Name corresponding to the reference.</param>
         public static FullFileSpecification Get(EmbeddedFile embeddedFile, string filename)
         {
             return new FullFileSpecification(embeddedFile, filename);
         }
 
-        /**
-          <summary>Creates a new reference to a remote file.</summary>
-          <param name="context">Document context.</param>
-          <param name="url">Remote file location.</param>
-        */
+        /// <summary>Creates a new reference to a remote file.</summary>
+        /// <param name="context">Document context.</param>
+        /// <param name="url">Remote file location.</param>
         public static FullFileSpecification Get(PdfDocument context, Uri url)
         {
             return new FullFileSpecification(context, url);
         }
 
-        /**
-          <summary>Instantiates an existing file reference.</summary>
-          <param name="baseObject">Base object.</param>
-        */
+        /// <summary>Instantiates an existing file reference.</summary>
+        /// <param name="baseObject">Base object.</param>
         public static FileSpecification Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
             if (baseObject.Wrapper is FileSpecification specification)
                 return specification;
-            
+
             PdfDataObject baseDataObject = baseObject.Resolve();
             if (baseDataObject is PdfString)
                 return new SimpleFileSpecification(baseObject);
@@ -109,9 +94,7 @@ namespace PdfClown.Documents.Files
         protected FileSpecification(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the file absolute path.</summary>
-        */
+        /// <summary>Gets the file absolute path.</summary>
         public string GetAbsolutePath()
         {
             string path = Path;

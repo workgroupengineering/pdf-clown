@@ -39,11 +39,9 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Text markup annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It displays highlights, underlines, strikeouts, or jagged ("squiggly") underlines in
-      the text of a document.</remarks>
-    */
+    /// <summary>Text markup annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It displays highlights, underlines, strikeouts, or jagged ("squiggly") underlines in
+    /// the text of a document.</remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class TextMarkup : Markup
     {
@@ -60,17 +58,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             };
         }
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(TextMarkupType value)
         {
             return MarkupTypeEnumCodes[value];
         }
 
-        /**
-          <summary>Gets the markup type corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the markup type corresponding to the given value.</summary>
         private static TextMarkupType ToMarkupTypeEnum(string value)
         {
             if (value == null)
@@ -93,28 +87,24 @@ namespace PdfClown.Documents.Interaction.Annotations
             return boxHeight * .25f;
         }
 
-        /**
-          <summary>Creates a new text markup on the specified page, making it printable by default.
-          </summary>
-          <param name="page">Page to annotate.</param>
-          <param name="markupBox">Quadrilateral encompassing a word or group of contiguous words in the
-          text underlying the annotation.</param>
-          <param name="text">Annotation text.</param>
-          <param name="markupType">Markup type.</param>
-        */
+        /// <summary>Creates a new text markup on the specified page, making it printable by default.
+        /// </summary>
+        /// <param name="page">Page to annotate.</param>
+        /// <param name="markupBox">Quadrilateral encompassing a word or group of contiguous words in the
+        /// text underlying the annotation.</param>
+        /// <param name="text">Annotation text.</param>
+        /// <param name="markupType">Markup type.</param>
         public TextMarkup(PdfPage page, Quad markupBox, string text, TextMarkupType markupType)
             : this(page, new List<Quad>() { markupBox }, text, markupType)
         { }
 
-        /**
-          <summary>Creates a new text markup on the specified page, making it printable by default.
-          </summary>
-          <param name="page">Page to annotate.</param>
-          <param name="markupBoxes">Quadrilaterals encompassing a word or group of contiguous words in
-          the text underlying the annotation.</param>
-          <param name="text">Annotation text.</param>
-          <param name="markupType">Markup type.</param>
-        */
+        /// <summary>Creates a new text markup on the specified page, making it printable by default.
+        /// </summary>
+        /// <param name="page">Page to annotate.</param>
+        /// <param name="markupBoxes">Quadrilaterals encompassing a word or group of contiguous words in
+        /// the text underlying the annotation.</param>
+        /// <param name="text">Annotation text.</param>
+        /// <param name="markupType">Markup type.</param>
         public TextMarkup(PdfPage page, IList<Quad> markupBoxes, string text, TextMarkupType markupType)
             : base(page, ToCode(markupType), markupBoxes[0].GetBounds(), text)
         {
@@ -159,8 +149,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        ///<summary>Gets/Sets the quadrilaterals encompassing a word or group of contiguous words in the
-        ///text underlying the annotation.</summary>
+        /// <summary>Gets/Sets the quadrilaterals encompassing a word or group of contiguous words in the
+        /// text underlying the annotation.</summary>
         public IList<Quad> PageMarkupBoxes
         {
             get => pageMarkupBoxes ??= GetMarkupBoxes();
@@ -169,9 +159,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var quadPoints = new PdfArray();
                 foreach (Quad markupBox in value)
                 {
-                    /*
-                      NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
-                    */
+                    // NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
                     SKPoint[] points = markupBox.GetPoints();
 
                     quadPoints.Add(points[0].X); // x1.
@@ -200,9 +188,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the markup type.</summary>
-        */
+        /// <summary>Gets/Sets the markup type.</summary>
         public TextMarkupType MarkupType
         {
             get => ToMarkupTypeEnum(BaseDataObject.GetString(PdfName.Subtype));
@@ -414,9 +400,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
                 for (int index = 0; index < length; index += 8)
                 {
-                    /*
-                      NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
-                    */
+                    /// NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
                     var quad = new Quad(
                         new SKPoint(quadPoints.GetFloat(index), quadPoints.GetFloat(index + 1)),
                         new SKPoint(quadPoints.GetFloat(index + 2), quadPoints.GetFloat(index + 3)),
@@ -429,29 +413,19 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
     }
 
-    /**
-      <summary>Markup type [PDF:1.6:8.4.5].</summary>
-    */
+    /// <summary>Markup type [PDF:1.6:8.4.5].</summary>
     public enum TextMarkupType
     {
-        /**
-          <summary>Highlight.</summary>
-        */
+        /// <summary>Highlight.</summary>
         [PDF(VersionEnum.PDF13)]
         Highlight,
-        /**
-          <summary>Squiggly.</summary>
-        */
+        /// <summary>Squiggly.</summary>
         [PDF(VersionEnum.PDF14)]
         Squiggly,
-        /**
-          <summary>StrikeOut.</summary>
-        */
+        /// <summary>StrikeOut.</summary>
         [PDF(VersionEnum.PDF13)]
         StrikeOut,
-        /**
-          <summary>Underline.</summary>
-        */
+        /// <summary>Underline.</summary>
         [PDF(VersionEnum.PDF13)]
         Underline
     };

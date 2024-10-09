@@ -87,11 +87,9 @@ namespace PdfClown.Tokens
                     ValidateLength(streamHeader, stream, ref position, ref length);
                     if (length < 0)
                         length = 0;
-                    // Copy the stream data to the instance!
-                    byte[] data = new byte[length];
-                    stream.Read(data);
-                    var bytes = new ByteStream(data);
-                    position = stream.Position;
+                    // Copy the stream data to the instance!                    
+                    var bytes = new StreamSegment(stream, length);
+                    stream.Skip(length);
                     MoveNext(); // Postcondition (last token should be 'endstream' keyword).
                     var streamType = streamHeader.Get<PdfName>(PdfName.Type);
                     if (PdfName.ObjStm.Equals(streamType)) // Object stream [PDF:1.6:3.4.6].
@@ -184,9 +182,12 @@ namespace PdfClown.Tokens
 
             // Get the indirect data object!
             var dataObject = ParsePdfObject();
-
-            securityHandler?.Decrypt(dataObject, xrefEntry.Number, xrefEntry.Generation);
-
+            if (securityHandler != null)
+            {
+                Stream.Mark();
+                securityHandler.Decrypt(dataObject, xrefEntry.Number, xrefEntry.Generation);
+                Stream.ResetMark();
+            }
             return dataObject;
         }
 

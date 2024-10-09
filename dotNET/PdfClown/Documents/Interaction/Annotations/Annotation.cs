@@ -72,7 +72,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             { PdfName.Widget, (baseObject) => new Widget(baseObject) },
             { PdfName.Screen, (baseObject) => new Screen(baseObject) },
         };
-        private PdfPage page;
+        internal PdfPage page;
         private string name;
         private SKColor? color;
         private SKRect? box;
@@ -602,7 +602,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
             var appearance = Appearance.Normal[null];
-            if (appearance != null && appearance.BaseDataObject?.Body?.Length > 0)
+            if (appearance != null && appearance.BaseDataObject?.GetInputStream()?.Length > 0)
             {
                 return DrawAppearance(canvas, appearance);
             }
@@ -633,11 +633,9 @@ namespace PdfClown.Documents.Interaction.Annotations
 
             if (Alpha < 1)
             {
-                using (var paint = new SKPaint())
-                {
-                    paint.Color = paint.Color.WithAlpha((byte)(Alpha * 255));
-                    canvas.DrawPicture(picture, ref matrix, paint);
-                }
+                using var paint = new SKPaint();
+                paint.Color = paint.Color.WithAlpha((byte)(Alpha * 255));
+                canvas.DrawPicture(picture, ref matrix, paint);
             }
             else
             {
@@ -661,7 +659,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 normalAppearance.Box = boxSize;
                 normalAppearance.Matrix = SKMatrix.Identity;
-                normalAppearance.BaseDataObject.Body.SetLength(0);
+                normalAppearance.BaseDataObject.GetOutputStream().SetLength(0);
                 normalAppearance.ClearContents();
             }
             else

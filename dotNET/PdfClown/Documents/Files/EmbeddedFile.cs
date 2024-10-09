@@ -23,7 +23,7 @@
   this list of conditions.
 */
 
-using bytes = PdfClown.Bytes;
+using PdfClown.Bytes;
 using PdfClown.Objects;
 
 using System;
@@ -40,26 +40,24 @@ namespace PdfClown.Documents.Files
         /// <param name="path">Path of the file to embed.</param>
         public static EmbeddedFile Get(PdfDocument context, string path)
         {
-            using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                return new EmbeddedFile(context, new Bytes.StreamContainer(fileStream));
-            }
+            using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            return new EmbeddedFile(context, new StreamContainer(fileStream));
         }
 
         /// <summary>Creates a new embedded file inside the document.</summary>
         /// <param name="context">Document context.</param>
         /// <param name="stream">File stream to embed.</param>
-        public static EmbeddedFile Get(PdfDocument context, bytes::IInputStream stream)
+        public static EmbeddedFile Get(PdfDocument context, IInputStream stream)
         {
             return new EmbeddedFile(context, stream);
         }
 
 
-        private EmbeddedFile(PdfDocument context, bytes::IInputStream stream) : base(
+        private EmbeddedFile(PdfDocument context, IInputStream stream) : base(
             context,
             new PdfStream(
               new PdfDictionary(1) { { PdfName.Type, PdfName.EmbeddedFile } },
-              new bytes::ByteStream(stream)))
+              new ByteStream(stream)))
         { }
 
         public EmbeddedFile(PdfDirectObject baseObject) : base(baseObject)
@@ -73,7 +71,7 @@ namespace PdfClown.Documents.Files
         }
 
         /// <summary>Gets the data contained within this file.</summary>
-        public bytes::IByteStream Data => BaseDataObject.Body;
+        public IInputStream Data => BaseDataObject.GetInputStream();
 
         /// <summary>Gets/Sets the MIME media type name of this file [RFC 2046].</summary>
         public string MimeType

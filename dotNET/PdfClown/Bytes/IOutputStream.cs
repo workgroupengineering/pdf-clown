@@ -28,7 +28,7 @@ using System;
 namespace PdfClown.Bytes
 {
     /// <summary>Output stream interface.</summary>
-    public interface IOutputStream : IStream
+    public interface IOutputStream : IInputStream
     {
         /// <summary>Clears the buffer of any data.</summary>
         void Clear();
@@ -50,6 +50,10 @@ namespace PdfClown.Bytes
         /// <param name="offset">Location in the byte array at which writing begins.</param>
         /// <param name="length">Number of bytes to write.</param>
         void Write(byte[] data, int offset, int length);
+
+        /// <summary>Sets the used buffer size.</summary>
+        /// <param name="value">New length.</param>
+        void SetLength(long value);
 
     }
 }

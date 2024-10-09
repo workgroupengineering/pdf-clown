@@ -25,6 +25,7 @@
 
 using PdfClown.Documents.Contents.Objects;
 using SkiaSharp;
+using static PdfClown.Documents.Contents.Scanner.TextStringWrapper;
 
 namespace PdfClown.Documents.Contents.Scanner
 {
@@ -42,8 +43,8 @@ namespace PdfClown.Documents.Contents.Scanner
             }
             switch (obj)
             {
-                case ShowText:
-                    return new TextStringWrapper(scanner);
+                case ShowText showText:
+                    return new TextStringWrapper(showText, scanner);
                 case GraphicsText:
                     return new TextWrapper(scanner);
                 case GraphicsXObject:

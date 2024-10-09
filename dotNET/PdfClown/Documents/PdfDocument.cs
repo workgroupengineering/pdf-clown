@@ -102,7 +102,7 @@ namespace PdfClown.Documents
         /// <summary>Gets/Sets the bookmark collection.</summary>
         public Bookmarks Bookmarks
         {
-            get => Wrap<Bookmarks>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Outlines, false));
+            get => Wrap2<Bookmarks>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Outlines, false));
             set => BaseDataObject[PdfName.Outlines] = PdfObjectWrapper.GetBaseObject(value);
         }
 

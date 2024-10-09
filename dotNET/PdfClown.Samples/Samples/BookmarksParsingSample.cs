@@ -36,9 +36,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private void PrintBookmarks(
-          Bookmarks bookmarks
-          )
+        private void PrintBookmarks(Bookmarks bookmarks)
         {
             if (bookmarks == null)
                 return;

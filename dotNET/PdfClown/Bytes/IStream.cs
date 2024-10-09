@@ -27,14 +27,10 @@ using System;
 
 namespace PdfClown.Bytes
 {
-    /**
-      <summary>Base stream interface.</summary>
-    */
+    /// <summary>Base stream interface.</summary>
     public interface IStream : IDisposable
     {
-        /**
-          <summary>Gets the length of the stream.</summary>
-        */
+        /// <summary>Gets the length of the stream.</summary>
         long Length { get; }
     }
 }

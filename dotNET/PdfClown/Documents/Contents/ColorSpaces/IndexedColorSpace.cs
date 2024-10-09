@@ -144,9 +144,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color), paintStyle, alpha, state);
         }
 
-        /**
-          <summary>Gets the color table.</summary>
-        */
+        /// <summary>Gets the color table.</summary>
         private byte[] BaseComponentValues
         {
             get
@@ -160,7 +158,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     }
                     else if (value is PdfStream stream)
                     {
-                        baseComponentValues = stream.GetBody(true).GetArrayBuffer();
+                        baseComponentValues = stream.GetInputStream().GetArrayBuffer();
                     }
                 }
                 return baseComponentValues;

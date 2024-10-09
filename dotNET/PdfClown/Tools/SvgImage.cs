@@ -94,10 +94,8 @@ namespace PdfClown.Tools
             var svg = GetCache(assembly, imageName);
             if (svg != null)
             {
-                using (var paint = new SKPaint { Color = color })
-                {
-                    DrawImage(canvas, svg, paint, bounds, indent);
-                }
+                using var paint = new SKPaint { Color = color };
+                DrawImage(canvas, svg, paint, bounds, indent);
             }
         }
 

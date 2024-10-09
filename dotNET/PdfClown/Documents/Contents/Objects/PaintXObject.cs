@@ -31,9 +31,7 @@ using System;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Paint the specified XObject' operation [PDF:1.6:4.7].</summary>
-    */
+    /// <summary>'Paint the specified XObject' operation [PDF:1.6:4.7].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class PaintXObject : Operation, IResourceReference<XObject>
     {
@@ -46,10 +44,8 @@ namespace PdfClown.Documents.Contents.Objects
         public PaintXObject(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        /**
-          <summary>Gets the scanner for the contents of the painted external object.</summary>
-          <param name="context">Scanning context.</param>
-        */
+        /// <summary>Gets the scanner for the contents of the painted external object.</summary>
+        /// <param name="context">Scanning context.</param>
         public ContentScanner GetScanner(ContentScanner context)
         {
             XObject xObject = GetXObject(context);
@@ -58,11 +54,9 @@ namespace PdfClown.Documents.Contents.Objects
               : null;
         }
 
-        /**
-          <summary>Gets the <see cref="XObject">external object</see> resource to be painted.
-          </summary>
-          <param name="context">Content context.</param>
-        */
+        /// <summary>Gets the <see cref="XObject">external object</see> resource to be painted.
+        /// </summary>
+        /// <param name="context">Content context.</param>
         public XObject GetXObject(ContentScanner scanner) => GetResource(scanner);
 
         public XObject GetResource(ContentScanner scanner)
@@ -107,7 +101,7 @@ namespace PdfClown.Documents.Contents.Objects
                         if (imageObject.ImageMask)
                         {
                             using (var paint = state.CreateFillPaint())
-                            {                                
+                            {
                                 canvas.DrawBitmap(image, 0, 0, paint);
                             }
                         }

@@ -33,9 +33,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
-    /**
-      <summary>Article thread [PDF:1.7:8.3.2].</summary>
-    */
+    /// <summary>Article thread [PDF:1.7:8.3.2].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class Article : PdfObjectWrapper<PdfDictionary>
     {
@@ -46,9 +44,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         public Article(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Deletes this thread removing also its reference in the document's collection.</summary>
-        */
+        /// <summary>Deletes this thread removing also its reference in the document's collection.</summary>
         public override bool Delete()
         {
             // Shallow removal (references):
@@ -59,14 +55,10 @@ namespace PdfClown.Documents.Interaction.Navigation
             return base.Delete();
         }
 
-        /**
-          <summary>Gets the beads associated to this thread.</summary>
-        */
-        public ArticleElements Elements => Wrap<ArticleElements>(BaseObject);
+        /// <summary>Gets the beads associated to this thread.</summary>
+        public ArticleElements Elements => Wrap2<ArticleElements>(BaseObject);
 
-        /**
-          <summary>Gets/Sets common article metadata.</summary>
-        */
+        /// <summary>Gets/Sets common article metadata.</summary>
         public Information Information
         {
             get => Wrap<Information>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.I));

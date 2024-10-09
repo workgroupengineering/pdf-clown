@@ -26,7 +26,7 @@ namespace PdfClown.Bytes.Filters
         internal JPXFilter()
         { }
 
-        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             var imageParams = header;
             //var width = imageParams.Resolve(PdfName.Width) as PdfInteger;
@@ -75,7 +75,7 @@ namespace PdfClown.Bytes.Filters
             return buffer;
         }
 
-        public override Memory<byte> Encode(Bytes.ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             throw new NotSupportedException();
         }

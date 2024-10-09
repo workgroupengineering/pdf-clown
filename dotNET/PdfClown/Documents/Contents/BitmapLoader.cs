@@ -52,9 +52,10 @@ namespace PdfClown.Documents.Contents
             return loader.Load();
         }
 
-        public static object ExtractImage(IImageObject imageObject, IByteStream data, PdfName filterItem,
+        public static object ExtractImage(IImageObject imageObject, IInputStream data, PdfName filterItem,
             PdfDirectObject parameterItem, IDictionary<PdfName, PdfDirectObject> header)
         {
+            // try reduce size
             //using (var stream = new MemoryStream(data.GetBuffer()))
             //using (var skiaData = SKData.Create(stream))
             //using (var codec = SKCodec.Create(skiaData))
@@ -65,11 +66,13 @@ namespace PdfClown.Documents.Contents
             //}
 
 
-            //if (filterItem.Equals(PdfName.DCTDecode)
-            //    || filterItem.Equals(PdfName.DCT))
-            //{
-            //    SKBitmap bitmap = SKBitmap.Decode(data.GetBuffer());
-
+            if ((filterItem.Equals(PdfName.DCTDecode)
+                || filterItem.Equals(PdfName.DCT))
+                && imageObject.SMask == null
+                && imageObject.ColorSpace?.ComponentCount != 4)
+            {
+                return SKBitmap.Decode(data.GetArrayBuffer());
+            }
             //    if (imageObject.SMask != null)
             //    {
             //        var info = bitmap.Info;
@@ -94,12 +97,10 @@ namespace PdfClown.Documents.Contents
             //        }
             //        smask.FreeImage();
             //    }
-            //    return bitmap;
-            //}
 
             if (filterItem != null)
             {
-                return data.Extract(filterItem, parameterItem, imageObject.Header);
+                return data.Decode(filterItem, parameterItem, imageObject.Header);
             }
 
             return data;
@@ -130,14 +131,8 @@ namespace PdfClown.Documents.Contents
 
         public BitmapLoader(IImageObject image, GraphicsState state)
         {
-            var buffer = image.Data;
+            var buffer = image.Data.Decode(image.Filter, image.Parameters, image.Header);
             var data = buffer.AsMemory();
-            var filter = image.Filter;
-            if (filter != null)
-            {
-                buffer = buffer.Extract(filter, image.Parameters, image.Header);
-                data = buffer.AsMemory();
-            }
             Init(image, data, state);
         }
 
@@ -362,6 +357,7 @@ namespace PdfClown.Documents.Contents
             {
                 var info = new SKImageInfo(width, height)
                 {
+                    ColorType = SKColorType.Bgra8888,
                     AlphaType = SKAlphaType.Unpremul,
                 };
                 if (iccColorSpace != null)

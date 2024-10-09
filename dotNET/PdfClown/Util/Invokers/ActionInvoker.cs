@@ -17,14 +17,8 @@ namespace PdfClown.Util.Reflection
 
         public Action<T, V> SetAction { get; protected set; }
 
-        public override V GetValue(T target)
-        {
-            return GetAction(target);
-        }
+        public override V GetValue(T target) => GetAction(target);
 
-        public override void SetValue(T target, V value)
-        {
-            SetAction(target, value);
-        }
+        public override void SetValue(T target, V value) => SetAction(target, value);
     }
 }

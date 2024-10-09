@@ -14,27 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 {
-
-    using System.Collections.Generic;
-
-    /**
-     * This class is responsible for replacing GlyphIDs with new ones according to the GSUB tables. Each language should
-     * have an implementation of this.
-     * 
-     * @author Palash Ray
-     * 
-     */
-    public interface GsubWorker
+    /// <summary>
+    /// This class splits an array of GlyphIds with a prospective match.
+    /// @author Palash Ray
+    /// </summary>
+    public interface IGlyphArraySplitter
     {
-        /**
-         * Applies language-specific transforms including GSUB and any other pre or post-processing necessary for displaying
-         * Glyphs correctly.
-         * 
-         */
-        List<int> ApplyTransforms(List<int> originalGlyphIds);
-
+        List<HashList<ushort>> Split(HashList<ushort> glyphIds);
     }
 }

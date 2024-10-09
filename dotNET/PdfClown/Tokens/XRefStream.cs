@@ -69,7 +69,7 @@ namespace PdfClown.Tokens
             }
         }
 
-        public XRefStream(PdfDictionary header, IByteStream body)
+        public XRefStream(PdfDictionary header, IInputStream body)
             : base(header, body)
         { }
 
@@ -194,7 +194,7 @@ namespace PdfClown.Tokens
         {
             entries = new SortedDictionary<int, XRefEntry>();
 
-            IByteStream body = Body;
+            var body = GetInputStream();
             if (body.Length > 0)
             {
                 PdfDictionary header = Header;
@@ -255,7 +255,7 @@ namespace PdfClown.Tokens
         private void Flush(IOutputStream stream)
         {
             // 1. Body.
-            PdfArray indexArray = new PdfArray();
+            var indexArray = new PdfArray();
             int[] entryFieldSizes = new int[]
               {
                   EntryField0Size,
@@ -264,7 +264,7 @@ namespace PdfClown.Tokens
               };
             {
                 // Get the stream buffer!
-                IByteStream body = Body;
+                var body = GetOutputStream();
 
                 // Delete the old entries!
                 body.SetLength(0);

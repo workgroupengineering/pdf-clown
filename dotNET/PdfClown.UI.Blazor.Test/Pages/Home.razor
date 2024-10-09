@@ -13,8 +13,8 @@
 
     private async void OnInputFileChange(InputFileChangeEventArgs e)
     {
-        using var stream = e.File.OpenReadStream(512 * 1024 * 1024);
-        var fileStream = new MemoryStream();
+        using var stream = e.File.OpenReadStream(100 * 1024 * 1024);
+        var fileStream = new MemoryStream((int)stream.Length);
         await stream.CopyToAsync(fileStream);
         fileStream.Position = 0;
         pdfView.Load(fileStream);

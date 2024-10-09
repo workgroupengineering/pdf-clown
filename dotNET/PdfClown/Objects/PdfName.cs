@@ -33,7 +33,7 @@ using tokens = PdfClown.Tokens;
 
 namespace PdfClown.Objects
 {
-    ///<summary>PDF name object [PDF:1.6:3.2.4].</summary>
+    /// <summary>PDF name object [PDF:1.6:3.2.4].</summary>
     public sealed class PdfName : PdfSimpleObject<string>, IPdfString, IEquatable<PdfName>
     {
         //NOTE: As name objects are simple symbols uniquely defined by sequences of characters,
@@ -867,6 +867,6 @@ namespace PdfClown.Objects
         public bool Equals(PdfName other)
         {
             return ReferenceEquals(this, other);// string.Equals(RawValue, other?.RawValue, StringComparison.Ordinal);
-        }        
+        }
     }
 }

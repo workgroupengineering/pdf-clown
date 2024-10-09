@@ -17,21 +17,19 @@
  */
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-    /**
-     * This class represents a standard SID to String mapping.
-     * @author Villu Ruusmann
-     */
+    /// <summary>
+    /// This class represents a standard SID to String mapping.
+    /// @author Villu Ruusmann
+    /// </summary>
     public sealed class CFFStandardString
     {
 
         private CFFStandardString()
         { }
 
-        /**
-		 * This will return the string mapped to the given SID. 
-		 * @param sid the given SID
-		 * @return the mapped string
-		 */
+        /// <summary>This will return the string mapped to the given SID.</summary>
+        /// <param name="sid">the given SID</param>
+        /// <returns>the mapped string</returns>
         public static string GetName(int sid)
         {
             return SID2STR[sid];

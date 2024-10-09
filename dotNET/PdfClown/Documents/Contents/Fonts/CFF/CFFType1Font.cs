@@ -23,12 +23,11 @@ using PdfClown.Documents.Contents.Fonts.Type1;
 
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-    /**
-     * A Type 1-equivalent font program represented in a CFF file. Thread safe.
-     *
-     * @author Villu Ruusmann
-     * @author John Hewson
-     */
+    /// <summary>
+    /// A Type 1-equivalent font program represented in a CFF file.Thread safe.
+    /// @author Villu Ruusmann
+    /// @author John Hewson
+    /// </summary>
     public class CFFType1Font : CFFFont, IType1CharStringReader, IEncodedFont
     {
         private readonly Dictionary<string, object> privateDict = new(StringComparer.Ordinal);

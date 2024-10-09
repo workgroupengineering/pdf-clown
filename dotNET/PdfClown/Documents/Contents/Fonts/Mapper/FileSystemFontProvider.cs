@@ -136,42 +136,35 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
             }
 
-
             public override int FamilyClass
             {
                 get => sFamilyClass;
             }
-
 
             public override int WeightClass
             {
                 get => usWeightClass;
             }
 
-
             public override int CodePageRange1
             {
                 get => ulCodePageRange1;
             }
-
 
             public override int CodePageRange2
             {
                 get => ulCodePageRange2;
             }
 
-
             public override int MacStyle
             {
                 get => macStyle;
             }
 
-
             public override PanoseClassification Panose
             {
                 get => panose;
             }
-
 
             public override string ToString()
             {
@@ -251,15 +244,13 @@ namespace PdfClown.Documents.Contents.Fonts
                         }
                     }
 
-                    OTFParser parser = new OTFParser(false);
-                    using (var stream = file.OpenRead())
-                    {
-                        var otf = parser.Parse(stream);
+                    var parser = new OTFParser(false);
+                    using var stream = file.OpenRead();
+                    var otf = parser.Parse(stream);
 #if DEBUG
-                        Debug.WriteLine($"debug: Loaded {postScriptName} from {file}");
+                    Debug.WriteLine($"debug: Loaded {postScriptName} from {file}");
 #endif
-                        return (OpenTypeFont)otf;
-                    }
+                    return (OpenTypeFont)otf;
                 }
                 catch (IOException e)
                 {
@@ -387,9 +378,7 @@ namespace PdfClown.Documents.Contents.Fonts
             //return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
         }
 
-        /**
-		 * Saves the font metadata cache to disk.
-		 */
+        /// <summary>Saves the font metadata cache to disk.</summary>
         private void SaveDiskCache()
         {
             try
@@ -457,9 +446,9 @@ namespace PdfClown.Documents.Contents.Fonts
 
         }
 
-        /**
-		 * Loads the font metadata cache from disk.
-		 */
+        /// <summary>Loads the font metadata cache from disk.</summary>
+        /// <param name="files"></param>
+        /// <returns></returns>
         private List<FSFontInfo> LoadDiskCache(List<FileInfo> files)
         {
             ISet<string> pending = new HashSet<string>(files.Select(x => x.FullName), StringComparer.Ordinal);
@@ -793,7 +782,7 @@ namespace PdfClown.Documents.Contents.Fonts
             var buffer = ArrayPool<byte>.Shared.Rent(4 * 1024);
             try
             {
-#if __BLAZOR__
+#if __BC_HASH__
                 var md = new Sha512Digest();
 #else
                 using var md = IncrementalHash.CreateHash(HashAlgorithmName.SHA512);

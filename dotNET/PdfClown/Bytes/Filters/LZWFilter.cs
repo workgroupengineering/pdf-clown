@@ -23,32 +23,26 @@ using System.IO;
 
 namespace PdfClown.Bytes.Filters
 {
-    /**
-	 *
-	 * This is the filter used for the LZWDecode filter.
-	 *
-	 * @author Ben Litchfield
-	 * @author Tilman Hausherr
-	 */
+    /// <summary>
+    /// This is the filter used for the LZWDecode filter.
+    /// @author Ben Litchfield
+    ///  @author Tilman Hausherr
+    /// </summary>
     public sealed class LZWFilter : FlateFilter
     {
-        /**
-		 * The LZW clear table code.
-		 */
+        /// <summary>The LZW clear table code.</summary>
         public static readonly long CLEAR_TABLE = 256;
 
-        /**
-		 * The LZW end of data code.
-		 */
+        /// <summary>The LZW end of data code.</summary>
         public static readonly long EOD = 257;
 
         //BEWARE: codeTable must be local to each method, because there is only
         // one instance of each filter
 
-        public  Memory<byte> DecodeStream(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public  Memory<byte> DecodeStream(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             var outputStream = new MemoryStream();
-            using (var lzwInputStream = new LzwInputStream(data))
+            using (var lzwInputStream = new LzwInputStream((Stream)data))
             {
                 Transform(lzwInputStream, outputStream);
                 lzwInputStream.Close();
@@ -57,7 +51,7 @@ namespace PdfClown.Bytes.Filters
             return DecodePredictor(outputStream, parameters, header);
         }
 
-        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             PdfDictionary decodeParams = (PdfDictionary)parameters;
             int earlyChange = decodeParams?.GetInt(PdfName.EarlyChange, 1) ?? 1;
@@ -71,7 +65,7 @@ namespace PdfClown.Bytes.Filters
             return DecodePredictor(result, parameters, header);
         }
 
-        private Bytes.ByteStream DoLZWDecode(ByteStream input, int earlyChange)
+        private Bytes.ByteStream DoLZWDecode(IInputStream input, int earlyChange)
         {
             List<byte[]> codeTable = new List<byte[]>();
             int chunk = 9;
@@ -127,7 +121,7 @@ namespace PdfClown.Bytes.Filters
             return decoded;
         }
 
-        private void CheckIndexBounds(List<byte[]> codeTable, long index, ByteStream input)
+        private void CheckIndexBounds(List<byte[]> codeTable, long index, IInputStream input)
         {
             if (index < 0)
             {
@@ -139,7 +133,7 @@ namespace PdfClown.Bytes.Filters
             }
         }
 
-        public override Memory<byte> Encode(ByteStream rawData, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             List<byte[]> codeTable = CreateCodeTable();
             int chunk = 9;
@@ -150,7 +144,7 @@ namespace PdfClown.Bytes.Filters
                 output.WriteBits(CLEAR_TABLE, chunk);
                 int foundCode = -1;
                 int r;
-                while ((r = rawData.ReadByte()) != -1)
+                while ((r = data.ReadByte()) != -1)
                 {
                     byte by = (byte)r;
                     if (inputPattern == null)

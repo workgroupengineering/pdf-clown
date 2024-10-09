@@ -35,29 +35,20 @@ using System.Text;
 
 namespace PdfClown.Bytes.Filters
 {
-    /**
-      <summary>ASCII base-85 filter [PDF:1.6:3.3.2].</summary>
-    */
+    /// <summary>ASCII base-85 filter [PDF:1.6:3.3.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class ASCII85Filter : Filter
     {
-        /**
-          Prefix mark that identifies an encoded ASCII85 string.
-        */
+        /// <summary>Prefix mark that identifies an encoded ASCII85 string.</summary>
         private const string PrefixMark = "<~";
-        /**
-          Suffix mark that identifies an encoded ASCII85 string.
-        */
+
+        /// <summary>Suffix mark that identifies an encoded ASCII85 string.</summary>
         private const string SuffixMark = "~>";
 
-        /**
-          Add the Prefix and Suffix marks when encoding, and enforce their presence for decoding.
-        */
+        /// <summary>Add the Prefix and Suffix marks when encoding, and enforce their presence for decoding.</summary>
         private const bool EnforceMarks = true;
 
-        /**
-          Maximum line length for encoded ASCII85 string; set to zero for one unbroken line.
-        */
+        /// <summary>Maximum line length for encoded ASCII85 string; set to zero for one unbroken line.</summary>
         private const int LineLength = 75;
 
         private const int AsciiOffset = 33;
@@ -119,7 +110,7 @@ namespace PdfClown.Bytes.Filters
         internal ASCII85Filter()
         { }
 
-        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             Span<byte> decodedBlock = stackalloc byte[4];
             Span<byte> byteBlock = stackalloc byte[1];
@@ -200,12 +191,12 @@ namespace PdfClown.Bytes.Filters
             return stream.AsMemory();
         }
 
-        public override Memory<byte> Encode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             byte[] decodedBlock = new byte[4];
             byte[] encodedBlock = new byte[5];
 
-            StringBuilder buffer = new StringBuilder((int)(data.Length * (encodedBlock.Length / decodedBlock.Length)));
+            var buffer = new StringBuilder((int)(data.Length * (encodedBlock.Length / decodedBlock.Length)));
             int linePos = 0;
 
             if (EnforceMarks)

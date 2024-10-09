@@ -20,13 +20,11 @@ using System.Text.RegularExpressions;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 {
-    /**
-     * Takes in the given text having compound-glyphs to substitute, and splits it into chunks consisting of parts that
-     * should be substituted and the ones that can be processed normally.
-     * 
-     * @author Palash Ray
-     * 
-     */
+    /// <summary>
+    /// Takes in the given text having compound-glyphs to substitute, and splits it into chunks consisting of parts that
+    /// should be substituted and the ones that can be processed normally.
+    /// @author Palash Ray
+    /// </summary>
     public class CompoundCharacterTokenizer
     {
 
@@ -44,7 +42,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
         public List<string> Tokenize(string text)
         {
-            List<string> tokens = new List<string>();
+           var tokens = new List<string>();
 
             var regexMatcher = regexExpression.Matches(text);
 

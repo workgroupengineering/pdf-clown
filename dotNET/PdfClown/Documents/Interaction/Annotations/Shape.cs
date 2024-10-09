@@ -50,22 +50,18 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (InteriorColor != null)
             {
                 var fillColor = InteriorSKColor.Value;
-                using (var paint = new SKPaint { Color = fillColor, Style = SKPaintStyle.Fill })
-                {
-                    var cloudPath = BorderEffect?.Apply(paint, path) ?? path;
-                    canvas.DrawPath(cloudPath, paint);
-                    if (cloudPath != path)
-                        cloudPath.Dispose();
-                }
+                using var paint = new SKPaint { Color = fillColor, Style = SKPaintStyle.Fill };
+                var cloudPath = BorderEffect?.Apply(paint, path) ?? path;
+                canvas.DrawPath(cloudPath, paint);
+                if (cloudPath != path)
+                    cloudPath.Dispose();
             }
             if (Border != null && Color != null && !Color.IsZero)
             {
                 var color = Color == null ? SKColors.Black : DeviceColorSpace.CalcSKColor(Color, Alpha);
-                using (var paint = new SKPaint { Color = color })
-                {
-                    Border?.Apply(paint, BorderEffect);
-                    canvas.DrawPath(path, paint);
-                }
+                using var paint = new SKPaint { Color = color };
+                Border?.Apply(paint, BorderEffect);
+                canvas.DrawPath(path, paint);
             }
         }
 

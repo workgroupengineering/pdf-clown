@@ -28,34 +28,31 @@ using System.Diagnostics;
 namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 {
 
-    /**
-     * 
-     * Latin-specific implementation of GSUB system
-     * 
-     * @author Palash Ray
-     * @author Tilman Hausherr
-     *
-     */
-    public class GsubWorkerForLatin : GsubWorker
+    /// <summary>
+    /// Latin-specific implementation of GSUB system
+    /// @author Palash Ray
+    /// @author Tilman Hausherr
+    /// </summary>
+    public class GsubWorkerForLatin : IGsubWorker
     {
-        /**
-         * This sequence is very important. This has been taken from <a href=
-         * "https://docs.microsoft.com/en-us/typography/script-development/standard">https://docs.microsoft.com/en-us/typography/script-development/standard</a>
-         */
+        /// <summary> 
+        /// This sequence is very important.This has been taken from <a href =
+        /// "https://docs.microsoft.com/en-us/typography/script-development/standard" > https://docs.microsoft.com/en-us/typography/script-development/standard</a>
+        /// </summary>
         private static readonly List<string> FEATURES_IN_ORDER = new() { "ccmp", "liga", "clig" };
 
         private readonly ICmapLookup cmapLookup;
-        private readonly GsubData gsubData;
+        private readonly IGsubData gsubData;
 
-        public GsubWorkerForLatin(ICmapLookup cmapLookup, GsubData gsubData)
+        public GsubWorkerForLatin(ICmapLookup cmapLookup, IGsubData gsubData)
         {
             this.cmapLookup = cmapLookup;
             this.gsubData = gsubData;
         }
 
-        public List<int> ApplyTransforms(List<int> originalGlyphIds)
+        public HashList<ushort> ApplyTransforms(HashList<ushort> originalGlyphIds)
         {
-            List<int> intermediateGlyphsFromGsub = originalGlyphIds;
+            var intermediateGlyphsFromGsub = originalGlyphIds;
 
             foreach (string feature in FEATURES_IN_ORDER)
             {
@@ -73,7 +70,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             return intermediateGlyphsFromGsub;
         }
 
-        private List<int> ApplyGsubFeature(ScriptFeature scriptFeature, List<int> originalGlyphs)
+        private HashList<ushort> ApplyGsubFeature(IScriptFeature scriptFeature, HashList<ushort> originalGlyphs)
         {
             if (scriptFeature.AllGlyphIdsForSubstitution.Count == 0)
             {
@@ -83,22 +80,24 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             var glyphArraySplitter = new GlyphArraySplitterRegexImpl(scriptFeature.AllGlyphIdsForSubstitution);
 
             var tokens = glyphArraySplitter.Split(originalGlyphs);
-            List<int> gsubProcessedGlyphs = new();
+            var gsubProcessedGlyphs = new List<ushort>();
 
-            foreach (List<int> chunk in tokens)
+            foreach (var chunk in tokens)
             {
                 if (scriptFeature.CanReplaceGlyphs(chunk))
                 {
                     // gsub system kicks in, you get the glyphId directly
-                    int glyphId = scriptFeature.GetReplacementForGlyphs(chunk);
-                    gsubProcessedGlyphs.Add(glyphId);
+                    var replacement = scriptFeature.GetReplacementForGlyphs(chunk);
+                    foreach (var glyphId in replacement.Span)
+                        gsubProcessedGlyphs.Add(glyphId);
                 }
                 else
                 {
-                    gsubProcessedGlyphs.AddRange(chunk);
+                    foreach (var glyphId in chunk.Span)
+                        gsubProcessedGlyphs.Add(glyphId);
                 }
             }
-            return gsubProcessedGlyphs;
+            return (HashList<ushort>)gsubProcessedGlyphs.ToArray();
         }
     }
 }

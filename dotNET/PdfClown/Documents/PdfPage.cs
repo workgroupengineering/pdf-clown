@@ -252,7 +252,7 @@ namespace PdfClown.Documents
             int index = 0;
             for (int i = 0; true; i++)
             {
-                PdfReference kidReference = (PdfReference)kids[i];
+                var kidReference = (PdfReference)kids[i];
                 // Is the current-level counting complete?
                 // NOTE: It's complete when it reaches the ancestor at this level.
                 if (kidReference.Equals(ancestorKidReference)) // Ancestor node.
@@ -272,7 +272,7 @@ namespace PdfClown.Documents
                 }
                 else // Intermediate node.
                 {
-                    PdfDictionary kid = (PdfDictionary)kidReference.DataObject;
+                    var kid = (PdfDictionary)kidReference.DataObject;
                     if (PdfName.Page.Equals(kid.Get<PdfName>(PdfName.Type)))
                         index++;
                     else
@@ -444,14 +444,14 @@ namespace PdfClown.Documents
 
                 // Body (contents).
                 {
-                    IByteStream formBody = form.BaseDataObject.Body;
+                    var formBody = form.BaseDataObject.GetOutputStream();
                     PdfDataObject contentsDataObject = BaseDataObject.Resolve(PdfName.Contents);
                     if (contentsDataObject is PdfStream stream)
-                    { formBody.Write(stream.Body); }
+                    { formBody.Write(stream.GetInputStream()); }
                     else if (contentsDataObject is PdfArray array)
                     {
                         foreach (var contentStreamObject in array)
-                        { formBody.Write(((PdfStream)contentStreamObject.Resolve()).Body); }
+                        { formBody.Write(((PdfStream)contentStreamObject.Resolve()).GetInputStream()); }
                     }
                 }
             }

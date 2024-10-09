@@ -241,7 +241,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         {
             int bitsPerFlag = BitsPerFlag;
             var dict = BaseDataObject;
-            if (!(dict is PdfStream stream))
+            if (dict is not PdfStream stream)
             {
                 return null;
             }
@@ -254,83 +254,81 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             var vertextLength = vertextBitLength / 8;
             var triangleLength = triangleBitLength / 8;
 
-            using (var input = stream.ExtractBody(true))
+            var input = stream.GetInputStream();
+            byte flag = 0;
+            try
             {
-                byte flag = 0;
+                flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return null;
+            }
+
+            while (true)
+            {
+                (SKPoint point, SKColor color) p0;
+                (SKPoint point, SKColor color) p1;
+                (SKPoint point, SKColor color) p2;
+                int index;
                 try
                 {
+                    switch (flag)
+                    {
+                        case 0:
+                            if (input.Position + triangleLength > input.Length)
+                                return new Vertices(points, colors);
+                            p0 = ReadVertex(input, maxSrcCoord, maxSrcColor);
+                            flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
+                            if (flag != 0)
+                            {
+                                Debug.WriteLine($"error: bad triangle: {flag}");
+                            }
+                            p1 = ReadVertex(input, maxSrcCoord, maxSrcColor);
+                            flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
+                            if (flag != 0)
+                            {
+                                Debug.WriteLine($"error: bad triangle: {flag}");
+                            }
+                            p2 = ReadVertex(input, maxSrcCoord, maxSrcColor);
+
+                            break;
+                        case 1:
+                        case 2:
+                            index = flag == 1 ? points.Count - 2 : points.Count - 3;
+                            if (index < 0)
+                            {
+                                Debug.WriteLine($"error: broken data stream");
+                                return new Vertices(points, colors);
+                            }
+                            else
+                            {
+                                if (input.Position + vertextLength > input.Length)
+                                    return new Vertices(points, colors);
+
+                                p0 = (points[index], colors[index]);
+                                p1 = (points[points.Count - 1], colors[points.Count - 1]);
+                                p2 = ReadVertex(input, maxSrcCoord, maxSrcColor);
+                            }
+                            break;
+                        default:
+                            Debug.WriteLine($"warn: bad flag: {flag}");
+                            return new Vertices(points, colors);
+                    }
+                    points.Add(p0.point);
+                    colors.Add(p0.color);
+                    points.Add(p1.point);
+                    colors.Add(p1.color);
+                    points.Add(p2.point);
+                    colors.Add(p2.color);
+                    if (input.Position >= input.Length)
+                        break;
                     flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine(ex.Message);
-                    return null;
-                }
-
-                while (true)
-                {
-                    (SKPoint point, SKColor color) p0;
-                    (SKPoint point, SKColor color) p1;
-                    (SKPoint point, SKColor color) p2;
-                    int index;
-                    try
-                    {
-                        switch (flag)
-                        {
-                            case 0:
-                                if (input.Position + triangleLength > input.Length)
-                                    return new Vertices(points, colors);
-                                p0 = ReadVertex(input, maxSrcCoord, maxSrcColor);
-                                flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
-                                if (flag != 0)
-                                {
-                                    Debug.WriteLine($"error: bad triangle: {flag}");
-                                }
-                                p1 = ReadVertex(input, maxSrcCoord, maxSrcColor);
-                                flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
-                                if (flag != 0)
-                                {
-                                    Debug.WriteLine($"error: bad triangle: {flag}");
-                                }
-                                p2 = ReadVertex(input, maxSrcCoord, maxSrcColor);
-
-                                break;
-                            case 1:
-                            case 2:
-                                index = flag == 1 ? points.Count - 2 : points.Count - 3;
-                                if (index < 0)
-                                {
-                                    Debug.WriteLine($"error: broken data stream");
-                                    return new Vertices(points, colors);
-                                }
-                                else
-                                {
-                                    if (input.Position + vertextLength > input.Length)
-                                        return new Vertices(points, colors);
-
-                                    p0 = (points[index], colors[index]);
-                                    p1 = (points[points.Count - 1], colors[points.Count - 1]);
-                                    p2 = ReadVertex(input, maxSrcCoord, maxSrcColor);
-                                }
-                                break;
-                            default:
-                                Debug.WriteLine($"warn: bad flag: {flag}");
-                                return new Vertices(points, colors);
-                        }
-                        points.Add(p0.point);
-                        colors.Add(p0.color);
-                        points.Add(p1.point);
-                        colors.Add(p1.color);
-                        points.Add(p2.point);
-                        colors.Add(p2.color);
-                        if (input.Position >= input.Length)
-                            break;
-                        flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
-                    }
-                    catch
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
             return new Vertices(points, colors);

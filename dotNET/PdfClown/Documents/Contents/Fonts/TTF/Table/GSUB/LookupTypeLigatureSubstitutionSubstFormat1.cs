@@ -35,13 +35,13 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB
     {
         private readonly LigatureSetTable[] ligatureSetTables;
 
-        public LookupTypeLigatureSubstitutionSubstFormat1(int substFormat, CoverageTable coverageTable, LigatureSetTable[] ligatureSetTables)
+        public LookupTypeLigatureSubstitutionSubstFormat1(ushort substFormat, CoverageTable coverageTable, LigatureSetTable[] ligatureSetTables)
             : base(substFormat, coverageTable)
         {
             this.ligatureSetTables = ligatureSetTables;
         }
 
-        public override int DoSubstitution(int gid, int coverageIndex)
+        public override ushort DoSubstitution(ushort gid, int coverageIndex)
         {
             throw new NotSupportedException("not applicable");
         }

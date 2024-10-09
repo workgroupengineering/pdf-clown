@@ -14,29 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
+using PdfClown.Documents.Contents.Fonts.TTF.Model;
 using SkiaSharp;
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
-using PdfClown.Documents.Contents.Fonts.TTF.Model;
-using System.Text;
-using PdfClown.Bytes;
 using System.Globalization;
+using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
 
-    /**
-     * A TrueType font file.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A TrueType font file.
+    /// @author Ben Litchfield
+    /// </summary>
     public class TrueTypeFont : BaseFont, IDisposable
     {
-
-        //private static readonly Log LOG = LogFactory.getLog(TrueTypeFont.class);
-
         private float version;
         private int? numberOfGlyphs;
         private int? unitsPerEm;
@@ -50,12 +45,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private readonly object lockPSNames = new object();
         private readonly List<string> enabledGsubFeatures = new List<string>();
 
-        /**
-         * Constructor.  Clients should use the TTFParser to create a new TrueTypeFont object.
-         * 
-         * @param fontData The font data.
-         */
-        public TrueTypeFont(IInputStream fontData)
+        internal TrueTypeFont(IInputStream fontData)
         {
             data = fontData;
         }
@@ -65,50 +55,35 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             data.Dispose();
         }
 
-        /**
-         * @return Returns the version.
-         */
+        /// <summary>The version.</summary>
         public virtual float Version
         {
             get => version;
             set => version = value;
         }
 
-        /**
-         * Add a table definition. Package-private, used by TTFParser only.
-         * 
-         * @param table The table to add.
-         */
+        /// <summary>Add a table definition.Package-private, used by TTFParser only.</summary>
+        /// <param name="table">The table to add</param>
         public void AddTable(TTFTable table)
         {
             tables[table.Tag] = table;
         }
 
-        /**
-         * Get all of the tables.
-         * 
-         * @return All of the tables.
-         */
+        /// <summary>Get all of the tables.</summary>
         public ICollection<TTFTable> Tables
         {
             get => tables.Values;
         }
 
-        /**
-         * Get all of the tables.
-         *
-         * @return All of the tables.
-         */
+        /// <summary>Get all of the tables.</summary>
         public Dictionary<string, TTFTable> TableMap
         {
             get => tables;
         }
 
-        /**
-         * Returns the raw bytes of the given table.
-         * @param table the table to read.
-         * @ if there was an error accessing the table.
-         */
+        /// <summary>Returns the raw bytes of the given table.</summary>
+        /// <param name="table">the table to read</param>
+        /// <returns></returns>
         public Memory<byte> GetTableBytes(TTFTable table)
         {
             lock (lockReadtable)
@@ -126,13 +101,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * This will get the table for the given tag.
-         * 
-         * @param tag the name of the table to be returned
-         * @return The table with the given tag.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>This will get the table for the given tag.</summary>
+        /// <param name="tag">the name of the table to be returned</param>
+        /// <returns>The table with the given tag</returns>
         protected TTFTable GetTable(string tag)
         {
             if (tables.TryGetValue(tag, out TTFTable table) && !table.Initialized)
@@ -142,23 +113,13 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return table;
         }
 
-        /**
-         * This will get the naming table for the true type font.
-         * 
-         * @return The naming table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>This will get the naming table for the true type font or null if it doesn't exist.</summary>
         public NamingTable Naming
         {
             get => (NamingTable)GetTable(NamingTable.TAG);
         }
 
-        /**
-         * Get the postscript table for this TTF.
-         * 
-         * @return The postscript table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the postscript table for this TTF  or null if it doesn't exist.</summary>
         public PostScriptTable PostScript
         {
             get => (PostScriptTable)GetTable(PostScriptTable.TAG);
@@ -356,12 +317,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Returns the number of glyphs (MaximumProfile.numGlyphs).
-         * 
-         * @return the number of glyphs
-         * @ if there was an error reading the table.
-         */
+        /// <summary>The number of glyphs(MaximumProfile.numGlyphs).</summary>
+
         public int NumberOfGlyphs
         {
             get => numberOfGlyphs ??= (MaximumProfile?.NumGlyphs ?? 0);
@@ -593,7 +550,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return 0;
         }
 
-        public GsubData GsubData
+        public IGsubData GsubData
         {
             get
             {

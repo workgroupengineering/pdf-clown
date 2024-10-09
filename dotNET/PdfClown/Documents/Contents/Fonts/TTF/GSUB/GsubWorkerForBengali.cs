@@ -17,30 +17,22 @@
 
 using PdfClown.Documents.Contents.Fonts.TTF.Model;
 using PdfClown.Util.Collections;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 {
-
-    /**
-     * 
-     * Bengali-specific implementation of GSUB system
-     * 
-     * @author Palash Ray
-     *
-     */
-    public class GsubWorkerForBengali : GsubWorker
+    /// <summary>
+    /// Bengali-specific implementation of GSUB system
+    /// @author Palash Ray
+    /// </summary>
+    public class GsubWorkerForBengali : IGsubWorker
     {
-
-        //private static readonly Log LOG = LogFactory.getLog(GsubWorkerForBengali.class);
-
         private static readonly string INIT_FEATURE = "init";
 
-        /**
-         * This sequence is very important. This has been taken from <a href=
-         * "https://docs.microsoft.com/en-us/typography/script-development/bengali">https://docs.microsoft.com/en-us/typography/script-development/bengali</a>
-         */
+        // This sequence is very important.This has been taken from
+        // <a href ="https://docs.microsoft.com/en-us/typography/script-development/bengali" > https://docs.microsoft.com/en-us/typography/script-development/bengali</a>
         private static readonly List<string> FEATURES_IN_ORDER = new List<string>{"locl", "nukt", "akhn",
                 "rphf", "blwf", "pstf", "half", "vatu", "cjct", INIT_FEATURE, "pres", "abvs", "blws",
                 "psts", "haln", "calt" };
@@ -51,13 +43,13 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             new BeforeAndAfterSpanComponent('\u09CC', '\u09C7', '\u09D7') };
 
         private readonly ICmapLookup cmapLookup;
-        private readonly GsubData gsubData;
+        private readonly IGsubData gsubData;
 
-        private readonly List<int> beforeHalfGlyphIds;
+        private readonly HashList<ushort> beforeHalfGlyphIds;
         private readonly Dictionary<int, BeforeAndAfterSpanComponent> beforeAndAfterSpanGlyphIds;
 
 
-        public GsubWorkerForBengali(ICmapLookup cmapLookup, GsubData gsubData)
+        public GsubWorkerForBengali(ICmapLookup cmapLookup, IGsubData gsubData)
         {
             this.cmapLookup = cmapLookup;
             this.gsubData = gsubData;
@@ -65,9 +57,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             beforeAndAfterSpanGlyphIds = GetBeforeAndAfterSpanGlyphIds();
         }
 
-        public List<int> ApplyTransforms(List<int> originalGlyphIds)
+        public HashList<ushort> ApplyTransforms(HashList<ushort> originalGlyphIds)
         {
-            List<int> intermediateGlyphsFromGsub = originalGlyphIds;
+            var intermediateGlyphsFromGsub = originalGlyphIds;
 
             foreach (string feature in FEATURES_IN_ORDER)
             {
@@ -79,7 +71,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 
                 Debug.WriteLine($"info: applying the feature {feature}");
 
-                ScriptFeature scriptFeature = gsubData.GetFeature(feature);
+                IScriptFeature scriptFeature = gsubData.GetFeature(feature);
 
                 intermediateGlyphsFromGsub = ApplyGsubFeature(scriptFeature, intermediateGlyphsFromGsub);
             }
@@ -87,49 +79,50 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             return RepositionGlyphs(intermediateGlyphsFromGsub);
         }
 
-        private List<int> RepositionGlyphs(List<int> originalGlyphIds)
+        private HashList<ushort> RepositionGlyphs(HashList<ushort> originalGlyphIds)
         {
-            List<int> glyphsRepositionedByBeforeHalf = RepositionBeforeHalfGlyphIds(
-                    originalGlyphIds);
+            var glyphsRepositionedByBeforeHalf = RepositionBeforeHalfGlyphIds(originalGlyphIds);
             return RepositionBeforeAndAfterSpanGlyphIds(glyphsRepositionedByBeforeHalf);
         }
 
-        private List<int> RepositionBeforeHalfGlyphIds(List<int> originalGlyphIds)
+        private HashList<ushort> RepositionBeforeHalfGlyphIds(HashList<ushort> originalGlyphIds)
         {
-            var repositionedGlyphIds = new List<int>(originalGlyphIds);
-
-            for (int index = 1; index < originalGlyphIds.Count; index++)
+            var span = originalGlyphIds.Span;
+            var repositionedGlyphIds = new ushort[span.Length];
+            span.CopyTo(repositionedGlyphIds);
+            for (int index = 1; index < repositionedGlyphIds.Length; index++)
             {
-                int glyphId = originalGlyphIds[index];
-                if (beforeHalfGlyphIds.Contains(glyphId))
+                var glyphId = span[index];
+                if (beforeHalfGlyphIds.Span.Contains(glyphId))
                 {
-                    int previousGlyphId = originalGlyphIds[index - 1];
+                    var previousGlyphId = span[index - 1];
                     repositionedGlyphIds[index] = previousGlyphId;
                     repositionedGlyphIds[index - 1] = glyphId;
                 }
             }
-            return repositionedGlyphIds;
+            return (HashList<ushort>)repositionedGlyphIds;
         }
 
-        private List<int> RepositionBeforeAndAfterSpanGlyphIds(List<int> originalGlyphIds)
+        private HashList<ushort> RepositionBeforeAndAfterSpanGlyphIds(HashList<ushort> originalGlyphIds)
         {
-            var repositionedGlyphIds = new List<int>(originalGlyphIds);
-
-            for (int index = 1; index < originalGlyphIds.Count; index++)
+            var span = originalGlyphIds.Span;
+            var repositionedGlyphIds = new ushort[span.Length];
+            span.CopyTo(repositionedGlyphIds);
+            for (int index = 1; index < repositionedGlyphIds.Length; index++)
             {
-                int glyphId = originalGlyphIds[index];
+                var glyphId = span[index];
                 if (beforeAndAfterSpanGlyphIds.TryGetValue(glyphId, out BeforeAndAfterSpanComponent component))
                 {
-                    int previousGlyphId = originalGlyphIds[index - 1];
+                    var previousGlyphId = span[index - 1];
                     repositionedGlyphIds[index] = previousGlyphId;
-                    repositionedGlyphIds[index - 1] = GetGlyphId(component.beforeComponentCharacter);
-                    repositionedGlyphIds[index + 1] = GetGlyphId(component.afterComponentCharacter);
+                    repositionedGlyphIds[index - 1] = (ushort)GetGlyphId(component.beforeComponentCharacter);
+                    repositionedGlyphIds[index + 1] = (ushort)GetGlyphId(component.afterComponentCharacter);
                 }
             }
-            return repositionedGlyphIds;
+            return (HashList<ushort>)repositionedGlyphIds;
         }
 
-        private List<int> ApplyGsubFeature(ScriptFeature scriptFeature, List<int> originalGlyphs)
+        private HashList<ushort> ApplyGsubFeature(IScriptFeature scriptFeature, HashList<ushort> originalGlyphs)
         {
             var allGlyphIdsForSubstitution = scriptFeature.AllGlyphIdsForSubstitution;
             if (allGlyphIdsForSubstitution.Count == 0)
@@ -138,48 +131,52 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
                 Debug.WriteLine($"debug: getAllGlyphIdsForSubstitution() for {scriptFeature.Name} is empty");
                 return originalGlyphs;
             }
-            GlyphArraySplitter glyphArraySplitter = new GlyphArraySplitterRegexImpl(scriptFeature.AllGlyphIdsForSubstitution);
+            IGlyphArraySplitter glyphArraySplitter = new GlyphArraySplitterRegexImpl(scriptFeature.AllGlyphIdsForSubstitution);
 
             var tokens = glyphArraySplitter.Split(originalGlyphs);
 
-            var gsubProcessedGlyphs = new List<int>(tokens.Count);
+            var gsubProcessedGlyphs = new List<ushort>(tokens.Count);
 
-            foreach (List<int> chunk in tokens)
+            foreach (var chunk in tokens)
             {
                 if (scriptFeature.CanReplaceGlyphs(chunk))
                 {
                     // gsub system kicks in, you get the glyphId directly
-                    int glyphId = scriptFeature.GetReplacementForGlyphs(chunk);
-                    gsubProcessedGlyphs.Add(glyphId);
+                    var replacement = scriptFeature.GetReplacementForGlyphs(chunk);
+                    foreach (var glyphId in replacement.Span)
+                        gsubProcessedGlyphs.Add(glyphId);
                 }
                 else
                 {
-                    gsubProcessedGlyphs.AddRange(chunk);
+                    foreach (var glyphId in chunk.Span)
+                        gsubProcessedGlyphs.Add(glyphId);
                 }
             }
 
-            return gsubProcessedGlyphs;
+            return (HashList<ushort>)gsubProcessedGlyphs.ToArray();
         }
 
-        private List<int> GetBeforeHalfGlyphIds()
+        private HashList<ushort> GetBeforeHalfGlyphIds()
         {
-            var glyphIds = new List<int>(BEFORE_HALF_CHARS.Length);
+            var glyphIds = new List<ushort>(BEFORE_HALF_CHARS.Length);
 
             foreach (char character in BEFORE_HALF_CHARS)
             {
-                glyphIds.Add(GetGlyphId(character));
+                glyphIds.Add((ushort)GetGlyphId(character));
             }
 
             if (gsubData.IsFeatureSupported(INIT_FEATURE))
             {
-                ScriptFeature feature = gsubData.GetFeature(INIT_FEATURE);
-                foreach (List<int> glyphCluster in feature.AllGlyphIdsForSubstitution)
+                IScriptFeature feature = gsubData.GetFeature(INIT_FEATURE);
+                foreach (var glyphCluster in feature.AllGlyphIdsForSubstitution)
                 {
-                    glyphIds.Add(feature.GetReplacementForGlyphs(glyphCluster));
+                    var replacement = feature.GetReplacementForGlyphs(glyphCluster);
+                    foreach (var glyphId in replacement.Span)
+                        glyphIds.Add(glyphId);
                 }
             }
 
-            return glyphIds;
+            return (HashList<ushort>)glyphIds.ToArray();
 
         }
 

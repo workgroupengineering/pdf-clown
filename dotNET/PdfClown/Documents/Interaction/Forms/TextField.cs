@@ -97,7 +97,7 @@ namespace PdfClown.Documents.Interaction.Forms
                 if (valueObject is PdfString pdfString)
                     return pdfString.Value;
                 else if (valueObject is PdfStream pdfStream)
-                    return pdfStream.Body;
+                    return pdfStream.GetInputStream();
                 else
                     return null;
             }
@@ -114,7 +114,7 @@ namespace PdfClown.Documents.Interaction.Forms
                     IByteStream valueObjectBuffer = null;
                     if (oldValueObject is PdfStream stream)
                     {
-                        valueObjectBuffer = stream.Body;
+                        valueObjectBuffer = stream.GetOutputStream();
                         valueObjectBuffer.SetLength(0);
                     }
                     if (value is string stringValue)

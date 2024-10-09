@@ -34,10 +34,11 @@ namespace PdfClown.Util
     {
         private const int DefaultCapacity = 1 << 3;
 
-        private ArraySegment<T> data;
+        private T[] data;
         private int length;
         private int position = 0;
         private int mark;
+        private int capacity;
 
         public BuffedStream() : this(0)
         { }
@@ -47,13 +48,12 @@ namespace PdfClown.Util
             if (capacity < 1)
             { capacity = DefaultCapacity; }
 
-            this.data = new T[capacity];
-            this.length = 0;
+            Capacity = capacity;
         }
 
         public BuffedStream(Memory<T> data)
         {
-           SetBuffer(data);
+            SetBuffer(data);
         }
 
         public BuffedStream(T[] data, int start, int end)
@@ -62,6 +62,7 @@ namespace PdfClown.Util
             this.data = data;
             this.position = start;
             this.length = end - start;
+            this.capacity = data.Length;
         }
 
         public long Available { get => length - position; }
@@ -71,7 +72,20 @@ namespace PdfClown.Util
             get => length;
         }
 
-        public int Capacity => data.Count;
+        public int Capacity
+        {
+            get => capacity;
+            set
+            {
+                capacity = value;
+                // Additional data exceed buffer capacity.
+                // Reallocate the buffer!
+                var newBuffer = new T[capacity];
+                //Array.Copy(this.data, 0, data, 0, this.length);
+                data.AsSpan().CopyTo(newBuffer);
+                data = newBuffer;
+            }
+        }
 
         public int Position
         {
@@ -79,29 +93,32 @@ namespace PdfClown.Util
             set => position = value;
         }
 
-        public BuffedStream<T> Append(T data)
+        public void Append(T value)
         {
-            EnsureCapacity(1);
-            this.data[this.length++] = data;
-            return this;
+            EnsureCapacity();
+            data[length++] = value;
         }
 
-        public BuffedStream<T> Append(T[] data) => Append(data.AsSpan(0, data.Length));
+        public void Append(T[] beffer) => Append(beffer, 0, beffer.Length);
 
-        public BuffedStream<T> Append(T[] data, int offset, int length) => Append(data.AsSpan(offset, length));
+        public void Append(T[] buffer, int offset, int count)
+        {
+            EnsureCapacity(count);
+            Array.Copy(buffer, offset, data, length, count);
+            length += count;
+        }
 
-        public BuffedStream<T> Append(ReadOnlySpan<T> data)
+        public void Append(ReadOnlySpan<T> data)
         {
             EnsureCapacity(data.Length);
-            data.CopyTo(AsSpan(this.length, data.Length));
-            this.length += data.Length;
-            return this;
+            data.CopyTo(AsSpan(length, data.Length));
+            length += data.Length;
         }
 
         public BuffedStream<T> Clone()
         {
             var clone = new BuffedStream<T>(length);
-            clone.Append(data.Slice(0, length));
+            clone.Append(data);
             return clone;
         }
 
@@ -133,10 +150,10 @@ namespace PdfClown.Util
         public Span<T> AsSpan(int index, int length) => data.AsSpan(index, length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<T> AsSpan(int index) => AsSpan(index, length - index);
+        public Span<T> AsSpan(int index) => data.AsSpan(index, length - index);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<T> AsSpan() => AsSpan(0, length);
+        public Span<T> AsSpan() => data.AsSpan(0, length);
 
         public void Insert(int index, T[] data) => Insert(index, data, 0, data.Length);
 
@@ -180,20 +197,29 @@ namespace PdfClown.Util
             }
         }
 
-        public int Read(T[] data) => Read(data, 0, data.Length);
+        public int Read(T[] buffer) => Read(buffer, 0, buffer.Length);
 
-        public int Read(T[] data, int offset, int length) => Read(data.AsSpan(offset, length));
-
-        public int Read(Span<T> data)
+        public int Read(T[] buffer, int offset, int count)
         {
-            var length = data.Length;
-            if (position + length > Length)
+            if (position + count > length)
             {
-                length = (int)(Length - position);
+                count = (int)(length - position);
             }
-            AsSpan(position, length).CopyTo(data);
-            position += length;
-            return length;
+            Array.Copy(buffer, offset, data, position, count);
+            position += count;
+            return count;
+        }
+
+        public int Read(Span<T> span)
+        {
+            var count = span.Length;
+            if (position + count > length)
+            {
+                count = (int)(length - position);
+            }
+            AsSpan(position, count).CopyTo(span);
+            position += count;
+            return count;
         }
 
         public Span<T> ReadSpan(int length)
@@ -261,45 +287,49 @@ namespace PdfClown.Util
 
         public void Reset() => SetLength(0);
 
-        public T[] ToArray() => data.Slice(0, length).ToArray();
+        public T[] ToArray() => data.AsSpan(0, length).ToArray();
 
-        public Memory<T> GetMemoryBuffer() => data.Slice(0, length);
+        public Memory<T> GetMemoryBuffer() => data.AsMemory(0, length);
 
-        public T[] GetArrayBuffer() => data.Array;
+        public T[] GetArrayBuffer() => data;
 
-        public void SetBuffer(T[] data)
+        public void SetBuffer(T[] data) => SetBuffer(data, data.Length);
+
+        public void SetBuffer(T[] data, int newLength)
         {
             this.data = data;
-            length = data.Length;
+            capacity = data.Length;
+            length = newLength;
             position = 0;
         }
 
         public void SetBuffer(Memory<T> data)
         {
-            this.data = Unsafe.As<Memory<T>, ArraySegment<T>>(ref data);
-            length = data.Length;
-            position = 0;
+            var aSegment = Unsafe.As<Memory<T>, ArraySegment<T>>(ref data);
+            SetBuffer(aSegment.Array, aSegment.Array.Length);
         }
 
         public void Clear() => SetLength(0);
 
-        ///<summary>Check whether the buffer has sufficient room for
-        ///  adding data.</summary>
+        /// <summary>Check whether the buffer has sufficient room for
+        /// adding data.</summary>
         private void EnsureCapacity(int additionalLength)
         {
-            int minCapacity = length + additionalLength;
+            int minCapacity = length + additionalLength + 1;
             // Is additional data within the buffer capacity?
-            if (minCapacity <= data.Count)
+            if (minCapacity < capacity)
                 return;
-
-            // Additional data exceed buffer capacity.
-            // Reallocate the buffer!
-            var newBuffer = new T[System.Math.Max(data.Count << 1, minCapacity)];
-            //Array.Copy(this.data, 0, data, 0, this.length);
-            data.AsSpan().CopyTo(newBuffer);
-            data = newBuffer;
+            Capacity = System.Math.Max(capacity << 1, minCapacity - 1);
         }
 
+        private void EnsureCapacity()
+        {
+            int minCapacity = length + 2;
+            // Is additional data within the buffer capacity?
+            if (minCapacity < capacity)
+                return;
+            Capacity = System.Math.Max(capacity << 1, minCapacity - 1);
+        }
 
     }
 }

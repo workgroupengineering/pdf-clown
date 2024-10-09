@@ -19,33 +19,30 @@ using System;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Table.Common
 {
-
-    /**
-     * This class models the
-     * <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-format-1">Coverage format 1</a>
-     * in the Open Type layout common tables.
-     * 
-     * @author Palash Ray
-     *
-     */
+    /// <summary>
+    /// This class models the
+    /// <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-format-1">Coverage format 1</a>
+    /// in the Open Type layout common tables.
+    /// @author Palash Ray
+    /// </summary>
     public class CoverageTableFormat1 : CoverageTable
     {
 
-        private readonly int[] glyphArray;
+        private readonly ushort[] glyphArray;
 
-        public CoverageTableFormat1(int coverageFormat, int[] glyphArray) : base(coverageFormat)
+        public CoverageTableFormat1(int coverageFormat, ushort[] glyphArray) : base(coverageFormat)
         {
             this.glyphArray = glyphArray;
         }
 
 
-        public override int GetCoverageIndex(int gid)
+        public override int GetCoverageIndex(ushort gid)
         {
             return Array.BinarySearch(glyphArray, gid);
         }
 
 
-        public override int GetGlyphId(int index)
+        public override ushort GetGlyphId(int index)
         {
             return glyphArray[index];
         }
@@ -56,9 +53,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Table.Common
             get => glyphArray.Length;
         }
 
-        public int[] getGlyphArray()
+        public ushort[] GlyphArray
         {
-            return glyphArray;
+            get => glyphArray;
         }
 
 

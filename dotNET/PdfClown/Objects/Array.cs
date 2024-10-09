@@ -28,12 +28,14 @@ using PdfClown.Documents;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace PdfClown.Objects
 {
 
     /// <summary>Collection of sequentially-arranged object wrappers.</summary>
-    public class Array<TItem> : PdfObjectWrapper<PdfArray>, IList<TItem>
+    public class Array<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TItem> 
+        : PdfObjectWrapper<PdfArray>, IList<TItem>
         where TItem : IPdfObjectWrapper
     {
         protected IEntryWrapper<TItem> itemWrapper;

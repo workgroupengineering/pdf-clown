@@ -35,7 +35,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
-    ///<summary>Form external object [PDF:1.6:4.9].</summary>
+    /// <summary>Form external object [PDF:1.6:4.9].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class FormXObject : XObject, IContentContext
     {

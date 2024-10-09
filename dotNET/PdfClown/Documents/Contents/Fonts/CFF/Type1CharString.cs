@@ -90,14 +90,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
          */
         public SKRect Bounds
         {
-            get
-            {
-                if (path == null)
-                {
-                    Render();
-                }
-                return path.Bounds;
-            }
+            get => Path.Bounds;
         }
 
         /**
@@ -117,27 +110,19 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
         }
 
-        /**
-         * Returns the path of the character.
-         * @return the path
-         */
+        /// <summary>
+        /// Returns the path of the character.
+        /// </summary>
         public SKPath Path
         {
-            get
-            {
-                if (path == null)
-                {
-                    Render();
-                }
-
-                return path;
-            }
+            get => path ?? Render();
         }
 
-        /**
-         * Renders the Type 1 char string sequence to a GeneralPath.
-         */
-        private void Render()
+        /// <summary>
+        /// Renders the Type 1 char string sequence to a GeneralPath.
+        /// </summary>
+        /// <returns>path</returns>
+        private SKPath Render()
         {
             path = new SKPath() { FillType = SKPathFillType.EvenOdd };
             leftSideBearing = new SKPoint(0, 0);
@@ -156,6 +141,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                     numbers.Add(System.Convert.ToSingle(obj));
                 }
             }
+            return path;
         }
 
 

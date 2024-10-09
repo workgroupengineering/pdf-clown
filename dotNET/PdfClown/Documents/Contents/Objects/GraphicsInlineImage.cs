@@ -33,9 +33,7 @@ using PdfClown.Documents.Contents.ColorSpaces;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Inline image object [PDF:1.6:4.8.6].</summary>
-    */
+    /// <summary>Inline image object [PDF:1.6:4.8.6].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class GraphicsInlineImage : GraphicsObject, IImageObject
     {
@@ -52,14 +50,10 @@ namespace PdfClown.Documents.Contents.Objects
             objects.Add(body);
         }
 
-        /**
-          <summary>Gets the image body.</summary>
-        */
+        /// <summary>Gets the image body.</summary>
         public Operation Body => (Operation)Objects[1];
 
-        /**
-          <summary>Gets the image header.</summary>
-        */
+        /// <summary>Gets the image header.</summary>
         public override Operation Header => (Operation)Objects[0];
 
         IDictionary<PdfName, PdfDirectObject> IImageObject.Header => ImageHeader;
@@ -68,9 +62,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public InlineImageBody ImageBody => (InlineImageBody)Body;
 
-        /**
-          <summary>Gets the image size.</summary>
-        */
+        /// <summary>Gets the image size.</summary>
         public SKSize Size => new SKSize(ImageHeader.Width, ImageHeader.Height);
 
         public SKMatrix Matrix => SKMatrix.CreateScale(1F / ImageHeader.Width, -1F / ImageHeader.Height);
@@ -81,7 +73,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public bool ImageMask => bool.TryParse(ImageHeader.ImageMask, out var isMask) ? isMask : false;
 
-        public IByteStream Data => ImageBody.Value;
+        public IInputStream Data => ImageBody.Value;
 
         public float[] Decode => ImageHeader.Decode;
 

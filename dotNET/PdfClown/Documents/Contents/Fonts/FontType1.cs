@@ -149,7 +149,7 @@ namespace PdfClown.Documents.Contents.Fonts
                         int length2 = fontFile.Length2;
 
                         // repair Length1 and Length2 if necessary
-                        var bytes = stream.ExtractBody(true).AsMemory();
+                        var bytes = stream.GetExtractedStream().AsMemory();
                         if (bytes.Length == 0)
                         {
                             throw new IOException("Font data unavailable");

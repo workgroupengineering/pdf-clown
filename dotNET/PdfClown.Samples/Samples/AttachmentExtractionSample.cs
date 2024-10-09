@@ -51,7 +51,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private void ExportAttachment(IByteStream data, string filename)
+        private void ExportAttachment(IInputStream data, string filename)
         {
             string outputPath = GetOutputPath(filename);
             FileStream outputStream;

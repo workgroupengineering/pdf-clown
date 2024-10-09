@@ -892,7 +892,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             // empty charstrings and charstrings of insufficient Length
             if (cipherBytes.Length == 0 || n > cipherBytes.Length)
             {
-                return new byte[] { };
+                return Array.Empty<byte>();
             }
             // decrypt
             int c1 = 52845;

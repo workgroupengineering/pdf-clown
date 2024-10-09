@@ -165,6 +165,17 @@ namespace PdfClown.Util.Math.Geom
             return u.X * v.Y - u.Y * v.X;
         }
 
+        public static bool Contains(SKPoint point, SKPoint point1, SKPoint point2, SKPoint point3)
+        {
+            //Calculate barycentric coordinates
+            var denominator1 = (point2.Y - point1.Y) * (point3.X - point1.X) + (point1.X - point2.X) * (point3.Y - point1.Y);
+            var alpha1 = ((point2.Y - point1.Y) * (point.X - point1.X) + (point1.X - point2.X) * (point.Y - point1.Y)) / denominator1;
+            var beta1 = ((point1.Y - point3.Y) * (point.X - point1.X) + (point3.X - point1.X) * (point.Y - point1.Y)) / denominator1;
+            var gamma1 = 1 - alpha1 - beta1;
+
+            return alpha1 >= 0 && beta1 >= 0 && gamma1 >= 0;
+        }
+
         public static SKPoint Invert(this SKPoint p)
         {
             return new SKPoint(p.X * -1, p.Y * -1);

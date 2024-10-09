@@ -76,7 +76,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public float[] Decode
         {
-            get => decode ?? (decode = (((PdfArray)this[PdfName.D]) ?? ((PdfArray)this[PdfName.Decode]))?.Select(p => ((IPdfNumber)p).FloatValue).ToArray());
+            get => decode ??= (((PdfArray)this[PdfName.D]) ?? ((PdfArray)this[PdfName.Decode]))?.ToFloatArray();
             set => this[PdfName.D] = new PdfArray(value.Select(p => PdfInteger.Get((int)p)));
         }
 

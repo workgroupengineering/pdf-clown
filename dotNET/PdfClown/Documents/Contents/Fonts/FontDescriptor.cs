@@ -31,6 +31,13 @@ namespace PdfClown.Documents.Contents.Fonts
 {
     public class FontDescriptor : PdfObjectWrapper<PdfDictionary>
     {
+        public static FontDescriptor Wrap(PdfDirectObject baseObject)
+            => baseObject != null
+                ? baseObject.Wrapper is FontDescriptor exist
+                    ? exist
+                    : new FontDescriptor(baseObject)
+                : null;
+
         public FontDescriptor(PdfDirectObject baseObject) : base(baseObject)
         { }
 
@@ -97,7 +104,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public Rectangle FontBBox
         {
-            get => Wrap<Rectangle>(Dictionary.Get<PdfArray>(PdfName.FontBBox));
+            get => Rectangle.Wrap(Dictionary.Get<PdfArray>(PdfName.FontBBox));
             set => Dictionary[PdfName.FontBBox] = value?.BaseObject;
         }
 

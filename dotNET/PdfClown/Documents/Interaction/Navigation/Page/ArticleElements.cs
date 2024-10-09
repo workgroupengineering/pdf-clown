@@ -33,11 +33,9 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
-    /**
-      <summary>Article bead [PDF:1.7:8.3.2].</summary>
-    */
+    /// <summary>Article bead [PDF:1.7:8.3.2].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class ArticleElements : PdfObjectWrapper<PdfDictionary>, IList<ArticleElement>
+    public sealed class ArticleElements : PdfObjectWrapper2<PdfDictionary>, IList<ArticleElement>
     {
         private sealed class ElementCounter : ElementEvaluator
         {
@@ -46,9 +44,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         private class ElementEvaluator : IPredicate
         {
-            /**
-              Current position.
-            */
+            // Current position.
             protected int index = -1;
 
             public virtual bool Evaluate(object @object)

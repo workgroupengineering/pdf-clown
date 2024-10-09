@@ -81,10 +81,8 @@ namespace PdfClown.Documents.Contents
                 else // Streams exist.
                 {
                     // Eliminating exceeding streams...
-                    /*
-                      NOTE: Applications that consume or produce PDF files are not required to preserve
-                      the existing structure of the Contents array [PDF:1.6:3.6.2].
-                    */
+                    // NOTE: Applications that consume or produce PDF files are not required to preserve
+                    // the existing structure of the Contents array [PDF:1.6:3.6.2].
                     while (streams.Count > 1)
                     {
                         File.Unregister((PdfReference)streams[1]); // Removes the exceeding stream from the file.
@@ -95,7 +93,7 @@ namespace PdfClown.Documents.Contents
             }
 
             // Get the stream buffer!
-            var buffer = stream.Body;
+            var buffer = stream.GetOutputStream();
             // Delete old contents from the stream buffer!
             buffer.SetLength(0);
             // Serializing the new contents into the stream buffer...

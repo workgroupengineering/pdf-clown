@@ -86,7 +86,7 @@ namespace PdfClown.Tokens
             : base(new PdfDictionary() { { PdfName.Type, PdfName.ObjStm } })
         { }
 
-        public ObjectStream(PdfDictionary header, IByteStream body)
+        public ObjectStream(PdfDictionary header, IInputStream body)
             : base(header, body)
         { }
 
@@ -195,10 +195,10 @@ namespace PdfClown.Tokens
                 {
                     entries = new Dictionary<int, ObjectEntry>();
 
-                    IByteStream body = Body;
+                    var body = GetInputStream();
                     if (body.Length > 0)
                     {
-                        parser = new FileParser(Body, File);
+                        parser = new FileParser(body, File);
                         int baseOffset = Header.GetInt(PdfName.First);
                         for (int index = 0, length = Header.GetInt(PdfName.N); index < length; index++)
                         {
@@ -248,7 +248,7 @@ namespace PdfClown.Tokens
                 }
 
                 // Get the stream buffer!
-                IByteStream body = Body;
+                var body = GetOutputStream();
 
                 // Delete the old entries!
                 body.SetLength(0);

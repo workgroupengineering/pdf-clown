@@ -44,13 +44,17 @@ namespace PdfClown.UI
             {
                 if (textSelectedQuad == null)
                 {
+                    var result = new Quad();
                     foreach (TextChar textChar in Chars)
                     {
-                        if (!textSelectedQuad.HasValue)
-                        { textSelectedQuad = textChar.Quad; }
+                        if (textChar.Quad.IsEmpty)
+                            continue;
+                        if (result.IsEmpty)
+                        { result = textChar.Quad; }
                         else
-                        { textSelectedQuad = Util.Math.Geom.Quad.Union(textSelectedQuad.Value, textChar.Quad); }
+                        { result.Union(textChar.Quad); }
                     }
+                    textSelectedQuad = result;
                 }
                 return textSelectedQuad;
             }

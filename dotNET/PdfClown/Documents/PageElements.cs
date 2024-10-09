@@ -26,11 +26,13 @@
 using PdfClown.Objects;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace PdfClown.Documents
 {
     /// <summary>Page elements.</summary>
-    public abstract class PageElements<TItem> : Array<TItem>
+    public abstract class PageElements<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TItem> 
+        : Array<TItem>
         where TItem : PdfObjectWrapper<PdfDictionary>
     {
         private PdfPage page;
@@ -87,6 +89,15 @@ namespace PdfClown.Documents
         {
             // Link the element to its page!
             item.BaseDataObject[PdfName.P] = page.BaseObject;
+        }
+
+        protected internal virtual void LinkPageNoUpdate(TItem item)
+        {
+            // Link the element to its page!
+            var temp = item.BaseDataObject.Updateable;
+            item.BaseDataObject.Updateable = false;
+            item.BaseDataObject[PdfName.P] = page.BaseObject;
+            item.BaseDataObject.Updateable = temp;
         }
 
         protected virtual void UnlinkPage(TItem item)

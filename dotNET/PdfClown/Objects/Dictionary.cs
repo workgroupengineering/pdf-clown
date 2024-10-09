@@ -28,23 +28,28 @@ using PdfClown.Documents.Interchange.Metadata;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace PdfClown.Objects
 {
-    public abstract class Dictionary<TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, TValue>, IDictionary
+    public abstract class Dictionary<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TValue> 
+        : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, TValue>, IDictionary
         where TValue : PdfObjectWrapper
     {
         private IEntryWrapper<TValue> valueWrapper;
 
-        protected Dictionary(PdfDocument context) : this(context, EntryWrapper<TValue>.Default)
+        protected Dictionary(PdfDocument context) 
+            : this(context, EntryWrapper<TValue>.Default)
         { }
 
-        protected Dictionary(PdfDocument context, IEntryWrapper<TValue> wrapper) : base(context, new PdfDictionary())
+        protected Dictionary(PdfDocument context, IEntryWrapper<TValue> wrapper) 
+            : base(context, new PdfDictionary())
         {
             valueWrapper = wrapper;
         }
 
-        protected Dictionary(PdfDocument context, PdfDictionary dataObject) : this(context, dataObject, EntryWrapper<TValue>.Default)
+        protected Dictionary(PdfDocument context, PdfDictionary dataObject) 
+            : this(context, dataObject, EntryWrapper<TValue>.Default)
         { }
 
         protected Dictionary(PdfDocument context, PdfDictionary dataObject, IEntryWrapper<TValue> wrapper) : base(context, dataObject)

@@ -49,7 +49,7 @@ namespace PdfClown.Documents.Encryption
     public sealed class PublicKeySecurityHandler : SecurityHandler<PublicKeyProtectionPolicy>
     {
         /** The filter name. */
-        public static readonly string FILTER = "Adobe.PubSec";
+        public const string FILTER = "Adobe.PubSec";
 
         private static readonly string SUBFILTER4 = "adbe.pkcs7.s4";
         private static readonly string SUBFILTER5 = "adbe.pkcs7.s5";

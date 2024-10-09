@@ -31,9 +31,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Text object [PDF:1.6:5.3].</summary>
-    */
+    /// <summary>Text object [PDF:1.6:5.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class GraphicsText : GraphicsObject
     {

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -10,7 +11,8 @@ namespace PdfClown.Util.Reflection
     public abstract class Invoker : IInvoker
     {
         private static readonly Dictionary<Type, Dictionary<string, IInvoker>> cache = new Dictionary<Type, Dictionary<string, IInvoker>>();
-        public static IInvoker GetPropertyInvoker(Type type, string propertyName)
+
+        public static IInvoker GetPropertyInvoker([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, string propertyName)
         {
             var property = type.GetProperty(propertyName);
 
@@ -57,10 +59,7 @@ namespace PdfClown.Util.Reflection
 
         public abstract void SetValue(T target, V value);
 
-        public void SetValue(object target, V value)
-        {
-            SetValue((T)target, value);
-        }
+        public void SetValue(object target, V value) => SetValue((T)target, value);
 
         public override void SetValue(object target, object value) => SetValue((T)target, (V)value);
 

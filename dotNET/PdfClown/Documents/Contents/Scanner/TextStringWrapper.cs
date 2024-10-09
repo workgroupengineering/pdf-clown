@@ -30,12 +30,12 @@ using System.Collections.Generic;
 using SkiaSharp;
 using System.Text;
 using PdfClown.Util.Math.Geom;
+using System.Linq;
+using PdfClown.Objects;
 
 namespace PdfClown.Documents.Contents.Scanner
 {
-    /**
-      <summary>Text string information.</summary>
-    */
+    /// <summary>Text string information.</summary>
     public sealed class TextStringWrapper : GraphicsObjectWrapper<ShowText>, ITextString
     {
         public class ShowTextScanner : ShowText.IScanner
@@ -45,12 +45,14 @@ namespace PdfClown.Documents.Contents.Scanner
             internal ShowTextScanner(TextStringWrapper wrapper)
             {
                 this.wrapper = wrapper;
+                wrapper.textChars.Clear();
+                wrapper.text = null;
+                wrapper.quad = null;
             }
 
             public void ScanChar(char textChar, Quad textCharQuad)
             {
                 wrapper.textChars.Add(new TextChar(textChar, textCharQuad, wrapper, false));
-                wrapper.text = null;
             }
         }
 
@@ -59,28 +61,26 @@ namespace PdfClown.Documents.Contents.Scanner
         private string text;
         private Quad? quad;
 
-        internal TextStringWrapper(ContentScanner scanner, bool scan = true) : base((ShowText)scanner.Current)
+        internal TextStringWrapper(ShowText showText, ContentScanner scanner, bool scan = true) : base(showText)
         {
+            var state = scanner.State;
             Context = scanner.Context;
             Context.Strings?.Add(this);
 
-            textChars = new List<TextChar>();
+            textChars = new List<TextChar>(showText.Value.OfType<PdfString>().Sum(x => x.RawValue.Length));
+            style = new TextStyle(
+              state.Font,
+              state.FontSize * state.TextState.Tm.ScaleY,
+              state.RenderMode,
+              state.StrokeColor,
+              state.StrokeColorSpace,
+              state.FillColor,
+              state.FillColorSpace,
+              state.Scale * state.TextState.Tm.ScaleX,
+              state.TextState.Tm.ScaleY);
+            if (scan)
             {
-                GraphicsState state = scanner.State;
-                style = new TextStyle(
-                  state.Font,
-                  state.FontSize * state.TextState.Tm.ScaleY,
-                  state.RenderMode,
-                  state.StrokeColor,
-                  state.StrokeColorSpace,
-                  state.FillColor,
-                  state.FillColorSpace,
-                  state.Scale * state.TextState.Tm.ScaleX,
-                  state.TextState.Tm.ScaleY);
-                if (scan)
-                {
-                    BaseDataObject.Scan(state, new ShowTextScanner(this));
-                }
+                BaseDataObject.Scan(state, new ShowTextScanner(this));
             }
         }
 
@@ -92,28 +92,26 @@ namespace PdfClown.Documents.Contents.Scanner
             {
                 if (quad == null)
                 {
+                    var result = new Quad();
                     foreach (TextChar textChar in textChars)
                     {
                         if (textChar.Quad.IsEmpty)
                             continue;
-                        if (quad == null)
-                        { quad = textChar.Quad; }
+                        if (result.IsEmpty)
+                        { result = textChar.Quad; }
                         else
-                        { quad = Quad.Union(quad.Value, textChar.Quad); }
+                        { result.Union(textChar.Quad); }
                     }
-                    if (quad == null)
-                        quad = Quad.Empty;
+                    quad = result;
                 }
                 return quad.Value;
             }
         }
 
-        /**
-          <summary>Gets the text style.</summary>
-        */
+        /// <summary>Gets the text style.</summary>
         public TextStyle Style => style;
 
-        public String Text
+        public string Text
         {
             get
             {

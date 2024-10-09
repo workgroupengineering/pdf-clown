@@ -442,9 +442,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Resolve compound glyph references.
-         */
+        /// <summary>Resolve compound glyph references.</summary>
         private void AddCompoundReferences()
         {
             if (hasAddedCompoundReferences)

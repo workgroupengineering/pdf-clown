@@ -72,7 +72,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 		 */
         public static Type1Font CreateWithSegments(Memory<byte> segment1, Memory<byte> segment2)
         {
-            Type1Parser parser = new Type1Parser();
+            var parser = new Type1Parser();
             return parser.Parse(segment1, segment2);
         }
 

@@ -74,7 +74,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 var fontFile = fd.FontFile3;
                 if (fontFile != null)
                 {
-                    using var input = fontFile.BaseDataObject.ExtractBody(true);
+                    using var input = fontFile.BaseDataObject.GetExtractedStream();
                     //try
                     //{
                     if (input != null && input.Length > 0 && (input.PeekByte() & 0xff) == '%')
@@ -195,7 +195,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public override SKRect BoundingBox
         {
-            get => fontBBox ?? (fontBBox = GenerateBoundingBox()).Value;
+            get => fontBBox ??= GenerateBoundingBox();
         }
 
         private SKRect GenerateBoundingBox()
@@ -223,31 +223,14 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * Returns the embedded CFF CIDFont, or null if the substitute is not a CFF font.
-         */
+        /// <summary>Returns the embedded CFF CIDFont, or null if the substitute is not a CFF font.</summary>
         public CFFFont CFFFont
         {
-            get
-            {
-                if (cidFont != null)
-                {
-                    return cidFont;
-                }
-                else if (t1Font is CFFType1Font)
-                {
-                    return (CFFType1Font)t1Font;
-                }
-                else
-                {
-                    return null;
-                }
-            }
+            get => cidFont as CFFFont ??
+                    (t1Font is CFFType1Font cFFType1Font ? cFFType1Font : null);
         }
 
-        /**
-         * Returns the embedded or substituted font.
-         */
+        /// <summary>Returns the embedded or substituted font.</summary>
         public BaseFont Holder
         {
             get => cidFont ?? t1Font;

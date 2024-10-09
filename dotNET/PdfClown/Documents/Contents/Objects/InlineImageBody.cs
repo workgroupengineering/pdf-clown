@@ -28,20 +28,18 @@ using PdfClown.Objects;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Inline image data (anonymous) operation [PDF:1.6:4.8.6].</summary>
-      <remarks>This is a figurative operation necessary to constrain the inline image data section
-      within the content stream model.</remarks>
-    */
+    /// <summary>Inline image data (anonymous) operation [PDF:1.6:4.8.6].</summary>
+    /// <remarks>This is a figurative operation necessary to constrain the inline image data section
+    /// within the content stream model.</remarks>
     [PDF(VersionEnum.PDF10)]
     public sealed class InlineImageBody : Operation
     {
-        private IByteStream value;
+        private IInputStream value;
 
-        public InlineImageBody(IByteStream value) : base(null)
+        public InlineImageBody(IInputStream value) : base(null)
         { this.value = value; }
 
-        public IByteStream Value
+        public IInputStream Value
         {
             get => value;
             set => this.value = value;

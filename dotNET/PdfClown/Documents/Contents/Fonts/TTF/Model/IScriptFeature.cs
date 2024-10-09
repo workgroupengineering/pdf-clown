@@ -14,27 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Model
 {
-
-    using System.Collections.Generic;
-
-    /**
-     * Models a {@link FeatureRecord}
-     * 
-     * @author Palash Ray
-     *
-     */
-    public interface ScriptFeature
+    /// <summary>
+    /// Models a {@link FeatureRecord}
+    /// @author Palash Ray
+    /// </summary>
+    public interface IScriptFeature
     {
         string Name { get; }
 
-        ICollection<List<int>> AllGlyphIdsForSubstitution { get; }
+        ICollection<HashList<ushort>> AllGlyphIdsForSubstitution { get; }
 
-        bool CanReplaceGlyphs(List<int> glyphIds);
+        bool CanReplaceGlyphs(HashList<ushort> glyphIds);
 
-        int GetReplacementForGlyphs(List<int> glyphIds);
+        HashList<ushort> GetReplacementForGlyphs(HashList<ushort> glyphIds);
 
     }
 }

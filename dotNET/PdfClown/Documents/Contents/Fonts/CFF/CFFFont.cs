@@ -23,12 +23,11 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-    /**
-     * An Adobe Compact Font Format (CFF) font. Thread safe.
-     * 
-     * @author Villu Ruusmann
-     * @author John Hewson
-     */
+    /// <summary>
+    /// An Adobe Compact Font Format(CFF) font.Thread safe.
+    /// @author Villu Ruusmann
+    /// @author John Hewson
+    /// </summary>
     public abstract class CFFFont : BaseFont
     {
         private string fontName;
@@ -39,11 +38,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         protected Memory<byte>[] charStrings;
         protected Memory<byte>[] globalSubrIndex;
 
-        /**
-		 * The name of the font.
-		 *
-		 * @return the name of the font
-		 */
+        /// <summary>The name of the font.</summary>
         public override string Name
         {
             get => fontName;
@@ -55,19 +50,13 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             set => fontName = value;
         }
 
-        /**
-		 * Returns the top dictionary.
-		 * 
-		 * @return the dictionary
-		 */
+        /// <summary>The top dictionary.</summary>
         public Dictionary<string, object> TopDict
         {
             get => topDict;
         }
 
-        /**
-		 * Returns the FontBBox.
-		 */
+        /// <summary>Returns the FontBBox.</summary>
         public override SKRect FontBBox
         {
             get => fontBBox ??= GetBBox();
@@ -107,25 +96,14 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             set => charStrings = value;
         }
 
-        /**
-		 * Sets a byte source to re-read the CFF data in the future.
-		 */
-        public void SetData(CFFParser.IByteSource source)
+        /// <summary>Byte source to re-read the CFF data in the future.</summary>
+        public CFFParser.IByteSource Data
         {
-            this.source = source;
+            get => source;
+            set => source = value;
         }
 
-        /**
-		 * Returns the CFF data.
-		 */
-        public Memory<byte> Data
-        {
-            get => source.GetBytes();
-        }
-
-        /**
-		 * Returns the number of charstrings in the font.
-		 */
+        /// <summary>Returns the number of charstrings in the font.</summary>
         public int NumCharStrings
         {
             get => charStrings.Length;

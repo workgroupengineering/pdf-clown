@@ -47,11 +47,11 @@ namespace PdfClown.Samples.CLI
             while (level.MoveNext())
             {
                 ContentObject content = level.Current;
-                if (content is ShowText)
+                if (content is ShowText showText)
                 {
                     Font font = level.State.Font;
                     // Extract the current text chunk, decoding it!
-                    Console.WriteLine(font.Decode(((ShowText)content).Text));
+                    Console.WriteLine(font.Decode(showText.Text));
                 }
                 else if (content is GraphicsText || content is ContainerObject)
                 {

@@ -32,24 +32,18 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Move to the next line and show a text string' operation [PDF:1.6:5.3.2].</summary>
-    */
+    /// <summary>'Move to the next line and show a text string' operation [PDF:1.6:5.3.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class ShowTextToNextLine : ShowText
     {
-        /**
-          <param name="text">Text encoded using current font's encoding.</param>
-        */
+        /// <param name="text">Text encoded using current font's encoding.</param>
         public ShowTextToNextLine(string @operator, byte[] text)
             : base(@operator, new PdfByteString(text))
         { }
 
-        /**
-          <param name="text">Text encoded using current font's encoding.</param>
-          <param name="wordSpace">Word spacing.</param>
-          <param name="charSpace">Character spacing.</param>
-        */
+        /// <param name="text">Text encoded using current font's encoding.</param>
+        /// <param name="wordSpace">Word spacing.</param>
+        /// <param name="charSpace">Character spacing.</param>
         public ShowTextToNextLine(string @operator, byte[] text, double wordSpace, double charSpace)
             : base(@operator, new PdfArray(3) { wordSpace, charSpace, new PdfByteString(text) })
         { }

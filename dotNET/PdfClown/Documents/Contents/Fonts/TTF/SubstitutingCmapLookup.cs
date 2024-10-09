@@ -14,16 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using System.Collections.Generic;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
-    using System.Collections.Generic;
-
-    /**
-     * A cmap lookup that performs substitution via the 'GSUB' table.
-     *
-     * @author Aaron Madlon-Kay
-     */
+    /// <summary>
+    /// A cmap lookup that performs substitution via the 'GSUB' table.
+    /// @author Aaron Madlon-Kay
+    /// </summary>
     public class SubstitutingCmapLookup : ICmapLookup
     {
         private readonly CmapSubtable cmap;

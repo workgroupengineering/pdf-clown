@@ -27,42 +27,27 @@ using System;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>Cross-reference table entry [PDF:1.6:3.4.3].</summary>
-    */
+    /// <summary>Cross-reference table entry [PDF:1.6:3.4.3].</summary>
     public class XRefEntry : ICloneable
     {
-        /**
-          <summary>Cross-reference table entry usage [PDF:1.6:3.4.3].</summary>
-        */
+        /// <summary>Cross-reference table entry usage [PDF:1.6:3.4.3].</summary>
         public enum UsageEnum
         {
-            /**
-              <summary>Free entry.</summary>
-            */
+            /// <summary>Free entry.</summary>
             Free,
-            /**
-              <summary>Ordinary (uncompressed) object entry.</summary>
-            */
+            /// <summary>Ordinary (uncompressed) object entry.</summary>
             InUse,
-            /**
-              <summary>Compressed object entry [PDF:1.6:3.4.6].</summary>
-            */
+            /// <summary>Compressed object entry [PDF:1.6:3.4.6].</summary>
             InUseCompressed
         }
 
-        /**
-          <summary>Unreusable generation [PDF:1.6:3.4.3].</summary>
-        */
+        /// <summary>Unreusable generation [PDF:1.6:3.4.3].</summary>
         public static readonly int GenerationUnreusable = 65535;
 
-        /**
-          <summary>Undefined offset.</summary>
-        */
+        /// <summary>Undefined offset.</summary>
         public static readonly int UndefinedOffset = -1;
-        /**
-          <summary>Undefined object stream number.</summary>
-        */
+
+        /// <summary>Undefined object stream number.</summary>
         public static readonly int UndefinedStreamNumber = -1;
 
         private int number;
@@ -71,34 +56,28 @@ namespace PdfClown.Tokens
         private int streamNumber;
         private UsageEnum usage;
 
-        /**
-          <summary>Instantiates a new in-use ordinary (uncompressed) object entry.</summary>
-          <param name="number">Object number.</param>
-          <param name="generation">Generation number.</param>
-        */
+        /// <summary>Instantiates a new in-use ordinary (uncompressed) object entry.</summary>
+        /// <param name="number">Object number.</param>
+        /// <param name="generation">Generation number.</param>
         public XRefEntry(int number, int generation)
             : this(number, generation, UndefinedOffset, UsageEnum.InUse)
         { }
 
-        /**
-          <summary>Instantiates an original ordinary (uncompressed) object entry.</summary>
-          <param name="number">Object number.</param>
-          <param name="generation">Generation number.</param>
-          <param name="offset">Indirect-object byte offset within the serialized file (in-use entry),
-            or the next free-object object number (free entry).</param>
-          <param name="usage">Usage state.</param>
-        */
+        /// <summary>Instantiates an original ordinary (uncompressed) object entry.</summary>
+        /// <param name="number">Object number.</param>
+        /// <param name="generation">Generation number.</param>
+        /// <param name="offset">Indirect-object byte offset within the serialized file (in-use entry),
+        ///   or the next free-object object number (free entry).</param>
+        /// <param name="usage">Usage state.</param>
         public XRefEntry(int number, int generation, int offset, UsageEnum usage)
             : this(number, generation, offset, usage, UndefinedStreamNumber)
         { }
 
-        /**
-          <summary>Instantiates a compressed object entry.</summary>
-          <param name="number">Object number.</param>
-          <param name="offset">Object index within its object stream.</param>
-          <param name="streamNumber">Object number of the object stream in which this object is stored.
-          </param>
-        */
+        /// <summary>Instantiates a compressed object entry.</summary>
+        /// <param name="number">Object number.</param>
+        /// <param name="offset">Object index within its object stream.</param>
+        /// <param name="streamNumber">Object number of the object stream in which this object is stored.
+        /// </param>
         public XRefEntry(int number, int offset, int streamNumber)
             : this(number, 0, offset, UsageEnum.InUseCompressed, streamNumber)
         { }
@@ -112,51 +91,41 @@ namespace PdfClown.Tokens
             this.streamNumber = streamNumber;
         }
 
-        /**
-          <summary>Gets the generation number.</summary>
-        */
+        /// <summary>Gets the generation number.</summary>
         public int Generation
         {
             get => generation;
             internal set => generation = value;
         }
 
-        /**
-          <summary>Gets the object number.</summary>
-        */
+        /// <summary>Gets the object number.</summary>
         public int Number
         {
             get => number;
             internal set => number = value;
         }
 
-        /**
-          <summary>Gets its indirect-object byte offset within the serialized file (in-use entry),
-          the next free-object object number (free entry) or the object index within its object stream
-          (compressed entry).</summary>
-        */
+        /// <summary>Gets its indirect-object byte offset within the serialized file (in-use entry),
+        /// the next free-object object number (free entry) or the object index within its object stream
+        /// (compressed entry).</summary>
         public int Offset
         {
             get => offset;
             internal set => offset = value;
         }
 
-        /**
-          <summary>Gets the object number of the object stream in which this object is stored
-          [PDF:1.6:3.4.7], in case it is a <see cref="UsageEnum.InUseCompressed">compressed</see> one.
-          </summary>
-          <returns><see cref="UndefinedStreamNumber"/> in case this is <see cref="UsageEnum.InUse">not a
-          compressed</see>-object entry.</returns>
-        */
+        /// <summary>Gets the object number of the object stream in which this object is stored
+        /// [PDF:1.6:3.4.7], in case it is a <see cref="UsageEnum.InUseCompressed">compressed</see> one.
+        /// </summary>
+        /// <returns><see cref="UndefinedStreamNumber"/> in case this is <see cref="UsageEnum.InUse">not a
+        /// compressed</see>-object entry.</returns>
         public int StreamNumber
         {
             get => streamNumber;
             internal set => streamNumber = value;
         }
 
-        /**
-          <summary>Gets the usage state.</summary>
-        */
+        /// <summary>Gets the usage state.</summary>
         public UsageEnum Usage
         {
             get => usage;

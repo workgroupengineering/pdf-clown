@@ -50,7 +50,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         void JpxImageClosure()
         { }
 
-        public void Parse(ByteStream input)
+        public void Parse(IInputStream input)
         {
             var data = (ReadOnlySpan<byte>)input.AsSpan();
             var head = data.ReadUInt16(0);
@@ -177,7 +177,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             throw new JpxError("No size marker found in JPX stream");
         }
 
-        void ParseCodestream(ByteStream data, long streamLength)
+        void ParseCodestream(IInputStream data, long streamLength)
         {
             var context = new Context();
             var doNotRecover = false;
@@ -896,7 +896,7 @@ namespace PdfClown.Bytes.Filters.Jpx
             }
         }
 
-        private void ParseTilePackets(Context context, ByteStream data, int length)
+        private void ParseTilePackets(Context context, IInputStream data, int length)
         {
             var end = data.Position + length;
             var buffer = 0;
