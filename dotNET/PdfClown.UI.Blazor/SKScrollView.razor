@@ -1,16 +1,39 @@
 ﻿
 <div @attributes="AdditionalAttributes">
-    <SKCanvasView @ref="canvasView" id="@CanvasId" tabindex="1"
-                  OnPaintSurface="OnPaintSurface" IgnorePixelScaling="false"
-                  @onpointerdown="OnPointerDown" 
-                  __internal_preventDefault_onpointerdown="true"
-                  __internal_stopPropagation_onpointerdown="true"
-                  @onpointerup="OnPointerUp"                  
-                  @onpointerenter="OnPointerEnter"
-                  @onpointerleave="OnPointerLeave"                                 
-                  @onwheel="OnMouseWheel"                  
-                  @onkeydown="OnKeyDown"/>
-                  
+@{#if __FORCE_GL__}
+    <SKGLView 
+        @ref="canvasView" 
+        id="@CanvasId" 
+        tabindex="1"
+        OnPaintSurface="OnPaintSurface" 
+        IgnorePixelScaling="false" 
+        EnableRenderLoop="true"
+        @onpointerdown="OnPointerDown" 
+        __internal_preventDefault_onpointerdown="true"
+        __internal_stopPropagation_onpointerdown="true"
+        @onpointerup="OnPointerUp"                  
+        @onpointerenter="OnPointerEnter"
+        @onpointerleave="OnPointerLeave"                                 
+        @onwheel="OnMouseWheel"                  
+        @onkeydown="OnKeyDown"/>
+@{#else}
+    <SKCanvasView
+        @ref="canvasView" 
+        id="@CanvasId" 
+        tabindex="1"
+        OnPaintSurface="OnPaintSurface" 
+        IgnorePixelScaling="false" 
+        EnableRenderLoop="false"
+        @onpointerdown="OnPointerDown" 
+        __internal_preventDefault_onpointerdown="true"
+        __internal_stopPropagation_onpointerdown="true"
+        @onpointerup="OnPointerUp"                  
+        @onpointerenter="OnPointerEnter"
+        @onpointerleave="OnPointerLeave"                                 
+        @onwheel="OnMouseWheel"                  
+        @onkeydown="OnKeyDown"/>
+@{#endif}
+        
 </div>
 @* @onpointermove="OnPointerMove"
 __internal_preventDefault_onpointermove="true"

@@ -338,7 +338,11 @@ namespace PdfClown.UI.Blazor
             base.OnHorizontalValueChanged(oldValue, newValue);
         }
 
+#if __FORCE_GL__
+        protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
+#else
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
+#endif
         {
             if(e.Info.Width != Width
                 || e.Info.Height != Height)
@@ -348,7 +352,11 @@ namespace PdfClown.UI.Blazor
             base.OnPaintSurface(e);
         }
 
+#if __FORCE_GL__
+        protected override void OnPaintContent(SKPaintGLSurfaceEventArgs e)
+#else
         protected override void OnPaintContent(SKPaintSurfaceEventArgs e)
+#endif
         {
             if (Document == null)
                 return;

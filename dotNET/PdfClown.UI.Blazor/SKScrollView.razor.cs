@@ -66,9 +66,13 @@ namespace PdfClown.UI.Blazor
         private const string ahVerticalScroll = "VerticalScrollAnimation";
         private const string ahHorizontalScroll = "HorizontalScrollAnimation";
 
+#if __FORCE_GL__
+        private SKGLView canvasView = null;
+#else
         private SKCanvasView canvasView = null;
+#endif
         private SKHtmlScrollInterop interop = null;
-
+        
         private SKPoint nullLocation;
         private Orientation nullDirection = Orientation.Vertical;
         private double vHeight;
@@ -315,9 +319,15 @@ namespace PdfClown.UI.Blazor
             }
         }
 
+#if __FORCE_GL__
+        public event EventHandler<SKPaintGLSurfaceEventArgs> PaintContent;
+
+        public event EventHandler<SKPaintGLSurfaceEventArgs> PaintOver;
+#else
         public event EventHandler<SKPaintSurfaceEventArgs> PaintContent;
 
         public event EventHandler<SKPaintSurfaceEventArgs> PaintOver;
+#endif
 
         public bool VerticalScrollBarVisible => VerticalMaximum >= (Height + DefaultSKStyles.StepSize);
 
@@ -598,7 +608,11 @@ namespace PdfClown.UI.Blazor
             return temp != VerticalValue;
         }
 
+#if __FORCE_GL__
+        protected virtual void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
+#else
         protected virtual void OnPaintSurface(SKPaintSurfaceEventArgs e)
+#endif
         {
             var canvas = e.Surface.Canvas;
             var XScaleFactor = (float)(e.Info.Width / Width);
@@ -665,7 +679,11 @@ namespace PdfClown.UI.Blazor
             }
         }
 
+#if __FORCE_GL__
+        protected virtual void OnPaintContent(SKPaintGLSurfaceEventArgs e)
+#else
         protected virtual void OnPaintContent(SKPaintSurfaceEventArgs e)
+#endif
         {
             PaintContent?.Invoke(this, e);
         }
@@ -778,6 +796,7 @@ namespace PdfClown.UI.Blazor
         private void OnCursorChanged(CursorType oldValue, CursorType newValue)
         {
             cursor = newValue;
+            interop.ChangeCursor(newValue);
         }
 
         public virtual bool OnKeyDown(string keyName, KeyModifiers modifiers)

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using SkiaSharp.Views.Blazor.Internal;
 
 namespace PdfClown.UI.Blazor.Internal
 {
@@ -15,6 +10,7 @@ namespace PdfClown.UI.Blazor.Internal
         private const string RequestLockSymbol = "SKHtmlScroll.requestLockById";
         private const string SetCaptureSymbol = "SKHtmlScroll.setCaptureById";
         private const string ReleaseCaptureSymbol = "SKHtmlScroll.releaseCaptureById";
+        private const string ChangeCursorSymbol = "SKHtmlScroll.changeCursorById";
         private const string DeinitSymbol = "SKHtmlScroll.deinit";
 
         private readonly string htmlElementId;
@@ -51,6 +47,29 @@ namespace PdfClown.UI.Blazor.Internal
 
         public void ReleaseCapture(long pointerId) =>
             Invoke(ReleaseCaptureSymbol, htmlElementId, pointerId);
+
+        public void ChangeCursor(CursorType cursor)
+        {
+            var cursorName = GetCursorName(cursor);
+            Invoke(ChangeCursorSymbol, htmlElementId, cursorName);
+        }
+
+        private static string GetCursorName(CursorType cursor)
+        {
+            return cursor switch
+            {
+                CursorType.SizeWE => "ew-resize",
+                CursorType.SizeNESW => "nesw-resize",
+                CursorType.SizeNS => "ns-resize",
+                CursorType.SizeNWSE => "nwse-resize",
+                CursorType.Hand => "pointer",
+                CursorType.Wait => "wait",
+                CursorType.ScrollAll => "all-scroll",
+                CursorType.Cross => "crosshair",
+                CursorType.IBeam => "text",
+                _ => "default",
+            };
+        }
 
         public void DeInit()
         {

@@ -46,6 +46,15 @@
         SKHtmlScroll.releaseCapture(element, pointerId);
     }
 
+    static changeCursor(element, cursorName) {
+        element.style.cursor = cursorName;
+    }
+
+    static changeCursorById(elementId, cursorName) {
+        const element = document.getElementById(elementId);
+        SKHtmlScroll.changeCursor(element, cursorName);
+    }
+
     static eventArgsCreator(event) {
         return {
             "pointerId": event.pointerId,
@@ -72,6 +81,7 @@
 
     OnPointerMove = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         this.moveAction.invokeMethod("Invoke", SKHtmlScroll.eventArgsCreator(e));
     }
 }
