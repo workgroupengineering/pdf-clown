@@ -1,19 +1,15 @@
-using PdfClown.Bytes;
 using PdfClown.Documents;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Files;
-using PdfClown.Documents.Contents;
-using actions = PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Tools;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
-using System.IO;
 using System.Text;
+using actions = PdfClown.Documents.Interaction.Actions;
 
 namespace PdfClown.Samples.CLI
 {

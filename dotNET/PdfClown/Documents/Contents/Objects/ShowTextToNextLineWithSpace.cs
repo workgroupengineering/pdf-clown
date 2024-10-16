@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, operands)
         { }
 
-        protected override PdfString String
+        protected override PdfString TextElement
         {
             get => (PdfString)operands[2];
             set => operands[2] = value;

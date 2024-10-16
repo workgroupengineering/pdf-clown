@@ -1,14 +1,11 @@
 ﻿using PdfClown.Documents;
-using PdfClown.Documents.Contents;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Util.Math.Geom;
+using PdfClown.UI.Operations;
 using PdfClown.UI.ToolTip;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Linq;
-using System.IO;
-using System.Xml.Linq;
-using PdfClown.UI.Operations;
 
 namespace PdfClown.UI
 {
@@ -43,8 +40,8 @@ namespace PdfClown.UI
                     document.BoundsChanged -= OnDocumentBoundsChanged;
                 }
                 Viewer.Operations.Document = value;
-                Viewer.SelectedAnnotation = null;
-                Viewer.SelectedPoint = null;
+                
+                ToolTipAnnotation = null;
                 document = value;
                 UpdateMaximums();
                 Viewer.PagesCount = document?.PagesCount ?? 0;
@@ -217,15 +214,19 @@ namespace PdfClown.UI
                         ToolTipRenderer = markupToolTipRenderer ??= new MarkupToolTipRenderer();
                         markupToolTipRenderer.Markup = markup;
                         ToolTipBounds = markupToolTipRenderer.GetWindowBound(this);
+                        linkToolTipRenderer?.Free();
                     }
                     else if (toolTipAnnotation is Link link)
                     {
                         ToolTipRenderer = linkToolTipRenderer ??= new LinkToolTipRenderer();
                         linkToolTipRenderer.Link = link;
                         ToolTipBounds = linkToolTipRenderer.GetWindowBound(this);
+                        markupToolTipRenderer?.Free();
                     }
                     else
                     {
+                        markupToolTipRenderer?.Free();
+                        linkToolTipRenderer?.Free();
                         ToolTipRenderer = null;
                     }
                     Viewer.InvalidatePaint();
@@ -299,7 +300,6 @@ namespace PdfClown.UI
                         break;
                     }
                 }
-                DrawTextSelection();
                 //DrawSelectionRect();
                 DrawAnnotationToolTip();
                 Canvas.Restore();
@@ -309,38 +309,7 @@ namespace PdfClown.UI
                 Canvas = null;
             }
         }
-
-        private void DrawTextSelection()
-        {
-            if (!Viewer.TextSelection.Any())
-            {
-                return;
-            }
-            IContentContext context = null;
-            PdfPageViewModel pageView = null;
-            foreach (var textChar in Viewer.TextSelection.Chars)
-            {
-                if (context != textChar.TextString.Context)
-                {
-                    context = textChar.TextString.Context;
-                    pageView = Viewer.Document.GetPageView(context as PdfPage);
-                    if (pageView != null)
-                    {
-                        Canvas.SetMatrix(pageView.GetViewMatrix(this));
-                    }
-                }
-                if (pageView == null
-                    || !pageView.Bounds.IntersectsWith(NavigationArea))
-                    continue;
-                //if (textChar.B.TextString.Context == pageView.Page)
-                {
-                    using (var path = textChar.Quad.GetPath())
-                    {
-                        Canvas.DrawPath(path, DefaultSKStyles.PaintTextSelectionFill);
-                    }
-                }
-            }
-        }
+        
 
         private void DrawSelectionRect(Quad selectionRect)
         {

@@ -44,13 +44,13 @@ namespace PdfClown.Documents.Contents.Objects
         ///    If it is a number (glyph adjustment), the operator adjusts the next glyph position by that amount.</param>
         public ShowAdjustedText(List<PdfDirectObject> value)
             : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
-        { Value = value; }
+        { TextElements = value; }
 
         internal ShowAdjustedText(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
-        public override Memory<byte> Text
+        public override Memory<byte> TextBytes
         {
             get
             {
@@ -59,7 +59,7 @@ namespace PdfClown.Documents.Contents.Objects
                     return textStream.AsMemory();
                 }
                 textStream = new ByteStream();
-                foreach (var element in Value)
+                foreach (var element in TextElements)
                 {
                     if (element is PdfString pdfString)
                     {
@@ -68,10 +68,10 @@ namespace PdfClown.Documents.Contents.Objects
                 }
                 return textStream.AsMemory();
             }
-            set => Value = new List<PdfDirectObject>() { new PdfByteString(value) };
+            set => TextElements = new List<PdfDirectObject>() { new PdfByteString(value) };
         }
 
-        public override IEnumerable<PdfDirectObject> Value
+        public override IEnumerable<PdfDirectObject> TextElements
         {
             get => operands.Get<PdfArray>(0);
             set

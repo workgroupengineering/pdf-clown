@@ -160,7 +160,9 @@ namespace PdfClown.Documents.Interaction.Forms
         protected Field(PdfName fieldType, string name, Widget widget) : this(widget.BaseObject)
         {
             widget.NewField = this;
-            PdfDictionary baseDataObject = BaseDataObject;
+            if (!widget.Page.Annotations.Contains(widget))
+                widget.Page.Annotations.Add(widget);
+            var baseDataObject = BaseDataObject;
             baseDataObject[PdfName.FT] = fieldType;
             baseDataObject[PdfName.T] = new PdfTextString(name);
         }
@@ -296,17 +298,10 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                /*
-                  NOTE: Terminal fields MUST be associated at least to one widget annotation.
-                  If there is only one associated widget annotation and its contents
-                  have been merged into the field dictionary, 'Kids' entry MUST be omitted.
-                */
-                PdfDirectObject widgetsObject = BaseDataObject[PdfName.Kids];
-                return FieldWidgets.Wrap(
-                  widgetsObject != null
-                    ? widgetsObject // Annotation array.
-                    : BaseObject, // Merged annotation.
-                  this);
+                // NOTE: Terminal fields MUST be associated at least to one widget annotation.
+                // If there is only one associated widget annotation and its contents
+                // have been merged into the field dictionary, 'Kids' entry MUST be omitted.
+                return FieldWidgets.Wrap(BaseDataObject[PdfName.Kids] ?? BaseObject, this);
             }
         }
 

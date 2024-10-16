@@ -31,10 +31,10 @@ using System.Collections.Generic;
 namespace PdfClown.Tools
 {
     /// <summary>Text string position comparer.</summary>
-    public class TextStringPositionComparer<T> : IComparer<T>
-      where T : ITextString
+    public class TextBlockPositionComparer<T> : IComparer<T>
+      where T : ITextBlock
     {
-        public static readonly TextStringPositionComparer<T> Default = new();
+        public static readonly TextBlockPositionComparer<T> Default = new();
         /// <summary>Gets whether the specified boxes lay on the same text line.</summary>
         public static bool IsOnTheSameLine(Quad box1, Quad box2)
         {

@@ -23,29 +23,22 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 
-using System;
-
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Button field [PDF:1.6:8.6.3].</summary>
-    */
+    /// <summary>Button field [PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public abstract class ButtonField : Field
     {
-        /**
-          <summary>Creates a new button field within the given document context.</summary>
-        */
+        /// <summary>Creates a new button field within the given document context.</summary>
         protected ButtonField(string name, Widget widget)
             : base(PdfName.Btn, name, widget)
         { }
 
-        protected ButtonField(PdfDirectObject baseObject) : base(baseObject)
+        protected ButtonField(PdfDirectObject baseObject) 
+            : base(baseObject)
         { }
 
         public override object Value => PdfSimpleObject<object>.GetValue(GetInheritableAttribute(PdfName.V));

@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
 
@@ -34,11 +33,9 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Inline image entries (anonymous) operation [PDF:1.6:4.8.6].</summary>
-      <remarks>This is a figurative operation necessary to constrain the inline image entries section
-      within the content stream model.</remarks>
-    */
+    /// <summary>Inline image entries (anonymous) operation [PDF:1.6:4.8.6].</summary>
+    /// <remarks>This is a figurative operation necessary to constrain the inline image entries section
+    /// within the content stream model.</remarks>
     [PDF(VersionEnum.PDF10)]
     public sealed class InlineImageHeader : Operation, IDictionary<PdfName, PdfDirectObject>
     {

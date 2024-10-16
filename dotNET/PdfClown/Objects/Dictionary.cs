@@ -25,6 +25,7 @@
 
 using PdfClown.Documents;
 using PdfClown.Documents.Interchange.Metadata;
+using PdfClown.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace PdfClown.Objects
 {
     public abstract class Dictionary<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TValue> 
-        : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, TValue>, IDictionary
+        : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, TValue>, IDictionary, IBiDictionary<PdfName, TValue>
         where TValue : PdfObjectWrapper
     {
         private IEntryWrapper<TValue> valueWrapper;
@@ -97,6 +98,8 @@ namespace PdfClown.Objects
         bool ICollection.IsSynchronized => true;
 
         object ICollection.SyncRoot => BaseDataObject;
+
+        public object GetKey(object value) => value is TValue tValue ? GetKey(tValue) : default(PdfName);
 
         ///Gets the key associated to a given value.
         public PdfName GetKey(TValue value) => BaseDataObject.GetKey(value.BaseObject);

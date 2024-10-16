@@ -27,7 +27,7 @@ using PdfClown.Objects;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    ///<summary>'Set the text rendering mode' operation [PDF:1.6:5.2].</summary>
+    /// <summary>'Set the text rendering mode' operation [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetTextRenderMode : Operation
     {
@@ -41,12 +41,13 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state) => state.RenderMode = Value;
-
         public TextRenderModeEnum Value
         {
             get => (TextRenderModeEnum)operands.GetInt(0);
             set => operands.Set(0, (int)value);
         }
+
+        public override void Scan(GraphicsState state) => state.RenderMode = Value;
+        
     }
 }

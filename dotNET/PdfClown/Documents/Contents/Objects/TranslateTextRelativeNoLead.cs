@@ -24,15 +24,12 @@
 */
 
 using PdfClown.Objects;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class TranslateTextRelativeNoLead : TranslateTextRelative
     {
-        /**
-          <summary>No side effect.</summary>
-        */
+        /// <summary>No side effect.</summary>
         public static readonly string OperatorKeyword = "Td";
 
         public TranslateTextRelativeNoLead(double offsetX, double offsetY)

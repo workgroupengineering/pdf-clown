@@ -39,22 +39,23 @@ namespace PdfClown.Documents.Contents
     /// to call the <see cref="Flush()"/> method in order to serialize back the instructions
     /// into this content stream.</remarks>
     [PDF(VersionEnum.PDF10)]
-    public sealed class ContentWrapper : PdfObjectWrapper<PdfDataObject>, IList<ContentObject>
+    public sealed class ContentWrapper : PdfObjectWrapper<PdfDataObject>, IList<ContentObject>, ICompositeObject
     {
-        public static ContentWrapper Wrap(PdfDirectObject baseObject, IContentContext contentContext) => baseObject != null
-            ? baseObject.ContentsWrapper ??= new ContentWrapper(baseObject, contentContext)
-            : null;
-
         private List<ContentObject> items;
 
-        private IContentContext contentContext;
-
-        private ContentWrapper(PdfDirectObject baseObject, IContentContext contentContext)
+        public ContentWrapper(PdfDirectObject baseObject)
         {
-            this.contentContext = contentContext;
             BaseObject = baseObject;
             Load();
         }
+
+        public int Count => items.Count;
+
+        public bool IsReadOnly => false;
+
+        public IList<ContentObject> Contents => items;
+
+        public ICompositeObject Parent { get => null; set { } } 
 
         public override object Clone(PdfDocument context)
         { throw new NotSupportedException(); }
@@ -104,8 +105,6 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        public IContentContext ContentContext => contentContext ??= BaseObject.GetContentContext();
-
         public int IndexOf(ContentObject obj) => items.IndexOf(obj);
 
         public void Insert(int index, ContentObject obj) => items.Insert(index, obj);
@@ -126,10 +125,6 @@ namespace PdfClown.Documents.Contents
 
         public void CopyTo(ContentObject[] objs, int index) => items.CopyTo(objs, index);
 
-        public int Count => items.Count;
-
-        public bool IsReadOnly => false;
-
         public bool Remove(ContentObject obj) => items.Remove(obj);
 
         public List<ContentObject>.Enumerator GetEnumerator() => items.GetEnumerator();
@@ -138,9 +133,10 @@ namespace PdfClown.Documents.Contents
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private void Load()
+        internal void Load()
         {
-            var parser = new ContentParser(new ContentStream(BaseDataObject));
+            using var contentStream = new ContentStream(BaseDataObject);
+            var parser = new ContentParser(contentStream);
             items = parser.ParseContentObjects();
         }
     }

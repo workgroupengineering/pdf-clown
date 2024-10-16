@@ -23,16 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Named pages [PDF:1.6:3.6.3].</summary>
-    */
+    /// <summary>Named pages [PDF:1.6:3.6.3].</summary>
     [PDF(VersionEnum.PDF13)]
     public sealed class NamedPages : NameTree<PdfPage>
     {

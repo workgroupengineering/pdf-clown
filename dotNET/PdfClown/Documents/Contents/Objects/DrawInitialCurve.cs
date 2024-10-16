@@ -30,13 +30,11 @@ namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class DrawInitialCurve : DrawCurve
     {
-        /**
-          <summary>Creates a partially-explicit curve.</summary>
-          <param name="point">Final endpoint.</param>
-          <param name="control">Explicit control point.</param>
-          <param name="operator">Operator (either <code>InitialOperator</code> or <code>FinalOperator</code>).
-          It defines how to interpret the <code>control</code> parameter.</param>
-        */
+        /// <summary>Creates a partially-explicit curve.</summary>
+        /// <param name="point">Final endpoint.</param>
+        /// <param name="control">Explicit control point.</param>
+        /// <param name="operator">Operator (either <code>InitialOperator</code> or <code>FinalOperator</code>).
+        /// It defines how to interpret the <code>control</code> parameter.</param>
         public DrawInitialCurve(SKPoint point, SKPoint control)
             : base(InitialOperatorKeyword, point, control)
         { }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PdfClown.Util.Reflection
+namespace PdfClown.Util.Invokers
 {
     public class ActionInvoker<T, V> : Invoker<T, V>
     {

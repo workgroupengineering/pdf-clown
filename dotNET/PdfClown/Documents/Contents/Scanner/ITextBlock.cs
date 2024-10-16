@@ -1,5 +1,5 @@
 ﻿/*
-  Copyright 2007-2015 Stefano Chizzolini. http://www.pdfclown.org
+  Copyright 2010 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,43 +23,16 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Objects;
-using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Objects;
-
-using System;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Scanner
 {
-    /**
-      <summary>External object information.</summary>
-    */
-    public sealed class XObjectWrapper : GraphicsObjectWrapper<GraphicsXObject>
+    public interface ITextBlock
     {
-        private PdfName name;
-        private XObject xObject;
+        Quad Quad { get; }
 
-        internal XObjectWrapper(ContentScanner scanner) : base((GraphicsXObject)scanner.Current)
-        {
-            SKMatrix ctm = scanner.State.Ctm;
-            this.box = SKRect.Create(
-              ctm.TransX,
-              scanner.ContextBox.Height - ctm.TransY,
-              ctm.ScaleX,
-              Math.Abs(ctm.ScaleY));
-            this.name = BaseDataObject.Name;
-            this.xObject = BaseDataObject.GetResource(scanner);
-        }
-
-        /**
-          <summary>Gets the corresponding resource key.</summary>
-        */
-        public PdfName Name => name;
-
-        /**
-          <summary>Gets the external object.</summary>
-        */
-        public XObject XObject => xObject;
+        List<ITextString> Strings { get; }
     }
 }

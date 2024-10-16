@@ -12,17 +12,21 @@ namespace PdfClown.UI.ToolTip
         {
         }
 
-        public Link Link { get; set; }
+        public Link Link
+        {
+            get => Annotation as Link;
+            set => Annotation = value;
+        }
 
         public override SKRect Measure()
         {
-            ClearLines();
+            Clear();
 
-            var target = Link.Target is ITextDisplayable texted ? texted.GetDisplayName(): string.Empty;
-            if(string.IsNullOrEmpty(target))
+            var target = Link.Target is ITextDisplayable texted ? texted.GetDisplayName() : string.Empty;
+            if (string.IsNullOrEmpty(target))
                 return SKRect.Empty;
 
-            var text = MeasureLine(target, paintToolTipText);
+            var text = MeasureLine(target, DefaultSKStyles.PaintToolTipText);
             ContentLines = new List<LineOfText> { text };
 
             var contentBound = text.Bound;

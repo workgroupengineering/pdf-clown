@@ -23,20 +23,15 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
-using multimedia = PdfClown.Documents.Multimedia;
-using PdfClown.Objects;
-
-using System;
-using SkiaSharp;
 using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Objects;
+using SkiaSharp;
+using System;
+using multimedia = PdfClown.Documents.Multimedia;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Movie annotation [PDF:1.6:8.4.5].</summary>
-    */
+    /// <summary>Movie annotation [PDF:1.6:8.4.5].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class Movie : Annotation
     {
@@ -47,9 +42,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         internal Movie(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the movie to be played.</summary>
-        */
+        /// <summary>Gets/Sets the movie to be played.</summary>
         public multimedia::Movie Content
         {
             get => Wrap<multimedia::Movie>(BaseDataObject[PdfName.Movie]);

@@ -40,7 +40,6 @@ namespace PdfClown.UI
         internal readonly SKPaint paintPageBackground = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White };
 
         private readonly PdfViewState state;
-        private Annotation selectedAnnotation;
         private ControlPoint selectedPoint;
 
         private bool showCharBound;
@@ -254,56 +253,39 @@ namespace PdfClown.UI
 
         private void OnShowMarkupChanged(bool oldValue, bool newValue)
         {
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         private void OnHoverAnnotationChanged(Annotation oldValue, Annotation newValue)
         {
+            Operations.HoverAnnotation = newValue;
         }
 
         private void OnSelectedAnnotationChanged(Annotation oldValue, Annotation newValue)
         {
-            selectedAnnotation = newValue;
-            SelectedMarkup = newValue as Markup;
-            Operations.Annotation = newValue;
+            Operations.SelectedAnnotation = newValue;
             SelectedAnnotationChanged?.Invoke(this, new AnnotationEventArgs(newValue));
-            InvalidateSurface();
         }
 
         private void OnSelectedMarkupChanged(Markup oldValue, Markup newValue)
         {
-            SelectedAnnotation = newValue;
+            Operations.SelectedMarkup = newValue;
         }
 
         private void OnSelectedPointChanged(ControlPoint oldValue, ControlPoint newValue)
         {
-            selectedPoint = newValue;
-            if (newValue != null)
-            {
-                SelectedAnnotation = newValue.Annotation;
-            }
-            else
-            {
-                Operations.Current = OperationType.None;
-            }
+            Operations.SelectedPoint = newValue;
         }
 
         private void OnHoverPointChanged(ControlPoint oldValue, ControlPoint newValue)
         {
-            if (newValue != null)
-            {
-                Cursor = CursorType.Cross;
-            }
-            else
-            {
-                Cursor = CursorType.Arrow;
-            }
+            Operations.HoverPoint = newValue;
         }
 
         private void OnShowCharBoundChanged(bool oldValue, bool newValue)
         {
             showCharBound = newValue;
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         private void OnIsReadOnlyChanged(bool oldValue, bool newValue)
@@ -349,7 +331,7 @@ namespace PdfClown.UI
 
         private void OnTextSelectionChanged(object sender, EventArgs args)
         {
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         private void OnOperationsChanged(object sender, EventArgs e)
@@ -393,7 +375,7 @@ namespace PdfClown.UI
             Operations.MoveToLast();
             Close();
             Document = newDocument;
-            InvalidateSurface();
+            InvalidatePaint();
         }
 
         public void Load(string filePath)
@@ -410,7 +392,8 @@ namespace PdfClown.UI
 
         public void Close()
         {
-            Operations.ClearAll();
+            Operations.ClearOperations();
+            TextSelection.Clear();
             var document = Document;
             Document = null;
             document?.Dispose();

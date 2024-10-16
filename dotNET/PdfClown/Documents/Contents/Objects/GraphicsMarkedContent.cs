@@ -33,7 +33,7 @@ namespace PdfClown.Documents.Contents.Objects
 {
     /// <summary>Marked-content sequence [PDF:1.6:10.5].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class GraphicsMarkedContent : GraphicsObject
+    public sealed class GraphicsMarkedContent : CompositeObject
     {
         private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndMarkedContent.OperatorKeyword + Symbol.LineFeed);
 

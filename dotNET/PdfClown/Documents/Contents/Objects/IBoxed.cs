@@ -23,26 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Objects;
+using SkiaSharp;
 
-namespace PdfClown.Documents.Contents.Scanner
+namespace PdfClown.Documents.Contents.Objects
 {
-    /// <summary>Object information.</summary>
-    /// <remarks>
-    ///    <para>This class provides derivative (higher-level) information
-    ///    about the currently scanned object.</para>
-    /// </remarks>
-    public abstract class GraphicsObjectWrapper<TDataObject> : GraphicsObjectWrapper where TDataObject : ContentObject
+    public interface IBoxed
     {
-        private TDataObject baseDataObject;
-
-        protected GraphicsObjectWrapper(TDataObject baseDataObject)
-        {
-            this.baseDataObject = baseDataObject;
-            baseDataObject.Wrapper = this;
-        }
-
-        /// <summary>Gets the underlying data object.</summary>
-        public TDataObject BaseDataObject => baseDataObject;
+        SKRect GetBox(GraphicsState state);
     }
 }

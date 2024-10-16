@@ -86,8 +86,8 @@ namespace PdfClown.Util.Parsers
 
         private IInputStream stream;
         private TokenTypeEnum tokenType;
-        private StringStream sBuffer = new StringStream(128);
-        private MemoryStream mBuffer = new MemoryStream(256);
+        private StringStream sBuffer = new(128);
+        private MemoryStream mBuffer = new(256);
         private bool booleanToken;
         private int integerToken;
         private DateTime? dateToken;

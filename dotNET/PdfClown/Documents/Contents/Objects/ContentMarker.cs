@@ -75,7 +75,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get
             {
-                PdfDirectObject propertiesObject = operands.Count > 1 ? operands[1] : null;
+                var propertiesObject = operands.Count > 1 ? operands[1] : null;
                 if (propertiesObject == null)
                     return null;
                 else if (propertiesObject is PdfName)
@@ -121,12 +121,6 @@ namespace PdfClown.Documents.Contents.Objects
         {
             get => Properties is PdfName name ? name : null;
             set => Properties = value;
-        }
-
-        public override void Scan(GraphicsState state)
-        {
-            base.Scan(state);
-        }
-
+        }        
     }
 }

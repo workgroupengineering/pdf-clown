@@ -25,7 +25,6 @@
 
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Util.Math.Geom
 {
@@ -98,35 +97,39 @@ namespace PdfClown.Util.Math.Geom
             this.point3 = new SKPoint(left, bottom);
         }
 
-        public bool IsEmpty => this.Equals(Empty);
+        public bool IsEmpty => this.Equals(Empty)
+            || System.Math.Abs(point3.Y - point0.Y) < 0.1F
+            || System.Math.Abs(point1.X - point0.X) < 0.1F;
 
-        public SKPoint TopLeft => point0;
+        public SKPoint Point0 => point0;
 
-        public SKPoint TopRight => point1;
+        public SKPoint Point1 => point1;
 
-        public SKPoint BottomRight => point2;
+        public SKPoint Point2 => point2;
 
-        public SKPoint BottomLeft => point3;
+        public SKPoint Point3 => point3;
 
         public SKPoint? Middle => SKLine.FindIntersection(new SKLine(point0, point2), new SKLine(point3, point1), false);
 
         public float Width => SKPoint.Distance(point0, point1);
 
-        public float HorizontalLength => Right - Left;
+        public float HorizontalLength => System.Math.Abs(MaxX - MinX);
 
         public float Height => SKPoint.Distance(point1, point2);
 
-        public float VerticalLenght => Bottom - Top;
+        public float VerticalLenght => System.Math.Abs(MaxY - MinY);
 
-        public float Top => Min(point0.Y, point1.Y, point2.Y, point3.Y);
+        public float MinY => Min(point0.Y, point1.Y, point2.Y, point3.Y);
 
-        public float Left => Min(point0.X, point1.X, point2.X, point3.X);
+        public float MinX => Min(point0.X, point1.X, point2.X, point3.X);
 
-        public float Right => Max(point0.X, point1.X, point2.X, point3.X);
+        public float MaxX => Max(point0.X, point1.X, point2.X, point3.X);
 
-        public float Bottom => Max(point0.Y, point1.Y, point2.Y, point3.Y);
+        public float MaxY => Max(point0.Y, point1.Y, point2.Y, point3.Y);
 
         public SKPoint[] GetPoints() => new SKPoint[4] { point0, point1, point2, point3 };
+
+        public SKPoint[] GetClosedPoints() => new SKPoint[5] { point0, point1, point2, point3, point0 };
 
         public SKPath GetPath()
         {
@@ -228,120 +231,113 @@ namespace PdfClown.Util.Math.Geom
 
         public Quad Union(Quad value)
         {
-            var points = new SKPoint[4] { value.point0, value.point1, value.point2, value.point3 };
-            Add(points);
+            //var points = new SKPoint[4] { value.point0, value.point1, value.point2, value.point3 };
+            //Add(points);
+            Add(value.Point0);
+            Add(value.Point1);
+            Add(value.Point2);
+            Add(value.Point3);
             return this;
-        }
-
-        public void Add(SKPoint[] points)
-        {
-            KeyValuePair<float, SKPoint>? maxTopLeft = null;
-            KeyValuePair<float, SKPoint>? maxTopRight = null;
-            KeyValuePair<float, SKPoint>? maxBottomRight = null;
-            KeyValuePair<float, SKPoint>? maxBottomLeft = null;
-
-            var topLeftToTopRight = point1 - point0;
-            var topRightToBottomRight = point2 - point1;
-            var bottomRightToBottomLeft = point3 - point2;
-            var bottomLeftToTopLeft = point0 - point3;
-            for (int i = 0; i < points.Length; i++)
-            {
-                var point = points[i];
-                var vectorTopLeft = point - point0;
-                var vectorTopRight = point - point1;
-                var vectorBottomRight = point - point2;
-                var vectorBottomLeft = point - point3;
-                if (vectorTopLeft.Cross(topLeftToTopRight) <= 0
-                    && vectorTopRight.Cross(topRightToBottomRight) <= 0
-                    && vectorBottomRight.Cross(bottomRightToBottomLeft) <= 0
-                    && vectorBottomLeft.Cross(bottomLeftToTopLeft) <= 0)
-                {
-                    continue;
-                }
-                var lengthTopLeft = vectorTopLeft.Length;
-                var lengthTopRight = vectorTopRight.Length;
-                var lengthBottomRight = vectorBottomRight.Length;
-                var lengthBottomLeft = vectorBottomLeft.Length;
-                float min = Min(lengthTopLeft, lengthTopRight, lengthBottomRight, lengthBottomLeft);
-                if (min == lengthTopLeft)
-                {
-                    if (maxTopLeft == null)
-                        maxTopLeft = new KeyValuePair<float, SKPoint>(min, point);
-                    else if (min > maxTopLeft.Value.Key)
-                        maxTopLeft = new KeyValuePair<float, SKPoint>(min, point);
-                }
-                else if (min == lengthTopRight)
-                {
-                    if (maxTopRight == null)
-                        maxTopRight = new KeyValuePair<float, SKPoint>(min, point);
-                    else if (min > maxTopRight.Value.Key)
-                        maxTopRight = new KeyValuePair<float, SKPoint>(min, point);
-                }
-                else if (min == lengthBottomRight)
-                {
-                    if (maxBottomRight == null)
-                        maxBottomRight = new KeyValuePair<float, SKPoint>(min, point);
-                    else if (min > maxBottomRight.Value.Key)
-                        maxBottomRight = new KeyValuePair<float, SKPoint>(min, point);
-                }
-                else if (min == lengthBottomLeft)
-                {
-                    if (maxBottomLeft == null)
-                        maxBottomLeft = new KeyValuePair<float, SKPoint>(min, point);
-                    else if (min > maxBottomLeft.Value.Key)
-                        maxBottomLeft = new KeyValuePair<float, SKPoint>(min, point);
-                }
-                
-            }
-            if (maxTopLeft != null)
-            {
-                point0 = maxTopLeft.Value.Value;
-            }
-            if (maxTopRight != null)
-            {
-                point1 = maxTopRight.Value.Value;
-            }
-            if (maxBottomRight != null)
-            {
-                point2 = maxBottomRight.Value.Value;
-            }
-            if (maxBottomLeft != null)
-            {
-                point3 = maxBottomLeft.Value.Value;
-            }
-            
         }
 
         public void Add(SKPoint point)
         {
-            var vectorTopLeft = point - point0;
-            var vectorTopRight = point - point1;
-            var vectorBottomRight = point - point2;
-            var vectorBottomLeft = point - point3;
-            if (Contains(vectorTopLeft, vectorTopRight, vectorBottomRight, vectorBottomLeft))
+            var vector0 = point - point0;
+            var vector1 = point - point1;
+            var vector2 = point - point2;
+            var vector3 = point - point3;
+            if (Contains(vector0, vector1, vector2, vector3))
                 return;
-            var lengthTopLeft = vectorTopLeft.Length;
-            var lengthTopRight = vectorTopRight.Length;
-            var lengthBottomRight = vectorBottomRight.Length;
-            var lengthBottomLeft = vectorBottomLeft.Length;
-            var min = Min(lengthTopLeft, lengthTopRight, lengthBottomRight, lengthBottomLeft);
-            if (min == lengthTopLeft)
+            var length0 = vector0.Length;
+            var length1 = vector1.Length;
+            var length2 = vector2.Length;
+            var length3 = vector3.Length;
+            var min = Min(length0, length1, length2, length3);
+            if (min == length0)
             {
-                point0 = point;
+                if (SKLine.FindIntersection(point0, point1, point, point3, true) != null)
+                {
+                    var line = new SKLine(point0 + vector0, point1 + vector0);
+                    point0 = SKLine.FindIntersection(line, new SKLine(point0, point3), false) ?? point0;
+                    point1 = SKLine.FindIntersection(line, new SKLine(point1, point2), false) ?? point1;
+                }
+                else if (SKLine.FindIntersection(point0, point3, point, point1, true) != null)
+                {
+                    var line = new SKLine(point0 + vector0, point3 + vector0);
+                    point0 = SKLine.FindIntersection(line, new SKLine(point0, point1), false) ?? point0;
+                    point3 = SKLine.FindIntersection(line, new SKLine(point2, point3), false) ?? point3;
+                }
+                else
+                {
+                    point1 = SKLine.FindIntersection(point0 + vector0, point1 + vector0, point1, point2, false) ?? point1;
+                    point3 = SKLine.FindIntersection(point0 + vector0, point3 + vector0, point2, point3, false) ?? point3;
+                    point0 = point;
+                }
             }
-            else if (min == lengthTopRight)
+            else if (min == length1)
             {
-                point1 = point;
+                if (SKLine.FindIntersection(point0, point1, point, point2, true) != null)
+                {
+                    var line = new SKLine(point0 + vector1, point1 + vector1);
+                    point1 = SKLine.FindIntersection(line, new SKLine(point1, point2), false) ?? point1;
+                    point0 = SKLine.FindIntersection(line, new SKLine(point0, point3), false) ?? point0;
+                }
+                else if (SKLine.FindIntersection(point1, point2, point, point0, true) != null)
+                {
+                    var line = new SKLine(point1 + vector1, point2 + vector1);
+                    point1 = SKLine.FindIntersection(line, new SKLine(point0, point1), false) ?? point1;
+                    point2 = SKLine.FindIntersection(line, new SKLine(point2, point3), false) ?? point2;
+                }
+                else
+                {
+                    point0 = SKLine.FindIntersection(point0 + vector1, point1 + vector1, point0, point3, false) ?? point1;
+                    point2 = SKLine.FindIntersection(point1 + vector1, point2 + vector1, point2, point3, false) ?? point2;
+                    point1 = point;
+                }
             }
-            else if (min == lengthBottomRight)
+            else if (min == length2)
             {
-                point2 = point;
+                if (SKLine.FindIntersection(point1, point2, point, point3, true) != null)
+                {
+                    var line = new SKLine(point1 + vector2, point2 + vector2);
+                    point2 = SKLine.FindIntersection(line, new SKLine(point2, point3), false) ?? point2;
+                    point1 = SKLine.FindIntersection(line, new SKLine(point0, point1), false) ?? point1;
+                }
+                else if (SKLine.FindIntersection(point2, point3, point, point1, true) != null)
+                {
+                    var line = new SKLine(point2 + vector2, point3 + vector2);
+                    point2 = SKLine.FindIntersection(line, new SKLine(point1, point2), false) ?? point2;
+                    point3 = SKLine.FindIntersection(line, new SKLine(point0, point3), false) ?? point3;
+                }
+                else
+                {
+                    point1 = SKLine.FindIntersection(point1 + vector2, point2 + vector2, point0, point1, false) ?? point1;
+                    point3 = SKLine.FindIntersection(point2 + vector2, point3 + vector2, point0, point3, false) ?? point3;
+                    point2 = point;
+                }
             }
-            else if (min == lengthBottomLeft)
+            else if (min == length3)
             {
-                point3 = point;
+                if (SKLine.FindIntersection(point3, point0, point, point2, true) != null)
+                {
+                    var line = new SKLine(point3 + vector3, point0 + vector3);
+                    point3 = SKLine.FindIntersection(line, new SKLine(point2, point3), false) ?? point3;
+                    point0 = SKLine.FindIntersection(line, new SKLine(point0, point1), false) ?? point0;
+                }
+                else if (SKLine.FindIntersection(point2, point3, point, point0, true) != null)
+                {
+                    var line = new SKLine(point2 + vector3, point3 + vector3);
+                    point3 = SKLine.FindIntersection(line, new SKLine(point0, point3), false) ?? point3;
+                    point2 = SKLine.FindIntersection(line, new SKLine(point1, point2), false) ?? point2;
+                }
+                else
+                {
+                    point0 = SKLine.FindIntersection(point3 + vector3, point0 + vector3, point0, point1, false) ?? point0;
+                    point2 = SKLine.FindIntersection(point2 + vector3, point3 + vector3, point1, point2, false) ?? point2;
+                    point3 = point;
+                }
             }
-            
+
             //if (point.X < pointTopLeft.X || point.X < pointBottomLeft.X)
             //{
             //    var newLine = new SKLine(point, pointTopLeft - pointBottomLeft);

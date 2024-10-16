@@ -2,21 +2,15 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Files;
 using PdfClown.Tools;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to stamp the page number on alternated corners
-      of an existing PDF document's pages.</summary>
-      <remarks>Stamping is just one of the several ways PDF contents can be manipulated using PDF Clown:
-      contents can be inserted as (raw) data chunks, mid-level content objects, external forms, etc.</remarks>
-    */
+    /// <summary>This sample demonstrates how to stamp the page number on alternated corners
+    /// of an existing PDF document's pages.</summary>
+    /// <remarks>Stamping is just one of the several ways PDF contents can be manipulated using PDF Clown:
+    /// contents can be inserted as (raw) data chunks, mid-level content objects, external forms, etc.</remarks>
     public class PageNumberingSample : Sample
     {
         public override void Run()

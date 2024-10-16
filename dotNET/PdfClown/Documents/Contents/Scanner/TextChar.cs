@@ -24,38 +24,48 @@
 */
 
 using PdfClown.Util.Math.Geom;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
-namespace PdfClown.Documents.Contents
+namespace PdfClown.Documents.Contents.Scanner
 {
     /// <summary>Text character.</summary>
     /// <remarks>It describes a text element extracted from content streams.</remarks>
-    public sealed class TextChar
+    public readonly struct TextChar : IEquatable<TextChar>
     {
+        public static readonly TextChar Empty = new TextChar(char.MinValue, Quad.Empty);
         private readonly Quad quad;
-        private readonly ITextString textString;
         private readonly char value;
-        private readonly bool virtual_;
 
-        public TextChar(char value, Quad box, ITextString textString, bool virtual_)
+        public TextChar(char value, Quad box)
         {
             this.value = value;
-            this.quad = box;
-            this.textString = textString;
-            this.virtual_ = virtual_;
+            quad = box;
         }
 
-        public Quad Quad => quad;
+        public readonly Quad Quad => quad;
+
+        public readonly char Value => value;
+
+        public bool IsEmpty => value == char.MinValue;
 
         public bool Contains(char value) => this.value == value;
 
-        public TextStyle Style => TextString.Style;
-
         public override string ToString() => Value.ToString();
 
-        public char Value => value;
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(value, quad);
+        }
 
-        public bool Virtual => virtual_;
+        public override bool Equals([NotNullWhen(true)] object obj) 
+            => obj is TextChar textChar
+                ? Equals(textChar)
+                : false;
 
-        public ITextString TextString => textString;
+        public bool Equals(TextChar other) 
+            => value.Equals(other.Value)
+                && quad.Equals(other.quad);
+
     }
 }

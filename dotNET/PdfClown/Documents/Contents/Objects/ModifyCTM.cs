@@ -23,19 +23,14 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
-using SkiaSharp;
 using PdfClown.Util.Math.Geom;
+using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Modify the current transformation matrix (CTM) by concatenating the specified SKMatrix'
-      operation [PDF:1.6:4.3.3].</summary>
-    */
+    /// <summary>'Modify the current transformation matrix (CTM) by concatenating the specified SKMatrix'
+    /// operation [PDF:1.6:4.3.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class ModifyCTM : Operation
     {
@@ -44,8 +39,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public static ModifyCTM GetResetCTM(GraphicsState state)
         {
-            var rootScanner = state.Scanner.RootLevel;
-            var initialMatrix = rootScanner.State.GetInitialCtm();
+            var initialMatrix = state.GetInitialCtm();
             var temp = initialMatrix.PreConcat(state.Ctm);
             return new ModifyCTM(
               temp.Invert()
@@ -69,8 +63,9 @@ namespace PdfClown.Documents.Contents.Objects
         public ModifyCTM(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
+        public SKMatrix Value => matrix ??= operands.ToSkMatrix();
+
         public override void Scan(GraphicsState state) => state.Ltm = Value;
 
-        public SKMatrix Value => matrix ??= operands.ToSkMatrix();
     }
 }

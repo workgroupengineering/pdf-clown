@@ -244,11 +244,6 @@ namespace PdfClown.Documents.Contents.Fonts
             set => base.Name = value;
         }
 
-        public override SKMatrix FontMatrix
-        {
-            get => DescendantFont.FontMatrix;
-        }
-
         public override bool IsVertical
         {
             get => CMap?.WMode == 1;
@@ -259,26 +254,10 @@ namespace PdfClown.Documents.Contents.Fonts
             get => DescendantFont.IsEmbedded;
         }
 
-        public override SKRect BoundingBox
-        {
-            get => DescendantFont.BoundingBox;
-        }
-
         public override float AverageFontWidth
         {
             get => DescendantFont.AverageFontWidth;
         }
-
-        public override float GetHeight(int code)
-        {
-            return DescendantFont.GetHeight(code);
-        }
-
-        public override int GetBytesCount(int code) => DescendantFont.GetBytesCount(code);
-
-        public override void Encode(Span<byte> bytes, int unicode) => DescendantFont.Encode(bytes, unicode);
-
-        public override bool HasExplicitWidth(int code) => DescendantFont.HasExplicitWidth(code);
 
         public override bool IsStandard14
         {
@@ -298,6 +277,22 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             get => gsubData;
         }
+
+        protected override SKMatrix GenerateFontMatrix() => DescendantFont.FontMatrix;
+
+        protected override SKRect GenerateBoundingBox() => DescendantFont.BoundingBox;
+
+        public override float GetHeight(int code)
+        {
+            return DescendantFont.GetHeight(code);
+        }
+
+        public override int GetBytesCount(int code) => DescendantFont.GetBytesCount(code);
+
+        public override void Encode(Span<byte> bytes, int unicode) => DescendantFont.Encode(bytes, unicode);
+
+        public override bool HasExplicitWidth(int code) => DescendantFont.HasExplicitWidth(code);
+
 
         public override void AddToSubset(int codePoint)
         {

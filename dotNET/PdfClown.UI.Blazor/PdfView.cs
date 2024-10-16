@@ -10,15 +10,11 @@ namespace PdfClown.UI.Blazor
     public partial class PdfView : SKScrollView, IPdfView
     {
         private readonly PdfViewState state;
-        private ControlPoint selectedPoint;
-
+        
         private bool showCharBound;
         private PdfViewFitMode fitMode = PdfViewFitMode.PageSize;
         private bool showMarkup = true;
-        private Annotation hoverAnnotation;
-        private bool isReadOnly;
-        private Markup selectedMarkup;
-        private ControlPoint hoverPoint;
+        private bool isReadOnly;        
 
         public PdfView()
         {
@@ -73,62 +69,38 @@ namespace PdfClown.UI.Blazor
 
         public Annotation SelectedAnnotation
         {
-            get => Operations.Annotation;
+            get => Operations.SelectedAnnotation;
             set
             {
                 if (SelectedAnnotation != value)
                 {
-                    OnSelectedAnnotationChanged(Operations.Annotation, value);
+                    OnSelectedAnnotationChanged(SelectedAnnotation, value);
                 }
             }
         }
 
         public Annotation HoverAnnotation
         {
-            get => hoverAnnotation;
-            set
-            {
-                if (hoverAnnotation != value)
-                {
-                    OnHoverAnnotationChanged(hoverAnnotation, value);
-                }
-            }
+            get => Operations.HoverAnnotation;
+            set => Operations.HoverAnnotation = value;
         }
 
         public Markup SelectedMarkup
         {
-            get => selectedMarkup;
-            set
-            {
-                if (selectedMarkup != value)
-                {
-                    OnSelectedMarkupChanged(selectedMarkup, value);
-                }
-            }
+            get => Operations.SelectedMarkup;
+            set => Operations.SelectedMarkup = value;
         }
 
         public ControlPoint SelectedPoint
         {
-            get => selectedPoint;
-            set
-            {
-                if (selectedPoint != value)
-                {
-                    OnSelectedPointChanged(selectedPoint, value);
-                }
-            }
+            get => Operations.SelectedPoint;
+            set => Operations.SelectedPoint = value;
         }
 
         public ControlPoint HoverPoint
         {
-            get => hoverPoint;
-            set
-            {
-                if (hoverPoint != value)
-                {
-                    OnHoverPointChanged(hoverPoint, value);
-                }
-            }
+            get => Operations.HoverPoint;
+            set => Operations.HoverPoint = value;
         }
 
         [Parameter]
@@ -263,49 +235,11 @@ namespace PdfClown.UI.Blazor
             InvalidatePaint();
         }
 
-        private void OnHoverAnnotationChanged(Annotation oldValue, Annotation newValue)
-        {
-            hoverAnnotation = newValue;
-        }
-
         private void OnSelectedAnnotationChanged(Annotation oldValue, Annotation newValue)
         {
-            Operations.Annotation = newValue;
-            SelectedMarkup = newValue as Markup;
-            SelectedAnnotationChanged?.Invoke(this, new AnnotationEventArgs(newValue));
-            InvalidatePaint();
-        }
-
-        private void OnSelectedMarkupChanged(Markup oldValue, Markup newValue)
-        {
-            selectedMarkup = newValue;
-            SelectedAnnotation = newValue;
-        }
-
-        private void OnSelectedPointChanged(ControlPoint oldValue, ControlPoint newValue)
-        {
-            selectedPoint = newValue;
-            if (newValue != null)
-            {
-                SelectedAnnotation = newValue.Annotation;
-            }
-            else
-            {
-                Operations.Current = OperationType.None;
-            }
-        }
-
-        private void OnHoverPointChanged(ControlPoint oldValue, ControlPoint newValue)
-        {
-            hoverPoint = newValue;
-            if (newValue != null)
-            {
-                Cursor = CursorType.Cross;
-            }
-            else
-            {
-                Cursor = CursorType.Arrow;
-            }
+            Operations.SelectedAnnotation = newValue;
+           
+            SelectedAnnotationChanged?.Invoke(this, new AnnotationEventArgs(newValue));            
         }
 
         private void OnShowCharBoundChanged(bool oldValue, bool newValue)
@@ -429,7 +363,8 @@ namespace PdfClown.UI.Blazor
 
         public void Close()
         {
-            Operations.ClearAll();
+            Operations.ClearOperations();
+            TextSelection.Clear();
             var document = Document;
             Document = null;
             document?.Dispose();

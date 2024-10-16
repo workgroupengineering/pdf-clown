@@ -32,7 +32,7 @@ namespace PdfClown.Documents.Contents.Objects
 {
     /// <summary>Composite object. It is made up of multiple content objects.</summary>
     [PDF(VersionEnum.PDF10)]
-    public abstract class CompositeObject : ContentObject
+    public abstract class CompositeObject : ContentObject, ICompositeObject
     {
         protected IList<ContentObject> objects;
 
@@ -67,17 +67,23 @@ namespace PdfClown.Documents.Contents.Objects
         }
 
         /// <summary>Gets the list of inner objects.</summary>
-        public IList<ContentObject> Objects => objects;
+        public IList<ContentObject> Contents => objects;        
 
         public override void Scan(GraphicsState state)
         {
-            ContentScanner childLevel = state.Scanner.ChildLevel;
-
-            if (!Render(state))
-            { childLevel.MoveEnd(); } // Forces the current object to its final graphics state.
-
-            childLevel.State.CopyTo(state); // Copies the current object's final graphics state to the current level's.
+            OnScanning(state);
+            for (int i = 0; i < objects.Count; i++)
+            {
+                objects[i].Scan(state, this, i);
+            }
+            OnScanned(state);
         }
+
+        public virtual void OnScanning(GraphicsState state)
+        { }
+
+        public virtual void OnScanned(GraphicsState state)
+        { }
 
         public override string ToString()
         {
@@ -86,21 +92,11 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
-            foreach (ContentObject obj in objects)
+            foreach (var obj in objects)
             {
                 obj.WriteTo(stream, context);
             }
         }
-
-        /// <summary>Renders this container.</summary>
-        /// <param name="state">Graphics state.</param>
-        /// <returns>Whether the rendering has been executed.</returns>
-        protected virtual bool Render(GraphicsState state)
-        {
-            var scanner = state.Scanner;
-            // Render the inner elements!
-            scanner.ChildLevel.Render();
-            return true;
-        }
     }
+
 }

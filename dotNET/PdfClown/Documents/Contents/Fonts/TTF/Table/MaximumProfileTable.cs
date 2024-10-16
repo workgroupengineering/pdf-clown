@@ -32,20 +32,20 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public const string TAG = "maxp";
 
         private float version;
-        private int numGlyphs;
-        private int maxPoints;
-        private int maxContours;
-        private int maxCompositePoints;
-        private int maxCompositeContours;
-        private int maxZones;
-        private int maxTwilightPoints;
-        private int maxStorage;
-        private int maxFunctionDefs;
-        private int maxInstructionDefs;
-        private int maxStackElements;
-        private int maxSizeOfInstructions;
-        private int maxComponentElements;
-        private int maxComponentDepth;
+        private ushort numGlyphs;
+        private ushort maxPoints;
+        private ushort maxContours;
+        private ushort maxCompositePoints;
+        private ushort maxCompositeContours;
+        private ushort maxZones;
+        private ushort maxTwilightPoints;
+        private ushort maxStorage;
+        private ushort maxFunctionDefs;
+        private ushort maxInstructionDefs;
+        private ushort maxStackElements;
+        private ushort maxSizeOfInstructions;
+        private ushort maxComponentElements;
+        private ushort maxComponentDepth;
 
         public MaximumProfileTable()
         { }
@@ -53,7 +53,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxComponentDepth.
          */
-        public int MaxComponentDepth
+        public ushort MaxComponentDepth
         {
             get => maxComponentDepth;
             set => maxComponentDepth = value;
@@ -62,7 +62,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxComponentElements.
          */
-        public int MaxComponentElements
+        public ushort MaxComponentElements
         {
             get => maxComponentElements;
             set => maxComponentElements = value;
@@ -71,7 +71,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxCompositeContours.
          */
-        public int MaxCompositeContours
+        public ushort MaxCompositeContours
         {
             get => maxCompositeContours;
             set => maxCompositeContours = value;
@@ -80,7 +80,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxCompositePoints.
          */
-        public int MaxCompositePoints
+        public ushort MaxCompositePoints
         {
             get => maxCompositePoints;
             set => maxCompositePoints = value;
@@ -89,7 +89,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxContours.
          */
-        public int MaxContours
+        public ushort MaxContours
         {
             get => maxContours;
             set => maxContours = value;
@@ -98,7 +98,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxFunctionDefs.
          */
-        public int MaxFunctionDefs
+        public ushort MaxFunctionDefs
         {
             get => maxFunctionDefs;
             set => maxFunctionDefs = value;
@@ -107,7 +107,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxInstructionDefs.
          */
-        public int MaxInstructionDefs
+        public ushort MaxInstructionDefs
         {
             get => maxInstructionDefs;
             set => maxInstructionDefs = value;
@@ -116,7 +116,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxPoints.
          */
-        public int MaxPoints
+        public ushort MaxPoints
         {
             get => maxPoints;
             set => maxPoints = value;
@@ -125,7 +125,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxSizeOfInstructions.
          */
-        public int MaxSizeOfInstructions
+        public ushort MaxSizeOfInstructions
         {
             get => maxSizeOfInstructions;
             set => maxSizeOfInstructions = value;
@@ -134,7 +134,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxStackElements.
          */
-        public int MaxStackElements
+        public ushort MaxStackElements
         {
             get => maxStackElements;
             set => maxStackElements = value;
@@ -143,7 +143,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxStorage.
          */
-        public int MaxStorage
+        public ushort MaxStorage
         {
             get => maxStorage;
             set => maxStorage = value;
@@ -152,7 +152,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxTwilightPoints.
          */
-        public int MaxTwilightPoints
+        public ushort MaxTwilightPoints
         {
             get => maxTwilightPoints;
             set => maxTwilightPoints = value;
@@ -161,7 +161,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxZones.
          */
-        public int MaxZones
+        public ushort MaxZones
         {
             get => maxZones;
             set => maxZones = value;
@@ -170,7 +170,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the numGlyphs.
          */
-        public int NumGlyphs
+        public ushort NumGlyphs
         {
             get => numGlyphs;
             set => numGlyphs = value;

@@ -650,10 +650,9 @@ namespace PdfClown.Documents.Contents.Fonts
                         panose = os2windowsMetricsTable.Panose;
                     }
                     string hash = ComputeHash(file.FullName);
-                    string format;
+
                     if (ttf is OpenTypeFont openTypeFont && openTypeFont.IsPostScript)
                     {
-                        format = "OTF";
                         CIDSystemInfo ros = null;
                         if (openTypeFont.IsSupportedOTF && openTypeFont.CFF != null)
                         {
@@ -686,19 +685,11 @@ namespace PdfClown.Documents.Contents.Fonts
                             ros = new CIDSystemInfo(null, registryName, orderName, supplementVersion);
                         }
 
-                        format = "TTF";
                         fontInfoList.Add(new FSFontInfo(file, FontFormat.TTF, ttf.Name, ros,
                                 usWeightClass, sFamilyClass, ulCodePageRange1, ulCodePageRange2,
                                 macStyle, panose, this, hash, file.LastWriteTimeUtc.ToBinary()));
                     }
 
-#if TRACE
-                    NamingTable name = ttf.Naming;
-                    if (name != null)
-                    {
-                        Debug.WriteLine($"trace: {format}: '{name.PostScriptName}' / '{name.FontFamily}' / '{name.FontSubFamily}'");
-                    }
-#endif
                 }
                 else
                 {

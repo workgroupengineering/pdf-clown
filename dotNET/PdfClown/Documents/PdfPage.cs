@@ -28,15 +28,15 @@ using PdfClown.Bytes;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.Scanner;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
-
+using PdfClown.Util.Math.Geom;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
-using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents
 {
@@ -44,9 +44,9 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF10)]
     public class PdfPage : PdfObjectWrapper<PdfDictionary>, IContentContext
     {
-        //NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
-        //of the explicit representation of a page. They are retrieved every time
-        //clients call.
+        // NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
+        // of the explicit representation of a page. They are retrieved every time
+        // clients call.
 
         /// <summary>Annotations tab order [PDF:1.6:3.6.2].</summary>
         [PDF(VersionEnum.PDF15)]
@@ -67,7 +67,7 @@ namespace PdfClown.Documents
         private SKMatrix? invertRotateMatrix;
         private SKRect? box;
         internal int? index;
-        private Stack<GraphicsState> states;
+        private ContentWrapper contents;
 
         static PdfPage()
         {
@@ -344,17 +344,17 @@ namespace PdfClown.Documents
         public SKRect Box
         {
             get => box ??= MediaBox?.ToSKRect() ?? SKRect.Empty;
-            set => MediaBox = new Rectangle(value);
+            set => MediaBox = new Rectangle((box = value).Value);
         }
 
         public SKRect RotatedBox => Box.RotateRect(Rotate);
 
-        public ContentWrapper Contents => ContentWrapper.Wrap(BaseDataObject.GetOrCreate<PdfStream>(PdfName.Contents, false), this);
+        public ContentWrapper Contents => contents ??= new ContentWrapper(BaseDataObject.GetOrCreate<PdfStream>(PdfName.Contents, false));
 
         public void Render(SKCanvas canvas, SKRect box, SKColor? clearColor = null)
         {
             var scanner = new ContentScanner(this, canvas, box, clearColor);
-            scanner.Render();
+            scanner.Scan();
         }
 
         public Resources Resources
@@ -408,9 +408,11 @@ namespace PdfClown.Documents
 
         public DateTime? ModificationDate => BaseDataObject.GetDate(PdfName.LastModified);
 
-        public List<ITextString> Strings { get; } = new List<ITextString>();
+        public List<ITextBlock> TextBlocks { get; } = new List<ITextBlock>();
 
-        public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
+        IList<ContentObject> ICompositeObject.Contents => Contents;
+
+        public ICompositeObject Parent { get => null; set { } }
 
         public AppData GetAppData(PdfName appName)
         {

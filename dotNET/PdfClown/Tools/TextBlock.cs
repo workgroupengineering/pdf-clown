@@ -1,5 +1,5 @@
 ﻿/*
-  Copyright 2007-2015 Stefano Chizzolini. http://www.pdfclown.org
+  Copyright 2009-2015 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,46 +23,28 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Objects;
-using System.Collections.Generic;
-using SkiaSharp;
-using System.Text;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Util.Math.Geom;
+using SkiaSharp;
+using System.Collections.Generic;
 
-namespace PdfClown.Documents.Contents.Scanner
+namespace PdfClown.Tools
 {
-    /**
-      <summary>Text information.</summary>
-    */
-    public sealed class TextWrapper : GraphicsObjectWrapper<GraphicsText>
+    public class TextBlock : ITextBlock
     {
-        private List<TextStringWrapper> textStrings;
-        private string text;
-        private Quad? quad;
-
-        internal TextWrapper(ContentScanner scanner) : base((GraphicsText)scanner.Current)
+        public static ITextBlock Transform(ITextBlock textBlock, SKMatrix ctm)
         {
-            textStrings = new List<TextStringWrapper>();
-            Extract(scanner.ChildLevel);
-        }
-
-        public override SKRect? Box
-        {
-            get
+            var buffer = new TextBlock();
+            foreach (var textString in textBlock.Strings)
             {
-                if (box == null)
-                {
-                    foreach (TextStringWrapper textString in textStrings)
-                    {
-                        if (!box.HasValue)
-                        { box = textString.Box; }
-                        else
-                        { box = SKRect.Union(box.Value, textString.Box.Value); }
-                    }
-                }
-                return box;
+                buffer.Strings.Add(TextString.Transform(textString, ctm));
             }
+            return buffer;
         }
+
+        private List<ITextString> strings;
+        private Quad? quad;
+        private string text;
 
         public Quad Quad
         {
@@ -71,7 +53,7 @@ namespace PdfClown.Documents.Contents.Scanner
                 if (quad == null)
                 {
                     var result = new Quad();
-                    foreach (TextStringWrapper textString in textStrings)
+                    foreach (var textString in Strings)
                     {
                         if (textString.Quad.IsEmpty)
                             continue;
@@ -92,8 +74,8 @@ namespace PdfClown.Documents.Contents.Scanner
             {
                 if (text == null)
                 {
-                    var textBuilder = new StringBuilder();
-                    foreach (TextStringWrapper textString in textStrings)
+                    var textBuilder = new System.Text.StringBuilder();
+                    foreach (var textString in Strings)
                     {
                         textBuilder.Append(textString.Text);
                     }
@@ -103,26 +85,8 @@ namespace PdfClown.Documents.Contents.Scanner
             }
         }
 
-        /**
-          <summary>Gets the text strings.</summary>
-        */
-        public List<TextStringWrapper> TextStrings => textStrings;
+        public List<ITextString> Strings => strings ??= new List<ITextString>();
 
-        public override string ToString() => Text;
-
-        private void Extract(ContentScanner level)
-        {
-            if (level == null)
-                return;
-            level.MoveStart();
-            while (level.MoveNext())
-            {
-                ContentObject content = level.Current;
-                if (content is ShowText)
-                { textStrings.Add((TextStringWrapper)level.CurrentWrapper); }
-                else if (content is ContainerObject)
-                { Extract(level.ChildLevel); }
-            }
-        }
+        
     }
 }

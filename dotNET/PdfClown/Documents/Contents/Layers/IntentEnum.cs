@@ -30,23 +30,15 @@ using System;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Intended use of layers [PDF:1.7:4.10.1].</summary>
-    */
+    /// <summary>Intended use of layers [PDF:1.7:4.10.1].</summary>
     public enum IntentEnum
     {
-        /**
-          <summary>Intended for interactive use by document consumers.</summary>
-        */
+        /// <summary>Intended for interactive use by document consumers.</summary>
         View,
-        /**
-          <summary>Intended to represent a document designer's structural organization of artwork.
-          </summary>
-        */
+        /// <summary>Intended to represent a document designer's structural organization of artwork.
+        /// </summary>
         Design,
-        /**
-          <summary>Set of all intents (valid for <see cref="ILayerConfiguration.Intents"/> only).</summary>
-        */
+        /// <summary>Set of all intents (valid for <see cref="ILayerConfiguration.Intents"/> only).</summary>
         All
     }
 
@@ -56,10 +48,12 @@ namespace PdfClown.Documents.Contents.Layers
 
         static IntentEnumExtension()
         {
-            codes = new BiDictionary<IntentEnum, PdfName>();
-            codes[IntentEnum.View] = PdfName.View;
-            codes[IntentEnum.Design] = PdfName.Design;
-            codes[IntentEnum.All] = PdfName.All;
+            codes = new BiDictionary<IntentEnum, PdfName>
+            {
+                [IntentEnum.View] = PdfName.View,
+                [IntentEnum.Design] = PdfName.Design,
+                [IntentEnum.All] = PdfName.All
+            };
         }
 
         public static IntentEnum Get(PdfName name)

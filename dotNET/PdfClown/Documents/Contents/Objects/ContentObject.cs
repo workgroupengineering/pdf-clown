@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents.Contents.Scanner;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -32,14 +31,20 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public abstract class ContentObject
     {
-        /// <summary>Get the graphics wrapper cache.</summary>
-        public GraphicsObjectWrapper Wrapper { get; set; }
-
         /// <summary>Applies this object to the specified graphics context, updating the specified
         /// graphics state.</summary>
         /// <param name = "state" > Graphics state.</param>
         public virtual void Scan(GraphicsState state)
         {/* Do nothing by default. */}
+
+        public void Scan(GraphicsState state, ICompositeObject compositeObject, int index = -1)
+        {
+            if (state.Scanner.StartScan(this, compositeObject, index))
+            {
+                Scan(state);
+                state.Scanner.FinishScan(this);
+            }
+        }
 
         /// <summary>Serializes this object to the specified stream.</summary>
         /// <param name="stream">Target stream.</param>

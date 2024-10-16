@@ -31,7 +31,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    ///<summary>'Set the line dash pattern' operation [PDF:1.6:4.3.3].</summary>
+    /// <summary>'Set the line dash pattern' operation [PDF:1.6:4.3.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetLineDash : Operation
     {
@@ -42,8 +42,6 @@ namespace PdfClown.Documents.Contents.Objects
 
         public SetLineDash(PdfArray operands) : base(OperatorKeyword, operands)
         { }
-
-        public override void Scan(GraphicsState state) => state.LineDash = Value;
 
         public LineDash Value
         {
@@ -59,5 +57,6 @@ namespace PdfClown.Documents.Contents.Objects
                 operands.Add(value.DashPhase);
             }
         }
+        public override void Scan(GraphicsState state) => state.LineDash = Value;
     }
 }

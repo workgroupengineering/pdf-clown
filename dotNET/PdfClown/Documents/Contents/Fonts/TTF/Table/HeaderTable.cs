@@ -45,18 +45,18 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private float version;
         private float fontRevision;
-        private long checkSumAdjustment;
-        private long magicNumber;
-        private int flags;
-        private int unitsPerEm;
+        private uint checkSumAdjustment;
+        private uint magicNumber;
+        private ushort flags;
+        private ushort unitsPerEm;
         private DateTime created;
         private DateTime modified;
         private short xMin;
         private short yMin;
         private short xMax;
         private short yMax;
-        private int macStyle;
-        private int lowestRecPPEM;
+        private ushort macStyle;
+        private ushort lowestRecPPEM;
         private short fontDirectionHint;
         private short indexToLocFormat;
         private short glyphDataFormat;
@@ -96,7 +96,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the checkSumAdjustment.
          */
-        public long CheckSumAdjustment
+        public uint CheckSumAdjustment
         {
             get => checkSumAdjustment;
             set => checkSumAdjustment = value;
@@ -114,7 +114,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the flags.
          */
-        public int Flags
+        public ushort Flags
         {
             get => flags;
             set => flags = value;
@@ -159,7 +159,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the lowestRecPPEM.
          */
-        public int LowestRecPPEM
+        public ushort LowestRecPPEM
         {
             get => lowestRecPPEM;
             set => lowestRecPPEM = value;
@@ -168,7 +168,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the macStyle.
          */
-        public int MacStyle
+        public ushort MacStyle
         {
             get => macStyle;
             set => macStyle = value;
@@ -177,7 +177,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the magicNumber.
          */
-        public long MagicNumber
+        public uint MagicNumber
         {
             get => magicNumber;
             set => magicNumber = value;
@@ -195,7 +195,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the unitsPerEm.
          */
-        public int UnitsPerEm
+        public ushort UnitsPerEm
         {
             get => unitsPerEm;
             set => unitsPerEm = value;

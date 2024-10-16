@@ -96,8 +96,14 @@ namespace PdfClown.Documents.Interaction.Forms
         public void Add(Widget value)
         {
             value.BaseDataObject[PdfName.Parent] = Field.BaseObject;
-
+            EnsureAnnotations(value);
             EnsureArray().Add(value.BaseObject);
+        }
+
+        private static void EnsureAnnotations(Widget value)
+        {
+            if (!(value.Page?.Annotations.Contains(value) ?? true))
+                value.Page.Annotations.Add(value);
         }
 
         public void Clear() => EnsureArray().Clear();
@@ -146,11 +152,10 @@ namespace PdfClown.Documents.Interaction.Forms
         private PdfArray EnsureArray()
         {
             PdfDataObject baseDataObject = BaseDataObject;
-            if (baseDataObject is PdfDictionary) // Merged annotation.
+            if (baseDataObject is PdfDictionary fieldDictionary) // Merged annotation.
             {
-                PdfArray widgetsArray = new PdfArray();
+                var widgetsArray = new PdfArray();
                 {
-                    PdfDictionary fieldDictionary = (PdfDictionary)baseDataObject;
                     PdfDictionary widgetDictionary = null;
                     // Extracting widget entries from the field...
                     foreach (PdfName key in fieldDictionary.Keys.ToList())

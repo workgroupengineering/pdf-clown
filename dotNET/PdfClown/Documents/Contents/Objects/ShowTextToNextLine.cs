@@ -52,18 +52,18 @@ namespace PdfClown.Documents.Contents.Objects
             : base(@operator, operands)
         { }
 
-        protected abstract PdfString String { get; set; }
+        protected abstract PdfString TextElement { get; set; }
 
-        public override Memory<byte> Text
+        public override Memory<byte> TextBytes
         {
-            get => String.RawValue;
-            set => String = new PdfByteString(value);
+            get => TextElement.RawValue;
+            set => TextElement = new PdfByteString(value);
         }
 
-        public override IEnumerable<PdfDirectObject> Value
+        public override IEnumerable<PdfDirectObject> TextElements
         {
-            get => Enumerable.Repeat(String, 1);
-            set => String = value.FirstOrDefault() as PdfString;
+            get => Enumerable.Repeat(TextElement, 1);
+            set => TextElement = value.FirstOrDefault() as PdfString;
         }
 
         public override void Scan(GraphicsState state)

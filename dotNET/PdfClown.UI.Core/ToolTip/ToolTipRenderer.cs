@@ -10,14 +10,10 @@ namespace PdfClown.UI.ToolTip
         public const int Indent = 3;
         public static readonly float MaxWidth = 360;
         private static readonly char[] rnSplitters = new char[] { '\r', '\n' };
+        private static readonly Dictionary<SKPaint, SKFont> fontCache = new Dictionary<SKPaint, SKFont>();
 
-        private Dictionary<SKPaint, SKFont> fontCache = new Dictionary<SKPaint, SKFont>();
         protected List<LineOfText> ContentLines;
         protected SKRect ContentBound;
-        protected readonly SKPaint paintToolTipText = new() { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 14, IsAntialias = true };
-        protected readonly SKPaint paintToolTipHeadText = new() { Style = SKPaintStyle.StrokeAndFill, Color = SKColors.Black, TextSize = 12, IsAntialias = true, FakeBoldText = true };
-        protected readonly SKPaint paintToolTipBackground = new() { Color = SKColors.LightGoldenrodYellow, Style = SKPaintStyle.Fill, IsAntialias = true };
-        protected readonly SKPaint paintToolTipBorder = new() { Color = SKColors.DarkGray, Style = SKPaintStyle.Stroke, IsAntialias = true };
 
         protected ToolTipRenderer()
         {
@@ -25,13 +21,18 @@ namespace PdfClown.UI.ToolTip
 
         public SKFont GetFont(SKPaint paint) => fontCache.TryGetValue(paint, out var font) ? font : (font = fontCache[paint] = paint.ToFont());
 
-        protected void ClearLines()
+        protected virtual void Clear()
         {
             if (ContentLines != null)
             {
                 ContentLines.ForEach(x => x.Dispose());
                 ContentLines.Clear();
             }
+        }
+
+        public virtual void Free()
+        {
+            Clear();
         }
 
         public List<LineOfText> MeasureText(string text, SKPaint paint, ref SKRect totalBounds)
@@ -88,8 +89,8 @@ namespace PdfClown.UI.ToolTip
 
         public virtual void DrawContent(SKCanvas canvas)
         {
-            canvas.DrawRect(ContentBound, paintToolTipBackground);
-            canvas.DrawRect(ContentBound, paintToolTipBorder);
+            canvas.DrawRect(ContentBound, DefaultSKStyles.PaintToolTipBackground);
+            canvas.DrawRect(ContentBound, DefaultSKStyles.PaintToolTipBorder);
             canvas.Translate(Indent, Indent);
 
             foreach (var line in ContentLines)

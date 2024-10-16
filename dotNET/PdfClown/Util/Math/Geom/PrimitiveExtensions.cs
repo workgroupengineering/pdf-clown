@@ -296,7 +296,7 @@ namespace PdfClown.Util.Math.Geom
             {
                 rectangle.Left = point.X;
             }
-            else if (point.X > rectangle.Right)
+            if (point.X > rectangle.Right)
             {
                 rectangle.Right = point.X;
             }
@@ -304,7 +304,7 @@ namespace PdfClown.Util.Math.Geom
             {
                 rectangle.Top = point.Y;
             }
-            else if (point.Y > rectangle.Bottom)
+            if (point.Y > rectangle.Bottom)
             {
                 rectangle.Bottom = point.Y;
             }

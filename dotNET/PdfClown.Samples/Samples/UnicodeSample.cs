@@ -1,20 +1,12 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Entities;
-using fonts = PdfClown.Documents.Contents.Fonts;
-using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Files;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
 using System.IO;
+using fonts = PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates the PDF Clown's support to Unicode-compliant fonts.</summary>
-    */
+    /// <summary>This sample demonstrates the PDF Clown's support to Unicode-compliant fonts.</summary>
     public class UnicodeSample : Sample
     {
         private const float Margin = 36;
@@ -32,9 +24,7 @@ namespace PdfClown.Samples.CLI
             Serialize(file, "Unicode", "using Unicode fonts", "Unicode");
         }
 
-        /**
-          <summary>Populates a PDF file with contents.</summary>
-        */
+        /// <summary>Populates a PDF file with contents.</summary>
         private void Populate(PdfDocument document)
         {
             // 1. Add the page to the document!
@@ -42,16 +32,16 @@ namespace PdfClown.Samples.CLI
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             // 2.1. Create a content composer for the page!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             // 2.2. Create a block composer!
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var blockComposer = new BlockComposer(composer);
 
             // 3. Inserting contents...
             // Define the font to use!
             fonts::Font font = fonts::Font.Get(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "GenR102.TTF"));
             // Define the paragraph break size!
-            var breakSize = new SKSize(0, 10);
+            var breakSize = new SKSize(0, 5);
             // Define the text to show!
             string[] titles = new string[]
               {
@@ -108,11 +98,11 @@ namespace PdfClown.Samples.CLI
                 YAlignmentEnum.Top);
             for (int index = 0, length = titles.Length; index < length; index++)
             {
-                composer.SetFont(font, 12);
+                composer.SetFont(font, 11);
                 blockComposer.ShowText(titles[index]);
                 blockComposer.ShowBreak();
 
-                composer.SetFont(font, 11);
+                composer.SetFont(font, 10);
                 blockComposer.ShowText(bodies[index]);
                 blockComposer.ShowBreak(XAlignmentEnum.Right);
 

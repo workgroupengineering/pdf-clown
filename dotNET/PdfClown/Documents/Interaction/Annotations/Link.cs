@@ -23,24 +23,18 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
-
-using system = System;
 using SkiaSharp;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Contents.XObjects;
+using system = System;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Link annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It represents either a hypertext link to a destination elsewhere in the document
-      or an action to be performed.</remarks>
-    */
+    /// <summary>Link annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It represents either a hypertext link to a destination elsewhere in the document
+    /// or an action to be performed.</remarks>
     [PDF(VersionEnum.PDF10)]
     public sealed class Link : Annotation, ILink
     {
@@ -55,9 +49,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => base.Action;
             set
             {
-                /*
-                  NOTE: This entry is not permitted in link annotations if a 'Dest' entry is present.
-                */
+                // NOTE: This entry is not permitted in link annotations if a 'Dest' entry is present.
                 if (BaseDataObject.ContainsKey(PdfName.Dest)
                   && value != null)
                 { BaseDataObject.Remove(PdfName.Dest); }
@@ -103,9 +95,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 { BaseDataObject.Remove(PdfName.Dest); }
                 else
                 {
-                    /*
-                      NOTE: This entry is not permitted in link annotations if an 'A' entry is present.
-                    */
+                    // NOTE: This entry is not permitted in link annotations if an 'A' entry is present.
                     if (BaseDataObject.ContainsKey(PdfName.A))
                     { BaseDataObject.Remove(PdfName.A); }
 

@@ -23,13 +23,9 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'End marked-content sequence' operation [PDF:1.6:10.5].</summary>
-    */
+    /// <summary>'End marked-content sequence' operation [PDF:1.6:10.5].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class EndMarkedContent : Operation
     {
@@ -39,10 +35,5 @@ namespace PdfClown.Documents.Contents.Objects
 
         private EndMarkedContent() : base(OperatorKeyword)
         { }
-
-        public override void Scan(GraphicsState state)
-        {
-            base.Scan(state);
-        }
     }
 }

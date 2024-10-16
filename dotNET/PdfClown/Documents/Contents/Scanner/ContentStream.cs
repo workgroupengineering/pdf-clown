@@ -23,13 +23,12 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
 using PdfClown.Objects;
 using PdfClown.Util.IO;
-
 using System;
 using System.IO;
 using System.Text;
-using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents
 {

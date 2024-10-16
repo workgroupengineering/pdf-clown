@@ -41,8 +41,6 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly bool isEmbedded;
         private readonly bool isDamaged;
         private readonly ICmapLookup cmapLookup; // may be null
-        private SKMatrix? fontMatrix;
-        private SKRect? fontBBox;
         private readonly HashSet<int> noMapping = new HashSet<int>();
 
         public FontCIDType2(PdfDocument document, PdfDictionary fontObject) : base(document, fontObject)
@@ -173,41 +171,14 @@ namespace PdfClown.Documents.Contents.Fonts
             get => isDamaged;
         }
 
-        /**
-         * Returns the embedded or substituted TrueType font. May be an OpenType font if the font is
-         * not embedded.
-         */
+        /// <summary>Returns the embedded or substituted TrueType font.May be an OpenType font if the font is
+        /// not embedded.</summary>
         public TrueTypeFont TrueTypeFont
         {
             get => ttf;
         }
 
-        public override SKMatrix FontMatrix
-        {
-            get
-            {
-                if (fontMatrix == null)
-                {
-                    // 1000 upem, this is not strictly true
-                    fontMatrix = new SKMatrix(0.001f, 0, 0, 0, 0.001f, 0, 0, 0, 1);
-                }
-                return (SKMatrix)fontMatrix;
-            }
-        }
-
-        public override SKRect BoundingBox
-        {
-            get
-            {
-                if (fontBBox == null)
-                {
-                    fontBBox = GenerateBoundingBox();
-                }
-                return (SKRect)fontBBox;
-            }
-        }
-
-        private SKRect GenerateBoundingBox()
+        protected override SKRect GenerateBoundingBox()
         {
             if (FontDescriptor != null)
             {

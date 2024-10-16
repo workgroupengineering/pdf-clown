@@ -58,16 +58,19 @@ namespace PdfClown.Bytes
         private int bitShift = -1;
         private byte currentByte;
 
-        public ByteStream() : this(0)
+        public ByteStream() : this(DefaultCapacity)
         { }
 
         public ByteStream(int capacity)
         {
             if (capacity < 1)
-            { capacity = DefaultCapacity; }
-
-            data = new byte[capacity];
-            length = 0;
+            {
+                data = Array.Empty<byte>();
+            }
+            else
+            {
+                data = new byte[capacity];
+            }
         }
 
         public ByteStream(Memory<byte> data)

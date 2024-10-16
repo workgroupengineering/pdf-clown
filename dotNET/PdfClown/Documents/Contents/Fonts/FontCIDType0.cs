@@ -45,8 +45,6 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly bool isDamaged;
         private readonly SKMatrix fontMatrixTransform;
         private float? avgWidth = null;
-        private SKMatrix? fontMatrix;
-        private SKRect? fontBBox;
         private int[] cid2gid = null;
 
         public FontCIDType0(PdfDocument document, PdfDictionary fontObject) : base(document, fontObject)
@@ -152,53 +150,41 @@ namespace PdfClown.Documents.Contents.Fonts
             fontMatrixTransform = fontMatrixTransform.PostConcat(SKMatrix.CreateScale(1000, 1000));
         }
 
-        public override BaseFont GenericFont => cidFont ?? t1Font;
+        public override BaseFont GenericFont => cidFont ?? t1Font;       
 
-        public override SKMatrix FontMatrix
+        protected override SKMatrix GenerateFontMatrix()
         {
-            get
+            List<float> numbers;
+            if (cidFont != null)
             {
-                if (fontMatrix == null)
+                numbers = cidFont.FontMatrix;
+            }
+            else
+            {
+                try
                 {
-                    List<float> numbers;
-                    if (cidFont != null)
-                    {
-                        numbers = cidFont.FontMatrix;
-                    }
-                    else
-                    {
-                        try
-                        {
-                            numbers = t1Font.FontMatrix;
-                        }
-                        catch (IOException e)
-                        {
-                            Debug.WriteLine("debug:Couldn't get font matrix - returning default value", e);
-                            return (fontMatrix = new SKMatrix(0.001f, 0, 0, 0, 0.001f, 0, 0, 0, 1)).Value;
-                        }
-                    }
-
-                    if (numbers != null && numbers.Count == 6)
-                    {
-                        fontMatrix = new SKMatrix(numbers[0], numbers[1], numbers[4],
-                                                numbers[2], numbers[3], numbers[5],
-                                                0, 0, 1);
-                    }
-                    else
-                    {
-                        fontMatrix = new SKMatrix(0.001f, 0, 0, 0, 0.001f, 0, 0, 0, 1f);
-                    }
+                    numbers = t1Font.FontMatrix;
                 }
-                return (SKMatrix)fontMatrix;
+                catch (IOException e)
+                {
+                    Debug.WriteLine("debug:Couldn't get font matrix - returning default value", e);
+                    return DefaultFontMatrix;
+                }
+            }
+
+            if (numbers != null && numbers.Count > 5)
+            {
+                return new SKMatrix(numbers[0], numbers[1], numbers[4],
+                                        numbers[2], numbers[3], numbers[5],
+                                        0, 0, 1);
+            }
+            else
+            {
+                return DefaultFontMatrix;
             }
         }
 
-        public override SKRect BoundingBox
-        {
-            get => fontBBox ??= GenerateBoundingBox();
-        }
-
-        private SKRect GenerateBoundingBox()
+        protected override SKRect GenerateBoundingBox()
         {
             if (FontDescriptor != null)
             {

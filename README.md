@@ -1,47 +1,52 @@
-# Pdf-Clown
-https://sourceforge.net/projects/clown/ mirror
+# Pdf Clown - Skia Sharp
+https://sourceforge.net/projects/clown/ mirror.
 
 ## Fork Task
 
-- Pdf visualization by [SkiaSharp](https://github.com/mono/SkiaSharp).
-- UI integration by [Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms).
+- Pdf rendering by [SkiaSharp](https://github.com/mono/SkiaSharp).
+- UI integrations 
+  - [Blazor](https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/webassembly?view=aspnetcore-8.0) (alfa)
+  - [Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms) (pre-release)
+  - [Avalonia UI](https://avaloniaui.net/) (todo 1)
+  - [Uno Platform](https://platform.uno/) (todo)
+  - [MAUI](https://learn.microsoft.com/ru-ru/dotnet/maui/what-is-maui?view=net-maui-8.0) (todo)
+- Competitive performance
 
 ## Status
 
-- Rendering Pdf on Xamarin.Forms 'SkiaSharp.SKCanvas'
+- Successfully render Pdf on 'SkiaSharp.SKCanvas'
   - Basic painting reguired just replace System.Drawing by SkiaSharp, thanks to author Stefano Chizzolini
-  - New mandatory features of SkiaSharp(for Tiling, Image Mask, Gradient and Patch shaders) by [mattleibow](https://github.com/mattleibow)
+  - New mandatory features of SkiaSharp(for Blazor, Tiling, Image Mask, Gradient and Patch shaders) by [mattleibow](https://github.com/mattleibow)
   - XObject Masking by [warappa](https://github.com/warappa)
 
-- Change Code formatting
-- Rendering Annotations
-- Move project to .net standard 2.1
-- Several Xamarin.Forms frontends (Android, iOS, WPF)
+- Change Code amd Docs formatting
+- Rendering and Editing Pdf Annotations
+- Move core projects to .net6 (Blazor on .net8)
 - Performance improvements
-  - Strings comparison
+  - PdfName cached globbaly
   - Suppress reflections invocation
   - PdfObjects Wrappers caching
-  - Move buffered IO to use Memory, Span\<byte\>
+  - Force use of Memory\<byte\>, Span\<byte\>
 - Fonts, Encryption, Functions, Shadings by integrate [Apache PdfBox Project](https://pdfbox.apache.org/) from [mirror](https://github.com/apache/pdfbox).
   - Source code translated from java to C#
   - Full Fonts processing & text rendering engine
   - LZW, CCITTFax and other fixes of Images loading engine
-  - Decrypt PDF
+  - Decryption
+  - Signature Fields - basic models
   - Functions 0-4
-  - Shaders 4,5,6
+  - Shaders 4, 5, 6
 - Images and ColorSpaces by integrate [Mozilla Pdf.js](https://github.com/mozilla/pdf.js)
   - Source code translated from js to C#
   - JPX, CCITTFax, JBIG2 - decoding
 
 ## TODO
-
+- Release Nuget packages (maybe PdfClown.Skia, PdfClown.Skia.UI.Core, PdfClown.Skia.UI.Blazor)
 - Rendering
-  - Move from SKPicture to to SKImage with rescan on each scale change, without in-memory bitmaps caching(maybe file cache or redecoding)
-  - Possible GL context with SKImage
-  - Decoding streaming and optimization
-  - Masking won't work correctly 
+  - Try to move from SKPicture to to SKImage with rescan on each scale change, without in-memory bitmaps caching(maybe tempFile cache or redecoding)
+  - Streaming Decoding and optimization
+  - Masking won't work correctly after my refactoring	
 - Encryption.
-  - Encrypt not tested
+  - Encryption not tested
   - Public key Certificat - requer completly rework PdfBox solution
-  - Signature Fields
+  - Digital Signature
 

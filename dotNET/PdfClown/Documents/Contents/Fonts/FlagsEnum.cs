@@ -29,47 +29,27 @@ using System;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-        <summary>Font descriptor flags [PDF:1.6:5.7.1].</summary>
-      */
+    /// <summary>Font descriptor flags [PDF:1.6:5.7.1].</summary>
     [Flags]
     public enum FlagsEnum
     {
-        /**
-          <summary>All glyphs have the same width.</summary>
-        */
+        /// <summary>All glyphs have the same width.</summary>
         FixedPitch = 0x1,
-        /**
-          <summary>Glyphs have serifs.</summary>
-        */
+        /// <summary>Glyphs have serifs.</summary>
         Serif = 0x2,
-        /**
-          <summary>Font contains glyphs outside the Adobe standard Latin character set.</summary>
-        */
+        /// <summary>Font contains glyphs outside the Adobe standard Latin character set.</summary>
         Symbolic = 0x4,
-        /**
-          <summary>Glyphs resemble cursive handwriting.</summary>
-        */
+        /// <summary>Glyphs resemble cursive handwriting.</summary>
         Script = 0x8,
-        /**
-          <summary>Font uses the Adobe standard Latin character set.</summary>
-        */
+        /// <summary>Font uses the Adobe standard Latin character set.</summary>
         Nonsymbolic = 0x20,
-        /**
-          <summary>Glyphs have dominant vertical strokes that are slanted.</summary>
-        */
+        /// <summary>Glyphs have dominant vertical strokes that are slanted.</summary>
         Italic = 0x40,
-        /**
-          <summary>Font contains no lowercase letters.</summary>
-        */
+        /// <summary>Font contains no lowercase letters.</summary>
         AllCap = 0x10000,
-        /**
-          <summary>Font contains both uppercase and lowercase letters.</summary>
-        */
+        /// <summary>Font contains both uppercase and lowercase letters.</summary>
         SmallCap = 0x20000,
-        /**
-          <summary>Thicken bold glyphs at small text sizes.</summary>
-        */
+        /// <summary>Thicken bold glyphs at small text sizes.</summary>
         ForceBold = 0x40000
     }
 }

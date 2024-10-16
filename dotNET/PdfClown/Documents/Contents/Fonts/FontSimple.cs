@@ -312,46 +312,46 @@ namespace PdfClown.Documents.Contents.Fonts
         protected virtual void ReadEncoding()
         {
             var encodingData = EncodingData;
-            if (encodingData is PdfName pdfName)
+            switch (encodingData)
             {
-                if (string.Equals(Standard14Fonts.FontNames[FontName.ZapfDingbats], Name, StringComparison.Ordinal)
-                    && !IsEmbedded)
-                {
-                    // PDFBOX- and PDF.js issue 16464: ignore other encodings
-                    // this segment will work only if readEncoding() is called after the data
-                    // for getName() and isEmbedded() is available
-                    this.encoding = ZapfDingbatsEncoding.Instance;
-                }
-                else
-                {
-                    this.encoding = Encoding.Get(pdfName);
-
-                    if (this.encoding == null)
+                case PdfName pdfName:
+                    if (string.Equals(Standard14Fonts.FontNames[FontName.ZapfDingbats], Name, StringComparison.Ordinal)
+                                    && !IsEmbedded)
                     {
-                        Debug.WriteLine("warn: Unknown encoding: " + pdfName.StringValue);
-                        this.encoding = ReadEncodingFromFont(); // fallback
+                        // PDFBOX- and PDF.js issue 16464: ignore other encodings
+                        // this segment will work only if readEncoding() is called after the data
+                        // for getName() and isEmbedded() is available
+                        encoding = ZapfDingbatsEncoding.Instance;
                     }
-                }
-            }
-            else if (encodingData is PdfDictionary encodingDict)
-            {
-                Encoding builtIn = null;
-                bool? symbolic = SymbolicFlag;
+                    else
+                    {
+                        encoding = Encoding.Get(pdfName);
 
-                var baseEncoding = encodingDict.Get<PdfName>(PdfName.BaseEncoding);
+                        if (encoding == null)
+                        {
+                            Debug.WriteLine("warn: Unknown encoding: " + pdfName.StringValue);
+                            encoding = ReadEncodingFromFont(); // fallback
+                        }
+                    }
+                    break;
+                case PdfDictionary encodingDict:
+                    Encoding builtIn = null;
+                    bool? symbolic = SymbolicFlag;
 
-                bool hasValidBaseEncoding = baseEncoding != null && Encoding.Get(baseEncoding) != null;
+                    var baseEncoding = encodingDict.Get<PdfName>(PdfName.BaseEncoding);
 
-                if (!hasValidBaseEncoding && symbolic == true)
-                {
-                    builtIn = ReadEncodingFromFont();
-                }
+                    bool hasValidBaseEncoding = baseEncoding != null && Encoding.Get(baseEncoding) != null;
 
-                this.encoding = new DictionaryEncoding(encodingDict, !(symbolic ?? false), builtIn);
-            }
-            else
-            {
-                this.encoding = ReadEncodingFromFont();
+                    if (!hasValidBaseEncoding && symbolic == true)
+                    {
+                        builtIn = ReadEncodingFromFont();
+                    }
+
+                    encoding = new DictionaryEncoding(encodingDict, !(symbolic ?? false), builtIn);
+                    break;
+                default:
+                    encoding = ReadEncodingFromFont();
+                    break;
             }
 
             // normalise the standard 14 name, e.g "Symbol,Italic" -> "Symbol"

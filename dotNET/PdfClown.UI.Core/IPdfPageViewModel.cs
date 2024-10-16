@@ -1,5 +1,5 @@
 ﻿using PdfClown.Documents;
-using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Interaction.Annotations;
 using SkiaSharp;
 using System.Collections.Generic;

@@ -101,7 +101,8 @@ namespace PdfClown.Documents
 
         private void AddIndex(Annotation annotation)
         {
-            if (annotation is Markup)
+            if (annotation is Markup
+                || annotation is Widget)
             {
                 //Recovery
                 if (annotation.Page == null)
@@ -125,6 +126,10 @@ namespace PdfClown.Documents
 
         public override void Add(Annotation item)
         {
+            if (item.IsQueueRefreshAppearance)
+            {
+                item.RefreshAppearance();
+            }
             AddIndex(item);
             base.Add(item);
         }

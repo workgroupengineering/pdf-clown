@@ -6,11 +6,15 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace PdfClown.Util.Reflection
+namespace PdfClown.Util.Invokers
 {
     public abstract class Invoker : IInvoker
     {
         private static readonly Dictionary<Type, Dictionary<string, IInvoker>> cache = new Dictionary<Type, Dictionary<string, IInvoker>>();
+        static Invoker()
+        {
+            
+        }
 
         public static IInvoker GetPropertyInvoker([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, string propertyName)
         {

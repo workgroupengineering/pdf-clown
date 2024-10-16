@@ -64,7 +64,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private CmapSubtable cmapMacRoman = null;
         private bool cmapInitialized = false;
         private Dictionary<int, int> gidToCode; // for embedding
-        private SKRect? fontBBox;
+        private float? scaleFactor;
 
         internal FontTrueType(PdfDirectObject baseObject)
             : base(baseObject)
@@ -245,19 +245,18 @@ namespace PdfClown.Documents.Contents.Fonts
             get => BaseFont;
         }
 
-        public override SKRect BoundingBox
+        public override bool IsDamaged
         {
-            get
-            {
-                if (fontBBox == null)
-                {
-                    fontBBox = GenerateBoundingBox();
-                }
-                return (SKRect)fontBBox;
-            }
+            get => isDamaged;
         }
 
-        private SKRect GenerateBoundingBox()
+        /// <summary>Returns the embedded or substituted TrueType font.</summary>
+        public TrueTypeFont TrueTypeFont
+        {
+            get => ttf;
+        }
+
+        protected override SKRect GenerateBoundingBox()
         {
             if (FontDescriptor != null)
             {
@@ -270,15 +269,19 @@ namespace PdfClown.Documents.Contents.Fonts
             return ttf.FontBBox;
         }
 
-        public override bool IsDamaged
-        {
-            get => isDamaged;
-        }
+        //protected override float GetAscent() => BoundingBox.Bottom;
 
-        ///<summary>Returns the embedded or substituted TrueType font.</summary>
-        public TrueTypeFont TrueTypeFont
+        //protected override float GetDescent() => BoundingBox.Top;
+
+        public override float ScalingFactor => scaleFactor ??= GenerateScaleFactor();
+
+        private float GenerateScaleFactor()
         {
-            get => ttf;
+            //if (ttf is TrueTypeFont)
+            //{
+            //    return 1000 / ttf.UnitsPerEm;
+            //}
+            return base.ScalingFactor;
         }
 
         public override float GetWidthFromFont(int code)
@@ -350,7 +353,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        ///<summary>Inverts the font's code -&gt; GID mapping. Any duplicate (GID -&gt; code) mappings will be lost.</summary>
+        /// <summary>Inverts the font's code -&gt; GID mapping. Any duplicate (GID -&gt; code) mappings will be lost.</summary>
         private Dictionary<int, int> GIDToCode
         {
             get

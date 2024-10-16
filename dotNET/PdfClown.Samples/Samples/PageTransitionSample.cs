@@ -1,21 +1,12 @@
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Files;
-using PdfClown.Tools;
 
 using System;
-using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to apply visual transitions to the pages of a PDF document.</summary>
-      <remarks>To watch the transition effects applied to the document, you typically have to select
-      the presentation (full screen) view mode on your PDF viewer (for example Adobe Reader).</remarks>
-    */
+    /// <summary>This sample demonstrates how to apply visual transitions to the pages of a PDF document.</summary>
+    /// <remarks>To watch the transition effects applied to the document, you typically have to select
+    /// the presentation(full screen) view mode on your PDF viewer(for example Adobe Reader).</remarks>
     public class PageTransitionSample : Sample
     {
         public override void Run()

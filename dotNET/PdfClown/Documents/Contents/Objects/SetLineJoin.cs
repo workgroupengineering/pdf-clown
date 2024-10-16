@@ -23,10 +23,7 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -44,12 +41,13 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state) => state.LineJoin = Value;
-
         public LineJoinEnum Value
         {
             get => (LineJoinEnum)operands.GetInt(0);
             set => operands.Set(0, (int)value);
         }
+
+        public override void Scan(GraphicsState state) => state.LineJoin = Value;
+
     }
 }

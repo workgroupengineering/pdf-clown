@@ -2,7 +2,7 @@
 using System.Collections;
 using System.ComponentModel;
 
-namespace PdfClown.Util.Reflection
+namespace PdfClown.Util.Invokers
 {
     public interface IInvoker
     {
@@ -15,7 +15,7 @@ namespace PdfClown.Util.Reflection
         void SetValue(object target, object value);
     }
 
-    public interface IInvoker<T, V> : IInvoker
+    public interface IInvoker<in T, V> : IInvoker
     {
         V GetValue(T target);
         void SetValue(T target, V value);

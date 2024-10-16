@@ -25,14 +25,10 @@
 
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-     <summary>'Font Type3 Char Proc Information' operation
-     [PDF:1.6:4.4.1].</summary>
-   */
+    /// <summary>'Font Type3 Char Proc Information' operation
+    /// [PDF:1.6:4.4.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class CharProcWidth : Operation
     {

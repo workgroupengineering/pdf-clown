@@ -33,8 +33,6 @@ namespace PdfClown.Documents.Contents.Objects
 
         private EndCompatibilityState() : base(OperatorKeyword)
         { }
-
-        public override void Scan(GraphicsState state)
-        { }
+       
     }
 }

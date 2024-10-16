@@ -23,8 +23,9 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.Scanner;
+using PdfClown.Tools;
 using SkiaSharp;
-using fonts = PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Documents.Contents
 {
@@ -32,26 +33,30 @@ namespace PdfClown.Documents.Contents
     {
         private SKMatrix tlm = SKMatrix.Identity;
         private SKMatrix tm = SKMatrix.Identity;
+        private ITextBlock textBlock;
 
         public TextGraphicsState()
         {
         }
-        /**
-           <summary>Gets/Sets the current text line matrix [PDF:1.6:5.3].</summary>
-         */
+
+        ///<summary>Gets/Sets the current text line matrix [PDF:1.6:5.3].</summary>
         public SKMatrix Tlm
         {
             get => tlm;
             set => tlm = value;
         }
 
-        /**
-          <summary>Gets/Sets the current text matrix [PDF:1.6:5.3].</summary>
-        */
+        /// <summary>Gets/Sets the current text matrix [PDF:1.6:5.3].</summary>
         public SKMatrix Tm
         {
             get => tm;
             set => tm = value;
+        }
+
+        public ITextBlock TextBlock
+        {
+            get => textBlock ??= new TextBlock();
+            internal set => textBlock = value;
         }
     }
 }

@@ -34,20 +34,20 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Util.Math.Geom;
+using PdfClown.Documents.Contents.Scanner;
 
 namespace PdfClown.Documents.Contents.Patterns
 {
-    /**
-      <summary>Pattern consisting of a small graphical figure called <i>pattern cell</i> [PDF:1.6:4.6.2].</summary>
-      <remarks>Painting with the pattern replicates the cell at fixed horizontal and vertical intervals
-      to fill an area.</remarks>
-    */
+    /// <summary>Pattern consisting of a small graphical figure called<i>pattern cell</i> [PDF:1.6:4.6.2].</summary>
+    /// <remarks>Painting with the pattern replicates the cell at fixed horizontal and vertical intervals
+    /// to fill an area.</remarks>
     [PDF(VersionEnum.PDF12)]
     public class TilingPattern : Pattern, IContentContext
     {
         private SKPicture picture;
-        private Stack<GraphicsState> states;
         private SKRect? box;
+        private List<ITextBlock> textBlocks;
+        private ContentWrapper contents;
 
         internal TilingPattern(PatternColorSpace colorSpace, PdfDirectObject baseObject)
             : base(colorSpace, baseObject)
@@ -57,10 +57,8 @@ namespace PdfClown.Documents.Contents.Patterns
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the colorized representation of this pattern.</summary>
-          <param name="color">Color to be applied to the pattern.</param>
-        */
+        /// <summary>Gets the colorized representation of this pattern.</summary>
+        /// <param name = "color" > Color to be applied to the pattern.</param>
         public ColorizedTilingPattern Colorize(Color color)
         {
             if (PaintType != TilingPaintTypeEnum.Uncolored)
@@ -69,10 +67,8 @@ namespace PdfClown.Documents.Contents.Patterns
             return new ColorizedTilingPattern(this, color);
         }
 
-        /**
-          <summary>Gets the pattern cell's bounding box (expressed in the pattern coordinate system)
-          used to clip the pattern cell.</summary>
-        */
+        /// <summary>Gets the pattern cell's bounding box (expressed in the pattern coordinate system)
+        /// used to clip the pattern cell.</summary>
         public Rectangle BBox
         {
             get => Wrap<Rectangle>(BaseHeader.GetOrCreate<PdfArray>(PdfName.BBox));
@@ -97,38 +93,56 @@ namespace PdfClown.Documents.Contents.Patterns
             }
         }
 
-        ///<summary>Gets how the color of the pattern cell is to be specified.</summary>
+        /// <summary>Gets how the color of the pattern cell is to be specified.</summary>
         public TilingPaintTypeEnum PaintType
         {
             get => (TilingPaintTypeEnum)BaseHeader.GetInt(PdfName.PaintType);
             set => BaseHeader.Set(PdfName.PaintType, (int)value);
         }
 
-        ///<summary>Gets the named resources required by the pattern's content stream.</summary>
+        /// <summary>Gets the named resources required by the pattern's content stream.</summary>
         public Resources Resources => Wrap<Resources>(BaseHeader[PdfName.Resources]);
 
-        ///<summary>Gets how to adjust the spacing of tiles relative to the device pixel grid.</summary>
+        /// <summary>Gets how to adjust the spacing of tiles relative to the device pixel grid.</summary>
         public TilingTypeEnum TilingType
         {
             get => (TilingTypeEnum)BaseHeader.GetInt(PdfName.TilingType);
             set => BaseHeader.Set(PdfName.TilingType, (int)value);
         }
 
-        ///<summary>Gets the horizontal spacing between pattern cells (expressed in the pattern coordinate system).</summary>
+        /// <summary>Gets the horizontal spacing between pattern cells (expressed in the pattern coordinate system).</summary>
         public float XStep
         {
             get => BaseHeader.GetFloat(PdfName.XStep);
             set => BaseHeader.Set(PdfName.XStep, value);
         }
 
-        ///<summary>Gets the vertical spacing between pattern cells (expressed in the pattern coordinate system).</summary>
+        /// <summary>Gets the vertical spacing between pattern cells (expressed in the pattern coordinate system).</summary>
         public float YStep
         {
             get => BaseHeader.GetFloat(PdfName.YStep);
             set => BaseHeader.Set(PdfName.YStep, value);
         }
 
-        public ContentWrapper Contents => ContentWrapper.Wrap(BaseObject, this);
+        public ContentWrapper Contents => contents ??= new ContentWrapper(BaseObject);
+
+        private PdfDictionary BaseHeader => ((PdfStream)BaseDataObject).Header;
+
+        public RotationEnum Rotation => RotationEnum.Downward;
+
+        public int Rotate => 0;
+
+        public SKMatrix RotateMatrix => SKMatrix.Identity;
+
+        public AppDataCollection AppData => throw new NotImplementedException();
+
+        public DateTime? ModificationDate => Dictionary.GetDate(PdfName.LastModified);
+
+        public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseHeader[PdfName.Group]);
+
+        public List<ITextBlock> TextBlocks => textBlocks ??= new List<ITextBlock>();
+
+        IList<ContentObject> ICompositeObject.Contents => Contents;
 
         public SKPicture GetPicture(GraphicsState state)
         {
@@ -158,7 +172,7 @@ namespace PdfClown.Documents.Contents.Patterns
             {
                 ResourceParent = resurceScanner
             };
-            scanner.Render();
+            scanner.Scan();
         }
 
         public AppData GetAppData(PdfName appName)
@@ -181,27 +195,11 @@ namespace PdfClown.Documents.Contents.Patterns
             throw new NotImplementedException();
         }
 
-        public XObjects.XObject ToXObject(PdfDocument context)
+        public XObject ToXObject(PdfDocument context)
         {
             throw new NotImplementedException();
         }
 
-        private PdfDictionary BaseHeader => ((PdfStream)BaseDataObject).Header;
 
-        public RotationEnum Rotation => RotationEnum.Downward;
-
-        public int Rotate => 0;
-
-        public SKMatrix RotateMatrix => SKMatrix.Identity;
-
-        public AppDataCollection AppData => throw new NotImplementedException();
-
-        public DateTime? ModificationDate => Dictionary.GetDate(PdfName.LastModified);
-
-        public List<ITextString> Strings { get; } = new List<ITextString>();
-
-        public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseHeader[PdfName.Group]);
-
-        public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
     }
 }

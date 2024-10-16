@@ -23,13 +23,9 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Begin text object' operation [PDF:1.6:5.3].</summary>
-    */
+    /// <summary>'Begin text object' operation [PDF:1.6:5.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class BeginText : Operation
     {

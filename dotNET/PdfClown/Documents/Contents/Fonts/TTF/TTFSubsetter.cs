@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
+using PdfClown.Tokens;
+using PdfClown.Util;
+using PdfClown.Util.Collections;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
-    using System.IO;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using PdfClown.Tokens;
-    using System;
-    using System.Linq;
-    using System.ComponentModel;
-    using System.Runtime.InteropServices;
-    using System.Collections.Concurrent;
-    using PdfClown.Bytes;
-    using PdfClown.Util;
-    using PdfClown.Util.Collections;
 
 
     /**
@@ -127,7 +125,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         {
             AddCompoundReferences();
 
-            Dictionary<int, int> newToOld = new Dictionary<int, int>();
+            var newToOld = new Dictionary<int, int>();
             int newGID = 0;
             foreach (int oldGID in glyphIds)
             {
@@ -201,17 +199,17 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 output.WriteFixed(h.Version);
                 output.WriteFixed(h.FontRevision);
                 output.Write((uint)0); // h.CheckSumAdjustment()
-                output.Write((uint)h.MagicNumber);
-                output.Write((ushort)h.Flags);
-                output.Write((ushort)h.UnitsPerEm);
+                output.Write(h.MagicNumber);
+                output.Write(h.Flags);
+                output.Write(h.UnitsPerEm);
                 output.WriteLongDateTime(h.Created);
                 output.WriteLongDateTime(h.Modified);
                 output.Write(h.XMin);
                 output.Write(h.YMin);
                 output.Write(h.XMax);
                 output.Write(h.YMax);
-                output.Write((ushort)h.MacStyle);
-                output.Write((ushort)h.LowestRecPPEM);
+                output.Write(h.MacStyle);
+                output.Write(h.LowestRecPPEM);
                 output.Write(h.FontDirectionHint);
                 // force long format of 'loca' table
                 output.Write((short)1); // h.IndexToLocFormat()
@@ -231,7 +229,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 output.Write(h.Ascender);
                 output.Write(h.Descender);
                 output.Write(h.LineGap);
-                output.Write((ushort)h.AdvanceWidthMax);
+                output.Write(h.AdvanceWidthMax);
                 output.Write(h.MinLeftSideBearing);
                 output.Write(h.MinRightSideBearing);
                 output.Write(h.XMaxExtent);
@@ -329,10 +327,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             {
                 if (ShouldCopyNameRecord(nr))
                 {
-                    output.Write((ushort)nr.PlatformId);
-                    output.Write((ushort)nr.PlatformEncodingId);
-                    output.Write((ushort)nr.LanguageId);
-                    output.Write((ushort)nr.NameId);
+                    output.Write(nr.PlatformId);
+                    output.Write(nr.PlatformEncodingId);
+                    output.Write(nr.LanguageId);
+                    output.Write(nr.NameId);
                     output.Write((ushort)names[j].Length);
                     output.Write((ushort)offset);
                     offset += names[j].Length;
@@ -357,19 +355,19 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             output.Write((ushort)glyphIds.Count);
             if (p.Version >= 1.0f)
             {
-                output.Write((ushort)p.MaxPoints);
-                output.Write((ushort)p.MaxContours);
-                output.Write((ushort)p.MaxCompositePoints);
-                output.Write((ushort)p.MaxCompositeContours);
-                output.Write((ushort)p.MaxZones);
-                output.Write((ushort)p.MaxTwilightPoints);
-                output.Write((ushort)p.MaxStorage);
-                output.Write((ushort)p.MaxFunctionDefs);
-                output.Write((ushort)p.MaxInstructionDefs);
-                output.Write((ushort)p.MaxStackElements);
-                output.Write((ushort)p.MaxSizeOfInstructions);
-                output.Write((ushort)p.MaxComponentElements);
-                output.Write((ushort)p.MaxComponentDepth);
+                output.Write(p.MaxPoints);
+                output.Write(p.MaxContours);
+                output.Write(p.MaxCompositePoints);
+                output.Write(p.MaxCompositeContours);
+                output.Write(p.MaxZones);
+                output.Write(p.MaxTwilightPoints);
+                output.Write(p.MaxStorage);
+                output.Write(p.MaxFunctionDefs);
+                output.Write(p.MaxInstructionDefs);
+                output.Write(p.MaxStackElements);
+                output.Write(p.MaxSizeOfInstructions);
+                output.Write(p.MaxComponentElements);
+                output.Write(p.MaxComponentDepth);
             }
             output.Flush();
             return output;
@@ -385,26 +383,26 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
 
             var output = new ByteStream(32);
-            output.Write((ushort)os2.Version);
-            output.Write((short)os2.AverageCharWidth);
-            output.Write((ushort)os2.WeightClass);
-            output.Write((ushort)os2.WidthClass);
+            output.Write(os2.Version);
+            output.Write(os2.AverageCharWidth);
+            output.Write(os2.WeightClass);
+            output.Write(os2.WidthClass);
 
-            output.Write((short)os2.FsType);
+            output.Write(os2.FsType);
 
-            output.Write((short)os2.SubscriptXSize);
-            output.Write((short)os2.SubscriptYSize);
-            output.Write((short)os2.SubscriptXOffset);
-            output.Write((short)os2.SubscriptYOffset);
+            output.Write(os2.SubscriptXSize);
+            output.Write(os2.SubscriptYSize);
+            output.Write(os2.SubscriptXOffset);
+            output.Write(os2.SubscriptYOffset);
 
-            output.Write((short)os2.SuperscriptXSize);
-            output.Write((short)os2.SuperscriptYSize);
-            output.Write((short)os2.SuperscriptXOffset);
-            output.Write((short)os2.SuperscriptYOffset);
+            output.Write(os2.SuperscriptXSize);
+            output.Write(os2.SuperscriptYSize);
+            output.Write(os2.SuperscriptXOffset);
+            output.Write(os2.SuperscriptYOffset);
 
-            output.Write((short)os2.StrikeoutSize);
-            output.Write((short)os2.StrikeoutPosition);
-            output.Write((short)os2.FamilyClass);
+            output.Write(os2.StrikeoutSize);
+            output.Write(os2.StrikeoutPosition);
+            output.Write(os2.FamilyClass);
             output.Write(os2.Panose);
 
             output.Write((uint)0);
@@ -414,14 +412,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
             output.Write(Charset.ASCII.GetBytes(os2.AchVendId));
 
-            output.Write((ushort)os2.FsSelection);
+            output.Write(os2.FsSelection);
             output.Write((ushort)uniToGID.Keys.First());
             output.Write((ushort)uniToGID.Keys.Last());
-            output.Write((ushort)os2.TypoAscender);
-            output.Write((ushort)os2.TypoDescender);
-            output.Write((ushort)os2.TypoLineGap);
-            output.Write((ushort)os2.WinAscent);
-            output.Write((ushort)os2.WinDescent);
+            output.Write(os2.TypoAscender);
+            output.Write(os2.TypoDescender);
+            output.Write(os2.TypoLineGap);
+            output.Write(os2.WinAscent);
+            output.Write(os2.WinDescent);
 
             output.Flush();
             return output;
@@ -815,13 +813,13 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             var output = new ByteStream(32);
             output.WriteFixed(2.0); // version
             output.WriteFixed(post.ItalicAngle);
-            output.Write((short)post.UnderlinePosition);
-            output.Write((short)post.UnderlineThickness);
-            output.Write((uint)post.IsFixedPitch);
-            output.Write((uint)post.MinMemType42);
-            output.Write((uint)post.MaxMemType42);
-            output.Write((uint)post.MinMemType1);
-            output.Write((uint)post.MaxMemType1);
+            output.Write(post.UnderlinePosition);
+            output.Write(post.UnderlineThickness);
+            output.Write(post.IsFixedPitch);
+            output.Write(post.MinMemType42);
+            output.Write(post.MaxMemType42);
+            output.Write(post.MinMemType1);
+            output.Write(post.MaxMemType1);
 
             // version 2.0
 
@@ -829,7 +827,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             output.Write((ushort)glyphIds.Count);
 
             // glyphNameIndex[numGlyphs]
-            ConcurrentDictionary<string, int> names = new ConcurrentDictionary<string, int>(StringComparer.Ordinal);
+            var names = new ConcurrentDictionary<string, int>(StringComparer.Ordinal);
             foreach (int gid in glyphIds)
             {
                 string name = post.GetName(gid);

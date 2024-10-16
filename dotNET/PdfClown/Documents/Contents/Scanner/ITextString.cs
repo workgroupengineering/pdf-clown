@@ -1,5 +1,5 @@
-﻿/*
-  Copyright 2007-2015 Stefano Chizzolini. http://www.pdfclown.org
+/*
+  Copyright 2010 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,42 +23,27 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Objects;
-using SkiaSharp;
-using static PdfClown.Documents.Contents.Scanner.TextStringWrapper;
+using PdfClown.Util.Math.Geom;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Scanner
 {
-
-    public abstract class GraphicsObjectWrapper
+    /// <summary>Text string interface.</summary>
+    /// <remarks>Its purpose is to describe a text chunk extracted from content streams.</remarks>
+    public interface ITextString
     {
-        internal static GraphicsObjectWrapper Get(ContentScanner scanner)
-        {
-            var obj = scanner.Current;
-            if (obj == null)
-                return null;
-            if (obj.Wrapper is GraphicsObjectWrapper exist)
-            {
-                return exist;
-            }
-            switch (obj)
-            {
-                case ShowText showText:
-                    return new TextStringWrapper(showText, scanner);
-                case GraphicsText:
-                    return new TextWrapper(scanner);
-                case GraphicsXObject:
-                    return new XObjectWrapper(scanner);
-                case GraphicsInlineImage:
-                    return new InlineImageWrapper(scanner);
-                default:
-                    return null;
-            }
-        }
+        /// <summary>Gets the text string bounds.</summary>
+        Quad Quad { get; }
 
-        protected SKRect? box;
+        /// <summary>Gets the decoded text.</summary>
+        string Text { get; }
 
-        ///<summary>Gets the object's bounding box.</summary>
-        public virtual SKRect? Box => box;
+        /// <summary>Gets the information of each text string character.</summary>
+        List<TextChar> Chars { get; }
+
+        /// <summary>Gets the font and paint information.</summary>
+        TextStyle Style { get; }
+
+        void Invalidate();
     }
 }

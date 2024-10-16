@@ -214,7 +214,7 @@ namespace PdfClown.UI
                     verticalHovered = value;
                     OnPropertyChanged();
                     OnVerticalMaximumChanged(1, VerticalMaximum);
-                    InvalidateSurface();
+                    InvalidatePaint();
                 }
             }
         }
@@ -229,7 +229,7 @@ namespace PdfClown.UI
                     нorizontalHovered = value;
                     OnPropertyChanged();
                     OnHorizontalMaximumChanged(1, HorizontalMaximum);
-                    InvalidateSurface();
+                    InvalidatePaint();
                 }
             }
         }
@@ -242,7 +242,7 @@ namespace PdfClown.UI
                 if (pressedButton != value)
                 {
                     pressedButton = value;
-                    InvalidateSurface();
+                    InvalidatePaint();
                 }
             }
         }
@@ -255,7 +255,7 @@ namespace PdfClown.UI
                 if (hoverButton != value)
                 {
                     hoverButton = value;
-                    InvalidateSurface();
+                    InvalidatePaint();
                 }
             }
         }
@@ -333,11 +333,11 @@ namespace PdfClown.UI
             if (VerticalScrollAnimation == null)
             {
                 verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
-                InvalidateSurface();
+                InvalidatePaint();
             }
             else
             {
-                InvalidateSurface();
+                InvalidatePaint();
             }
         }
 
@@ -345,12 +345,12 @@ namespace PdfClown.UI
         {
             if (HorizontalScrollAnimation == null)
             {
-                InvalidateSurface();
+                InvalidatePaint();
                 нorizontalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
             }
             else
             {
-                InvalidateSurface();
+                InvalidatePaint();
             }
         }
 

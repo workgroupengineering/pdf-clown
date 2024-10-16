@@ -30,9 +30,7 @@ namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class TranslateTextRelativeWithLead : TranslateTextRelative
     {
-        /**
-          <summary>Lead parameter setting.</summary>
-        */
+        /// <summary>Lead parameter setting.</summary>
         public static readonly string OperatorKeyword = "TD";
 
         public TranslateTextRelativeWithLead(double offsetX, double offsetY)

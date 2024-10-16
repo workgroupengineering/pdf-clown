@@ -23,18 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the current color space to use for nonstroking operations' operation
-      [PDF:1.6:4.5.7].</summary>
-    */
+    /// <summary>'Set the current color space to use for nonstroking operations' operation
+    /// [PDF:1.6:4.5.7].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class SetFillColorSpace : Operation, IResourceReference<ColorSpace>
     {
@@ -46,19 +41,19 @@ namespace PdfClown.Documents.Contents.Objects
         public SetFillColorSpace(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        /**
-          <summary>Gets the <see cref="ColorSpace">color space</see> resource to be set.</summary>
-          <param name="context">Content context.</param>
-        */
-        public ColorSpace GetColorSpace(ContentScanner context) => GetResource(context);
+        public PdfName Name
+        {
+            get => (PdfName)operands[0];
+            set => operands[0] = value;
+        }
 
+        /// <summary>Gets the <see cref="ColorSpace">color space</see> resource to be set.</summary>
+        /// <param name="context">Content context.</param>
         public ColorSpace GetResource(ContentScanner context)
         {
-            /*
-              NOTE: The names DeviceGray, DeviceRGB, DeviceCMYK, and Pattern always identify
-              the corresponding color spaces directly; they never refer to resources in the
-              ColorSpace subdictionary [PDF:1.6:4.5.7].
-            */
+            // NOTE: The names DeviceGray, DeviceRGB, DeviceCMYK, and Pattern always identify
+            // the corresponding color spaces directly; they never refer to resources in the
+            // ColorSpace subdictionary [PDF:1.6:4.5.7].
             PdfName name = Name;
             if (name.Equals(PdfName.DeviceGray))
                 return DeviceGrayColorSpace.Default;
@@ -75,22 +70,12 @@ namespace PdfClown.Documents.Contents.Objects
         public override void Scan(GraphicsState state)
         {
             // 1. Color space.
-            state.FillColorSpace = GetColorSpace(state.Scanner);
+            state.FillColorSpace = GetResource(state.Scanner);
 
             // 2. Initial color.
-            /*
-              NOTE: The operation also sets the current nonstroking color
-              to its initial value, which depends on the color space [PDF:1.6:4.5.7].
-            */
+            // NOTE: The operation also sets the current nonstroking color
+            // to its initial value, which depends on the color space [PDF:1.6:4.5.7].
             state.FillColor = state.FillColorSpace.DefaultColor;
-        }
-
-
-
-        public PdfName Name
-        {
-            get => (PdfName)operands[0];
-            set => operands[0] = value;
         }
     }
 }

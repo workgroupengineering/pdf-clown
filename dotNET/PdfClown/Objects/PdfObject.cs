@@ -91,8 +91,6 @@ namespace PdfClown.Objects
         /// <summary>Gets the indirect reference of this object.</summary>
         public virtual PdfReference Reference => IndirectObject?.Reference;
 
-        public abstract ContentWrapper ContentsWrapper { get; internal set; }
-
         public abstract IPdfObjectWrapper Wrapper
         {
             get;

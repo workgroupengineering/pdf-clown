@@ -23,37 +23,26 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
-using multimedia = PdfClown.Documents.Multimedia;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
-using PdfClown.Documents.Contents.XObjects;
+using multimedia = PdfClown.Documents.Multimedia;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Sound annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>When the annotation is activated, the sound is played.</remarks>
-    */
+    /// <summary>Sound annotation[PDF:1.6:8.4.5].</summary>
+    /// <remarks>When the annotation is activated, the sound is played.</remarks>
     [PDF(VersionEnum.PDF12)]
     public sealed class Sound : Markup
     {
-        /**
-          <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
-        */
+        /// <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
         public enum IconTypeEnum
         {
-            /**
-              <summary>Speaker.</summary>
-            */
+            /// <summary>Speaker.</summary>
             Speaker,
-            /**
-              <summary>Microphone.</summary>
-            */
+            /// <summary>Microphone.</summary>
             Microphone
         };
 
@@ -68,15 +57,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             IconTypeEnumCodes[IconTypeEnum.Microphone] = PdfName.Mic;
         }
 
-        /**
-          <summary>Gets the code corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(IconTypeEnum value)
         { return IconTypeEnumCodes[value]; }
 
-        /**
-          <summary>Gets the icon type corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the icon type corresponding to the given value.</summary>
         private static IconTypeEnum ToIconTypeEnum(string value)
         {
             if (value == null)
@@ -97,9 +82,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the sound to be played.</summary>
-        */
+        /// <summary>Gets/Sets the sound to be played.</summary>
         public multimedia.Sound Content
         {
             get => Wrap<multimedia.Sound>(BaseDataObject[PdfName.Sound]);
@@ -112,18 +95,14 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
-        */
+        /// <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
         public IconTypeEnum IconType
         {
             get => ToIconTypeEnum(BaseDataObject.GetString(PdfName.Name));
             set => BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
         }
 
-        /**
-          <summary>Popups not supported.</summary>
-        */
+        /// <summary>Popups not supported.</summary>
         public override Popup Popup
         {
             set => throw new NotSupportedException();

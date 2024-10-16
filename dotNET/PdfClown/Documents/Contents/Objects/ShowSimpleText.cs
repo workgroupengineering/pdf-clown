@@ -44,13 +44,13 @@ namespace PdfClown.Documents.Contents.Objects
         public ShowSimpleText(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        public override Memory<byte> Text
+        public override Memory<byte> TextBytes
         {
             get => ((PdfString)operands[0]).RawValue;
             set => operands[0] = new PdfByteString(value);
         }
 
-        public override IEnumerable<PdfDirectObject> Value
+        public override IEnumerable<PdfDirectObject> TextElements
         {
             get => operands;
             set => operands[0] = value.FirstOrDefault();

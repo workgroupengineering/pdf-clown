@@ -10,23 +10,24 @@ namespace PdfClown.UI.ToolTip
         {
         }
 
-        public Markup Markup { get; set; }
+        public Markup Markup { get => Annotation as Markup; set => Annotation = value; }
 
         public override SKRect Measure()
         {
-            ClearLines();
+            Clear();
 
             var athorText = Markup.Author ?? "User";
-            var author = MeasureLine(athorText, paintToolTipHeadText);
+            var author = MeasureLine(athorText, DefaultSKStyles.PaintToolTipHeadText);
 
             var contentBound = author.Bound;
-            ContentLines = MeasureText(Markup.Contents ?? "<empty>", paintToolTipText, ref contentBound);
+            ContentLines = MeasureText(Markup.Contents ?? "<empty>", DefaultSKStyles.PaintToolTipText, ref contentBound);
             ContentLines.Insert(0, author);
             contentBound.Offset(Indent, Indent);
             contentBound.Inflate(Indent, Indent);
 
             return ContentBound = contentBound;
-        }       
+        } 
+        
     }
 
 }

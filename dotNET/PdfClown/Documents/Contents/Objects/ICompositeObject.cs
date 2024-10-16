@@ -23,32 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Objects;
+using System.Collections.Generic;
 
-using System;
-using SkiaSharp;
-
-namespace PdfClown.Documents.Contents.Scanner
+namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Inline image information.</summary>
-    */
-    public sealed class InlineImageWrapper : GraphicsObjectWrapper<GraphicsInlineImage>
+    public interface ICompositeObject
     {
-        internal InlineImageWrapper(ContentScanner scanner) : base((GraphicsInlineImage)scanner.Current)
-        {
-            SKMatrix ctm = scanner.State.Ctm;
-            this.box = SKRect.Create(
-              ctm.TransX,
-              scanner.ContextBox.Height - ctm.TransY,
-              ctm.ScaleX,
-              Math.Abs(ctm.ScaleY)
-              );
-        }
-
-        /**
-          <summary>Gets the inline image.</summary>
-        */
-        public GraphicsInlineImage InlineImage => BaseDataObject;
+        IList<ContentObject> Contents { get; }        
     }
 }

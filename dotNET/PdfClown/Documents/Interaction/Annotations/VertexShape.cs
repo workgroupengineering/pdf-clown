@@ -23,14 +23,13 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Objects;
-
+using PdfClown.Util.Math.Geom;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
 using System.Linq;
-using PdfClown.Util.Math.Geom;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {

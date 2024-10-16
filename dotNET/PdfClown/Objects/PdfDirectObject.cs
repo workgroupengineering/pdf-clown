@@ -60,13 +60,6 @@ namespace PdfClown.Objects
         { }
 
         public abstract int CompareTo(PdfDirectObject obj);
-
-        public override ContentWrapper ContentsWrapper
-        {
-            get => null;
-            internal set { }
-        }
-
-
+        
     }
 }

@@ -43,12 +43,9 @@ namespace PdfClown.Documents.Contents.Objects
         public GraphicsLocalState(IList<ContentObject> objects) : base(objects)
         { }
 
-        public override void Scan(GraphicsState state)
-        {
-            state.Save();
-            Render(state);
-            state.Restore();
-        }
+        public override void OnScanning(GraphicsState state) => state.Save();
+
+        public override void OnScanned(GraphicsState state) => state.Restore();
 
         public override void WriteTo(IOutputStream stream, PdfDocument context)
         {

@@ -19,16 +19,18 @@ namespace PdfClown.Util.Math.Geom
         public SKPoint NormalVector => SKPoint.Normalize(Vector);
 
         public static SKPoint? FindIntersection(SKLine a, SKLine b, bool segment)
+            => FindIntersection(a.a, a.b, b.a, b.b, segment);
+        public static SKPoint? FindIntersection(SKPoint aa, SKPoint ab, SKPoint ba, SKPoint bb, bool segment)
         {
-            float x1 = a.a.X;
-            float y1 = a.a.Y;
-            float x2 = a.b.X;
-            float y2 = a.b.Y;
+            float x1 = aa.X;
+            float y1 = aa.Y;
+            float x2 = ab.X;
+            float y2 = ab.Y;
 
-            float x3 = b.a.X;
-            float y3 = b.a.Y;
-            float x4 = b.b.X;
-            float y4 = b.b.Y;
+            float x3 = ba.X;
+            float y3 = ba.Y;
+            float x4 = bb.X;
+            float y4 = bb.Y;
 
             float denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
             if (denominator == 0)
@@ -54,7 +56,7 @@ namespace PdfClown.Util.Math.Geom
 
         public static SKPoint? FindIntersection(SKLine a, Quad q, bool segment)
         {
-            return FindIntersection(a, q.TopLeft, q.TopRight, q.BottomRight, q.BottomLeft, segment);
+            return FindIntersection(a, q.Point0, q.Point1, q.Point2, q.Point3, segment);
         }
 
         public static SKPoint? FindIntersection(SKLine a, SKPoint c0, SKPoint c1, SKPoint c2, SKPoint c3, bool segment)

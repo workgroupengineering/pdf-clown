@@ -67,7 +67,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public float? FontWeight
         {
-            get => Dictionary.GetFloat(PdfName.FontWeight);
+            get => Dictionary.GetNFloat(PdfName.FontWeight);
             set => Dictionary.Set(PdfName.FontWeight, value);
         }
 
@@ -90,6 +90,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     Flags &= ~FlagsEnum.Nonsymbolic;
             }
         }
+
         public bool Symbolic
         {
             get => (Flags & FlagsEnum.Symbolic) == FlagsEnum.Symbolic;

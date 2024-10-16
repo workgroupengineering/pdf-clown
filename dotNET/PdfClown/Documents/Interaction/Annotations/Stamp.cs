@@ -24,13 +24,12 @@
 */
 
 using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Objects;
 using PdfClown.Util.Math.Geom;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {

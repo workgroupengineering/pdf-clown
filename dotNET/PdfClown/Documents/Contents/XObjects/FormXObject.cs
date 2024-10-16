@@ -26,6 +26,7 @@
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
 using PdfClown.Util.Math.Geom;
@@ -66,8 +67,8 @@ namespace PdfClown.Documents.Contents.XObjects
 
         private SKPicture picture;
         private SKMatrix? matrix;
-        private Stack<GraphicsState> states;
         private SKRect? box;
+        private ContentWrapper contents;
 
         ///<summary>Creates a new form within the specified document context.</summary>
         ///<param name="context">Document where to place this form.</param>
@@ -144,11 +145,43 @@ namespace PdfClown.Documents.Contents.XObjects
             }
         }
 
-        public ContentWrapper Contents => ContentWrapper.Wrap(BaseObject, this);
+        public ContentWrapper Contents => contents ??= new ContentWrapper(BaseObject);
 
-        public void ClearContents()
+        public Resources Resources
         {
-            BaseObject.ContentsWrapper = null;
+            get => Wrap<Resources>(BaseDataObject.Header.GetOrCreate<PdfDictionary>(PdfName.Resources));
+            set => BaseDataObject.Header[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value);
+        }
+
+        public RotationEnum Rotation => RotationEnum.Downward;
+
+        public int Rotate => 0;
+
+        public SKMatrix RotateMatrix => SKMatrix.Identity;
+
+        public SKMatrix TextMatrix => SKMatrix.Identity;
+
+        public List<ITextBlock> TextBlocks { get; } = new List<ITextBlock>();
+
+        public AppDataCollection AppData
+        {
+            get => AppDataCollection.Wrap(BaseDataObject.Header.GetOrCreate<PdfDictionary>(PdfName.PieceInfo), this);
+        }
+
+        public DateTime? ModificationDate => BaseDataObject.Header.GetNDate(PdfName.LastModified);
+
+        public SKMatrix InitialMatrix { get; internal set; } = SKMatrix.Identity;
+
+        IList<ContentObject> ICompositeObject.Contents => Contents;
+
+        public ICompositeObject Parent { get => null; set { } }
+
+        public void ReloadContents()
+        {
+            if (contents != null)
+            {
+                Contents.Load();
+            }
             InvalidatePicture();
         }
 
@@ -169,40 +202,15 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public void Render(SKCanvas canvas, SKRect box, SKColor? clearColor = null, ContentScanner resourseScanner = null)
         {
-            ClearContents();
+            ReloadContents();
             var scanner = new ContentScanner(this, canvas, box, clearColor)
             {
                 ResourceParent = resourseScanner
             };
-            scanner.Render();
+            scanner.Scan();
         }
 
-        public Resources Resources
-        {
-            get => Wrap<Resources>(BaseDataObject.Header.GetOrCreate<PdfDictionary>(PdfName.Resources));
-            set => BaseDataObject.Header[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value);
-        }
 
-        public RotationEnum Rotation => RotationEnum.Downward;
-
-        public int Rotate => 0;
-
-        public SKMatrix RotateMatrix => SKMatrix.Identity;
-
-        public SKMatrix TextMatrix => SKMatrix.Identity;
-
-        public List<ITextString> Strings { get; } = new List<ITextString>();
-
-        public AppDataCollection AppData
-        {
-            get => AppDataCollection.Wrap(BaseDataObject.Header.GetOrCreate<PdfDictionary>(PdfName.PieceInfo), this);
-        }
-
-        public DateTime? ModificationDate => BaseDataObject.Header.GetNDate(PdfName.LastModified);
-
-        public SKMatrix InitialMatrix { get; internal set; } = SKMatrix.Identity;
-
-        public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
 
         public AppData GetAppData(PdfName appName) => AppData.Ensure(appName);
 

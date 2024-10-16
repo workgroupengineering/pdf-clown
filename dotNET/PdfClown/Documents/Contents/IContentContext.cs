@@ -23,6 +23,8 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interchange.Metadata;
 
@@ -31,8 +33,8 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
-    ///<summary>Content stream context.</summary>
-    public interface IContentContext : IAppDataHolder, IContentEntity
+    /// <summary>Content stream context.</summary>
+    public interface IContentContext : IAppDataHolder, IContentEntity, ICompositeObject
     {
         ///<summary>Gets the bounding box associated with this content context either explicitly
         ///(directly associated to the object) or (if not explicitly available) implicitly (inherited
@@ -41,7 +43,7 @@ namespace PdfClown.Documents.Contents
 
         ///<summary>Gets the contents collection representing the content stream associated
         ///with this content context.</summary>
-        ContentWrapper Contents { get; }
+        new ContentWrapper Contents { get; }
 
         /// <summary>
         /// Renders this content context into the specified rendering context.
@@ -59,18 +61,16 @@ namespace PdfClown.Documents.Contents
         /// <code>null</code>.</remarks>
         Resources Resources { get; }
 
-        ///<summary>Gets the rendering rotation of this content context.</summary>
+        /// <summary>Gets the rendering rotation of this content context.</summary>
         RotationEnum Rotation { get; }
 
         int Rotate { get; }
 
         SKMatrix RotateMatrix { get; }
 
-        List<ITextString> Strings { get; }
+        List<ITextBlock> TextBlocks { get; }
 
         TransparencyXObject Group { get; }
-
-        Stack<GraphicsState> GetGraphicsStateContext();
 
     }
 }

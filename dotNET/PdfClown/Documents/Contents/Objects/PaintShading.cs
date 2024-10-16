@@ -45,8 +45,6 @@ namespace PdfClown.Documents.Contents.Objects
         /// <summary>Gets the <see cref="colorSpaces::Shading">shading</see> resource to be painted.
         /// </summary>
         /// <param name="context">Content context.</param>
-        public Shading GetShading(ContentScanner scanner) => GetResource(scanner);
-
         public Shading GetResource(ContentScanner scanner)
         {
             var pscanner = scanner;
@@ -69,7 +67,7 @@ namespace PdfClown.Documents.Contents.Objects
 
             if (scanner.Canvas is SKCanvas canvas)
             {
-                var shading = GetShading(scanner);
+                var shading = GetResource(scanner);
                 using var paint = state.FillColorSpace?.GetPaint(state.FillColor, SKPaintStyle.Fill, state.FillAlpha);
                 if (shading.BackgroundColor is Color backColor)
                 {

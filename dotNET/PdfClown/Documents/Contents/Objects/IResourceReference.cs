@@ -25,34 +25,22 @@
 
 using PdfClown.Objects;
 
-using System;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Resource reference.</summary>
-    */
+    /// <summary>Resource reference.</summary>
     public interface IResourceReference<TResource>
-      where TResource : PdfObjectWrapper
+        where TResource : PdfObjectWrapper
     {
-        /**
-          <summary>Gets the referenced resource.</summary>
-          <remarks>Whether a <see cref="Name">resource name</see> is available or not, it can be
-            respectively either shared or private.</remarks>
-          <param name="context">Content context.</param>
-        */
+        /// <summary>Gets the referenced resource.</summary>
+        /// <remarks>Whether a <see cref = "Name" > resource name</see> is available or not, it can be
+        ///   respectively either shared or private.</remarks>
+        /// <param name = "context" > Content context.</param>
         TResource GetResource(ContentScanner context);
 
-        /**
-          <summary>Gets/Sets the resource name.</summary>
-          <seealso cref="GetResource(IContentContext)"/>
-          <seealso cref="Resources"/>
-        */
-        PdfName Name
-        {
-            get;
-            set;
-        }
+        /// <summary>Gets/Sets the resource name.</summary>
+        /// <seealso cref="GetResource(IContentContext)"/>
+        /// <seealso cref="Resources"/>
+        PdfName Name { get; set; }
     }
 }
 

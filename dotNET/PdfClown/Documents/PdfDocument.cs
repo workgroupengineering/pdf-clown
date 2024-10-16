@@ -55,7 +55,7 @@ namespace PdfClown.Documents
                 throw new NotSupportedException("Type '" + typeof(T).Name + "' wrapping is not supported.");
         }
 
-        internal Dictionary<PdfDirectObject, object> Cache = new();
+        internal Dictionary<PdfDirectObject, IDisposable> Cache = new();
         internal ConcurrentDictionary<FontName, FontType1> Type1FontCache = new();
         internal ConcurrentDictionary<TrueTypeFont, FontType0> Type0FontCache = new();
 
@@ -284,6 +284,7 @@ namespace PdfClown.Documents
             Type0FontCache.Clear();
             Type1FontCache.Clear();
             Cache.Clear();
+            LatestFont = null;
         }
 
         /// <summary>Gets/Sets the default resource collection [PDF:1.6:3.6.2].</summary>
@@ -358,6 +359,7 @@ namespace PdfClown.Documents
         public bool HasSignatureDictionaries => GetSignatureDictionaries().Any();
 
         public float? PageAlpha { get; set; }
+        public Font LatestFont { get; internal set; }
 
         internal IEnumerable<SignatureDictionary> GetSignatureDictionaries()
         {

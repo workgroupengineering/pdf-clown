@@ -33,7 +33,7 @@ namespace PdfClown.Documents.Contents.Objects
 {
     /// <summary>'Paint the specified XObject' operation [PDF:1.6:4.7].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class PaintXObject : Operation, IResourceReference<XObject>
+    public sealed class PaintXObject : Operation, IResourceReference<XObject>, IBoxed
     {
         public static readonly string OperatorKeyword = "Do";
         public static readonly SKPaint ImagePaint = new SKPaint { FilterQuality = SKFilterQuality.Low, BlendMode = SKBlendMode.SrcOver };
@@ -44,11 +44,17 @@ namespace PdfClown.Documents.Contents.Objects
         public PaintXObject(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
+        public PdfName Name
+        {
+            get => (PdfName)operands[0];
+            set => operands[0] = value;
+        }
+
         /// <summary>Gets the scanner for the contents of the painted external object.</summary>
         /// <param name="context">Scanning context.</param>
         public ContentScanner GetScanner(ContentScanner context)
         {
-            XObject xObject = GetXObject(context);
+            XObject xObject = GetResource(context);
             return xObject is FormXObject form
               ? new ContentScanner(form, context)
               : null;
@@ -57,8 +63,6 @@ namespace PdfClown.Documents.Contents.Objects
         /// <summary>Gets the <see cref="XObject">external object</see> resource to be painted.
         /// </summary>
         /// <param name="context">Content context.</param>
-        public XObject GetXObject(ContentScanner scanner) => GetResource(scanner);
-
         public XObject GetResource(ContentScanner scanner)
         {
             var pscanner = scanner;
@@ -70,20 +74,16 @@ namespace PdfClown.Documents.Contents.Objects
             return xobj;
         }
 
-        public PdfName Name
-        {
-            get => (PdfName)operands[0];
-            set => operands[0] = value;
-        }
-
         public override void Scan(GraphicsState state)
         {
             var scanner = state.Scanner;
+            var xObject = GetResource(scanner);
+            var ctm = state.Ctm;
+            var size = xObject.Size;
+
             var canvas = scanner.Canvas;
             if (canvas == null)
                 return;
-            var xObject = GetXObject(scanner);
-
             try
             {
                 canvas.Save();
@@ -92,7 +92,6 @@ namespace PdfClown.Documents.Contents.Objects
                     var image = imageObject.Load(state);
                     if (image != null)
                     {
-                        var size = imageObject.Size;
                         var imageMatrix = imageObject.Matrix;
                         imageMatrix.ScaleY *= -1;
                         imageMatrix = imageMatrix.PreConcat(SKMatrix.CreateTranslation(0, -size.Height));
@@ -119,7 +118,6 @@ namespace PdfClown.Documents.Contents.Objects
                 {
                     var picture = formObject.Render(scanner);
 
-                    var ctm = state.Ctm;
                     ctm = ctm.PreConcat(formObject.Matrix);
                     canvas.SetMatrix(ctm);
                     //canvas.ClipRect(formObject.Box);
@@ -128,9 +126,9 @@ namespace PdfClown.Documents.Contents.Objects
                         canvas.DrawPicture(picture, paint);
                     }
 
-                    foreach (var textString in formObject.Strings)
+                    foreach (var textBlock in formObject.TextBlocks)
                     {
-                        scanner.Context.Strings.Add(TextString.Transform(textString, ctm, scanner.Context));
+                        scanner.Context.TextBlocks.Add(TextBlock.Transform(textBlock, ctm));
                     }
                 }
             }
@@ -144,7 +142,14 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-
-
+        public SKRect GetBox(GraphicsState state)
+        {
+            var xObject = GetResource(state.Scanner);
+            var ctm = state.Ctm.PreConcat(xObject.Matrix);
+            var size = xObject.Size;
+            var mappedSize = ctm.MapVector(size.Width, size.Height);
+            return SKRect.Create(ctm.TransX, ctm.TransY,
+                          mappedSize.X, mappedSize.Y);
+        }
     }
 }

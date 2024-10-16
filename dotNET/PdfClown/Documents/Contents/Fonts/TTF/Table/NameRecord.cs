@@ -167,18 +167,18 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public static readonly int NAME_POSTSCRIPT_NAME = 6;
         public static readonly int NAME_TRADEMARK = 7;
 
-        private int platformId;
-        private int platformEncodingId;
-        private int languageId;
-        private int nameId;
-        private int stringLength;
-        private int stringOffset;
+        private ushort platformId;
+        private ushort platformEncodingId;
+        private ushort languageId;
+        private ushort nameId;
+        private ushort stringLength;
+        private ushort stringOffset;
         private string text;
 
         /**
          * @return Returns the stringLength.
          */
-        public int StringLength
+        public ushort StringLength
         {
             get => stringLength;
             set => stringLength = value;
@@ -187,7 +187,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the stringOffset.
          */
-        public int StringOffset
+        public ushort StringOffset
         {
             get => stringOffset;
             set => stringOffset = value;
@@ -196,7 +196,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the languageId.
          */
-        public int LanguageId
+        public ushort LanguageId
         {
             get => languageId;
             set => languageId = value;
@@ -205,7 +205,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the nameId.
          */
-        public int NameId
+        public ushort NameId
         {
             get => nameId;
             set => nameId = value;
@@ -214,7 +214,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the platformEncodingId.
          */
-        public int PlatformEncodingId
+        public ushort PlatformEncodingId
         {
             get => platformEncodingId;
             set => platformEncodingId = value;
@@ -223,7 +223,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the platformId.
          */
-        public int PlatformId
+        public ushort PlatformId
         {
             get => platformId;
             set => platformId = value;

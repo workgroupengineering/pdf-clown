@@ -34,7 +34,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
     {
         private float version;
         private int? numberOfGlyphs;
-        private int? unitsPerEm;
+        private ushort? unitsPerEm;
         protected Dictionary<string, TTFTable> tables = new Dictionary<string, TTFTable>(StringComparer.Ordinal);
         private readonly IInputStream data;
         private volatile Dictionary<string, int> postScriptNames;
@@ -330,9 +330,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * @return units per EM
          * @ if there was an error reading the table.
          */
-        public int UnitsPerEm
+        public ushort UnitsPerEm
         {
-            get => unitsPerEm ??= (Header?.UnitsPerEm ?? 0);
+            get => unitsPerEm ??= (Header?.UnitsPerEm ?? 1000);
         }
 
         /**

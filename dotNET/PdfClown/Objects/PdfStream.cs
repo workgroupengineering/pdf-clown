@@ -24,13 +24,10 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents.Contents;
 using PdfClown.Documents.Files;
 using PdfClown.Tokens;
 
 using System;
-using System.IO;
-using static PdfClown.Documents.Functions.Type4.BitwiseOperators;
 
 namespace PdfClown.Objects
 {
@@ -50,7 +47,6 @@ namespace PdfClown.Objects
         /// actual stream data.</summary>
         private bool bodyResolved;
         internal EncodeState encoded = EncodeState.None;
-        private ContentWrapper contentsWrapper;
 
         public PdfStream() : this(new PdfDictionary(), new ByteStream())
         { }
@@ -117,17 +113,12 @@ namespace PdfClown.Objects
             set => SetDataFile(value, false);
         }
 
-        public override ContentWrapper ContentsWrapper
-        {
-            get => contentsWrapper;// ?? (GetContentContext() as PdfObject)?.ContentsWrapper
-            internal set => contentsWrapper = value;
-        }
-
         public override IPdfObjectWrapper Wrapper
         {
             get => Header.Wrapper;
             internal set => Header.Wrapper = value;
         }
+
         public override IPdfObjectWrapper Wrapper2
         {
             get => Header.Wrapper2;

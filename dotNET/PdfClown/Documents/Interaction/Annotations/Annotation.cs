@@ -236,7 +236,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var newValue = value.Round();
                 if (oldValue != newValue)
                 {
-                    Rect = new Objects.Rectangle(box.Value);
+                    Rect = new Objects.Rectangle(newValue);
                     box = newValue;
                     OnPropertyChanged(oldValue, value);
                 }
@@ -510,7 +510,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-
         public virtual bool ShowToolTip => true;
 
         public virtual bool AllowDrag => true;
@@ -591,15 +590,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                 && (queueRefresh & RefreshAppearanceState.Suspend) != RefreshAppearanceState.Suspend
                 || Box == SKRect.Empty)
             {
-                try
-                {
-                    queueRefresh |= RefreshAppearanceState.Process;
-                    RefreshAppearance();
-                }
-                finally
-                {
-                    queueRefresh = RefreshAppearanceState.None;
-                }
+                queueRefresh |= RefreshAppearanceState.Process;
+                RefreshAppearance();
             }
             var appearance = Appearance.Normal[null];
             if (appearance != null && appearance.BaseDataObject?.GetInputStream()?.Length > 0)
@@ -614,8 +606,15 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public void RefreshAppearance()
         {
-            RefreshBox();
-            GenerateAppearance();
+            try
+            {
+                RefreshBox();
+                GenerateAppearance();
+            }
+            finally
+            {
+                queueRefresh = RefreshAppearanceState.None;
+            }
         }
 
         protected abstract FormXObject GenerateAppearance();
@@ -660,7 +659,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 normalAppearance.Box = boxSize;
                 normalAppearance.Matrix = SKMatrix.Identity;
                 normalAppearance.BaseDataObject.GetOutputStream().SetLength(0);
-                normalAppearance.ClearContents();
+                normalAppearance.ReloadContents();
             }
             else
             {
@@ -682,7 +681,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
             var a = SKMatrix.CreateScale(bound.Width / quad.HorizontalLength, bound.Height / quad.VerticalLenght);
             var quadA = Quad.Transform(quad, ref a);
-            a = a.PostConcat(SKMatrix.CreateTranslation(bound.Left - quadA.Left, bound.Top - quadA.Top));
+            a = a.PostConcat(SKMatrix.CreateTranslation(bound.Left - quadA.MinX, bound.Top - quadA.MinY));
 
             return matrix = matrix.PostConcat(a);
         }

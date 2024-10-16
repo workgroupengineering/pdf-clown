@@ -33,7 +33,8 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class Ellipse : Shape
     {
-        public Ellipse(PdfPage page, SKRect box, string text) : base(page, box, text, PdfName.Circle)
+        public Ellipse(PdfPage page, SKRect box, string text) 
+            : base(page, box, text, PdfName.Circle)
         { }
 
         public Ellipse(PdfDirectObject baseObject) : base(baseObject)

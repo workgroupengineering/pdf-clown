@@ -30,7 +30,7 @@ namespace PdfClown.Documents.Contents.Objects
 {
     /// <summary>Path object [PDF:1.6:4.4].</summary>
     [PDF(VersionEnum.PDF10)]
-    public  class GraphicsPath : GraphicsObject
+    public  class GraphicsPath : CompositeObject, IBoxed
     {
         public GraphicsPath()
         { }
@@ -41,13 +41,28 @@ namespace PdfClown.Documents.Contents.Objects
         /// <summary>Creates the rendering object corresponding to this container.</summary>
         private SKPath CreatePath() => new SKPath();
 
-        protected override bool Render(GraphicsState state)
+        public override void Scan(GraphicsState state)
         {
-            var scanner = state.Scanner;
             // Render the inner elements!
             using var path = CreatePath();
-            scanner.ChildLevel.Render(path);
-            return true;
+            Scan(state, path);
+            PostScan(state);
+        }
+
+        private void Scan(GraphicsState state, SKPath path)
+        {
+            state.Scanner.Path = path;
+            base.Scan(state);           
+        }
+
+        protected virtual void PostScan(GraphicsState state)
+        { }
+
+        public SKRect GetBox(GraphicsState state)
+        {
+            using var path = CreatePath();
+            Scan(state, path);
+            return state.Ctm.MapRect(path.Bounds);
         }
     }
 }

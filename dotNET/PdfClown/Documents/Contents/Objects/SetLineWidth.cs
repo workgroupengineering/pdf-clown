@@ -23,10 +23,7 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -42,12 +39,12 @@ namespace PdfClown.Documents.Contents.Objects
         public SetLineWidth(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state) => state.LineWidth = Value;
-
         public float Value
         {
             get => operands.GetFloat(0);
             set => operands.Set(0, value);
         }
+
+        public override void Scan(GraphicsState state) => state.LineWidth = Value;
     }
 }

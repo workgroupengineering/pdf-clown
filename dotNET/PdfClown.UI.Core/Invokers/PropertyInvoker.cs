@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace PdfClown.Util.Reflection
+namespace PdfClown.Util.Invokers
 {
     public class PropertyInvoker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]T, V> : ActionInvoker<T, V>
     {

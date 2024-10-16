@@ -23,18 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the color to use for nonstroking operations in device CMYK color space'
-      operation [PDF:1.6:4.5.7].</summary>
-    */
+    /// <summary>'Set the color to use for nonstroking operations in device CMYK color space'
+    /// operation [PDF:1.6:4.5.7].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetDeviceCMYKFillColor : SetFillColor
     {

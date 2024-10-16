@@ -27,11 +27,9 @@ using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Objects;
 
-namespace PdfClown.Documents.Contents
+namespace PdfClown.Documents.Contents.Scanner
 {
-    /**
-      <summary>Text style.</summary>
-    */
+    /// <summary>Text style.</summary>
     public sealed class TextStyle
     {
         private readonly Color fillColor;
@@ -74,9 +72,6 @@ namespace PdfClown.Documents.Contents
 
         public float FontSize => fontSize;
 
-        /**
-          <exception cref="EncodeException"/>
-        */
         public float GetWidth(char textChar) => font.GetWidth(textChar, fontSize) * scaleX / scaleY;
 
         public TextRenderModeEnum RenderMode => renderMode;

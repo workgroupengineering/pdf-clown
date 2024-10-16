@@ -1,12 +1,12 @@
 ﻿using PdfClown.Documents;
-using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Tools;
-using PdfClown.Util.Math.Geom;
 using PdfClown.UI.Operations;
+using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -128,19 +128,20 @@ namespace PdfClown.UI
 
         public bool Draw(PdfViewState state)
         {
-            state.PageView = this;
-
-            state.Canvas.Save();
-
-            state.Canvas.SetMatrix(state.PageViewMatrix);
             var pageRect = SKRect.Create(Size);
+            state.PageView = this;
+            state.Canvas.Save();
+            state.Canvas.SetMatrix(state.PageViewMatrix);
             //state.Canvas.ClipRect(pageRect);
             state.Canvas.DrawRect(pageRect, Document.PageBackgroundPaint);
 
-            SKPicture picture = GetPicture(state.Viewer);
+            var picture = GetPicture(state.Viewer);
             if (picture != null)
             {
                 state.Canvas.DrawPicture(picture, Document.PageForegroundPaint);
+
+                DrawTextSelection(state);
+
                 if (state.Viewer.ShowMarkup && GetAnnotations().Any())
                 {
                     OnPaintAnnotations(state);
@@ -156,16 +157,32 @@ namespace PdfClown.UI
             return picture != null;
         }
 
+        private void DrawTextSelection(PdfViewState state)
+        {
+            var contextPageSelection = state.Viewer.TextSelection.GetPageSelection(state.Page);
+            if (contextPageSelection != null)
+            {
+                var path = contextPageSelection.GetPath();
+                state.Canvas.DrawPath(path, DefaultSKStyles.PaintTextSelectionFill);
+            }
+        }
+
         private void DrawCharBounds(PdfViewState state)
         {
             try
             {
-                foreach (var textString in state.PageView.GetStrings())
+                for (int b = 0; b < page.TextBlocks.Count; b++)
                 {
-                    foreach (var textChar in textString.TextChars)
+                    var textBlock = page.TextBlocks[b];
+                    foreach (var textString in textBlock.Strings)
                     {
-                        state.Canvas.DrawPoints(SKPointMode.Polygon, textChar.Quad.GetPoints(), DefaultSKStyles.PaintRed);
+                        foreach (var textChar in textString.Chars)
+                        {
+                            state.Canvas.DrawPoints(SKPointMode.Polygon, textChar.Quad.GetClosedPoints(), DefaultSKStyles.PaintRed);
+                        }
+                        state.Canvas.DrawPoints(SKPointMode.Polygon, textString.Quad.GetClosedPoints(), DefaultSKStyles.PaintBlue);
                     }
+                    state.Canvas.DrawPoints(SKPointMode.Polygon, textBlock.Quad.GetClosedPoints(), DefaultSKStyles.PaintGreen);
                 }
             }
             catch { }
@@ -289,11 +306,10 @@ namespace PdfClown.UI
                     picture = recorder.EndRecording();
                 }
                 //text
-                var positionComparator = new TextStringPositionComparer<ITextString>();
-                Page.Strings.Sort(positionComparator);
+                var positionComparator = new TextBlockPositionComparer<ITextBlock>();
+                Page.TextBlocks.Sort(positionComparator);
 
                 canvasView.InvalidatePaint();
-                //Envir.MainContext.Send((s) => ((IPdfView)s).InvalidateSurface(), canvasView);
             }
             finally
             {
@@ -301,7 +317,7 @@ namespace PdfClown.UI
             }
         }
 
-        public IEnumerable<ITextString> GetStrings() => Page.Strings;
+        public IEnumerable<ITextString> GetStrings() => Page.TextBlocks.SelectMany(x => x.Strings);
 
         public SKMatrix GetViewMatrix(PdfViewState state)
         {
@@ -352,7 +368,7 @@ namespace PdfClown.UI
             }
             else if (state.TouchAction == TouchAction.Pressed)
             {
-                state.Viewer.TextSelection.Clear();                
+                state.Viewer.TextSelection.ClearStartChar();
             }
             state.Viewer.Cursor = CursorType.Arrow;
             state.Annotation = null;
@@ -681,15 +697,19 @@ namespace PdfClown.UI
         private bool OnTouchText(PdfViewState state)
         {
             var textSelection = state.Viewer.TextSelection;
-            var textSelectionChanged = false;
-            var page = state.Page;
-            foreach (var textString in page.Strings)
+            var raiseChanged = false;
+
+            foreach (var textBlock in page.TextBlocks)
             {
-                if (textString.Quad.IsEmpty)
+                if (textBlock.Quad.IsEmpty
+                        || !textBlock.Quad.Contains(state.PagePointerLocation))
                     continue;
-                if (textString.Quad.Contains(state.PagePointerLocation))
+                foreach (var textString in textBlock.Strings)
                 {
-                    foreach (var textChar in textString.TextChars)
+                    if (textString.Quad.IsEmpty
+                        || !textString.Quad.Contains(state.PagePointerLocation))
+                        continue;
+                    foreach (var textChar in textString.Chars)
                     {
                         if (textChar.Quad.Contains(state.PagePointerLocation))
                         {
@@ -697,90 +717,105 @@ namespace PdfClown.UI
                             if (state.TouchAction == TouchAction.Pressed
                                 && state.TouchButton == MouseButton.Left)
                             {
-                                textSelection.StartChar = textChar;
+                                raiseChanged = true;
+                                textSelection.SetStartChar(page, textBlock, textString, textChar);
+                                textSelection.SetHoverChar(page, textBlock, textString, textChar);
                             }
-                            textSelectionChanged = true;
+                            // skip selection calculation
+                            else if (!textSelection.SetHoverChar(page, textBlock, textString, textChar))
+                                return true;
+
                             break;
                         }
                     }
                 }
             }
-            var startChar = textSelection.StartChar;
-            if (state.TouchAction == TouchAction.Moved
+            if ((raiseChanged || state.TouchAction == TouchAction.Moved)
                 && state.TouchButton == MouseButton.Left
-                && startChar != null)
+                && textSelection.StartString != null
+                && page.TextBlocks.Count > 0)
             {
-                var firstString = startChar.TextString;
-                var firstCharIndex = firstString.TextChars.IndexOf(startChar);
-                var firstStringIndex = page.Strings.IndexOf(firstString);
+                raiseChanged = true;
+                var firstBlock = textSelection.StartContext == page ? textSelection.StartBlock : page.TextBlocks.First();
+                var firstBlockIndex = page.TextBlocks.IndexOf(firstBlock);
+                var firstString = textSelection.StartContext == page ? textSelection.StartString : firstBlock.Strings.First();
+                var firstStringIndex = firstBlock.Strings.IndexOf(firstString);
+                var startChar = textSelection.StartContext == page ? textSelection.StartChar : firstString.Chars.FirstOrDefault();
+                var firstCharIndex = firstString.Chars.IndexOf(startChar);
                 var firstMiddle = startChar.Quad.Middle.Value;
-                var selectionRect = new Quad(new SKRect(firstMiddle.X, firstMiddle.Y, state.PagePointerLocation.X, state.PagePointerLocation.Y));
-                textSelection.Clear();
+                var selectionRect = new Quad(new SKRect(startChar.Quad.MinX, startChar.Quad.MinY, state.PagePointerLocation.X, state.PagePointerLocation.Y));
+                var pageSelection = textSelection.GetOrCreatePageSelection(page);
+                pageSelection.Clear();
 
-                for (int i = firstStringIndex < 1 ? 0 : firstStringIndex - 1; i < page.Strings.Count; i++)
+                for (int b = firstBlockIndex < 1 ? 0 : firstBlockIndex - 1; b < page.TextBlocks.Count; b++)
                 {
-                    var textString = page.Strings[i];
-                    if (textString.Quad.IsEmpty
-                        || !selectionRect.ContainsOrIntersect(textString.Quad))
-                        continue;
-                    var isFirstLine = textString.Quad.Top <= firstString.Quad.Top
-                                    && textString.Quad.Bottom >= firstString.Quad.Bottom;
-                    var intersect = -1;
-                    var endIntersect = -1;
-                    for (int j = 0; j < textString.TextChars.Count; j++)
+                    var textBlock = page.TextBlocks[b];
+                    var startIndex = firstStringIndex < 1 || textBlock != firstBlock ? 0 : firstStringIndex - 1;
+                    for (int i = startIndex; i < textBlock.Strings.Count; i++)
                     {
-                        var textChar = textString.TextChars[j];
-                        if (textChar == startChar
-                            || selectionRect.IntersectsWith(textChar.Quad)
-                            || selectionRect.Contains(textChar.Quad))
+                        var textString = textBlock.Strings[i];
+                        if (textString.Quad.IsEmpty
+                            || !selectionRect.ContainsOrIntersect(textString.Quad))
+                            continue;
+                        var isFirstLine = textString.Quad.MinY <= (firstString.Quad.MinY * 1.15)
+                                        && textString.Quad.MaxY >= (firstString.Quad.MaxY * 0.85);
+                        var intersect = -1;
+                        var endIntersect = -1;
+                        for (int j = 0; j < textString.Chars.Count; j++)
                         {
-                            if (intersect == -1)
+                            var textChar = textString.Chars[j];
+                            if (textChar.Equals(startChar)
+                                || selectionRect.IntersectsWith(textChar.Quad)
+                                || selectionRect.Contains(textChar.Quad))
                             {
-                                intersect = j;
-                                if (!isFirstLine)
-                                    break;
+                                if (intersect == -1)
+                                {
+                                    intersect = j;
+                                    if (!isFirstLine)
+                                        break;
+                                }
+                            }
+                            else if (intersect >= 0)
+                            {
+                                endIntersect = j;
+                                break;
                             }
                         }
-                        else if (intersect >= 0)
+                        if (intersect >= 0)
                         {
-                            endIntersect = j;
-                            break;
-                        }
-                    }
-                    if (intersect >= 0)
-                    {
-                        if (isFirstLine)
-                        {
-                            var chars = textString.TextChars
-                                .Skip(intersect);
-                            if (selectionRect.Bottom <= textString.Quad.Bottom
-                                && selectionRect.Top >= textString.Quad.Top)
-                                chars = chars.Take(endIntersect > -1
-                                    ? endIntersect - intersect
-                                    : textString.TextChars.Count - intersect);
+                            if (isFirstLine)
+                            {
+                                var chars = textString.Chars
+                                    .Skip(intersect);
+                                if (selectionRect.MaxY <= textString.Quad.MaxY
+                                    && selectionRect.MinY >= textString.Quad.MinY)
+                                    chars = chars.Take(endIntersect > -1
+                                        ? endIntersect - intersect
+                                        : textString.Chars.Count - intersect);
 
-                            textSelection.AddRange(chars);
-                        }
-                        else if (selectionRect.Bottom > textString.Quad.Bottom
-                            && selectionRect.Top < textString.Quad.Top)
-                        {
-                            textSelection.AddRange(textString.TextChars);
-                        }
-                        else
-                        {
-                            textSelection.AddRange(textString.TextChars
-                                .Take(intersect));
+                                pageSelection.AddRange(chars);
+                            }
+                            else if (selectionRect.MaxY > textString.Quad.MaxY
+                                && selectionRect.MinY < textString.Quad.MinY)
+                            {
+                                pageSelection.AddRange(textString.Chars);
+                            }
+                            else
+                            {
+                                pageSelection.AddRange(textString.Chars
+                                    .Take(intersect));
+                            }
                         }
                     }
                 }
-                textSelectionChanged = true;
             }
             if (state.TouchAction == TouchAction.Released)
             {
-               textSelection.StartChar = null;
+                textSelection.ClearStartChar();
             }
-
-            return textSelectionChanged;
+            if (raiseChanged)
+                textSelection.OnChanged();
+            return raiseChanged;
         }
 
         public PdfPage GetPage(PdfViewState state) => page;

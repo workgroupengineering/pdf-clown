@@ -15,14 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using PdfClown.Bytes;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
@@ -79,7 +77,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         protected readonly FontType0 parent;
 
-        private new Dictionary<int, float> widths;
+        private Dictionary<int, float> widths;
         private int? defaultWidth;
         private float averageWidth;
 

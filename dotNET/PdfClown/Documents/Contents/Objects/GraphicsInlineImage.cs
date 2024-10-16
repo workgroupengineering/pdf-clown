@@ -24,18 +24,17 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 using SkiaSharp;
 using System;
-using PdfClown.Documents.Contents.ColorSpaces;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
     /// <summary>Inline image object [PDF:1.6:4.8.6].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class GraphicsInlineImage : GraphicsObject, IImageObject
+    public sealed class GraphicsInlineImage : CompositeObject, IImageObject, IBoxed
     {
         public static readonly string BeginOperatorKeyword = BeginInlineImage.OperatorKeyword;
         public static readonly string EndOperatorKeyword = EndInlineImage.OperatorKeyword;
@@ -51,10 +50,10 @@ namespace PdfClown.Documents.Contents.Objects
         }
 
         /// <summary>Gets the image body.</summary>
-        public Operation Body => (Operation)Objects[1];
+        public Operation Body => (Operation)Contents[1];
 
         /// <summary>Gets the image header.</summary>
-        public override Operation Header => (Operation)Objects[0];
+        public override Operation Header => (Operation)Contents[0];
 
         IDictionary<PdfName, PdfDirectObject> IImageObject.Header => ImageHeader;
 
@@ -90,15 +89,27 @@ namespace PdfClown.Documents.Contents.Objects
 
         public PdfArray Matte => null;
 
+        public SKRect GetBox(GraphicsState state)
+        {
+            var size = Size;
+            var ctm = state.Ctm;
+            return SKRect.Create(
+              ctm.TransX,
+              size.Height - ctm.TransY,
+              size.Width * ctm.ScaleX,
+              size.Height * Math.Abs(ctm.ScaleY));
+        }
+
         public override void Scan(GraphicsState state)
         {
             Context = state.Scanner.Context;
+            var size = Size;            
             if (state.Scanner?.Canvas is SKCanvas canvas)
             {
                 var image = Load(state);
                 if (image != null)
                 {
-                    var size = Size;
+                    //canvas.Save();
                     var matrix = canvas.TotalMatrix;
 
                     matrix = matrix.PreConcat(Matrix);
@@ -120,6 +131,7 @@ namespace PdfClown.Documents.Contents.Objects
                             canvas.DrawBitmap(image, 0, 0, paint);
                         }
                     }
+                    //canvas.Restore();
                 }
             }
         }
@@ -128,7 +140,10 @@ namespace PdfClown.Documents.Contents.Objects
         {
             if (image != null)
                 return image;
-            return image = BitmapLoader.Load(this, state);
+            
+            image = BitmapLoader.Load(this, state);
+            state.Scanner.Contents.Document.Cache[(PdfArray)Header.Operands] = image;
+            return image;
         }
 
         public override void WriteTo(IOutputStream stream, PdfDocument context)

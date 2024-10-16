@@ -1,23 +1,19 @@
 using PdfClown.Documents;
-using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Tools;
 using PdfClown.Util.Math;
 using PdfClown.Util.Math.Geom;
-
+using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using SkiaSharp;
 using System.Text.RegularExpressions;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to highlight text matching arbitrary patterns.</summary>
-      <remarks>Highlighting is defined through text markup annotations.</remarks>
-    */
+    /// <summary>This sample demonstrates how to highlight text matching arbitrary patterns.</summary>
+    /// <remarks>Highlighting is defined through text markup annotations.</remarks>
     public class TextHighlightSample : Sample
     {
         private class TextHighlighter : TextExtractor.IIntervalFilter
@@ -57,19 +53,17 @@ namespace PdfClown.Samples.CLI
                 // Defining the highlight box of the text pattern match...
                 IList<Quad> highlightQuads = new List<Quad>();
                 {
-                    /*
-                      NOTE: A text pattern match may be split across multiple contiguous lines,
-                      so we have to define a distinct highlight box for each text chunk.
-                    */
+                    // NOTE: A text pattern match may be split across multiple contiguous lines,
+                    // so we have to define a distinct highlight box for each text chunk.
                     Quad? textQuad = null;
-                    foreach (TextChar textChar in match.TextChars)
+                    foreach (TextChar textChar in match.Chars)
                     {
                         var textCharQuad = textChar.Quad;
                         if (!textQuad.HasValue)
                         { textQuad = textCharQuad; }
                         else
                         {
-                            if (textCharQuad.Top > textQuad.Value.Bottom)
+                            if (textCharQuad.MinY > textQuad.Value.MaxY)
                             {
                                 highlightQuads.Add(textQuad.Value);
                                 textQuad = textCharQuad;
@@ -81,7 +75,7 @@ namespace PdfClown.Samples.CLI
                     highlightQuads.Add(textQuad.Value);
                 }
                 // Highlight the text pattern match!
-                new TextMarkup(page, highlightQuads, null, TextMarkupType.Highlight);
+                page.Annotations.Add(new TextMarkup(page, highlightQuads, null, TextMarkupType.Highlight));
             }
 
             public void Reset()
@@ -113,8 +107,7 @@ namespace PdfClown.Samples.CLI
                     // 2.3. Highlight the text pattern matches!
                     textExtractor.Filter(
                       textStrings,
-                      new TextHighlighter(page, matches)
-                      );
+                      new TextHighlighter(page, matches));
                 }
 
                 // 3. Highlighted file serialization.

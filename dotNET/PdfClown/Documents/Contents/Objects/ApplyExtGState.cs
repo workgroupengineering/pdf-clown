@@ -23,16 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the specified graphics state parameters' operation [PDF:1.6:4.3.3].</summary>
-    */
+    /// <summary>'Set the specified graphics state parameters' operation [PDF:1.6:4.3.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class ApplyExtGState : Operation, IResourceReference<ExtGState>
     {
@@ -44,13 +39,15 @@ namespace PdfClown.Documents.Contents.Objects
         public ApplyExtGState(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        /**
-          <summary>Gets the <see cref="ExtGState">graphics state parameters</see> resource to be set.
-          </summary>
-          <param name="context">Content context.</param>
-        */
-        public ExtGState GetExtGState(ContentScanner context) => GetResource(context);
+        public PdfName Name
+        {
+            get => (PdfName)operands[0];
+            set => operands[0] = value;
+        }
 
+        /// <summary>Gets the<see cref="ExtGState">graphics state parameters</see> resource to be set.
+        /// </summary>
+        /// <param name = "context" > Content context.</param>
         public ExtGState GetResource(ContentScanner context)
         {
             var pcontext = context;
@@ -61,16 +58,8 @@ namespace PdfClown.Documents.Contents.Objects
             return gstate;
         }
 
-        public override void Scan(GraphicsState state)
-        {
-            ExtGState extGState = GetExtGState(state.Scanner);
-            extGState?.ApplyTo(state);
-        }
+        public override void Scan(GraphicsState state) => GetResource(state.Scanner)?.ApplyTo(state);
 
-        public PdfName Name
-        {
-            get => (PdfName)operands[0];
-            set => operands[0] = value;
-        }
+
     }
 }

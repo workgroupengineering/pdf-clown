@@ -1,5 +1,5 @@
-/*
-  Copyright 2007-2010 Stefano Chizzolini. http://www.pdfclown.org
+﻿/*
+  Copyright 2009-2012 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,21 +23,15 @@
   this list of conditions.
 */
 
-using System.Collections.Generic;
-
-namespace PdfClown.Documents.Contents.Objects
+namespace PdfClown.Util
 {
-    /// <summary>Graphics object [PDF:1.6:4.1].</summary>
-    [PDF(VersionEnum.PDF10)]
-    public abstract class GraphicsObject : CompositeObject
+    public interface IBiDictionary
     {
-        protected GraphicsObject()
-        { }
-
-        protected GraphicsObject(ContentObject obj) : base(obj)
-        { }
-
-        protected GraphicsObject(IList<ContentObject> objects) : base(objects)
-        { }
+        object GetKey(object value);
+    }
+    
+    public interface IBiDictionary<TKey, TValue> : IBiDictionary
+    {
+        TKey GetKey(TValue value);
     }
 }

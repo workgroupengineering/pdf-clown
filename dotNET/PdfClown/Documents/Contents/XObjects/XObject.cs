@@ -23,35 +23,27 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.Layers;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
-    /**
-      <summary>External graphics object whose contents are defined by a self-contained content stream,
-      separate from the content stream in which it is used [PDF:1.6:4.7].</summary>
-    */
+    /// <summary>External graphics object whose contents are defined by a self-contained content stream,
+    /// separate from the content stream in which it is used [PDF:1.6:4.7].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class XObject : PdfObjectWrapper<PdfStream>, ILayerable
     {
-        /**
-          <summary>Wraps an external object reference into an external object.</summary>
-          <param name="baseObject">External object base object.</param>
-          <returns>External object associated to the reference.</returns>
-        */
+        /// <summary>Wraps an external object reference into an external object.</summary>
+        /// <param name="baseObject">External object base object.</param>
+        /// <returns>External object associated to the reference.</returns>
         public static XObject Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
             if (baseObject.Wrapper is XObject xobject)
                 return xobject;
-            
+
             var subtype = ((PdfStream)baseObject.Resolve()).Header.Get<PdfName>(PdfName.Subtype);
             if (PdfName.Form.Equals(subtype))
                 return FormXObject.Wrap(baseObject);
@@ -61,44 +53,26 @@ namespace PdfClown.Documents.Contents.XObjects
                 return null;
         }
 
-        /**
-          <summary>Creates a new external object inside the document.</summary>
-        */
+        /// <summary>Creates a new external object inside the document.</summary>
         protected XObject(PdfDocument context) : this(context, new PdfStream())
         { }
 
-        /**
-          <summary>Creates a new external object inside the document.</summary>
-        */
+        /// <summary>Creates a new external object inside the document.</summary>
         protected XObject(PdfDocument context, PdfStream baseDataObject)
             : base(context, baseDataObject)
         {
             baseDataObject.Header[PdfName.Type] = PdfName.XObject;
         }
 
-        /**
-          <summary>Instantiates an existing external object.</summary>
-        */
+        /// <summary>Instantiates an existing external object.</summary>
         public XObject(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the mapping from external-object space to user space.</summary>
-        */
-        public abstract SKMatrix Matrix
-        {
-            get;
-            set;
-        }
+        /// <summary>Gets/Sets the mapping from external-object space to user space.</summary>
+        public abstract SKMatrix Matrix { get; set; }
 
-        /**
-          <summary>Gets/Sets the external object size.</summary>
-        */
-        public abstract SKSize Size
-        {
-            get;
-            set;
-        }
+        /// <summary>Gets/Sets the external object size.</summary>
+        public abstract SKSize Size { get; set; }
 
         public LayerEntity Layer
         {

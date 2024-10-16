@@ -249,12 +249,6 @@ namespace PdfClown.Objects
 
         public override PdfReference Reference => reference;
 
-        public override ContentWrapper ContentsWrapper
-        {
-            get => DataObject?.ContentsWrapper;
-            internal set => DataObject.ContentsWrapper = value;
-        }
-
         public override IPdfObjectWrapper Wrapper
         {
             get => DataObject?.Wrapper;

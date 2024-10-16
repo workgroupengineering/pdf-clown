@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using SkiaSharp;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
@@ -41,17 +40,10 @@ namespace PdfClown.Documents.Contents.Objects
             ClipPathOperator = clipPathOperator;
         }
 
-        /// <summary>Creates the rendering object corresponding to this container.</summary>
-        private SKPath CreatePath() => new SKPath();
-
-        protected override bool Render(GraphicsState state)
+        protected override void PostScan(GraphicsState state)
         {
-            var scanner = state.Scanner;
-            // Render the inner elements!
-            using var path = CreatePath();
-            scanner.ChildLevel.Render(path);
-            ClipPathOperator.Scan(scanner.ChildLevel.State);
-            return true;
+            base.PostScan(state);
+            ClipPathOperator.Scan(state);
         }
 
         public override void WriteTo(IOutputStream stream, PdfDocument context)

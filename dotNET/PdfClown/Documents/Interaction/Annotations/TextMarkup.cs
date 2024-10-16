@@ -23,19 +23,16 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 using PdfClown.Util.Math.Geom;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -157,19 +154,17 @@ namespace PdfClown.Documents.Interaction.Annotations
             set
             {
                 var quadPoints = new PdfArray();
-                foreach (Quad markupBox in value)
+                foreach (var quad in value)
                 {
                     // NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
-                    SKPoint[] points = markupBox.GetPoints();
-
-                    quadPoints.Add(points[0].X); // x1.
-                    quadPoints.Add(points[0].Y); // y1.
-                    quadPoints.Add(points[1].X); // x2.
-                    quadPoints.Add(points[1].Y); // y2.
-                    quadPoints.Add(points[3].X); // x4.
-                    quadPoints.Add(points[3].Y); // y4.
-                    quadPoints.Add(points[2].X); // x3.
-                    quadPoints.Add(points[2].Y); // y3.
+                    quadPoints.Add(quad.Point0.X); // x1.
+                    quadPoints.Add(quad.Point0.Y); // y1.
+                    quadPoints.Add(quad.Point1.X); // x2.
+                    quadPoints.Add(quad.Point1.Y); // y2.
+                    quadPoints.Add(quad.Point3.X); // x4.
+                    quadPoints.Add(quad.Point3.Y); // y4.
+                    quadPoints.Add(quad.Point2.X); // x3.
+                    quadPoints.Add(quad.Point2.Y); // y3.
                 }
 
                 QuadPoints = quadPoints;
@@ -269,22 +264,22 @@ namespace PdfClown.Documents.Interaction.Annotations
                                 {
                                     var markupBox = Quad.Transform(markup, ref matrix);
 
-                                    var sign = Math.Sign((markupBox.TopLeft - markupBox.BottomLeft).Y);
+                                    var sign = Math.Sign((markupBox.Point0 - markupBox.Point3).Y);
                                     sign = -(sign == 0 ? 1 : sign);
 
                                     float markupBoxHeight = markupBox.Height;
                                     float markupBoxMargin = GetMarkupBoxMargin(markupBoxHeight) * sign;
 
                                     composer.DrawCurve(
-                                      markupBox.BottomLeft,
-                                      markupBox.TopLeft,
-                                      GetMarginPoint(markupBox.TopLeft, markupBox.BottomLeft, -markupBoxMargin),
-                                      GetMarginPoint(markupBox.BottomLeft, markupBox.TopLeft, -markupBoxMargin));
-                                    composer.DrawLine(markupBox.TopRight);
+                                      markupBox.Point3,
+                                      markupBox.Point0,
+                                      GetMarginPoint(markupBox.Point0, markupBox.Point3, -markupBoxMargin),
+                                      GetMarginPoint(markupBox.Point3, markupBox.Point0, -markupBoxMargin));
+                                    composer.DrawLine(markupBox.Point1);
                                     composer.DrawCurve(
-                                      markupBox.BottomRight,
-                                      GetMarginPoint(markupBox.BottomRight, markupBox.TopRight, markupBoxMargin),
-                                      GetMarginPoint(markupBox.TopRight, markupBox.BottomRight, markupBoxMargin));
+                                      markupBox.Point2,
+                                      GetMarginPoint(markupBox.Point2, markupBox.Point1, markupBoxMargin),
+                                      GetMarginPoint(markupBox.Point1, markupBox.Point2, markupBoxMargin));
                                     composer.Fill();
                                 }
                             }
@@ -299,7 +294,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                                 foreach (Quad markup in PageMarkupBoxes)
                                 {
                                     var markupBox = Quad.Transform(markup, ref matrix);
-                                    var sign = Math.Sign((markupBox.TopLeft - markupBox.BottomLeft).Y);
+                                    var sign = Math.Sign((markupBox.Point0 - markupBox.Point3).Y);
                                     sign = sign == 0 ? 1 : sign;
 
                                     float markupBoxHeight = markupBox.Height;
@@ -307,10 +302,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                                     float lineWidth = markupBoxHeight * .06f;
                                     float step = markupBoxHeight * .125f;
                                     float length = (float)Math.Sqrt(Math.Pow(step, 2) * 2);
-                                    var bottomUp = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);
+                                    var bottomUp = SKPoint.Normalize(markupBox.Point3 - markupBox.Point0);
                                     bottomUp = new SKPoint(bottomUp.X * lineWidth, bottomUp.Y * lineWidth);
-                                    var startPoint = markupBox.BottomLeft - (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
-                                    var leftRight = SKPoint.Normalize(markupBox.BottomRight - markupBox.BottomLeft);
+                                    var startPoint = markupBox.Point3 - (new SKPoint(bottomUp.X * 2, bottomUp.Y * 2));
+                                    var leftRight = SKPoint.Normalize(markupBox.Point2 - markupBox.Point3);
                                     leftRight = new SKPoint(leftRight.X * step, leftRight.Y * step);
                                     var leftRightPerp = leftRight.GetPerp(step * sign);
                                     var stepPoint = startPoint + leftRight + leftRightPerp;
@@ -354,10 +349,10 @@ namespace PdfClown.Documents.Interaction.Annotations
                                     var markupBox = Quad.Transform(markup, ref matrix);
                                     float markupBoxHeight = markupBox.Height;
                                     float boxYOffset = markupBoxHeight * lineYRatio;
-                                    var normal = SKPoint.Normalize(markupBox.BottomLeft - markupBox.TopLeft);
+                                    var normal = SKPoint.Normalize(markupBox.Point3 - markupBox.Point0);
                                     normal = new SKPoint(normal.X * boxYOffset, normal.Y * boxYOffset);
                                     composer.SetLineWidth(markupBoxHeight * .065);
-                                    composer.DrawLine(markupBox.BottomLeft + normal, markupBox.BottomRight + normal);
+                                    composer.DrawLine(markupBox.Point3 + normal, markupBox.Point2 + normal);
                                 }
                                 composer.Stroke();
                             }

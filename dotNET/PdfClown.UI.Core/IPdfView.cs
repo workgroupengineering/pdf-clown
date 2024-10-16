@@ -22,6 +22,7 @@ namespace PdfClown.UI
         int PageNumber { get; set; }
 
         Annotation SelectedAnnotation { get; set; }
+        Annotation HoverAnnotation { get; set; }
         TextSelection TextSelection { get; }
 
         double Width { get; }
