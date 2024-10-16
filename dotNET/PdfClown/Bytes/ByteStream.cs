@@ -23,16 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes.Filters;
-using PdfClown.Documents.Contents;
-using PdfClown.Objects;
 using PdfClown.Tokens;
 using PdfClown.Util;
 using PdfClown.Util.IO;
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using text = System.Text;
@@ -40,18 +35,22 @@ using text = System.Text;
 namespace PdfClown.Bytes
 {
     //TODO:IMPL Substitute System.Array static class invocations with System.Buffer static class invocations (better performance)!!!
-    ///<summary>Byte buffer.</summary>
-    public class ByteStream : System.IO.Stream, IByteStream
+    /// <summary>Byte buffer.</summary>
+    public class ByteStream : Stream, IByteStream
     {
-        ///<summary>Default buffer capacity.</summary>
+        public static ByteStream Empty => new ByteStream(Array.Empty<byte>());
+        /// <summary>Default buffer capacity.</summary>
         private const int DefaultCapacity = 1 << 8;
 
         public event EventHandler OnChange;
-        ///<summary>Inner buffer where data are stored.</summary>
+
+        /// <summary>Inner buffer where data are stored.</summary>
         private ArraySegment<byte> data;
-        ///<summary>Number of bytes actually used in the buffer.</summary>
+
+        /// <summary>Number of bytes actually used in the buffer.</summary>
         private int length;
-        ///<summary>Pointer position within the buffer.</summary>
+
+        /// <summary>Pointer position within the buffer.</summary>
         private int position = 0;
         private ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian;
         private bool dirty;
@@ -59,16 +58,19 @@ namespace PdfClown.Bytes
         private int bitShift = -1;
         private byte currentByte;
 
-        public ByteStream() : this(0)
+        public ByteStream() : this(DefaultCapacity)
         { }
 
         public ByteStream(int capacity)
         {
             if (capacity < 1)
-            { capacity = DefaultCapacity; }
-
-            data = new byte[capacity];
-            length = 0;
+            {
+                data = Array.Empty<byte>();
+            }
+            else
+            {
+                data = new byte[capacity];
+            }
         }
 
         public ByteStream(Memory<byte> data)
@@ -167,20 +169,6 @@ namespace PdfClown.Bytes
             return clone;
         }
 
-        public void Decode(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
-        {
-            var data = filter.Decode(this, parameters, header);
-            this.data = Unsafe.As<Memory<byte>, ArraySegment<byte>>(ref data);
-            position = 0;
-            length = data.Length;
-        }
-
-        public IByteStream Extract(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
-        {
-            var data = filter.Decode(this, parameters, header);
-            return new ByteStream(data);
-        }
-
         public void Delete(int index, int length)
         {
             var leftLength = this.length - (index + length);
@@ -190,11 +178,6 @@ namespace PdfClown.Bytes
             AsSpan(index + length, leftLength).CopyTo(AsSpan(index, leftLength));
             this.length -= length;
             NotifyChange();
-        }
-
-        public Memory<byte> Encode(Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
-        {
-            return filter.Encode(this, parameters, header);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -216,10 +199,6 @@ namespace PdfClown.Bytes
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<byte> AsSpan(int index) => AsSpan(index, length - index);
-
-        public string GetString(int index, int length) => Charset.ISO88591.GetString(AsSpan(index, length));
-
-        public string GetString() => Charset.ISO88591.GetString(AsSpan());
 
         public void Insert(int index, byte[] data) => Insert(index, data, 0, data.Length);
 
@@ -314,7 +293,7 @@ namespace PdfClown.Bytes
         {
             if (position + length > this.length)
             {
-                length = (int)(this.length - position);
+                length = this.length - position;
             }
             var start = position;
             position += length;
@@ -325,7 +304,7 @@ namespace PdfClown.Bytes
         {
             if (position + length > this.length)
             {
-                length = (int)(this.length - position);
+                length = this.length - position;
             }
             var start = position;
             position += length;
@@ -338,23 +317,7 @@ namespace PdfClown.Bytes
                 return -1;
 
             return GetByte(position++);
-        }
-
-        public byte ReadUByte()
-        {
-            if (position >= length)
-                throw new EndOfStreamException();
-
-            return GetByte(position++);
-        }
-
-        public sbyte ReadSByte()
-        {
-            if (position >= length)
-                throw new EndOfStreamException();
-
-            return unchecked((sbyte)GetByte(position++));
-        }
+        }        
 
         public int PeekByte()
         {
@@ -446,7 +409,7 @@ namespace PdfClown.Bytes
         {
             if (bitShift < 0)
             {
-                currentByte = ReadUByte();
+                currentByte = this.ReadUByte();
                 bitShift = 7;
             }
             var bit = (currentByte >> bitShift) & 1;
@@ -463,16 +426,6 @@ namespace PdfClown.Bytes
             }
             return result;
         }
-
-        /**
-         * Read a fixed length string.
-         * 
-         * @param length The length of the string to read in bytes.
-         * @param charset The expected character set of the string.
-         * @return A string of the desired length.
-         * @ If there is an error reading the data.
-         */
-        public string ReadString(int length) => StreamExtensions.ReadString(this, length);
 
         public long Seek(long position)
         {
@@ -534,10 +487,8 @@ namespace PdfClown.Bytes
             throw new NotImplementedException();
         }
 
-        /**
-          <summary>Check whether the buffer has sufficient room for
-          adding data.</summary>
-        */
+        /// <summary>Check whether the buffer has sufficient room for
+        /// adding data.</summary>
         private void EnsureCapacity(int additionalLength)
         {
             int minCapacity = length + additionalLength;

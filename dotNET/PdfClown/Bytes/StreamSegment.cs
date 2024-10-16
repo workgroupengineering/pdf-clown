@@ -23,34 +23,96 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Composition;
 using System;
+using System.IO;
 
 namespace PdfClown.Bytes
 {
-    public class StreamSegment
+    public class StreamSegment : StreamContainer
     {
+        private Memory<byte>? buffer;
+
         public StreamSegment(IInputStream stream) : this(stream, stream.Position, stream.Length - stream.Position)
         { }
 
         public StreamSegment(IInputStream stream, long length) : this(stream, stream.Position, length)
         { }
 
-        public StreamSegment(IInputStream stream, long position, long length)
+        public StreamSegment(IInputStream stream, long startSegment, long lengthSegment)
+            : base((Stream)stream)
         {
-            Stream = stream;
-            Position = position;
-            Length = length;
+            StartSegment = startSegment;
+            LengthSegment = lengthSegment;
+            EndSegment = startSegment + lengthSegment;
         }
 
-        public IInputStream Stream { get; set; }
-        public long Position { get; set; }
-        public long Length { get; set; }
+        public long StartSegment { get; }
+        public long LengthSegment { get; }
+        public long EndSegment { get; }
 
-        public IInputStream GetStream()
+        public override long Position
         {
-            Stream.Seek(Position);
-            return Stream;
+            get => base.Position - StartSegment;
+            set => base.Position = value + StartSegment;
+        }
+
+        public override long Length => LengthSegment;
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            return origin switch
+            {
+                SeekOrigin.Begin => base.Seek(StartSegment + offset, origin),
+                SeekOrigin.End => base.Seek(EndSegment - offset, SeekOrigin.Begin),
+                _ => base.Seek(offset, origin),
+            };
+        }
+
+        public override int Read(byte[] data, int offset, int count)
+        {
+            if ((Position + count) > Length)
+                count = (int)(Length - Position);
+            return base.Read(data, offset, count);
+        }
+
+        public override int Read(Span<byte> data)
+        {
+            if ((Position + data.Length) > Length)
+                data = data.Slice(0, (int)(Length - Position));
+            return base.Read(data);
+        }
+
+        private Memory<byte> Buffer()
+        {
+            Mark();
+            Position = 0;
+            var result = base.ReadMemory((int)Length);
+            ResetMark();
+            return result;
+        }
+
+        public override Memory<byte> AsMemory()
+        {
+            return buffer ??= Buffer();
+        }
+
+        public override Span<byte> AsSpan()
+        {
+            return AsMemory().Span;
+        }
+
+        private void EnsurePosition()
+        {
+            var basePosition = base.Position;
+            if (basePosition < StartSegment
+                || basePosition > EndSegment)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
         }
     }
 }

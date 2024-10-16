@@ -50,7 +50,7 @@ namespace PdfClown.UI
 
         public PdfFile File { get; private set; }
 
-        public string Name { get;  set; }
+        public string Name { get; set; }
 
         public PdfDocument Document => File.Document;
 
@@ -180,7 +180,7 @@ namespace PdfClown.UI
         }
 
         public SKPaint PageBackgroundPaint => pageBackgroundPaint ??= GetPageBackgroundPaint();
-        
+
         public SKPaint PageForegroundPaint => pageForegroundPaint ??= GetPageForegroundPaint();
 
         public float DefaultXOffset { get; internal set; }
@@ -339,6 +339,7 @@ namespace PdfClown.UI
                 fileStream.Close();
                 stream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
             }
+
             File = new PdfFile(stream);
             fields = null;
             LoadPages();

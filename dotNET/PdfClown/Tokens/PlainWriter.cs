@@ -27,6 +27,7 @@ using PdfClown.Bytes;
 using PdfClown.Objects;
 
 using System;
+using System.Linq;
 using System.Text;
 
 namespace PdfClown.Tokens
@@ -60,7 +61,7 @@ namespace PdfClown.Tokens
                 var xrefSubBuilder = new StringBuilder(); // Xref-table subsection builder.
                 int xrefSubCount = 0; // Xref-table subsection counter.
                 int prevKey = 0; // Previous-entry object number.
-                foreach (var indirectObjectEntry in file.IndirectObjects.ModifiedObjects)
+                foreach (var indirectObjectEntry in file.IndirectObjects.ModifiedObjects.OrderBy(x => x.Key).ToList())
                 {
                     // Is the object in the current subsection?
                     // NOTE: To belong to the current subsection, the object entry MUST be contiguous with the

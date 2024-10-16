@@ -43,8 +43,6 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly bool isEmbedded;
         private readonly bool isDamaged;
         private float? avgWidth = null;
-        private SKMatrix? fontMatrix;
-        private SKRect? fontBBox;
 
         public FontType1C(PdfDirectObject fontDictionary)
             : base(fontDictionary)
@@ -59,7 +57,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     try
                     {
-                        using var bytes = ff3Stream.BaseDataObject.ExtractBody(true);
+                        using var bytes = ff3Stream.BaseDataObject.GetExtractedStream();
                         if (bytes.Length == 0)
                         {
                             Debug.WriteLine($"error: Invalid data for embedded Type1C font {Name}");
@@ -121,64 +119,6 @@ namespace PdfClown.Documents.Contents.Fonts
             get => BaseFont;
         }
 
-        public override SKRect BoundingBox
-        {
-            get
-            {
-                if (fontBBox == null)
-                {
-                    fontBBox = GenerateBoundingBox();
-                }
-                return (SKRect)fontBBox;
-            }
-        }
-
-        private SKRect GenerateBoundingBox()
-        {
-            if (FontDescriptor != null)
-            {
-                var bbox = FontDescriptor.FontBBox;
-                if (IsNonZeroBoundingBox(bbox))
-                {
-                    return bbox.ToSKRect();
-                }
-            }
-            return genericFont.FontBBox;
-        }
-
-        public override SKMatrix FontMatrix
-        {
-            get
-            {
-                if (fontMatrix == null)
-                {
-                    List<float> numbers = null;
-                    try
-                    {
-                        numbers = genericFont.FontMatrix;
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.WriteLine($"debug: Couldn't get font matrix - returning default value {e}");
-                        fontMatrix = DefaultFontMatrix;
-                    }
-
-                    if (numbers != null && numbers.Count == 6)
-                    {
-                        fontMatrix = new SKMatrix(
-                                numbers[0], numbers[1], numbers[4],
-                                numbers[2], numbers[3], numbers[5],
-                                0, 0, 1);
-                    }
-                    else
-                    {
-                        return base.FontMatrix;
-                    }
-                }
-                return (SKMatrix)fontMatrix;
-            }
-        }
-
         public override bool IsDamaged
         {
             get => isDamaged;
@@ -215,6 +155,45 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             // todo: not implemented, highly suspect
             get => 500;
+        }
+
+        protected override SKMatrix GenerateFontMatrix()
+        {
+            List<float> numbers = null;
+            try
+            {
+                numbers = genericFont.FontMatrix;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"debug: Couldn't get font matrix - returning default value {e}");
+                return DefaultFontMatrix;
+            }
+
+            if (numbers != null && numbers.Count > 5)
+            {
+                return new SKMatrix(
+                        numbers[0], numbers[1], numbers[4],
+                        numbers[2], numbers[3], numbers[5],
+                        0, 0, 1);
+            }
+            else
+            {
+                return base.FontMatrix;
+            }
+        }
+
+        protected override SKRect GenerateBoundingBox()
+        {
+            if (FontDescriptor != null)
+            {
+                var bbox = FontDescriptor.FontBBox;
+                if (IsNonZeroBoundingBox(bbox))
+                {
+                    return bbox.ToSKRect();
+                }
+            }
+            return genericFont.FontBBox;
         }
 
         public override SKPath GetPath(string name)

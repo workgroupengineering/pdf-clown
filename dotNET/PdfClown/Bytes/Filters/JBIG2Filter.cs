@@ -36,7 +36,7 @@ namespace PdfClown.Bytes.Filters
         internal JBIG2Filter()
         { }
 
-        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             var jbig2Image = new Jbig2Image();
 
@@ -46,11 +46,11 @@ namespace PdfClown.Bytes.Filters
                 var globalsStream = parametersDict.Resolve(PdfName.JBIG2Globals);
                 if (globalsStream is PdfStream pdfStream)
                 {
-                    var globals = pdfStream.ExtractBody(true);
+                    var globals = pdfStream.GetInputStream();
                     chunks.Add(new ImageChunk(data: globals));
                 }
             }
-            chunks.Add(new ImageChunk(data: data));
+            chunks.Add(new ImageChunk(data));
             var imageData = jbig2Image.ParseChunks(chunks);
             var dataLength = imageData.Length;
 
@@ -62,7 +62,7 @@ namespace PdfClown.Bytes.Filters
             return imageData;
         }
 
-        public override Memory<byte> Encode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             return data.AsMemory();
         }

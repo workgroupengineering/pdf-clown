@@ -27,14 +27,10 @@ using System;
 
 namespace PdfClown.Util
 {
-    /**
-      <summary>Generic data buffer.</summary>
-    */
+    /// <summary>Generic data buffer.</summary>
     public interface IDataWrapper
     {
-        /**
-          <summary>Gets the buffer data copied to a newly-allocated byte array.</summary>
-        */
+        /// <summary>Gets the buffer data copied to a newly-allocated byte array.</summary>
         byte[] ToArray();
 
         Memory<byte> AsMemory();

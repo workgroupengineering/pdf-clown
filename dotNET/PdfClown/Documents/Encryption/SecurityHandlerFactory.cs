@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace PdfClown.Documents.Encryption
 {
@@ -33,96 +34,41 @@ namespace PdfClown.Documents.Encryption
     {
         /** Singleton instance */
         public static readonly SecurityHandlerFactory INSTANCE = new SecurityHandlerFactory();
+        
 
-        private readonly Dictionary<string, Type> nameToHandler = new Dictionary<string, Type>(StringComparer.Ordinal);
-
-        private readonly Dictionary<Type, Type> policyToHandler = new Dictionary<Type, Type>();
-
-        private SecurityHandlerFactory()
-        {
-            RegisterHandler(StandardSecurityHandler.FILTER,
-                            typeof(StandardSecurityHandler),
-                        typeof(StandardProtectionPolicy));
-
-            RegisterHandler(PublicKeySecurityHandler.FILTER,
-                            typeof(PublicKeySecurityHandler),
-                            typeof(PublicKeyProtectionPolicy));
-        }
-
-        /**
-		 * Registers a security handler.
-		 *
-		 * If the security handler was already registered an exception is thrown.
-		 * If another handler was previously registered for the same filter name or
-		 * for the same policy name, an exception is thrown
-		 *
-		 * @param name the name of the filter
-		 * @param securityHandler security handler class to register
-		 * @param protectionPolicy protection policy class to register
-		 */
-        public void RegisterHandler(string name, Type securityHandler, Type protectionPolicy)
-        {
-            if (nameToHandler.ContainsKey(name))
-            {
-                throw new ArgumentException("The security handler name is already registered");
-            }
-
-            nameToHandler[name] = securityHandler;
-            policyToHandler[protectionPolicy] = securityHandler;
-        }
-
-        /**
-		 * Returns a new security handler for the given protection policy, or null none is available.
-		 * @param policy the protection policy for which to create a security handler
-		 * @return a new SecurityHandler instance, or null if none is available
-		 */
+        /// <summary>
+        /// Returns a new security handler for the given protection policy, or null none is available.
+        /// @param policy the protection policy for which to create a security handler
+        /// @return a new SecurityHandler instance, or null if none is available
+        /// </summary>
         public ISecurityHandler NewSecurityHandlerForPolicy(ProtectionPolicy policy)
         {
-            if (!policyToHandler.TryGetValue(policy.GetType(), out Type handlerClass))
+            switch (policy)
             {
-                return null;
+                case StandardProtectionPolicy standard:
+                    return new StandardSecurityHandler(standard);
+                case PublicKeyProtectionPolicy publicKey:
+                    return new PublicKeySecurityHandler(publicKey);
+                default: return null;
             }
-
-            Type[] argsClasses = { policy.GetType() };
-            object[] args = { policy };
-            return NewSecurityHandler(handlerClass, argsClasses, args);
         }
 
-        /**
-		 * Returns a new security handler for the given Filter name, or null none is available.
-		 * @param name the Filter name from the PDF encryption dictionary
-		 * @return a new SecurityHandler instance, or null if none is available
-		 */
+        /// <summary>
+        /// Returns a new security handler for the given Filter name, or null none is available.
+        /// @param name the Filter name from the PDF encryption dictionary
+        /// @return a new SecurityHandler instance, or null if none is available
+        /// </summary>
         public ISecurityHandler NewSecurityHandlerForFilter(string name)
         {
-            if (!nameToHandler.TryGetValue(name, out Type handlerClass))
+            switch (name)
             {
-                return null;
-            }
-
-            Type[] argsClasses = { };
-            object[] args = { };
-            return NewSecurityHandler(handlerClass, argsClasses, args);
-        }
-
-        /* Returns a new security handler for the given parameters, or null none is available.
-		 *
-		 * @param handlerClass the handler class.
-		 * @param argsClasses the parameter array.
-		 * @param args array of objects to be passed as arguments to the constructor call.
-		 * @return a new SecurityHandler instance, or null if none is available.
-		 */
-        private ISecurityHandler NewSecurityHandler(Type handlerClass, Type[] argsClasses, object[] args)
-        {
-            try
-            {
-                return (ISecurityHandler)Activator.CreateInstance(handlerClass, args);
-            }
-            catch (Exception e)
-            {
-                // should not happen in normal operation
-                throw new Exception("", e);
+                case StandardSecurityHandler.FILTER:
+                    return new StandardSecurityHandler();
+                case PublicKeySecurityHandler.FILTER:
+                    return new PublicKeySecurityHandler();
+                default: return null;
             }
         }
+        
     }
 }

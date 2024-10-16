@@ -18,26 +18,23 @@
 namespace PdfClown.Documents.Contents.Fonts.TTF.Table.Common
 {
 
-    /**
-     * This class models the
-     * <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#lookup-table">Lookup Sub-Table</a> in the
-     * Open Type layout common tables.
-     * 
-     * @author Palash Ray
-     *
-     */
+    /// <summary>
+    /// This class models the
+    /// <a href = "https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#lookup-table" > Lookup Sub-Table</a> in the
+    /// Open Type layout common tables.
+    /// </summary>
     public abstract class LookupSubTable
     {
-        private readonly int substFormat;
+        private readonly ushort substFormat;
         private readonly CoverageTable coverageTable;
 
-        public LookupSubTable(int substFormat, CoverageTable coverageTable)
+        public LookupSubTable(ushort substFormat, CoverageTable coverageTable)
         {
             this.substFormat = substFormat;
             this.coverageTable = coverageTable;
         }
 
-        public abstract int DoSubstitution(int gid, int coverageIndex);
+        public abstract ushort DoSubstitution(ushort gid, int coverageIndex);
 
         public int SubstFormat
         {

@@ -14,20 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Table.Common
 {
-
-    using System.Collections.Generic;
-
-    /**
-     * This class models the
-     * <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-format-2">Coverage format 2</a>
-     * in the Open Type layout common tables.
-     * 
-     * @author Palash Ray
-     *
-     */
+    /// <summary>
+    /// This class models the
+    /// <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-format-2">Coverage format 2</a>
+    /// in the Open Type layout common tables.
+    /// @author Palash Ray
+    /// </summary>
     public class CoverageTableFormat2 : CoverageTableFormat1
     {
         private readonly RangeRecord[] rangeRecords;
@@ -43,30 +39,22 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Table.Common
             get => rangeRecords;
         }
 
-        private static int[] GetRangeRecordsAsArray(RangeRecord[] rangeRecords)
+        private static ushort[] GetRangeRecordsAsArray(RangeRecord[] rangeRecords)
         {
-            List<int> glyphIds = new List<int>();
+            var glyphIds = new List<ushort>();
 
             foreach (RangeRecord rangeRecord in rangeRecords)
             {
-                for (int glyphId = rangeRecord.StartGlyphID; glyphId <= rangeRecord.EndGlyphID; glyphId++)
+                for (var glyphId = rangeRecord.StartGlyphID; glyphId <= rangeRecord.EndGlyphID; glyphId++)
                 {
                     glyphIds.Add(glyphId);
                 }
             }
 
-            int[] glyphArray = new int[glyphIds.Count];
-
-            for (int i = 0; i < glyphArray.Length; i++)
-            {
-                glyphArray[i] = glyphIds[i];
-            }
-
-            return glyphArray;
+            return glyphIds.ToArray();
         }
-
-        override
-        public string ToString()
+        
+        public override string ToString()
         {
             return $"CoverageTableFormat2[coverageFormat={CoverageFormat}]";
         }

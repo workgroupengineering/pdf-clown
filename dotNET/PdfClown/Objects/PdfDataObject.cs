@@ -25,9 +25,7 @@
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF data object.</summary>
-    */
+    /// <summary>PDF data object.</summary>
     public abstract class PdfDataObject : PdfObject
     {
         protected PdfDataObject()

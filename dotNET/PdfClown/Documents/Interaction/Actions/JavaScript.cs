@@ -32,16 +32,12 @@ using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Cause a script to be compiled and executed by the JavaScript interpreter'
-      action [PDF:1.6:8.6.4].</summary>
-    */
+    /// <summary>'Cause a script to be compiled and executed by the JavaScript interpreter'
+    /// action [PDF:1.6:8.6.4].</summary>
     [PDF(VersionEnum.PDF13)]
     public sealed class JavaScript : Action
     {
-        /**
-          <summary>Gets the Javascript script from the specified base data object.</summary>
-        */
+        /// <summary>Gets the Javascript script from the specified base data object.</summary>
         internal static string GetScript(PdfDictionary baseDataObject, PdfName key)
         {
             PdfDataObject scriptObject = baseDataObject.Resolve(key);
@@ -51,23 +47,21 @@ namespace PdfClown.Documents.Interaction.Actions
                 return pdfString.StringValue;
             else
             {
-                var scriptBuffer = ((PdfStream)scriptObject).Body;
-                return scriptBuffer.GetString(0, (int)scriptBuffer.Length);
+                var scriptBuffer = ((PdfStream)scriptObject).GetInputStream();
+                return scriptBuffer.ReadString(0, (int)scriptBuffer.Length);
             }
         }
 
-        /**
-          <summary>Sets the Javascript script into the specified base data object.</summary>
-        */
+        /// <summary>Sets the Javascript script into the specified base data object.</summary>
         internal static void SetScript(PdfDictionary baseDataObject, PdfName key, string value)
         {
             PdfDataObject scriptObject = baseDataObject.Resolve(key);
             if (!(scriptObject is PdfStream) && value.Length > 256)
             { baseDataObject[key] = baseDataObject.File.Register(scriptObject = new PdfStream()); }
             // Insert the script!
-            if (scriptObject is PdfStream)
+            if (scriptObject is PdfStream stream)
             {
-                var scriptBuffer = ((PdfStream)scriptObject).Body;
+                var scriptBuffer = stream.GetOutputStream();
                 scriptBuffer.SetLength(0);
                 scriptBuffer.Write(value);
             }
@@ -75,9 +69,7 @@ namespace PdfClown.Documents.Interaction.Actions
             { baseDataObject[key] = new PdfTextString(value); }
         }
 
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public JavaScript(PdfDocument context, string script)
             : base(context, PdfName.JavaScript)
         { Script = script; }
@@ -86,9 +78,7 @@ namespace PdfClown.Documents.Interaction.Actions
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the JavaScript script to be executed.</summary>
-        */
+        /// <summary>Gets/Sets the JavaScript script to be executed.</summary>
         public string Script
         {
             get => GetScript(BaseDataObject, PdfName.JS);

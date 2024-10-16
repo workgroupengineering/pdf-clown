@@ -1,5 +1,5 @@
 ﻿using PdfClown.Documents;
-using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Util.Math.Geom;
 using SkiaSharp;
@@ -11,7 +11,7 @@ namespace PdfClown.UI
 {
     public class PdfMultiPageViewModel : IPdfPageViewModel
     {
-        private List<PdfPageViewModel> items = new List<PdfPageViewModel>();
+        private List<PdfPageViewModel> items = new();
         private SKMatrix matrix;
         private SKRect? bounds;
 

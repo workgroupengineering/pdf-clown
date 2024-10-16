@@ -40,10 +40,8 @@ namespace PdfClown.Samples.CLI
 
                     stamper.Page = page;
 
-                    Extract(
-                      new ContentScanner(page), // Wraps the page contents into a scanner.
-                      stamper.Foreground
-                      );
+                    Extract(new ContentScanner(page), // Wraps the page contents into a scanner.
+                      stamper.Foreground);
 
                     stamper.Flush();
                 }
@@ -54,25 +52,23 @@ namespace PdfClown.Samples.CLI
         }
 
         /// <summary>Scans a content level looking for text.</summary>
-        /*
-          NOTE: Page contents are represented by a sequence of content objects,
-          possibly nested into multiple levels.
-        */
+        // NOTE: Page contents are represented by a sequence of content objects,
+        // possibly nested into multiple levels.
         private void Extract(ContentScanner level, PrimitiveComposer composer)
         {
             if (level == null)
                 return;
-
-            while (level.MoveNext())
+            level.OnObjectScanned += OnObjectFinish;
+            level.Scan();
+            level.OnObjectScanned -= OnObjectFinish;
+            void OnObjectFinish(ContentObject content)
             {
-                ContentObject content = level.Current;
-                if (content is GraphicsText)
+                if (content is GraphicsText text)
                 {
-                    TextWrapper text = (TextWrapper)level.CurrentWrapper;
                     int colorIndex = 0;
-                    foreach (TextStringWrapper textString in text.TextStrings)
+                    foreach (var textString in text.Strings)
                     {
-                        SKRect textStringBox = textString.Box.Value;
+                        SKRect textStringBox = textString.Quad.GetBounds();
                         Console.WriteLine(
                           "Text ["
                             + "x:" + Math.Round(textStringBox.Left) + ","
@@ -85,13 +81,11 @@ namespace PdfClown.Samples.CLI
                         // Drawing text character bounding boxes...
                         colorIndex = (colorIndex + 1) % textCharBoxColors.Length;
                         composer.SetStrokeColor(textCharBoxColors[colorIndex]);
-                        foreach (TextChar textChar in textString.TextChars)
+                        foreach (TextChar textChar in textString.Chars)
                         {
-                            /*
-                              NOTE: You can get further text information
-                              (font, font size, text color, text rendering mode)
-                              through textChar.style.
-                            */
+                            // NOTE: You can get further text information
+                            // (font, font size, text color, text rendering mode)
+                            // through textChar.style.
                             composer.DrawPolygon(textChar.Quad.GetPoints());
                             composer.Stroke();
                         }
@@ -100,20 +94,15 @@ namespace PdfClown.Samples.CLI
                         composer.BeginLocalState();
                         composer.SetLineDash(new LineDash(new float[] { 5 }));
                         composer.SetStrokeColor(textStringBoxColor);
-                        composer.DrawRectangle(textString.Box.Value);
+                        composer.DrawRectangle(textString.Quad.GetBounds());
                         composer.Stroke();
                         composer.End();
                     }
                 }
-                else if (content is GraphicsXObject)
+                else if (content is PaintXObject paint)
                 {
                     // Scan the external level!
-                    Extract(((GraphicsXObject)content).GetScanner(level), composer);
-                }
-                else if (content is ContainerObject)
-                {
-                    // Scan the inner level!
-                    Extract(level.ChildLevel, composer);
+                    Extract(paint.GetScanner(level), composer);
                 }
             }
         }

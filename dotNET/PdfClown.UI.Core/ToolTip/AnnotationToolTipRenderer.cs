@@ -1,9 +1,12 @@
-﻿using SkiaSharp;
+﻿using PdfClown.Documents.Interaction.Annotations;
+using SkiaSharp;
 
 namespace PdfClown.UI.ToolTip
 {
     public abstract class AnnotationToolTipRenderer : ToolTipRenderer
     {
+        public Annotation Annotation { get; set; }
+
         public override SKRect GetWindowBound(PdfViewState state)
         {
             SKRect windowArea = state.WindowArea;
@@ -15,6 +18,12 @@ namespace PdfClown.UI.ToolTip
                    left < windowArea.Left ? windowArea.Left : right > windowArea.Right ? left - (right - windowArea.Right) : left,
                    (annotation.Bottom + toolTip.Bottom + 10) > windowArea.Bottom ? (annotation.Top - toolTip.Height) : annotation.Bottom + 10,
                     toolTip.Width, toolTip.Height);
+        }
+
+        public override void Free()
+        {
+            base.Free();
+            Annotation = null;
         }
     }
 

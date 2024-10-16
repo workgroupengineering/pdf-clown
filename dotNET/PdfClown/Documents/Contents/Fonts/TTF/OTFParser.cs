@@ -14,29 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    using PdfClown.Bytes;
-    using System.IO;
-
-
-    /**
-     * OpenType font file parser.
-     */
+    /// <summary>OpenType font file parser.</summary>
     public sealed class OTFParser : TTFParser
     {
-        /**
-         * Constructor.
-         */
         public OTFParser() : base()
         { }
 
-        /**
-         * Constructor.
-         *
-         * @param isEmbedded true if the font is embedded in PDF
-         */
+        /// <summary>Constructor.</summary>
+        /// <param name="isEmbedded">true if the font is embedded in PDF</param>
         public OTFParser(bool isEmbedded) : base(isEmbedded)
         { }
 

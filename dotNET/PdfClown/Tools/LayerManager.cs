@@ -28,10 +28,7 @@ using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Layers;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
-
-using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Tools
@@ -175,10 +172,11 @@ namespace PdfClown.Tools
         {
             if (level == null)
                 return;
-
-            while (level.MoveNext())
+            level.OnObjectScanning += OnStart;
+            level.Scan();
+            level.OnObjectScanning -= OnStart;
+            bool OnStart(ContentObject content, ICompositeObject container, int index)
             {
-                ContentObject content = level.Current;
                 if (content is GraphicsMarkedContent markedContent)
                 {
                     var marker = (ContentMarker)markedContent.Header;
@@ -187,32 +185,24 @@ namespace PdfClown.Tools
                     {
                         if (preserveContent)
                         {
-                            level.Current = new ContentPlaceholder(markedContent.Objects); // Replaces the layer marked content block with an anonymous container, preserving its contents.
+                            container.Contents[index] = new ContentPlaceholder(markedContent.Contents); // Replaces the layer marked content block with an anonymous container, preserving its contents.
                         }
                         else
                         {
-                            level.Remove(); // Removes the layer marked content block along with its contents.
-                            continue;
+                            container.Contents.RemoveAt(index); // Removes the layer marked content block along with its contents.
                         }
+                        return false;
                     }
                 }
-                else if (!preserveContent && content is GraphicsXObject xObject)
+                else if (!preserveContent && content is PaintXObject xObject)
                 {
                     if (layerXObjectNames.Contains(xObject.Name))
                     {
-                        level.Remove();
-                        continue;
+                        container.Contents.RemoveAt(index);
+                        return false;
                     }
                 }
-                if (content is ContainerObject)
-                {
-                    // Scan the inner level!
-                    RemoveLayerContents(
-                      level.ChildLevel,
-                      layerEntityNames,
-                      layerXObjectNames,
-                      preserveContent);
-                }
+                return true;
             }
         }
 

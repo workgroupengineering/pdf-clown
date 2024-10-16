@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Forms;
 using PdfClown.Documents.Interaction.Navigation;
@@ -336,7 +337,7 @@ namespace PdfClown.Objects
             PdfStream clone = (PdfStream)obj.Clone();
             {
                 clone.header = (PdfDictionary)Visit(obj.header, data);
-                clone.body = obj.body.Clone();
+                clone.SetStream(new ByteStream(obj.GetInputStreamNoDecode()));
             }
             return clone;
         }

@@ -35,6 +35,7 @@ using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using actions = PdfClown.Documents.Interaction.Actions;
 using colors = PdfClown.Documents.Contents.ColorSpaces;
 using objects = PdfClown.Documents.Contents.Objects;
@@ -53,22 +54,139 @@ namespace PdfClown.Documents.Contents.Composition
     {
         private const float QuadToQubicKoefficent = 2.0F / 3.0F;
         private ContentScanner scanner;
+        private ICompositeObject current;
+        private int index;
+        private Stack<(ICompositeObject Object, int Index)> stack = new();
 
         public PrimitiveComposer(ContentScanner scanner)
         {
-            Scanner = scanner;
+            this.scanner = scanner;
+            scanner.OnObjectScanning += OnObjectStarting;
+            scanner.OnObjectScanned += OnObjectFinish;
+            current = scanner.Contents;
         }
 
-        public PrimitiveComposer(IContentContext context) : this(new ContentScanner(context.Contents))
+        public PrimitiveComposer(IContentContext context)
+            : this(new ContentScanner(context))
         { }
+
+        /// <summary>Gets/Sets the content stream scanner.</summary>
+        public ContentScanner Scanner
+        {
+            get => scanner;
+        }
+
+        /// <summary>Gets the current graphics state [PDF:1.6:4.3].</summary>
+        public GraphicsState State => Scanner.State;
+
+        public ICompositeObject Current
+        {
+            get => current;
+        }
+
+        public int Index
+        {
+            get => index;
+            set => index = value;
+        }
+
+        private bool OnObjectStarting(ContentObject obj, ICompositeObject container, int index)
+        {
+            if (container != null)
+            {
+                if (container == current)
+                {
+                    this.index = index;
+                }
+#if DEBUG
+                else { Debug.WriteLine("Unexpected scan container"); }
+#endif
+            }
+            if (obj is ICompositeObject objComposite)
+            {
+                Push(objComposite);
+            }
+            return true;
+        }
+
+        private void OnObjectFinish(ContentObject obj)
+        {
+            if (obj is ICompositeObject container)
+            {
+                if (container == current)
+                {
+                    Pop();
+                }
+#if DEBUG
+                else { Debug.WriteLine("Unexpected scan container"); }
+#endif
+            }
+            this.index += 1;
+        }
+
+        private bool Push(ICompositeObject contaner)
+        {
+            if (current == contaner)
+                return false;
+            stack.Push((current, index));
+            // The new object's children level is the new current level!
+            current = contaner;
+            index = -1;
+            return true;
+        }
+
+        private bool Pop()
+        {
+            if (stack.TryPop(out var result))
+            {
+                current = result.Object;
+                index = result.Index;
+                return true;
+            }
+            return false;
+        }
 
         /// <summary>Adds a content object.</summary>
         /// <returns>The added content object.</returns>
         public T Add<T>(T obj) where T : ContentObject
         {
-            Scanner.Insert(obj);
-            Scanner.MoveNext();
+            Insert(obj);
+            obj.Scan(scanner.State, current, index);
             return obj;
+        }
+
+        private void Insert<T>(T obj) where T : ContentObject
+        {
+            if (index < 0)
+            { index = 0; }
+            current.Contents.Insert(index, obj);
+        }
+
+        /// <summary>Adds a composite object beginning it.</summary>
+        /// <returns>Added composite object.</returns>
+        /// <seealso cref="End()"/>
+        public T Begin<T>(T obj)
+            where T : CompositeObject
+        {
+            // Insert the new object at the current level!
+            Insert(obj);
+            OnObjectStarting(obj, current, index);
+            obj.OnScanning(scanner.State);
+            return obj;
+        }
+
+        /// <summary>Ends the current (innermostly-nested) composite object.</summary>
+        /// <seealso cref="Begin(CompositeObject)"/>
+        public void End()
+        {
+            if (current is ContentObject content)
+            {
+                OnObjectFinish(content);
+                if (content is CompositeObject container)
+                {
+                    container.OnScanned(scanner.State);
+                }
+            }
         }
 
         /// <summary>Applies a transformation to the coordinate system from user space to device space
@@ -104,19 +222,6 @@ namespace PdfClown.Documents.Contents.Composition
         /// <param name="state">State parameters object.</param>
         public void ApplyState(ExtGState state) => ApplyState_(GetResourceName(state));
 
-        /// <summary>Adds a composite object beginning it.</summary>
-        /// <returns>Added composite object.</returns>
-        /// <seealso cref="End()"/>
-        public CompositeObject Begin(CompositeObject obj)
-        {
-            // Insert the new object at the current level!
-            Scanner.Insert(obj);
-            // The new object's children level is the new current level!
-            Scanner = Scanner.ChildLevel;
-
-            return obj;
-        }
-
         /// <summary>Begins a new layered-content sequence [PDF:1.6:4.10.2].</summary>
         /// <param name="layer">Layer entity enclosing the layered content.</param>
         /// <returns>Added layered-content sequence.</returns>
@@ -133,7 +238,7 @@ namespace PdfClown.Documents.Contents.Composition
         /// <summary>Begins a new nested graphics state context [PDF:1.6:4.3.1].</summary>
         /// <returns>Added local graphics state object.</returns>
         /// <seealso cref="End()"/>
-        public GraphicsLocalState BeginLocalState() => (GraphicsLocalState)Begin(new GraphicsLocalState());
+        public GraphicsLocalState BeginLocalState() => Begin(new GraphicsLocalState());
 
         /// <summary>Begins a new marked-content sequence [PDF:1.6:10.5].</summary>
         /// <param name="tag">Marker indicating the role or significance of the marked content.</param>
@@ -345,10 +450,10 @@ namespace PdfClown.Documents.Contents.Composition
 
         private void DrawQuad(Quad quad)
         {
-            StartPath(quad.TopLeft);
-            DrawLine(quad.TopRight);
-            DrawLine(quad.BottomRight);
-            DrawLine(quad.BottomLeft);
+            StartPath(quad.Point0);
+            DrawLine(quad.Point1);
+            DrawLine(quad.Point2);
+            DrawLine(quad.Point3);
             ClosePath();
         }
 
@@ -439,14 +544,6 @@ namespace PdfClown.Documents.Contents.Composition
         public void DrawSpiral(SKPoint center, double startAngle, double endAngle, double branchWidth, double branchRatio)
             => DrawArc(SKRect.Create(center.X, center.Y, 0.0001f, 0.0001f), startAngle, endAngle, branchWidth, branchRatio);
 
-        /// <summary>Ends the current (innermostly-nested) composite object.</summary>
-        /// <seealso cref="Begin(CompositeObject)"/>
-        public void End()
-        {
-            Scanner = Scanner.ParentLevel;
-            Scanner.MoveNext();
-        }
-
         /// <summary>Fills the path using the current color [PDF:1.6:4.4.2].</summary>
         /// <seealso cref="SetFillColor(Color)"/>
         public void Fill() => Add(PaintPath.Fill);
@@ -458,16 +555,6 @@ namespace PdfClown.Documents.Contents.Composition
 
         /// <summary>Serializes the contents into the content stream.</summary>
         public void Flush() => Scanner.Contents.Flush();
-
-        /// <summary>Gets/Sets the content stream scanner.</summary>
-        public ContentScanner Scanner
-        {
-            get => scanner;
-            set => scanner = value;
-        }
-
-        /// <summary>Gets the current graphics state [PDF:1.6:4.3].</summary>
-        public GraphicsState State => Scanner.State;
 
         /// <summary>Applies a rotation to the coordinate system from user space to device space
         /// [PDF:1.6:4.2.2].</summary>
@@ -755,7 +842,7 @@ namespace PdfClown.Documents.Contents.Composition
                                 }
                                 showText = Add(new ShowAdjustedText(textParams));
                             }
-                            frame = frame.Equals(Quad.Empty) ? showText.TextString.Quad : Quad.Union(frame, showText.TextString.Quad);
+                            frame = frame.IsEmpty ? showText.Quad : Quad.Union(frame, showText.Quad);
                         }
                     }
                 }
@@ -788,6 +875,7 @@ namespace PdfClown.Documents.Contents.Composition
 
             var link = new Link(page, linkBox, null, action)
             { Layer = GetLayer() };
+            page.Annotations.Add(link);
             return link;
         }
 
@@ -931,11 +1019,11 @@ namespace PdfClown.Documents.Contents.Composition
         private void ApplyState_(PdfName name) => Add(new ApplyExtGState(name));
 
         private GraphicsMarkedContent BeginMarkedContent_(PdfName tag, PdfName propertyListName)
-            => (GraphicsMarkedContent)Begin(new GraphicsMarkedContent(new BeginPropertyListMarkedContent(tag, propertyListName)));
+            => Begin(new GraphicsMarkedContent(new BeginPropertyListMarkedContent(tag, propertyListName)));
 
         /// <summary>Begins a text object [PDF:1.6:5.3].</summary>
         /// <seealso cref="End()"/>
-        private GraphicsText BeginText() => (GraphicsText)Begin(new GraphicsText());
+        private GraphicsText BeginText() => Begin(new GraphicsText());
 
         //TODO: drawArc MUST seamlessly manage already-begun paths.
         private void DrawArc(SKRect location, double startAngle, double endAngle, double branchWidth, double branchRatio, bool beginPath)
@@ -1020,16 +1108,14 @@ namespace PdfClown.Documents.Contents.Composition
         //TODO: temporary (consolidate stack tracing of marked content blocks!)
         private LayerEntity GetLayer()
         {
-            var parentLevel = Scanner.ParentLevel;
-            while (parentLevel != null)
+            foreach (var parentLevel in stack)
             {
-                if (parentLevel.Current is GraphicsMarkedContent markedContent)
+                if (parentLevel.Object is GraphicsMarkedContent markedContent)
                 {
-                    var marker = (ContentMarker)markedContent.MarkerHeader;
+                    var marker = markedContent.MarkerHeader;
                     if (PdfName.OC.Equals(marker.Tag))
                         return (LayerEntity)marker.GetProperties(Scanner);
                 }
-                parentLevel = parentLevel.ParentLevel;
             }
             return null;
         }
@@ -1045,9 +1131,9 @@ namespace PdfClown.Documents.Contents.Composition
             else
             {
                 // Ensuring that the resource exists within the context resources...
-                PdfDictionary resourceItemsObject = ((PdfObjectWrapper<PdfDictionary>)Scanner.Context.Resources.Get(value.GetType())).BaseDataObject;
+                var resourceItemsObject = ((PdfObjectWrapper<PdfDictionary>)Scanner.Context.Resources.Get(value.GetType())).BaseDataObject;
                 // Get the key associated to the resource!
-                PdfName name = resourceItemsObject.GetKey(value.BaseObject);
+                var name = resourceItemsObject.GetKey(value.BaseObject);
                 // No key found?
                 if (name == null)
                 {

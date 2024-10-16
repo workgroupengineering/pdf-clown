@@ -155,16 +155,14 @@ namespace PdfClown.Documents.Functions
                 var bps = BitsPerSample;
                 int index = 0;
                 var stream = BaseDataObject as PdfStream;
-                using (var buffer = stream.ExtractBody(true) as Bytes.ByteStream)
+                var buffer = stream.GetInputStream();
+                for (int i = 0; i < arraySize; i++)
                 {
-                    for (int i = 0; i < arraySize; i++)
+                    for (int k = 0; k < outputCount; k++)
                     {
-                        for (int k = 0; k < outputCount; k++)
-                        {
-                            samples[index, k] = (int)buffer.ReadBits(bps);
-                        }
-                        index++;
+                        samples[index, k] = (int)buffer.ReadBits(bps);
                     }
+                    index++;
                 }
             }
             return samples;

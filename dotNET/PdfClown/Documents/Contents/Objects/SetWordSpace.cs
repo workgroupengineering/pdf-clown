@@ -27,7 +27,7 @@ using PdfClown.Objects;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    ///<summary>'Set the word spacing' operation [PDF:1.6:5.2].</summary>
+    /// <summary>'Set the word spacing' operation [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetWordSpace : Operation
     {

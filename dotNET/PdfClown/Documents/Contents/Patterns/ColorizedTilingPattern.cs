@@ -36,7 +36,7 @@ using PdfClown.Documents.Contents.ColorSpaces;
 
 namespace PdfClown.Documents.Contents.Patterns
 {
-    ///<summary>Uncolored tiling pattern ("stencil") associated to a color.</summary>
+    /// <summary>Uncolored tiling pattern ("stencil") associated to a color.</summary>
     public sealed class ColorizedTilingPattern : Color, IPattern
     {
         private readonly TilingPattern tiling;
@@ -49,9 +49,7 @@ namespace PdfClown.Documents.Contents.Patterns
             this.color = color;
         }
 
-        /**
-          <summary>Gets the color applied to the stencil.</summary>
-        */
+        /// <summary>Gets the color applied to the stencil.</summary>
         public Color Color => color;
 
         public override ColorSpace ColorSpace => tiling.ColorSpace;

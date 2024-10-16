@@ -17,17 +17,12 @@
  */
 
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using Org.BouncyCastle.Asn1.Pkcs;
 using PdfClown.Bytes;
 using PdfClown.Tokens;
 using PdfClown.Util;
-using static PdfClown.Documents.Functions.Type4.ArithmeticOperators;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
 {

@@ -32,17 +32,15 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Device Red-Green-Blue color space [PDF:1.6:4.5.3].</summary>
-    */
+    /// <summary>Device Red-Green-Blue color space [PDF:1.6:4.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceRGBColorSpace : DeviceColorSpace
     {
-        /*
-          NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
-          of the contextual resource dictionary) [PDF:1.6:4.5.7].
-        */
-        public static readonly DeviceRGBColorSpace Default = (DeviceRGBColorSpace)Wrap(PdfName.DeviceRGB);
+        // NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
+        // of the contextual resource dictionary) [PDF:1.6:4.5.7].
+        public static readonly DeviceRGBColorSpace Default = new(PdfName.DeviceRGB);
+
+        public static readonly DeviceRGBColorSpace DefaultShort = new(PdfName.RGB);
 
         public DeviceRGBColorSpace(PdfDocument context) : base(context, PdfName.DeviceRGB)
         { }

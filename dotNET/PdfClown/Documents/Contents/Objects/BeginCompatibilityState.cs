@@ -32,9 +32,6 @@ namespace PdfClown.Documents.Contents.Objects
         public static readonly BeginCompatibilityState Value = new BeginCompatibilityState();
 
         private BeginCompatibilityState() : base(OperatorKeyword)
-        { }
-
-        public override void Scan(GraphicsState state)
-        { }
+        { }       
     }
 }

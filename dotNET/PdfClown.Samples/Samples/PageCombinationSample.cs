@@ -1,8 +1,5 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Files;
 
 using SkiaSharp;
 
@@ -14,11 +11,9 @@ namespace PdfClown.Samples.CLI
       <remarks>Form XObjects are a convenient way to represent contents multiple times on multiple pages
       as templates.</remarks>
     */
-    public class PageCombinationSample
-      : Sample
+    public class PageCombinationSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Instantiate the source PDF file!
             string filePath = PromptFileChoice("Please select a PDF file to use as source");
@@ -57,8 +52,7 @@ namespace PdfClown.Samples.CLI
                       targetPageSize,
                       XAlignmentEnum.Left,
                       YAlignmentEnum.Top,
-                      0
-                      );
+                      0);
                 }
                 composer.Flush();
 

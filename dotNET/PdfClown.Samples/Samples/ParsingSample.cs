@@ -2,13 +2,11 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Interchange.Metadata;
-using PdfClown.Files;
 using PdfClown.Objects;
-
 using System;
 using System.Collections.Generic;
-using io = System.IO;
 using System.Xml;
+using io = System.IO;
 
 namespace PdfClown.Samples.CLI
 {
@@ -61,7 +59,7 @@ namespace PdfClown.Samples.CLI
                 // 2.2. Counting the indirect objects, grouping them by type...
                 var objCounters = new SortedDictionary<string, int>();
                 objCounters["xref free entry"] = 0;
-                foreach (PdfIndirectObject obj in file.IndirectObjects)
+                foreach (var obj in file.IndirectObjects)
                 {
                     if (obj.IsInUse()) // In-use entry.
                     {
@@ -103,20 +101,20 @@ namespace PdfClown.Samples.CLI
             // 1. Showing basic page information...
             Console.WriteLine(" Index (calculated): " + page.Index + " (should be " + index + ")");
             Console.WriteLine(" ID: " + ((PdfReference)page.BaseObject).Id);
-            PdfDictionary pageDictionary = page.BaseDataObject;
+            var pageDictionary = page.BaseDataObject;
             Console.WriteLine(" Dictionary entries:");
             foreach (KeyValuePair<PdfName, PdfDirectObject> entry in pageDictionary)
             { Console.WriteLine("  " + entry.Key.Value + " = " + entry.Value); }
 
             // 2. Showing page contents information...
-            ContentWrapper contents = page.Contents;
+            var contents = page.Contents;
             Console.WriteLine(" Content objects count: " + contents.Count);
             Console.WriteLine(" Content head:");
             PrintContentObjects(contents, 0, 0);
 
             // 3. Showing page resources information...
             {
-                Resources resources = page.Resources;
+                var resources = page.Resources;
                 Console.WriteLine(" Resources:");
                 try { Console.WriteLine("  Font count: " + resources.Fonts.Count); } catch { }
                 try { Console.WriteLine("  XObjects count: " + resources.XObjects.Count); } catch { }
@@ -127,20 +125,18 @@ namespace PdfClown.Samples.CLI
         private int PrintContentObjects(IList<ContentObject> objects, int index, int level)
         {
             string indentation = GetIndentation(level);
-            foreach (ContentObject obj in objects)
+            foreach (var obj in objects)
             {
-                /*
-                  NOTE: Contents are expressed through both simple operations and composite objects.
-                */
+                // NOTE: Contents are expressed through both simple operations and composite objects.
                 if (obj is Operation)
                 { Console.WriteLine("   " + indentation + (++index) + ": " + obj); }
-                else if (obj is CompositeObject)
+                else if (obj is CompositeObject compositeObject)
                 {
                     Console.WriteLine(
                       "   " + indentation + obj.GetType().Name
                         + "\n   " + indentation + "{"
                       );
-                    index = PrintContentObjects(((CompositeObject)obj).Objects, index, level + 1);
+                    index = PrintContentObjects(compositeObject.Contents, index, level + 1);
                     Console.WriteLine("   " + indentation + "}");
                 }
                 if (index > 9)

@@ -23,16 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
 
 using System;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
-    /**
-      <summary>Local interaction target [PDF:1.6:8.2.1].</summary>
-    */
+    /// <summary>Local interaction target [PDF:1.6:8.2.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class LocalDestination : Destination
     {
@@ -47,9 +44,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         internal LocalDestination(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the target page.</summary>
-        */
+        /// <summary>Gets/Sets the target page.</summary>
         public override object Page
         {
             get => Wrap<PdfPage>(BaseDataObject[0]);

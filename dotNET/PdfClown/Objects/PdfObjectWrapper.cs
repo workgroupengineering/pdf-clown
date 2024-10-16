@@ -25,17 +25,18 @@
 
 using PdfClown.Documents;
 using PdfClown.Documents.Interchange.Metadata;
-
+using PdfClown.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
 namespace PdfClown.Objects
 {
 
-    ///<summary>Base high-level representation of a weakly-typed PDF object.</summary>
+    /// <summary>Base high-level representation of a weakly-typed PDF object.</summary>
     public abstract class PdfObjectWrapper : IPdfObjectWrapper
     {
         /// <summary>Gets the PDF object backing the specified wrapper.</summary>
@@ -55,7 +56,7 @@ namespace PdfClown.Objects
                 return null;
         }
 
-        public static T Wrap<T>(PdfDirectObject baseObject)
+        public static T Wrap<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(PdfDirectObject baseObject)
             where T : IPdfObjectWrapper
         {
             return baseObject != null
@@ -64,7 +65,7 @@ namespace PdfClown.Objects
                 : default(T);
         }
 
-        public static T Wrap2<T>(PdfDirectObject baseObject)
+        public static T Wrap2<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(PdfDirectObject baseObject)
             where T : PdfObjectWrapper2
         {
             return baseObject != null
@@ -73,7 +74,7 @@ namespace PdfClown.Objects
                   : default(T);
         }
 
-        public static T Wrap3<T>(PdfDirectObject baseObject)
+        public static T Wrap3<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(PdfDirectObject baseObject)
             where T : PdfObjectWrapper3
         {
             return baseObject != null
@@ -123,12 +124,13 @@ namespace PdfClown.Objects
             }
         }
 
-        protected virtual PdfDictionary Dictionary => BaseDataObject switch
-        {
-            PdfDictionary dictionary => dictionary,
-            PdfStream stream => stream.Header,
-            _ => null
-        };
+        protected virtual PdfDictionary Dictionary =>
+            BaseDataObject switch
+            {
+                PdfDictionary dictionary => dictionary,
+                PdfStream stream => stream.Header,
+                _ => null
+            };
 
         /// <summary>Removes the object from its document context.</summary>
         /// <remarks>Only indirect objects can be removed through this method; direct objects have to be
@@ -280,30 +282,26 @@ namespace PdfClown.Objects
         ///name dictionary.</summary>
         protected virtual PdfString RetrieveName()
         {
-            object names = Document.Names.Get(GetType());
-            if (names == null)
-                return null;
-
-            // NOTE: Due to variance issues, we have to go the reflection way (gosh!).
-            return (PdfString)names.GetType().GetMethod("GetKey").Invoke(names, new object[] { this });
+            return Document.Names.Get(GetType()) is IBiDictionary biDictionary 
+                ? biDictionary.GetKey(this) as PdfString 
+                : null;
         }
 
         ///<summary>Retrieves the object name, if available; otherwise, behaves like
         ///<see cref="PdfObjectWrapper.BaseObject"/>.</summary>
         protected PdfDirectObject RetrieveNamedBaseObject()
         {
-            PdfString name = RetrieveName();
-            return name != null ? name : BaseObject;
+            return RetrieveName() ?? BaseObject;
         }
     }
 
-    ///<summary>High-level representation of a strongly-typed PDF object.</summary>
-    ///<remarks>
+    /// <summary>High-level representation of a strongly-typed PDF object.</summary>
+    /// <remarks>
     ///  <para>Specialized objects don't inherit directly from their low-level counterparts (e.g.
     ///    <see cref="PdfClown.Documents.Contents.ContentWrapper">Contents</see> extends <see
-    ///    cref="PdfClown.Objects.PdfStream">PdfStream</see>, <see
-    ///    cref="PdfClown.Documents.Pages">Pages</see> extends <see
-    ///    cref="PdfClown.Objects.PdfArray">PdfArray</see> and so on) because there's no plain
+    ///    cref="PdfStream">PdfStream</see>, <see
+    ///    cref="Pages">Pages</see> extends <see
+    ///    cref="PdfArray">PdfArray</see> and so on) because there's no plain
     ///    one-to-one mapping between primitive PDF types and specialized instances: the
     ///    <code>Content</code> entry of <code>Page</code> dictionaries may be a simple reference to a
     ///    <code>PdfStream</code> or a <code>PdfArray</code> of references to <code>PdfStream</code>s,
@@ -315,7 +313,7 @@ namespace PdfClown.Objects
     ///    Nonetheless, users can navigate through the low-level structure getting the <see
     ///    cref="BaseDataObject">BaseDataObject</see> backing this object.
     ///  </para>
-    ///</remarks>
+    /// </remarks>
     public abstract class PdfObjectWrapper<TDataObject> : PdfObjectWrapper
       where TDataObject : PdfDataObject
     {

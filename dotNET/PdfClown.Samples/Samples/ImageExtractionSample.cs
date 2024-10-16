@@ -40,7 +40,7 @@ namespace PdfClown.Samples.CLI
                             if (PdfName.DCTDecode.Equals(header.Get<PdfName>(PdfName.Filter))) // JPEG image.
                             {
                                 // Get the image data (keeping it encoded)!
-                                IByteStream body = ((PdfStream)dataObject).GetBody(false);
+                                var body = ((PdfStream)dataObject).GetInputStreamNoDecode();
                                 // Export the image!
                                 ExportImage(
                                   body,
@@ -54,7 +54,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private void ExportImage(IByteStream data, string filename)
+        private void ExportImage(IInputStream data, string filename)
         {
             string outputPath = GetOutputPath(filename);
             FileStream outputStream;
@@ -65,9 +65,7 @@ namespace PdfClown.Samples.CLI
 
             try
             {
-                BinaryWriter writer = new BinaryWriter(outputStream);
-                writer.Write(data.ToArray());
-                writer.Close();
+                data.CopyTo(outputStream);
                 outputStream.Close();
             }
             catch (Exception e)

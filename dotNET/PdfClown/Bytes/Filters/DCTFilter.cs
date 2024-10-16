@@ -14,7 +14,6 @@
  */
 
 using PdfClown.Bytes.Filters.Jpeg;
-using PdfClown.Bytes.Filters.Jpx;
 using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
@@ -28,7 +27,7 @@ namespace PdfClown.Bytes.Filters
         internal DCTFilter()
         { }
 
-        public override Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             var imageParams = header;
             var dictionary = header as PdfDictionary;
@@ -45,7 +44,7 @@ namespace PdfClown.Bytes.Filters
             var decodeArr = decodeObj?.Resolve() as PdfArray;
             if (false && decodeArr != null)
             {
-                var decode = decodeArr.Select(p => ((IPdfNumber)p).IntValue).ToArray();
+                var decode = decodeArr.ToIntArray();
                 var decodeArrLength = decodeArr.Count;
                 var transform = new int[decodeArr.Count];
                 var transformNeeded = false;
@@ -76,13 +75,13 @@ namespace PdfClown.Bytes.Filters
             return buffer;
         }
 
-        public override Memory<byte> Encode(Bytes.ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             throw new NotSupportedException();
         }
 
 
-        bool GetMaybeValidDimensions(Bytes.ByteStream data, IDictionary<PdfName, PdfDirectObject> dict)
+        bool GetMaybeValidDimensions(IInputStream data, IDictionary<PdfName, PdfDirectObject> dict)
         {
             var dictHeight = ((IPdfNumber)(dict[PdfName.Height] ?? dict[PdfName.H])).IntValue;
             var startPos = data.Position;

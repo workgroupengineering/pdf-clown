@@ -23,17 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the text font' operation [PDF:1.6:5.2].</summary>
-    */
+    /// <summary>'Set the text font' operation [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetFont : Operation, IResourceReference<Font>
     {
@@ -43,16 +38,25 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, new PdfArray(2) { name, size })
         { }
 
-        public SetFont(PdfArray operands) 
+        public SetFont(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
-        /**
-          <summary>Gets the <see cref="Font">font</see> resource to be set.</summary>
-          <param name="scanner">Content context.</param>
-        */
-        public Font GetFont(ContentScanner scanner) => GetResource(scanner);
+        /// <summary>Gets/Sets the font size to be set.</summary>
+        public float Size
+        {
+            get => operands.GetFloat(1);
+            set => operands.Set(1, value);
+        }
 
+        public PdfName Name
+        {
+            get => operands.Get<PdfName>(0);
+            set => operands[0] = value;
+        }
+
+        /// <summary>Gets the <see cref="Font">font</see> resource to be set.</summary>
+        /// <param name="scanner">Content context.</param>
         public Font GetResource(ContentScanner scanner)
         {
             var pscanner = scanner;
@@ -65,23 +69,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override void Scan(GraphicsState state)
         {
-            state.Font = GetFont(state.Scanner);
+            state.Font = GetResource(state.Scanner);
             state.FontSize = Size;
-        }
-
-        /**
-          <summary>Gets/Sets the font size to be set.</summary>
-        */
-        public float Size
-        {
-            get => operands.GetFloat(1);
-            set => operands.Set(1, value);
-        }
-
-        public PdfName Name
-        {
-            get => operands.Get<PdfName>(0);
-            set => operands[0] = value;
         }
     }
 }

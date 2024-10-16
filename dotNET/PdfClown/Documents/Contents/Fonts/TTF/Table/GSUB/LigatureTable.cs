@@ -31,18 +31,18 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB
      */
     public class LigatureTable
     {
-        private readonly int ligatureGlyph;
+        private readonly ushort ligatureGlyph;
         private readonly int componentCount;
-        private readonly int[] componentGlyphIDs;
+        private readonly ushort[] componentGlyphIDs;
 
-        public LigatureTable(int ligatureGlyph, int componentCount, int[] componentGlyphIDs)
+        public LigatureTable(ushort ligatureGlyph, int componentCount, ushort[] componentGlyphIDs)
         {
             this.ligatureGlyph = ligatureGlyph;
             this.componentCount = componentCount;
             this.componentGlyphIDs = componentGlyphIDs;
         }
 
-        public int LigatureGlyph
+        public ushort LigatureGlyph
         {
             get => ligatureGlyph;
         }
@@ -52,7 +52,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB
             get => componentCount;
         }
 
-        public int[] ComponentGlyphIDs
+        public ushort[] ComponentGlyphIDs
         {
             get => componentGlyphIDs;
         }

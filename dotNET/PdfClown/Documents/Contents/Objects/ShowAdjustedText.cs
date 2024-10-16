@@ -28,34 +28,29 @@ using PdfClown.Objects;
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Show one or more text strings, allowing individual glyph positioning'
-      operation [PDF:1.6:5.3.2].</summary>
-    */
+    /// <summary>'Show one or more text strings, allowing individual glyph positioning'
+    /// operation [PDF:1.6:5.3.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class ShowAdjustedText : ShowText
     {
         public static readonly string OperatorKeyword = "TJ";
         private ByteStream textStream;
 
-        /**
-          <param name="value">Each element can be either a byte array (encoded text) or a number.
-            If the element is a byte array (encoded text), this operator shows the text glyphs.
-            If it is a number (glyph adjustment), the operator adjusts the next glyph position by that amount.</param>
-        */
+        /// <param name="value">Each element can be either a byte array (encoded text) or a number.
+        ///    If the element is a byte array (encoded text), this operator shows the text glyphs.
+        ///    If it is a number (glyph adjustment), the operator adjusts the next glyph position by that amount.</param>
         public ShowAdjustedText(List<PdfDirectObject> value)
             : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
-        { Value = value; }
+        { TextElements = value; }
 
         internal ShowAdjustedText(PdfArray operands)
             : base(OperatorKeyword, operands)
         { }
 
-        public override Memory<byte> Text
+        public override Memory<byte> TextBytes
         {
             get
             {
@@ -64,7 +59,7 @@ namespace PdfClown.Documents.Contents.Objects
                     return textStream.AsMemory();
                 }
                 textStream = new ByteStream();
-                foreach (var element in Value)
+                foreach (var element in TextElements)
                 {
                     if (element is PdfString pdfString)
                     {
@@ -73,10 +68,10 @@ namespace PdfClown.Documents.Contents.Objects
                 }
                 return textStream.AsMemory();
             }
-            set => Value = new List<PdfDirectObject>() { new PdfByteString(value) };
+            set => TextElements = new List<PdfDirectObject>() { new PdfByteString(value) };
         }
 
-        public override IEnumerable<PdfDirectObject> Value
+        public override IEnumerable<PdfDirectObject> TextElements
         {
             get => operands.Get<PdfArray>(0);
             set

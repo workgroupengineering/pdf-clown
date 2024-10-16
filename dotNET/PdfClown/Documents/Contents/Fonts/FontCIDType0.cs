@@ -45,8 +45,6 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly bool isDamaged;
         private readonly SKMatrix fontMatrixTransform;
         private float? avgWidth = null;
-        private SKMatrix? fontMatrix;
-        private SKRect? fontBBox;
         private int[] cid2gid = null;
 
         public FontCIDType0(PdfDocument document, PdfDictionary fontObject) : base(document, fontObject)
@@ -74,7 +72,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 var fontFile = fd.FontFile3;
                 if (fontFile != null)
                 {
-                    using var input = fontFile.BaseDataObject.ExtractBody(true);
+                    using var input = fontFile.BaseDataObject.GetExtractedStream();
                     //try
                     //{
                     if (input != null && input.Length > 0 && (input.PeekByte() & 0xff) == '%')
@@ -152,53 +150,41 @@ namespace PdfClown.Documents.Contents.Fonts
             fontMatrixTransform = fontMatrixTransform.PostConcat(SKMatrix.CreateScale(1000, 1000));
         }
 
-        public override BaseFont GenericFont => cidFont ?? t1Font;
+        public override BaseFont GenericFont => cidFont ?? t1Font;       
 
-        public override SKMatrix FontMatrix
+        protected override SKMatrix GenerateFontMatrix()
         {
-            get
+            List<float> numbers;
+            if (cidFont != null)
             {
-                if (fontMatrix == null)
+                numbers = cidFont.FontMatrix;
+            }
+            else
+            {
+                try
                 {
-                    List<float> numbers;
-                    if (cidFont != null)
-                    {
-                        numbers = cidFont.FontMatrix;
-                    }
-                    else
-                    {
-                        try
-                        {
-                            numbers = t1Font.FontMatrix;
-                        }
-                        catch (IOException e)
-                        {
-                            Debug.WriteLine("debug:Couldn't get font matrix - returning default value", e);
-                            return (fontMatrix = new SKMatrix(0.001f, 0, 0, 0, 0.001f, 0, 0, 0, 1)).Value;
-                        }
-                    }
-
-                    if (numbers != null && numbers.Count == 6)
-                    {
-                        fontMatrix = new SKMatrix(numbers[0], numbers[1], numbers[4],
-                                                numbers[2], numbers[3], numbers[5],
-                                                0, 0, 1);
-                    }
-                    else
-                    {
-                        fontMatrix = new SKMatrix(0.001f, 0, 0, 0, 0.001f, 0, 0, 0, 1f);
-                    }
+                    numbers = t1Font.FontMatrix;
                 }
-                return (SKMatrix)fontMatrix;
+                catch (IOException e)
+                {
+                    Debug.WriteLine("debug:Couldn't get font matrix - returning default value", e);
+                    return DefaultFontMatrix;
+                }
+            }
+
+            if (numbers != null && numbers.Count > 5)
+            {
+                return new SKMatrix(numbers[0], numbers[1], numbers[4],
+                                        numbers[2], numbers[3], numbers[5],
+                                        0, 0, 1);
+            }
+            else
+            {
+                return DefaultFontMatrix;
             }
         }
 
-        public override SKRect BoundingBox
-        {
-            get => fontBBox ?? (fontBBox = GenerateBoundingBox()).Value;
-        }
-
-        private SKRect GenerateBoundingBox()
+        protected override SKRect GenerateBoundingBox()
         {
             if (FontDescriptor != null)
             {
@@ -223,31 +209,14 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * Returns the embedded CFF CIDFont, or null if the substitute is not a CFF font.
-         */
+        /// <summary>Returns the embedded CFF CIDFont, or null if the substitute is not a CFF font.</summary>
         public CFFFont CFFFont
         {
-            get
-            {
-                if (cidFont != null)
-                {
-                    return cidFont;
-                }
-                else if (t1Font is CFFType1Font)
-                {
-                    return (CFFType1Font)t1Font;
-                }
-                else
-                {
-                    return null;
-                }
-            }
+            get => cidFont as CFFFont ??
+                    (t1Font is CFFType1Font cFFType1Font ? cFFType1Font : null);
         }
 
-        /**
-         * Returns the embedded or substituted font.
-         */
+        /// <summary>Returns the embedded or substituted font.</summary>
         public BaseFont Holder
         {
             get => cidFont ?? t1Font;

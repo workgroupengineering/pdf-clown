@@ -23,17 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Multimedia;
 using PdfClown.Objects;
 
-using System;
-
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Named renditions [PDF:1.6:3.6.3].</summary>
-    */
+    /// <summary>Named renditions [PDF:1.6:3.6.3].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class NamedRenditions : NameTree<Rendition>
     {
@@ -67,10 +62,8 @@ namespace PdfClown.Documents
         protected override Rendition WrapValue(PdfDirectObject baseObject)
         { return Rendition.Wrap(baseObject); }
 
-        /**
-          <summary>Ensures name reference synchronization for the specified rendition [PDF:1.7:9.1.2].
-          </summary>
-        */
+        /// <summary>Ensures name reference synchronization for the specified rendition [PDF:1.7:9.1.2].
+        /// </summary>
         private void UpdateName(Rendition rendition, PdfString name)
         {
             if (rendition == null)

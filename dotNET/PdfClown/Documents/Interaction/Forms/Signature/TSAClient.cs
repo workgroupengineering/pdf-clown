@@ -147,8 +147,8 @@ public class TSAClient
         }
         catch (IOException ex)
         {
-            Debug.WriteLine($"error: Exception when reading from {this.url}");
-            throw ex;
+            Debug.WriteLine($"error: Exception {ex.Message} when reading from {this.url}");
+            throw;
         }
 
         Debug.WriteLine("debug: Received response from TSA server");

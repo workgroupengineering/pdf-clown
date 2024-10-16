@@ -1,21 +1,16 @@
-using bytes = PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
-using colorSpaces = PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
-using entities = PdfClown.Documents.Contents.Entities;
-using fonts = PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Documents.Interaction.Viewer;
-using PdfClown.Documents.Interchange.Metadata;
-using PdfClown.Files;
-
-using System;
 using SkiaSharp;
+using System;
 using System.IO;
+using actions = PdfClown.Documents.Interaction.Actions;
+using colorSpaces = PdfClown.Documents.Contents.ColorSpaces;
+using entities = PdfClown.Documents.Contents.Entities;
+using fonts = PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Samples.CLI
 {

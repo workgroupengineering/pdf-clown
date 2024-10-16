@@ -29,6 +29,7 @@ using PdfClown.Objects;
 using PdfClown.Util;
 using System;
 using System.Net;
+using System.Net.Http;
 
 namespace PdfClown.Documents.Files
 {
@@ -141,9 +142,12 @@ namespace PdfClown.Documents.Files
                 { fileUrl = new Uri(Path); }
                 catch (Exception e)
                 { throw new Exception("Failed to instantiate URL for " + Path, e); }
-                WebClient webClient = new WebClient();
+                using var webClient = new HttpClient();
                 try
-                { return new ByteStream(webClient.OpenRead(fileUrl)); }
+                {
+                    var stream = webClient.GetStreamAsync(fileUrl).GetAwaiter().GetResult();
+                    return new ByteStream(stream); 
+                }
                 catch (Exception e)
                 { throw new Exception("Failed to open input stream for " + Path, e); }
             }
@@ -160,9 +164,12 @@ namespace PdfClown.Documents.Files
                 { fileUrl = new Uri(Path); }
                 catch (Exception e)
                 { throw new Exception("Failed to instantiate URL for " + Path, e); }
-                WebClient webClient = new WebClient();
+                using var webClient = new HttpClient();
                 try
-                { return new StreamContainer(webClient.OpenWrite(fileUrl)); }
+                {
+                    var tempStream = webClient.GetStreamAsync(fileUrl).GetAwaiter().GetResult();
+                    return new StreamContainer(tempStream); 
+                }
                 catch (Exception e)
                 { throw new Exception("Failed to open output stream for " + Path, e); }
             }

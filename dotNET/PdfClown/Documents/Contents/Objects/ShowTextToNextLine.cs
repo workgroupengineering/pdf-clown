@@ -32,24 +32,18 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Move to the next line and show a text string' operation [PDF:1.6:5.3.2].</summary>
-    */
+    /// <summary>'Move to the next line and show a text string' operation [PDF:1.6:5.3.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class ShowTextToNextLine : ShowText
     {
-        /**
-          <param name="text">Text encoded using current font's encoding.</param>
-        */
+        /// <param name="text">Text encoded using current font's encoding.</param>
         public ShowTextToNextLine(string @operator, byte[] text)
             : base(@operator, new PdfByteString(text))
         { }
 
-        /**
-          <param name="text">Text encoded using current font's encoding.</param>
-          <param name="wordSpace">Word spacing.</param>
-          <param name="charSpace">Character spacing.</param>
-        */
+        /// <param name="text">Text encoded using current font's encoding.</param>
+        /// <param name="wordSpace">Word spacing.</param>
+        /// <param name="charSpace">Character spacing.</param>
         public ShowTextToNextLine(string @operator, byte[] text, double wordSpace, double charSpace)
             : base(@operator, new PdfArray(3) { wordSpace, charSpace, new PdfByteString(text) })
         { }
@@ -58,18 +52,18 @@ namespace PdfClown.Documents.Contents.Objects
             : base(@operator, operands)
         { }
 
-        protected abstract PdfString String { get; set; }
+        protected abstract PdfString TextElement { get; set; }
 
-        public override Memory<byte> Text
+        public override Memory<byte> TextBytes
         {
-            get => String.RawValue;
-            set => String = new PdfByteString(value);
+            get => TextElement.RawValue;
+            set => TextElement = new PdfByteString(value);
         }
 
-        public override IEnumerable<PdfDirectObject> Value
+        public override IEnumerable<PdfDirectObject> TextElements
         {
-            get => Enumerable.Repeat(String, 1);
-            set => String = value.FirstOrDefault() as PdfString;
+            get => Enumerable.Repeat(TextElement, 1);
+            set => TextElement = value.FirstOrDefault() as PdfString;
         }
 
         public override void Scan(GraphicsState state)

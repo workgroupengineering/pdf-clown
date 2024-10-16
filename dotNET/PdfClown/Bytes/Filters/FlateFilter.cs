@@ -39,7 +39,7 @@ using System.IO.Compression;
 
 namespace PdfClown.Bytes.Filters
 {
-    ///<summary>zlib/deflate [RFC:1950,1951] filter [PDF:1.6:3.3.3].</summary>
+    /// <summary>zlib/deflate [RFC:1950,1951] filter [PDF:1.6:3.3.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public class FlateFilter : Filter
     {
@@ -47,36 +47,36 @@ namespace PdfClown.Bytes.Filters
         internal FlateFilter()
         { }
 
-        public override Memory<byte> Decode(ByteStream inputStream, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Decode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             using var outputStream = new MemoryStream();
             try
             {
-                using var inputFilter = new InflaterInputStream(inputStream);
+                using var inputFilter = new InflaterInputStream((Stream)data);
                 Transform(inputFilter, outputStream);
                 inputFilter.Close();
             }
             catch (ICSharpCode.SharpZipLib.SharpZipBaseException)
             {
                 outputStream.Reset();
-                inputStream.Position = 0;
-                using var inputFilter = new DeflateStream(inputStream, CompressionMode.Decompress);
-                Transform(inputStream, outputStream);
+                data.Position = 0;
+                using var inputFilter = new DeflateStream((Stream)data, CompressionMode.Decompress);
+                Transform(inputFilter, outputStream);
                 inputFilter.Close();
             }
             return DecodePredictor(outputStream, parameters, header);
         }
 
-        public override Memory<byte> Encode(ByteStream inputStream, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public override Memory<byte> Encode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            inputStream.Position = 0;
+            data.Position = 0;
             using (var outputStream = new MemoryStream())
             using (var outputFilter = new DeflaterOutputStream(outputStream))
             {
                 // Add zlib's 2-byte header [RFC 1950] [FIX:0.0.8:JCT]!
                 //outputStream.WriteByte(0x78); // CMF = {CINFO (bits 7-4) = 7; CM (bits 3-0) = 8} = 0x78.
                 //outputStream.WriteByte(0xDA); // FLG = {FLEVEL (bits 7-6) = 3; FDICT (bit 5) = 0; FCHECK (bits 4-0) = {31 - ((CMF * 256 + FLG - FCHECK) Mod 31)} = 26} = 0xDA.
-                Transform(inputStream, outputFilter);
+                Transform((Stream)data, outputFilter);
                 outputFilter.Flush();
                 outputFilter.Finish();
                 return outputStream.AsMemory();

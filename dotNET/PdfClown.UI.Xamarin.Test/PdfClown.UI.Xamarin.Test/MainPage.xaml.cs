@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
 
 namespace PdfClown.UI.Test
 {

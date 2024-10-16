@@ -19,11 +19,10 @@ using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A table in a true type font.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A table in a true type font.
+    /// @author Ben Litchfield
+    /// </summary>
     public class TTFTable
     {
         private string tag;
@@ -31,30 +30,20 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private long offset;
         private long length;
 
-        /**
-         * Indicates if the table is initialized or not.
-         */
+        /// <summary>Indicates if the table is initialized or not.</summary>
         protected bool initialized;
 
-        /**
-         * Constructor.
-         */
         public TTFTable()
-        {
-        }
+        { }
 
-        /**
-         * @return Returns the checkSum.
-         */
+        /// <summary>The checkSum.</summary>
         public long CheckSum
         {
             get => checkSum;
             set => checkSum = value;
         }
 
-        /**
-         * @return Returns the length.
-         */
+        /// <summary>The length.</summary>
         public long Length
         {
             get => length;

@@ -25,6 +25,9 @@ using PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB;
 using System.Linq;
 using PdfClown.Bytes;
 using System.Text.RegularExpressions;
+using PdfClown.Documents.Interaction.Annotations;
+using static PdfClown.Documents.Contents.Fonts.CCF.CFFParser.DictData;
+using static PdfClown.Documents.Functions.Type4.RelationalOperators;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -49,12 +52,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private string lastUsedSupportedScript;
 
-        private GsubData gsubData;
+        private IGsubData gsubData;
 
         public GlyphSubstitutionTable()
         { }
 
-        public GsubData GsubData
+        public IGsubData GsubData
         {
             get => gsubData;
         }
@@ -285,6 +288,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     // Multiple Substitution Subtable
                     // https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#lookuptype-2-multiple-substitution-subtable
                     return ReadMultipleSubstitutionSubtable(data, offset);
+                case 3:
+                    // Alternate Substitution Subtable
+                    // https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#lookuptype-3-alternate-substitution-subtable
+                    return ReadAlternateSubstitutionSubtable(data, offset);
                 case 4:
                     // Ligature Substitution Subtable
                     // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#LS
@@ -307,7 +314,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private LookupSubTable ReadSingleLookupSubTable(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int substFormat = data.ReadUInt16();
+            var substFormat = data.ReadUInt16();
             switch (substFormat)
             {
                 case 1:
@@ -315,7 +322,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                         // LookupType 1: Single Substitution Subtable
                         // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#11-single-substitution-format-1
                         int coverageOffset = data.ReadUInt16();
-                        short deltaGlyphID = data.ReadInt16();
+                        var deltaGlyphID = data.ReadInt16();
                         CoverageTable coverageTable = ReadCoverageTable(data, offset + coverageOffset);
                         return new LookupTypeSingleSubstFormat1(substFormat, coverageTable, deltaGlyphID);
                     }
@@ -325,7 +332,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                         // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#12-single-substitution-format-2
                         int coverageOffset = data.ReadUInt16();
                         int glyphCount = data.ReadUInt16();
-                        int[] substituteGlyphIDs = new int[glyphCount];
+                        var substituteGlyphIDs = new ushort[glyphCount];
                         for (int i = 0; i < glyphCount; i++)
                         {
                             substituteGlyphIDs[i] = data.ReadUInt16();
@@ -380,10 +387,54 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return new LookupTypeMultipleSubstitutionFormat1(substFormat, coverageTable, sequenceTables);
         }
 
+        private LookupSubTable ReadAlternateSubstitutionSubtable(IInputStream data, long offset)
+        {
+            data.Seek(offset);
+            var substFormat = data.ReadUInt16();
+
+            if (substFormat != 1)
+            {
+                throw new IOException(
+                        "The expected SubstFormat for AlternateSubstitutionTable is 1");
+            }
+
+            var coverage = data.ReadUInt16();
+            var altSetCount = data.ReadUInt16();
+
+            int[] alternateOffsets = new int[altSetCount];
+
+            for (int i = 0; i < altSetCount; i++)
+            {
+                alternateOffsets[i] = data.ReadUInt16();
+            }
+
+            var coverageTable = ReadCoverageTable(data, offset + coverage);
+
+            if (altSetCount != coverageTable.Size)
+            {
+                throw new IOException(
+                        "According to the OpenTypeFont specifications, the coverage count should be equal to the no. of AlternateSetTable");
+            }
+
+            var alternateSetTables = new AlternateSetTable[altSetCount];
+
+            for (int i = 0; i < altSetCount; i++)
+            {
+                data.Seek(offset + alternateOffsets[i]);
+                var glyphCount = data.ReadUInt16();
+                var alternateGlyphIDs = data.ReadUShortArray(glyphCount);
+                alternateSetTables[i] = new AlternateSetTable(glyphCount, alternateGlyphIDs);
+            }
+
+            return new LookupTypeAlternateSubstitutionFormat1(substFormat, coverageTable,
+                    alternateSetTables);
+        }
+
+
         private LookupSubTable ReadLigatureSubstitutionSubtable(IInputStream data, long offset)
         {
             data.Seek(offset);
-            int substFormat = data.ReadUInt16();
+            var substFormat = data.ReadUInt16();
 
             if (substFormat != 1)
             {
@@ -400,7 +451,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 ligatureOffsets[i] = data.ReadUInt16();
             }
 
-            CoverageTable coverageTable = ReadCoverageTable(data, offset + coverage);
+            var coverageTable = ReadCoverageTable(data, offset + coverage);
 
             if (ligSetCount != coverageTable.Size)
             {
@@ -408,12 +459,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                         "According to the OpenTypeFont specifications, the coverage count should be equal to the no. of LigatureSetTables");
             }
 
-            LigatureSetTable[] ligatureSetTables = new LigatureSetTable[ligSetCount];
+            var ligatureSetTables = new LigatureSetTable[ligSetCount];
 
             for (int i = 0; i < ligSetCount; i++)
             {
 
-                int coverageGlyphId = coverageTable.GetGlyphId(i);
+                var coverageGlyphId = coverageTable.GetGlyphId(i);
 
                 ligatureSetTables[i] = ReadLigatureSetTable(data,
                         offset + ligatureOffsets[i], coverageGlyphId);
@@ -424,7 +475,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         }
 
         private LigatureSetTable ReadLigatureSetTable(IInputStream data, long ligatureSetTableLocation,
-                int coverageGlyphId)
+                ushort coverageGlyphId)
         {
             data.Seek(ligatureSetTableLocation);
 
@@ -449,15 +500,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         }
 
         private LigatureTable ReadLigatureTable(IInputStream data, long ligatureTableLocation,
-                int coverageGlyphId)
+                ushort coverageGlyphId)
         {
             data.Seek(ligatureTableLocation);
 
-            int ligatureGlyph = data.ReadUInt16();
+            var ligatureGlyph = data.ReadUInt16();
 
             int componentCount = data.ReadUInt16();
 
-            int[] componentGlyphIDs = new int[componentCount];
+            var componentGlyphIDs = new ushort[componentCount];
 
             if (componentCount > 0)
             {
@@ -482,7 +533,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 case 1:
                     {
                         int glyphCount = data.ReadUInt16();
-                        int[] glyphArray = new int[glyphCount];
+                        var glyphArray = new ushort[glyphCount];
                         for (int i = 0; i < glyphCount; i++)
                         {
                             glyphArray[i] = data.ReadUInt16();
@@ -492,7 +543,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 case 2:
                     {
                         int rangeCount = data.ReadUInt16();
-                        RangeRecord[] rangeRecords = new RangeRecord[rangeCount];
+                        var rangeRecords = new RangeRecord[rangeCount];
 
 
                         for (int i = 0; i < rangeCount; i++)
@@ -642,9 +693,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        private int ApplyFeature(FeatureRecord featureRecord, int gid)
+        private ushort ApplyFeature(FeatureRecord featureRecord, ushort gid)
         {
-            int lookupResult = gid;
+            var lookupResult = gid;
             foreach (int lookupListIndex in featureRecord.FeatureTable.LookupListIndices)
             {
                 LookupTable lookupTable = lookupListTable.Lookups[lookupListIndex];
@@ -658,7 +709,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return lookupResult;
         }
 
-        private int DoLookup(LookupTable lookupTable, int gid)
+        private ushort DoLookup(LookupTable lookupTable, ushort gid)
         {
             foreach (LookupSubTable lookupSubtable in lookupTable.SubTables)
             {
@@ -697,10 +748,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 // as we need a one-to-one mapping.
                 return cached;
             }
-            string scriptTag = SelectScriptTag(scriptTags);
-            ICollection<LangSysTable> langSysTables = GetLangSysTables(scriptTag);
-            List<FeatureRecord> featureRecords = GetFeatureRecords(langSysTables, enabledFeatures);
-            int sgid = gid;
+            var scriptTag = SelectScriptTag(scriptTags);
+            var langSysTables = GetLangSysTables(scriptTag);
+            var featureRecords = GetFeatureRecords(langSysTables, enabledFeatures);
+            var sgid = (ushort)gid;
             foreach (FeatureRecord featureRecord in featureRecords)
             {
                 sgid = ApplyFeature(featureRecord, sgid);
@@ -729,19 +780,23 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return gid;
         }
 
-        /**
-    * Builds a new {@link GsubData} instance for given script tag. In contrast to neighbour {@link #getGsubData()}
-    * method, this one does not try to find the first supported language and load GSUB data for it. Instead, it fetches
-    * the data for the given {@code scriptTag} (if it's supported by the font) leaving the language unspecified. It
-    * means that even after successful reading of GSUB data, the actual glyph substitution may not work if there is no
-    * corresponding {@link GsubWorker} implementation for it.
-    *
-    * @implNote This method performs searching on every invocation (no results are cached)
-    * @param scriptTag a <a href="https://learn.microsoft.com/en-us/typography/opentype/spec/scripttags">script tag</a>
-    * for which the data is needed
-    * @return GSUB data for the given script or {@code null} if no such script in the font
-    */
-        public GsubData GetGsubData(string scriptTag)
+        /// <summary>
+        /// Builds a new {@link GsubData}
+        /// instance for given script tag.In contrast to neighbour
+        /// {@link #GetGsubData()}
+        ///   method, this one does not try to find the first supported language and load GSUB data for it.Instead, it fetches
+        ///   the data for the given { @code scriptTag }
+        ///   (if it's supported by the font) leaving the language unspecified. It
+        ///   means that even after successful reading of GSUB data, the actual glyph substitution may not work if there is no
+        ///   corresponding
+        ///  { @link GsubWorker }
+        ///   implementation for it.
+        ///   @implNote This method performs searching on every invocation(no results are cached)
+        /// </summary>
+        /// <param name="scriptTag">a <a href="https://learn.microsoft.com/en-us/typography/opentype/spec/scripttags">script tag</a>
+        /// for which the data is needed</param>
+        /// <returns>GSUB data for the given script or { @code null} if no such script in the font</returns>
+        public IGsubData GetGsubData(string scriptTag)
         {
             if (!scriptList.TryGetValue(scriptTag, out ScriptTable scriptTable))
             {
@@ -751,11 +806,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     featureListTable, lookupListTable);
         }
 
-        /**
-         * @return a read-only view of the
-         * <a href="https://learn.microsoft.com/en-us/typography/opentype/spec/scripttags">script tags</a> for which this
-         * GSUB table has records
-         */
+        /// <summary>
+        /// A read-only view of the
+        /// <a href="https://learn.microsoft.com/en-us/typography/opentype/spec/scripttags">script tags</a> for which this
+        /// GSUB table has records
+        /// </summary>
         public IReadOnlyCollection<string> SupportedScriptTags
         {
             get => scriptList.Keys;
@@ -763,8 +818,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private RangeRecord ReadRangeRecord(IInputStream data)
         {
-            int startGlyphID = data.ReadUInt16();
-            int endGlyphID = data.ReadUInt16();
+            var startGlyphID = data.ReadUInt16();
+            var endGlyphID = data.ReadUInt16();
             int startCoverageIndex = data.ReadUInt16();
             return new RangeRecord(startGlyphID, endGlyphID, startCoverageIndex);
         }

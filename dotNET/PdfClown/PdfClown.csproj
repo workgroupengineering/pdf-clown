@@ -4,9 +4,8 @@
     <OutputType>Library</OutputType>
     <AssemblyName>PdfClown</AssemblyName>
     <RootNamespace>PdfClown</RootNamespace>
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <Version>0.2.2.0</Version>
-    <LangVersion>9</LangVersion>
     <Company>Stefano Chizzolini</Company>
     <Product>PDF Clown for .NET Core</Product>
     <PackageId>PDFClown.NETCore</PackageId>
@@ -15,6 +14,8 @@
     <Copyright>Copyright 2006-2015 Stefano Chizzolini</Copyright>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+	<DefineConstants>__BC_HASH__</DefineConstants>
+	<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Documents\Contents\Fonts\CffParser.cs" />    
@@ -514,7 +515,7 @@
     <EmbeddedResource Include="Assets\PushPin.svg" />
     <EmbeddedResource Include="Assets\Tag.svg" />
   </ItemGroup>
-   
+	
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />

@@ -1,23 +1,17 @@
 using PdfClown.Documents;
-using PdfClown.Documents.Contents;
-using colorSpaces = PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Objects;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 using SkiaSharp;
-using System.Drawing.Drawing2D;
+using System;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample shows the effects of the manipulation of the CTM (Current Transformation
-      Matrix), that is the logical device which affects the PDF page coordinate system used to place graphics
-      contents onto the canvas.</summary>
-    */
+    /// <summary>This sample shows the effects of the manipulation of the CTM(Current Transformation
+    /// Matrix), that is the logical device which affects the PDF page coordinate system used to place graphics
+    /// contents onto the canvas.</summary>
     public class PageCoordinatesSample : Sample
     {
         private static readonly PdfName ResourceName_DefaultFont = PdfName.Get("default");
@@ -58,7 +52,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
 
             var steps = new string[5];
-            var colors = new colorSpaces::Color[5];
+            var colors = new Color[5];
             var pageSize = page.Size;
 
             BuildSteps(composer, steps, colors, pageSize);
@@ -76,7 +70,7 @@ namespace PdfClown.Samples.CLI
             return "CTM (" + comment + "): " + ctm.ScaleX + ", " + ctm.SkewY + ", " + ctm.SkewX + ", " + ctm.ScaleY + ", " + ctm.TransX + ", " + ctm.TransY;
         }
 
-        private void BuildLegend(PrimitiveComposer composer, string[] steps, colorSpaces::Color[] colors, SKSize pageSize)
+        private void BuildLegend(PrimitiveComposer composer, string[] steps, Color[] colors, SKSize pageSize)
         {
             float maxCtmInversionApproximation;
             {
@@ -98,7 +92,7 @@ namespace PdfClown.Samples.CLI
             blockComposer.LineSpace = new Length(.25, Length.UnitModeEnum.Relative);
 
             composer.BeginLocalState();
-            composer.SetFillColor(new colorSpaces::DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
+            composer.SetFillColor(new DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
             SKRect frame = SKRect.Create(
               18,
               18,
@@ -123,7 +117,7 @@ namespace PdfClown.Samples.CLI
             {
                 composer.SetFillColor(colors[i]);
                 blockComposer.ShowText("Step " + i + ")");
-                composer.SetFillColor(new colorSpaces::DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
+                composer.SetFillColor(new DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
                 blockComposer.ShowText(" " + steps[i]);
                 blockComposer.ShowBreak(breakSize);
             }
@@ -132,14 +126,14 @@ namespace PdfClown.Samples.CLI
             composer.End();
         }
 
-        private void BuildSteps(PrimitiveComposer composer, string[] steps, colorSpaces::Color[] colors, SKSize pageSize)
+        private void BuildSteps(PrimitiveComposer composer, string[] steps, Color[] colors, SKSize pageSize)
         {
             composer.SetFont(ResourceName_DefaultFont, 32);
             var frame = SKRect.Create(0, 0, pageSize.Width, pageSize.Height);
 
             // Step 0.
             {
-                colors[0] = new colorSpaces::DeviceRGBColor(30 / 255d, 10 / 255d, 0);
+                colors[0] = new DeviceRGBColor(30 / 255d, 10 / 255d, 0);
                 composer.SetFillColor(colors[0]);
                 composer.SetStrokeColor(colors[0]);
 
@@ -160,7 +154,7 @@ namespace PdfClown.Samples.CLI
 
             // Step 1.
             {
-                colors[1] = new colorSpaces::DeviceRGBColor(80 / 255d, 25 / 255d, 0);
+                colors[1] = new DeviceRGBColor(80 / 255d, 25 / 255d, 0);
                 composer.SetFillColor(colors[1]);
                 composer.SetStrokeColor(colors[1]);
 
@@ -184,7 +178,7 @@ namespace PdfClown.Samples.CLI
 
             // Step 2.
             {
-                colors[2] = new colorSpaces::DeviceRGBColor(130 / 255d, 45 / 255d, 0);
+                colors[2] = new DeviceRGBColor(130 / 255d, 45 / 255d, 0);
                 composer.SetFillColor(colors[2]);
                 composer.SetStrokeColor(colors[2]);
 
@@ -211,7 +205,7 @@ namespace PdfClown.Samples.CLI
 
             // Step 3.
             {
-                colors[3] = new colorSpaces::DeviceRGBColor(180 / 255d, 60 / 255d, 0);
+                colors[3] = new DeviceRGBColor(180 / 255d, 60 / 255d, 0);
                 composer.SetFillColor(colors[3]);
                 composer.SetStrokeColor(colors[3]);
 
@@ -236,7 +230,7 @@ namespace PdfClown.Samples.CLI
 
             // Step 4.
             {
-                colors[4] = new colorSpaces::DeviceRGBColor(230 / 255d, 75 / 255d, 0);
+                colors[4] = new DeviceRGBColor(230 / 255d, 75 / 255d, 0);
                 composer.SetFillColor(colors[4]);
                 composer.SetStrokeColor(colors[4]);
 

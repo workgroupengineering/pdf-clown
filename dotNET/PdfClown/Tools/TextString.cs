@@ -23,34 +23,27 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents;
+using PdfClown.Documents.Contents.Scanner;
+using PdfClown.Util.Math.Geom;
+using SkiaSharp;
 using System.Collections.Generic;
 using System.Text;
-using PdfClown.Util.Math.Geom;
-using PdfClown.Documents.Contents.Scanner;
-using SkiaSharp;
 
 namespace PdfClown.Tools
 {
-    /**
-         <summary>Text string.</summary>
-         <remarks>This is typically used to assemble contiguous raw text strings
-         laying on the same line.</remarks>
-       */
+    /// <summary>Text string.</summary>
+    /// <remarks>This is typically used to assemble contiguous raw text strings
+    /// laying on the same line.</remarks>
     public class TextString : ITextString
     {
-        public static TextString Transform(ITextString rawTextString, SKMatrix transform, IContentContext contentContext)
+        public static TextString Transform(ITextString rawTextString, SKMatrix transform)
         {
-            var textString = new TextString()
-            {
-                Context = contentContext,
-                Style = rawTextString.Style
-            };
-            foreach (var textChar in rawTextString.TextChars)
+            var textString = new TextString() { Style = rawTextString.Style };
+            foreach (var textChar in rawTextString.Chars)
             {
                 var quad = textChar.Quad;
                 quad.Transform(ref transform);
-                textString.TextChars.Add(new TextChar(textChar.Value, quad, textString, true));
+                textString.Chars.Add(new TextChar(textChar.Value, quad));
             }
             return textString;
         }
@@ -65,17 +58,17 @@ namespace PdfClown.Tools
             {
                 if (quad == null)
                 {
+                    var result = new Quad();
                     foreach (TextChar textChar in textChars)
                     {
                         if (textChar.Quad.IsEmpty)
                             continue;
-                        if (quad == null)
-                        { quad = textChar.Quad; }
+                        if (result.IsEmpty)
+                        { result = textChar.Quad; }
                         else
-                        { quad = Quad.Union(quad.Value, textChar.Quad); }
+                        { result.Union(textChar.Quad); }
                     }
-                    if (quad == null)
-                        quad = Quad.Empty;
+                    quad = result;
                 }
                 return quad.Value;
             }
@@ -98,14 +91,11 @@ namespace PdfClown.Tools
             }
         }
 
-        public List<TextChar> TextChars => textChars;
-
-        public IContentContext Context { get; set; }
+        public List<TextChar> Chars => textChars;
 
         public TextStyle Style { get; set; }
 
-        public override string ToString()
-        { return Text; }
+        public override string ToString() => Text;
 
         public void Invalidate()
         {

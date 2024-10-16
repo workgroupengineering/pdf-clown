@@ -15,26 +15,23 @@
  * limitations under the License.
  */
 
+using System;
+using System.Collections.Generic;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF.Model
 {
-    using System;
-    using System.Collections.Generic;
-
-    /**
-     * 
-     * A {@link Dictionary} based simple implementation of the {@link GsubData}
-     * 
-     * @author Palash Ray
-     *
-     */
-    public class MapBackedGsubData : GsubData
+    /// <summary>
+    /// @author Palash Ray
+    /// A {@link Dictionary} based simple implementation of the {@link GsubData}
+    /// </summary>
+    public class MapBackedGsubData : IGsubData
     {
         private readonly Language language;
         private readonly string activeScriptName;
-        private readonly Dictionary<string, Dictionary<List<int>, int>> glyphSubstitutionMap;
+        private readonly Dictionary<string, Dictionary<HashList<ushort>, HashList<ushort>>> glyphSubstitutionMap;
 
         public MapBackedGsubData(Language language, string activeScriptName,
-                Dictionary<string, Dictionary<List<int>, int>> glyphSubstitutionMap)
+                Dictionary<string, Dictionary<HashList<ushort>, HashList<ushort>>> glyphSubstitutionMap)
         {
             this.language = language;
             this.activeScriptName = activeScriptName;
@@ -56,13 +53,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Model
             get => glyphSubstitutionMap.Keys;
         }
 
-
         public bool IsFeatureSupported(string featureName)
         {
             return glyphSubstitutionMap.ContainsKey(featureName);
         }
 
-        public ScriptFeature GetFeature(string featureName)
+        public IScriptFeature GetFeature(string featureName)
         {
             if (!IsFeatureSupported(featureName))
             {

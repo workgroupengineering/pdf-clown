@@ -31,23 +31,44 @@ using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    ///<summary>Abstract 'show a text string' operation [PDF:1.6:5.3.2].</summary>
+    /// <summary>Abstract 'show a text string' operation [PDF:1.6:5.3.2].</summary>
     [PDF(VersionEnum.PDF10)]
-    public abstract class ShowText : Operation
+    public abstract class ShowText : Operation, ITextString
     {
         public interface IScanner
         {
-            /**
-              <summary>Notifies the scanner about a text character.</summary>
-              <param name="textChar">Scanned character.</param>
-              <param name="textCharBox">Bounding box of the scanned character.</param>
-            */
+            /// <summary>Notifies the scanner about a text character.</summary>
+            /// <param name="textChar">Scanned character.</param>
+            /// <param name="textCharBox">Bounding box of the scanned character.</param>
             void ScanChar(char textChar, Quad textCharBox);
         }
-        private TextStringWrapper textString;
+
+        public class ShowTextScanner : IScanner
+        {
+            ITextString wrapper;
+
+            internal ShowTextScanner(ITextString wrapper)
+            {
+                this.wrapper = wrapper;
+                wrapper.Chars.Clear();
+                wrapper.Invalidate();
+            }
+
+            public void ScanChar(char textChar, Quad textCharQuad)
+            {
+                wrapper.Chars.Add(new TextChar(textChar, textCharQuad));
+            }
+        }
+
+        private TextStyle style;
+        private List<TextChar> chars;
+        private string text;
+        private Quad? quad;
 
         protected ShowText(string @operator) : base(@operator)
         { }
@@ -57,59 +78,109 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected ShowText(string @operator, PdfArray operands) : base(@operator, operands) { }
 
-        /**
-         <summary>Gets/Sets the encoded text.</summary>
-         <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
-         to the decode method of the corresponding font.</remarks>
-       */
-        public abstract Memory<byte> Text
+        /// <summary>Gets/Sets the encoded text.</summary>
+        /// <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
+        /// to the decode method of the corresponding font.</remarks>
+        public abstract Memory<byte> TextBytes { get; set; }
+
+        /// <summary>Gets/Sets the encoded text elements along with their adjustments.</summary>
+        /// <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
+        /// to the decode method of the corresponding font.</remarks>
+        /// <returns>Each element can be either a byte array or a number:
+        ///  <list type="bullet">
+        ///   <item>if it's a byte array (encoded text), the operator shows text glyphs;</item>
+        ///   <item>if it's a number (glyph adjustment), the operator inversely adjusts the next glyph position
+        ///   by that amount (that is: a positive value reduces the distance between consecutive glyphs).</item>
+        /// </list>
+        /// </returns>
+        public abstract IEnumerable<PdfDirectObject> TextElements { get; set; }
+
+        public Quad Quad
         {
-            get;
-            set;
+            get
+            {
+                if (quad == null)
+                {
+                    var result = new Quad();
+                    foreach (TextChar textChar in chars)
+                    {
+                        if (textChar.Quad.IsEmpty)
+                            continue;
+                        if (result.IsEmpty)
+                        { result = textChar.Quad; }
+                        else
+                        { result.Union(textChar.Quad); }
+                    }
+                    quad = result;
+                }
+                return quad.Value;
+            }
         }
 
-        /**
-          <summary>Gets/Sets the encoded text elements along with their adjustments.</summary>
-          <remarks>Text is expressed in native encoding: to resolve it to Unicode, pass it
-          to the decode method of the corresponding font.</remarks>
-          <returns>Each element can be either a byte array or a number:
-            <list type="bullet">
-              <item>if it's a byte array (encoded text), the operator shows text glyphs;</item>
-              <item>if it's a number (glyph adjustment), the operator inversely adjusts the next glyph position
-              by that amount (that is: a positive value reduces the distance between consecutive glyphs).</item>
-            </list>
-          </returns>
-        */
-        public abstract IEnumerable<PdfDirectObject> Value
+        /// <summary>Gets the text style.</summary>
+        public TextStyle Style => style;
+
+        public string Text
         {
-            get;
-            set;
+            get
+            {
+                if (text == null)
+                {
+                    var textBuilder = new StringBuilder();
+                    foreach (TextChar textChar in chars)
+                    { textBuilder.Append(textChar.Value); }
+                    text = textBuilder.ToString();
+                }
+                return text;
+            }
         }
 
-        public TextStringWrapper TextString
-        {
-            get => textString;
-            set => textString = value;
-        }
+        public List<TextChar> Chars => chars;
 
         public override void Scan(GraphicsState state)
         {
-            textString ??= new TextStringWrapper(state.Scanner, false);
-            textString.TextChars.Clear();
-            Scan(state, new TextStringWrapper.ShowTextScanner(textString));
+            if (chars == null)
+            {
+                state.TextState.TextBlock.Strings.Add(this);
+                chars = new List<TextChar>(CalculateCount());
+            }
+            style = new TextStyle(
+              state.Font,
+              state.FontSize * state.TextState.Tm.ScaleY,
+              state.RenderMode,
+              state.StrokeColor,
+              state.StrokeColorSpace,
+              state.FillColor,
+              state.FillColorSpace,
+              state.Scale * state.TextState.Tm.ScaleX,
+              state.TextState.Tm.ScaleY);
+
+            Scan(state, new ShowTextScanner(this));
         }
 
-        /**
-          <summary>Executes scanning on this operation.</summary>
-          <param name="state">Graphics state context.</param>
-          <param name="textScanner">Scanner to be notified about text contents.
-          In case it's null, the operation is applied to the graphics state context.</param>
-        */
+        private int CalculateCount()
+        {
+            return Math.Max(2, TextElements.OfType<PdfString>().Sum(x => x.RawValue.Length) / 2);
+        }
+
+        public SKRect GetBox(GraphicsState state)
+        {
+            if (chars == null)
+            {
+                Scan(state);
+            }
+            return Quad.GetBounds();
+        }
+
+        /// <summary>Executes scanning on this operation.</summary>
+        /// <param name="state">Graphics state context.</param>
+        /// <param name="textScanner">Scanner to be notified about text contents.
+        /// In case it's null, the operation is applied to the graphics state context.</param>
         public virtual void Scan(GraphicsState state, IScanner textScanner)
         {
             //TODO: I really dislike this solution -- it's a temporary hack until the event-driven
             //parsing mechanism is implemented...
-            Font font = state.Font ?? Font.LatestFont;
+            Font font = state.Font ?? state.Scanner.Contents.Document?.LatestFont;
             if (font == null)
                 return;
             state.Scanner.Canvas?.Save();
@@ -143,72 +214,67 @@ namespace PdfClown.Documents.Contents.Objects
                 0f, 0f, 1f);
             var uparameters = new SKMatrix(
                 1f, 0f, 0f,
-                0f, 1f, state.Rise,
+                0f, -1f, state.Rise,
                 0f, 0f, 1f);
 
             var clip = state.GetClipPath();
             using var fill = canvas != null && state.RenderModeFill ? state.CreateFillPaint() : null;
             using var stroke = canvas != null && state.RenderModeStroke ? state.CreateStrokePaint() : null;
 
-            foreach (var textElement in Value)
+            var buffer = new ByteStream(0);
+            foreach (var textElement in TextElements)
             {
                 if (textElement is PdfString pdfString) // Text string.
                 {
-                    using (var buffer = new ByteStream(pdfString.RawValue))
+                    buffer.SetBuffer(pdfString.RawValue);
+                    while (buffer.Position < buffer.Length)
                     {
-                        while (buffer.Position < buffer.Length)
+                        var code = font.ReadCode(buffer, out var codeBytes);
+                        var textCode = font.ToUnicode(code);
+                        if (textCode == null)
                         {
-                            var code = font.ReadCode(buffer, out var codeBytes);
-                            var textCode = font.ToUnicode(code);
-                            if (textCode == null)
-                            {
-                                // Missing character.
-                                textCode = '?';// font.MissingCharacter(byteElement, code);
-                            }
-                            var textChar = (char)textCode;
-                            // Word spacing shall be applied to every occurrence of the single-byte character code
-                            // 32 in a string when using a simple font or a composite font that defines code 32 as
-                            // a single-byte code.
-                            double wordSpacing = 0;
-                            if (codeBytes.Length == 1 && code == 32)
-                            {
-                                wordSpacing = wordSpace;
-                            }
-                            //NOTE: The text rendering matrix is recomputed before each glyph is painted
-                            // during a text-showing operation.
-                            SKMatrix trm = parameters.PostConcat(tm).PostConcat(ctm);
-                            SKMatrix utm = uparameters.PostConcat(tm).PostConcat(ctm);
-
-                            trm = trm.PreConcat(fm);
-
-                            if (canvas != null && !(codeBytes.Length == 1 && textChar == ' '))
-                            {
-                                canvas.SetMatrix(trm);
-                                var path = font.DrawChar(canvas, fill, stroke, textChar, code);
-                                if (clip != null && path != null)
-                                {
-                                    clip.AddPath(path, ref trm);
-                                }
-                            }
-
-                            var w = font.GetDisplacement(code);
-                            /*
-                              NOTE: After the glyph is painted, the text matrix is updated
-                              according to the glyph displacement and any applicable spacing parameter.
-                            */
-                            // calculate the combined displacements
-                            float tx = (float)((w.X * fontSize + charSpace + wordSpacing) * horizontalScaling);
-                            float ty = 0;
-                            SKRect charBox = SKRect.Create(0, -charAscent, tx, charHeight);
-
-                            //Text Scanner
-                            utm = utm.PreConcat(SKMatrix.CreateScale(1, -1));
-                            var quad = new Quad(charBox);
-                            quad.Transform(ref utm);
-                            textScanner.ScanChar(textChar, quad);
-
-                            tm = tm.PreConcat(SKMatrix.CreateTranslation(tx, ty));
+                            // Missing character.
+                            textCode = '?';// font.MissingCharacter(byteElement, code);
                         }
+                        var textChar = (char)textCode;
+                        // Word spacing shall be applied to every occurrence of the single-byte character code
+                        // 32 in a string when using a simple font or a composite font that defines code 32 as
+                        // a single-byte code.
+                        double wordSpacing = 0;
+                        if (codeBytes.Length == 1 && code == 32)
+                        {
+                            wordSpacing = wordSpace;
+                        }
+                        //NOTE: The text rendering matrix is recomputed before each glyph is painted
+                        // during a text-showing operation.
+                        SKMatrix trm = parameters.PostConcat(tm).PostConcat(ctm);
+                        SKMatrix utm = uparameters.PostConcat(tm).PostConcat(ctm);
+
+                        trm = trm.PreConcat(fm);
+
+                        if (canvas != null && !(codeBytes.Length == 1 && textChar == ' '))
+                        {
+                            canvas.SetMatrix(trm);
+                            var path = font.DrawChar(canvas, fill, stroke, textChar, code);
+                            if (clip != null && path != null)
+                            {
+                                clip.AddPath(path, ref trm);
+                            }
+                        }
+
+                        var w = font.GetDisplacement(code);
+                        // NOTE: After the glyph is painted, the text matrix is updated
+                        // according to the glyph displacement and any applicable spacing parameter.
+                        // calculate the combined displacements
+                        float tx = (float)((w.X * fontSize + charSpace + wordSpacing) * horizontalScaling);
+                        float ty = 0;
+
+                        //Text Scanner                            
+                        var quad = new Quad(0, -charAscent, tx, charHeight - charAscent);
+                        quad.Transform(ref utm);
+                        textScanner.ScanChar(textChar, quad);
+
+                        tm = tm.PreConcat(SKMatrix.CreateTranslation(tx, ty));
                     }
                 }
                 else if (textElement is IPdfNumber pdfNumber)
@@ -232,9 +298,6 @@ namespace PdfClown.Documents.Contents.Objects
             var horizontalScaling = state.Scale;
             var wordSpace = wordSpaceSupported ? state.WordSpace : 0;
             var charSpace = state.CharSpace;
-            var charAscent = (float)font.GetAscent(fontSize);
-            var charDescent = (float)font.GetDescent(fontSize);
-            var charHeight = (float)font.GetLineHeight(fontSize);
             SKMatrix fm = font.FontMatrix;
             SKMatrix ctm = state.Ctm;
             SKMatrix tm = state.TextState.Tm;
@@ -247,79 +310,73 @@ namespace PdfClown.Documents.Contents.Objects
                 0f, 0f, 1f);
             var uparameters = new SKMatrix(
                 1f, 0f, 0f,
-                0f, 1f, state.Rise,
+                0f, -1f, state.Rise,
                 0f, 0f, 1f);
 
             var clip = state.GetClipPath();
             using var fill = canvas != null && state.RenderModeFill ? state.CreateFillPaint() : null;
             using var stroke = canvas != null && state.RenderModeStroke ? state.CreateStrokePaint() : null;
 
-            foreach (var textElement in Value)
+            var buffer = new ByteStream(0);
+            foreach (var textElement in TextElements)
             {
                 if (textElement is PdfString pdfString) // Text string.
                 {
-                    using (var buffer = new ByteStream(pdfString.RawValue))
+                    buffer.SetBuffer(pdfString.RawValue);
+                    while (buffer.Position < buffer.Length)
                     {
-                        while (buffer.Position < buffer.Length)
+                        var code = font.ReadCode(buffer, out var codeBytes);
+                        var textCode = font.ToUnicode(code);
+                        if (textCode == null)
                         {
-                            var code = font.ReadCode(buffer, out var codeBytes);
-                            var textCode = font.ToUnicode(code);
-                            if (textCode == null)
-                            {
-                                // Missing character.
-                                textCode = '?';// font.MissingCharacter(byteElement, code);
-                            }
-                            var textChar = (char)textCode;
-                            // Word spacing shall be applied to every occurrence of the single-byte character code
-                            // 32 in a string when using a simple font or a composite font that defines code 32 as
-                            // a single-byte code.
-                            double wordSpacing = 0;
-                            if (codeBytes.Length == 1 && code == 32)
-                            {
-                                wordSpacing = wordSpace;
-                            }
-                            //NOTE: The text rendering matrix is recomputed before each glyph is painted
-                            // during a text-showing operation.
-                            SKMatrix trm = parameters.PostConcat(tm).PostConcat(ctm);
-                            SKMatrix utm = uparameters.PostConcat(tm).PostConcat(ctm);
-                            // get glyph's position vector if this is vertical text
-                            // changes to vertical text should be tested with PDFBOX-2294 and PDFBOX-1422
-                            // position vector, in text space
-                            var v = font.GetPositionVector(code);
-                            // apply the position vector to the horizontal origin to get the vertical origin
-                            trm = trm.PreConcat(SKMatrix.CreateTranslation(v.X, v.Y));
-                            utm = utm.PreConcat(SKMatrix.CreateTranslation(v.X, v.Y));
-                            trm = trm.PreConcat(fm);
-
-                            if (canvas != null && !(codeBytes.Length == 1 && textChar == ' '))
-                            {
-                                canvas.SetMatrix(trm);
-                                var path = font.DrawChar(canvas, fill, stroke, textChar, code);
-                                if (clip != null && path != null)
-                                {
-                                    clip.AddPath(path, ref trm);
-                                }
-                            }
-
-                            var w = font.GetDisplacement(code);
-                            /*
-                              NOTE: After the glyph is painted, the text matrix is updated
-                              according to the glyph displacement and any applicable spacing parameter.
-                            */
-                            // calculate the combined displacements
-                            float tx = 0;
-                            float ty = (float)(w.Y * fontSize + charSpace + wordSpacing);
-                            var fw = font.GetWidth(code) / 1000;
-                            SKRect charBox = SKRect.Create(0, ty, fw, charHeight);
-
-                            //Text Scanner
-                            utm = utm.PreConcat(SKMatrix.CreateScale(1, -1));
-                            var quad = new Quad(charBox);
-                            quad.Transform(ref utm);
-                            textScanner.ScanChar(textChar, quad);
-
-                            tm = tm.PreConcat(SKMatrix.CreateTranslation(tx, ty));
+                            // Missing character.
+                            textCode = '?';// font.MissingCharacter(byteElement, code);
                         }
+                        var textChar = (char)textCode;
+                        // Word spacing shall be applied to every occurrence of the single-byte character code
+                        // 32 in a string when using a simple font or a composite font that defines code 32 as
+                        // a single-byte code.
+                        double wordSpacing = 0;
+                        if (codeBytes.Length == 1 && code == 32)
+                        {
+                            wordSpacing = wordSpace;
+                        }
+                        //NOTE: The text rendering matrix is recomputed before each glyph is painted
+                        // during a text-showing operation.
+                        SKMatrix trm = parameters.PostConcat(tm).PostConcat(ctm);
+                        SKMatrix utm = uparameters.PostConcat(tm).PostConcat(ctm);
+                        // get glyph's position vector if this is vertical text
+                        // changes to vertical text should be tested with PDFBOX-2294 and PDFBOX-1422
+                        // position vector, in text space
+                        var v = font.GetPositionVector(code);
+                        // apply the position vector to the horizontal origin to get the vertical origin
+                        trm = trm.PreConcat(SKMatrix.CreateTranslation(v.X, v.Y));
+                        trm = trm.PreConcat(fm);
+
+                        if (canvas != null && !(codeBytes.Length == 1 && textChar == ' '))
+                        {
+                            canvas.SetMatrix(trm);
+                            var path = font.DrawChar(canvas, fill, stroke, textChar, code);
+                            if (clip != null && path != null)
+                            {
+                                clip.AddPath(path, ref trm);
+                            }
+                        }
+
+                        var w = font.GetDisplacement(code);
+                        // NOTE: After the glyph is painted, the text matrix is updated
+                        // according to the glyph displacement and any applicable spacing parameter.
+                        // calculate the combined displacements
+                        float tx = 0;
+                        float ty = (float)(w.Y * fontSize + charSpace + wordSpacing);
+                        var fw = font.GetWidth(code) / 200;
+
+                        //Text Scanner
+                        var quad = new Quad(-fw, 0, fw, -ty);
+                        quad.Transform(ref utm);
+                        textScanner.ScanChar(textChar, quad);
+
+                        tm = tm.PreConcat(SKMatrix.CreateTranslation(tx, ty));
                     }
                 }
                 else if (textElement is IPdfNumber pdfNumber)
@@ -333,6 +390,24 @@ namespace PdfClown.Documents.Contents.Objects
                 }
             }
             return tm;
+        }
+
+        private float GetVerticalWidth(Font font, int code)
+        {
+            var ttf = font is FontTrueType ftt
+                ? ftt.TrueTypeFont
+                : font is FontType0 ft0
+                    ? ft0.DescendantFont is FontCIDType2 fCID2
+                        ? fCID2.TrueTypeFont
+                        : null
+                    : null;
+            return font.GetWidth(code) / (ttf?.UnitsPerEm ?? 1000);
+        }
+
+        public void Invalidate()
+        {
+            quad = null;
+            text = null;
         }
     }
 }

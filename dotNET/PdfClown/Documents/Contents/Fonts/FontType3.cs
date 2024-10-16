@@ -25,25 +25,19 @@
 
 using PdfClown.Bytes;
 using PdfClown.Objects;
-using PdfClown.Util;
 using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>Type 3 font [PDF:1.6:5.5.4].</summary>
-    */
+    /// <summary>Type 3 font [PDF:1.6:5.5.4].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class FontType3 : FontSimple
     {
         private Resources resources;
         private PdfDictionary charProcs;
-        private SKMatrix? fontMatrix;
-        private SKRect? fontBBox;
 
         internal FontType3(PdfDocument context) : base(context)
         { }
@@ -98,16 +92,6 @@ namespace PdfClown.Documents.Contents.Fonts
             get => true;
         }
 
-        public override SKMatrix FontMatrix
-        {
-            get => fontMatrix ??= Dictionary.Resolve(PdfName.FontMatrix) is PdfArray array && array.Count > 5
-                            ? new SKMatrix(
-                                array.GetFloat(0), array.GetFloat(1), array.GetFloat(4),
-                                array.GetFloat(2), array.GetFloat(3), array.GetFloat(5),
-                                0, 0, 1)
-                            : base.FontMatrix;
-        }
-
         public override bool IsDamaged
         {
             // there's no font file to load
@@ -119,30 +103,30 @@ namespace PdfClown.Documents.Contents.Fonts
             get => false;
         }
 
-        /**
-         * Returns the optional resources of the type3 stream.
-         *
-         * @return the resources bound to be used when parsing the type3 stream
-         */
+        /// <summary>Returns the optional resources of the type3 stream.
+        /// return the resources bound to be used when parsing the type3 stream
+        /// </summary>
         public Resources Resources
         {
             get => resources ??= Wrap<Resources>(Dictionary[PdfName.Resources]);
         }
 
-        public override SKRect BoundingBox
-        {
-            get => fontBBox ??= GenerateBoundingBox();
-        }
-
-        /**
-         * Returns the dictionary containing all streams to be used to render the glyphs.
-         * 
-         * @return the dictionary containing all glyph streams.
-         */
+        /// <summary>Returns the dictionary containing all streams to be used to render 
+        /// the glyphs.</summary>
         public PdfDictionary CharProcs
         {
             get => charProcs ??= Dictionary.Get<PdfDictionary>(PdfName.CharProcs);
         }
+
+        /// <summary>This will get the fonts bounding box from its dictionary.</summary>
+        /// <value> The fonts bounding box.</value>
+        public Rectangle FontBBox
+        {
+            get => Rectangle.Wrap(BaseDataObject.Get<PdfArray>(PdfName.FontBBox));
+            set => BaseDataObject[PdfName.FontBBox] = value?.BaseObject;
+        }
+
+        public override float ScalingFactor => FontMatrix.ScaleX;
 
         public override SKPath GetPath(int code)
         {
@@ -176,10 +160,10 @@ namespace PdfClown.Documents.Contents.Fonts
             return FontMatrix.MapVector(base.GetWidth(code), 0);
         }
 
-        public override double GetScalingFactor(double size)
-        {
-            return base.GetScalingFactor(size);
-        }
+
+        protected override float GetAscent() => BoundingBox.Bottom;
+
+        protected override float GetDescent() => BoundingBox.Top;
 
         public override float GetWidth(int code)
         {
@@ -259,7 +243,17 @@ namespace PdfClown.Documents.Contents.Fonts
             return bytes[0];
         }
 
-        private SKRect GenerateBoundingBox()
+        protected override SKMatrix GenerateFontMatrix()
+        {
+            return Dictionary.Resolve(PdfName.FontMatrix) is PdfArray array && array.Count > 5
+                                        ? new SKMatrix(
+                                            array.GetFloat(0), array.GetFloat(1), array.GetFloat(4),
+                                            array.GetFloat(2), array.GetFloat(3), array.GetFloat(5),
+                                            0, 0, 1)
+                                        : base.GenerateFontMatrix();
+        }
+
+        protected override SKRect GenerateBoundingBox()
         {
             var rect = FontBBox?.ToSKRect() ?? SKRect.Empty;
             if (rect.Width == 0 || rect.Height == 0)

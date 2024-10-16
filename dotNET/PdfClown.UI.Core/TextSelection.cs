@@ -1,5 +1,5 @@
 ﻿using PdfClown.Documents.Contents;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Documents.Contents.Scanner;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +9,23 @@ namespace PdfClown.UI
 {
     public class TextSelection
     {
-        private string selectedString;
-        private Quad? textSelectedQuad;
-        private TextChar startChar;
+        private static void AppendPageBreak(StringBuilder textBuilder)
+        {
+            textBuilder.Append('\r');
+            textBuilder.Append('\n');
+            textBuilder.Append('\f');
+        }
 
-        public List<TextChar> Chars { get; private set; } = new List<TextChar>();
+        private string selectedString;
+        private IContentContext startPage;
+        private PageTextSelection startPageSelection;
+        private TextChar hoverChar;
+        private ITextString hoverString;
+        private TextChar startChar;
+        private ITextString startString;
+        private ITextBlock startBlock;
+
+        public Dictionary<IContentContext, PageTextSelection> Chars { get; private set; } = new();
 
         public string String
         {
@@ -22,15 +34,19 @@ namespace PdfClown.UI
                 if (selectedString == null)
                 {
                     var textBuilder = new StringBuilder();
-                    TextChar prevTextChar = null;
-                    foreach (TextChar textChar in Chars)
+                    IContentContext prevPage = null;
+
+                    foreach (var entry in Chars.OrderBy(x => x.Key))
                     {
-                        if (prevTextChar != null && prevTextChar.TextString != textChar.TextString)
+                        if (prevPage != null)
                         {
-                            textBuilder.Append(' ');
+                            AppendPageBreak(textBuilder);
                         }
-                        textBuilder.Append(textChar.Value);
-                        prevTextChar = textChar;
+                        foreach (var textChar in entry.Value.Chars)
+                        {
+                            textBuilder.Append(textChar.Value);
+                        }
+                        prevPage = entry.Key;
                     }
                     selectedString = textBuilder.ToString();
                 }
@@ -38,78 +54,86 @@ namespace PdfClown.UI
             }
         }
 
-        public Quad? Quad
-        {
-            get
-            {
-                if (textSelectedQuad == null)
-                {
-                    foreach (TextChar textChar in Chars)
-                    {
-                        if (!textSelectedQuad.HasValue)
-                        { textSelectedQuad = textChar.Quad; }
-                        else
-                        { textSelectedQuad = Util.Math.Geom.Quad.Union(textSelectedQuad.Value, textChar.Quad); }
-                    }
-                }
-                return textSelectedQuad;
-            }
-        }
+        public TextChar StartChar { get => startChar; }
 
-        public TextChar StartChar
-        {
-            get => startChar;
-            set
-            {
-                if (startChar != value)
-                {
-                    startChar = value;
-                    if (value != null)
-                    {
-                        ClearQuite();
-                        if (value != null)
-                        {
-                            Chars.Add(value);
-                        }
-                    }
-                    OnChanged();
-                }
-            }
-        }
+        public ITextString StartString { get => startString; }
+
+        public ITextBlock StartBlock { get => startBlock; }
+
+        public IContentContext StartContext => startPage;
+        
+        public bool Any => Chars.Count > 0;// && Chars.Values.Any(c => c.Chars.Count > 0);
 
         public event EventHandler Changed;
 
-        public bool Any() => Chars.Count > 0;
+
+        public bool SetHoverChar(IContentContext page, ITextBlock textBlock, ITextString textString, TextChar textChar)
+        {
+            if (hoverString == textString
+                && hoverChar.Equals(textChar))
+                return false;
+            hoverString = textString;
+            hoverChar = textChar;
+            return true;
+        }
+
+        public void SetStartChar(IContentContext page, ITextBlock textBlock, ITextString textString, TextChar textChar)
+        {
+            Clear();
+            startPage = page;
+            startPageSelection = GetOrCreatePageSelection(page);
+            startBlock = textBlock;
+            startString = textString;
+            startChar = textChar;
+        }
+
+        public void ClearHoverChar()
+        {
+            hoverChar = TextChar.Empty;
+            hoverString = null;
+        }
+
+        public void ClearStartChar()
+        {
+            startChar = TextChar.Empty;
+            startString = null;
+            startBlock = null;
+            startPageSelection = null;
+            startPage = null;
+        }
+
+        public PageTextSelection GetPageSelection(IContentContext page) =>
+            Chars.TryGetValue(page, out var contextTextSelection) ? contextTextSelection : null;
+
+        public PageTextSelection GetOrCreatePageSelection(IContentContext page)
+        {
+            if (!Chars.TryGetValue(page, out var contextTextSelection))
+                Chars[page] = contextTextSelection = new PageTextSelection();
+            return contextTextSelection;
+        }
 
         public void Reset()
         {
-            textSelectedQuad = null;
             selectedString = null;
+            hoverString = null;
         }
 
         public void Clear()
         {
-            ClearQuite();
-            OnChanged();
-        }
-
-        private void ClearQuite()
-        {
             Reset();
+            ClearStartChar();
+            ClearHoverChar();
+            foreach (var list in Chars.Values)
+                list.Dispose();
             Chars.Clear();
         }
 
-        private void OnChanged()
+        public void OnChanged()
         {
+            Reset();
             Changed?.Invoke(this, EventArgs.Empty);
-        }
+        }        
 
-        public void AddRange(IEnumerable<TextChar> chars)
-        {
-            Chars.AddRange(chars);
-            OnChanged();
-        }
 
-        public TextChar First() => Chars.First();
     }
 }

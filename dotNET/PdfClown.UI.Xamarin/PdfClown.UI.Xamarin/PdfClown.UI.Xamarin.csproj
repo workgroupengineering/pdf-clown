@@ -1,26 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Assets\caret-down.svg" />
-    <None Remove="Assets\caret-left.svg" />
-    <None Remove="Assets\caret-right.svg" />
-    <None Remove="Assets\caret-up.svg" />
-  </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assets\caret-down.svg" />
-    <EmbeddedResource Include="Assets\caret-left.svg" />
-    <EmbeddedResource Include="Assets\caret-right.svg" />
-    <EmbeddedResource Include="Assets\caret-up.svg" />
-  </ItemGroup>
-
+	<PackageReference Include="SkiaSharp.Views.Forms" Version="2.88.8" GeneratePathProperty="true" ExcludeAssets="Compile;Runtime;Build" />
+	<Reference Include="SkiaSharp.Views.Forms">
+	  <HintPath>$(PkgSkiaSharp_Views_Forms)\ref\netstandard2.0\SkiaSharp.Views.Forms.dll</HintPath>
+	</Reference>
+  </ItemGroup>  
   <ItemGroup>
-    <PackageReference Include="SkiaSharp.Views.Forms" Version="2.88.8" />
-    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2662" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.8.1" />
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2662"  />
   </ItemGroup>
 
   <ItemGroup>

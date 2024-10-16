@@ -14,104 +14,89 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+using PdfClown.Bytes;
+using System;
+using System.Diagnostics;
+using System.IO;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    using PdfClown.Bytes;
-    using System;
-    using System.Diagnostics;
-    using System.IO;
-
-
-    /**
-     * TrueType font file parser.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// TrueType font file parser.
+    /// @author Ben Litchfield
+    /// </summary>
     public class TTFParser
     {
         private bool isEmbedded = false;
 
-        /**
-         * Constructor.
-         */
         public TTFParser() : this(false)
         {
         }
 
-        /**
-         * Constructor.
-         *  
-         * @param isEmbedded true if the font is embedded in PDF
-         */
+        /// <summary>Constructor.</summary>
+        /// <param name="isEmbedded">true if the font is embedded in PDF</param>
         public TTFParser(bool isEmbedded)
         {
             this.isEmbedded = isEmbedded;
         }
 
-        /**
-         * Parse a file and return a TrueType font.
-         *
-         * @param ttfFile The TrueType font filename.
-         * @return A TrueType font.
-         * @ If there is an error parsing the TrueType font.
-         */
-        public TrueTypeFont Parse(string ttfFile, string fontName = null)
+        /// <summary>Parse a file and return a TrueType font.</summary>
+        /// <param name="fileName">The TrueType font filename</param>
+        /// <param name="fontName"></param>
+        /// <returns>A TrueType font</returns>
+        public TrueTypeFont Parse(string fileName, string fontName = null)
         {
-            using var fileStream = new FileStream(ttfFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return Parse(fileStream, fontName);
         }
 
         public TrueTypeFont Parse(Stream fileStream, string fontName = null) => Parse((IInputStream)new ByteStream(fileStream), fontName);
 
-
-        /**
-         * Parse an input stream and return a TrueType font that is to be embedded.
-         *
-         * @param inputStream The TTF data stream to parse from. It will be closed before returning.
-         * @return A TrueType font.
-         * @ If there is an error parsing the TrueType font.
-         */
+        /// <summary>Parse an input stream and return a TrueType font that is to be embedded.</summary>
+        /// <param name="inputStream">The TTF data stream to parse from.It will be closed before returning</param>
+        /// <param name="fontName"></param>
+        /// <returns>A TrueType font</returns>
         public TrueTypeFont ParseEmbedded(IInputStream inputStream, string fontName = null)
         {
-            this.isEmbedded = true;
+            isEmbedded = true;
             return Parse(inputStream, fontName);
         }
 
-        /**
-         * Parse a file and get a true type font.
-         *
-         * @param raf The TTF file.
-         * @return A TrueType font.
-         * @ If there is an error parsing the TrueType font.
-         */
-        public TrueTypeFont Parse(IInputStream raf, string fontName = null)
+        /// <summary>
+        /// Parse a file and get a true type font.
+        /// </summary>
+        /// <param name="inputStream">The TTF file</param>
+        /// <param name="fontName"></param>
+        /// <returns>A TrueType font</returns>
+        public TrueTypeFont Parse(IInputStream inputStream, string fontName = null)
         {
-            if (string.Equals(raf.ReadString(4), TrueTypeCollection.TAG, StringComparison.Ordinal))
+            if (string.Equals(inputStream.ReadString(4), TrueTypeCollection.TAG, StringComparison.Ordinal))
             {
-                raf.Seek(raf.Position - 4);
-                var fontCollection = new TrueTypeCollection(raf);
+                inputStream.Seek(inputStream.Position - 4);
+                var fontCollection = new TrueTypeCollection(inputStream);
 
                 var nameFont = fontCollection.GetFontByName(fontName);
                 if (nameFont == null)
                     nameFont = fontCollection.GetFontAtIndex(0);
                 return nameFont;
             }
-            raf.Seek(raf.Position - 4);
+            inputStream.Seek(inputStream.Position - 4);
 
-            TrueTypeFont font = NewFont(raf);
-            font.Version = raf.Read32Fixed();
-            int numberOfTables = raf.ReadUInt16();
-            int searchRange = raf.ReadUInt16();
-            int entrySelector = raf.ReadUInt16();
-            int rangeShift = raf.ReadUInt16();
+            var font = NewFont(inputStream);
+            font.Version = inputStream.Read32Fixed();
+            int numberOfTables = inputStream.ReadUInt16();
+            int searchRange = inputStream.ReadUInt16();
+            int entrySelector = inputStream.ReadUInt16();
+            int rangeShift = inputStream.ReadUInt16();
             for (int i = 0; i < numberOfTables; i++)
             {
-                TTFTable table = ReadTableDirectory(raf);
+                TTFTable table = ReadTableDirectory(inputStream);
 
                 // skip tables with zero length
                 if (table != null)
                 {
-                    if (table.Offset + table.Length > font.OriginalDataSize)
+                    if ((table.Offset + table.Length) > font.OriginalDataSize)
                     {
                         // PDFBOX-5285 if we're lucky, this is an "unimportant" table, e.g. vmtx
                         Debug.WriteLine($"warn: Skip table '{table.Tag}' which is oversize; offset: {table.Offset}, size: {table.Length}, font size: {font.OriginalDataSize}");
@@ -133,12 +118,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return new TrueTypeFont(raf);
         }
 
-        /**
-         * Parse all tables and check if all needed tables are present.
-         *
-         * @param font the TrueTypeFont instance holding the parsed data.
-         * @ If there is an error parsing the TrueType font.
-         */
+        /// <summary>Parse all tables and check if all needed tables are present.</summary>
+        /// <param name="font">the TrueTypeFont instance holding the parsed data.</param>
+        /// <exception cref="IOException"></exception>
         private void ParseTables(TrueTypeFont font)
         {
             foreach (TTFTable table in font.Tables)

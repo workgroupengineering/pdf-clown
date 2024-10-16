@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Documents;
-
+using PdfClown.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ namespace PdfClown.Objects
 {
     /// <summary>Abstract tree [PDF:1.7:3.8.5].</summary>
     [PDF(VersionEnum.PDF10)]
-    public abstract class Tree<TKey, TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<TKey, TValue>, IDictionary
+    public abstract class Tree<TKey, TValue> : PdfObjectWrapper<PdfDictionary>, IDictionary<TKey, TValue>, IDictionary, IBiDictionary<TKey, TValue>
         where TKey : PdfDirectObject, IPdfSimpleObject
         where TValue : PdfObjectWrapper
     {
@@ -218,7 +218,7 @@ namespace PdfClown.Objects
 
             KeyValuePair<TKey, TValue> IEnumerator<KeyValuePair<TKey, TValue>>.Current => current.Value;
 
-            public object Current => Current;
+            public object Current => current.Value;
 
             public bool MoveNext() => (current = GetNext()) != null;
 
@@ -363,12 +363,16 @@ namespace PdfClown.Objects
 
         public object SyncRoot => throw new NotImplementedException();
 
-        ///Gets the key associated to the specified value.
+        public object GetKey(object value) => value is TValue tValue ? GetKey(tValue) : default(TKey);
+
+        /// <summary>Gets the key associated to the specified value.</summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public TKey GetKey(TValue value)
         {
-            ///  NOTE: Current implementation doesn't support bidirectional maps, to say that the only
-            ///  currently-available way to retrieve a key from a value is to iterate the whole map (really
-            ///  poor performance!).
+            // NOTE: Current implementation doesn't support bidirectional maps, to say that the only
+            // currently-available way to retrieve a key from a value is to iterate the whole map (really
+            // poor performance!).
             foreach (KeyValuePair<TKey, TValue> entry in this)
             {
                 if (entry.Value.Equals(value))
@@ -619,12 +623,12 @@ namespace PdfClown.Objects
             }
         }
 
-        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair) 
+        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair)
             => Add(keyValuePair.Key, keyValuePair.Value);
 
         public virtual void Clear() => Clear(BaseDataObject);
 
-        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> keyValuePair) => 
+        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> keyValuePair) =>
             keyValuePair.Value.Equals(this[keyValuePair.Key]);
 
         public virtual void CopyTo(KeyValuePair<TKey, TValue>[] keyValuePairs, int index)

@@ -23,21 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
 using SkiaSharp;
-using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Documents.Contents.Composition;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Square annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It represents a rectangle to display on a page.</remarks>
-    */
+    /// <summary>Square annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It represents a rectangle to display on a page.</remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class Rectangle : Shape
     {

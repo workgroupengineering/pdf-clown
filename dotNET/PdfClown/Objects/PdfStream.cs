@@ -24,14 +24,10 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Bytes.Filters;
-using PdfClown.Documents.Contents;
 using PdfClown.Documents.Files;
 using PdfClown.Tokens;
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Objects
 {
@@ -41,7 +37,7 @@ namespace PdfClown.Objects
         private static readonly byte[] BeginStreamBodyChunk = Encoding.Pdf.Encode(Symbol.LineFeed + Keyword.BeginStream + Symbol.LineFeed);
         private static readonly byte[] EndStreamBodyChunk = Encoding.Pdf.Encode(Symbol.LineFeed + Keyword.EndStream);
 
-        internal IByteStream body;
+        internal IInputStream body;
         internal PdfDictionary header;
 
         private PdfObject parent;
@@ -51,7 +47,6 @@ namespace PdfClown.Objects
         /// actual stream data.</summary>
         private bool bodyResolved;
         internal EncodeState encoded = EncodeState.None;
-        private ContentWrapper contentsWrapper;
 
         public PdfStream() : this(new PdfDictionary(), new ByteStream())
         { }
@@ -59,27 +54,18 @@ namespace PdfClown.Objects
         public PdfStream(PdfDictionary header) : this(header, new ByteStream())
         { }
 
-        public PdfStream(IByteStream body) : this(new PdfDictionary(), body)
+        public PdfStream(IInputStream body) : this(new PdfDictionary(), body)
         { }
 
-        public PdfStream(PdfDictionary header, IByteStream body)
+        public PdfStream(PdfDictionary header, IInputStream body)
             : base(PdfObjectStatus.Updateable)
         {
             this.header = (PdfDictionary)Include(header);
-
-            this.body = body;
-            body.Dirty = false;
-            body.OnChange += delegate (object sender, EventArgs args)
-            { Update(); };
+            SetStream(body);
         }
 
         public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
 
-        /// <summary>Gets the decoded stream body.</summary>
-        /// <remarks>NOTE: Encoding filters are removed by default because they belong to a lower layer (token
-        /// layer), so that it's appropriate and consistent to transparently keep the object layer
-        /// unaware of such a facility.</remarks>
-        public IByteStream Body => GetBody(true);
 
         public PdfDirectObject Filter
         {
@@ -91,55 +77,6 @@ namespace PdfClown.Objects
                     ? PdfName.Filter
                     : PdfName.FFilter
                   ] = value;
-        }
-
-        /// <summary>Gets the stream body.</summary>
-        /// <param name="decode">Defines whether the body has to be decoded.</param>
-        public IByteStream GetBody(bool decode)
-        {
-            if (!bodyResolved)
-            {
-                // NOTE: In case of stream data from external file, a copy to the local buffer has to be done.
-                FileSpecification dataFile = DataFile;
-                if (dataFile != null)
-                {
-                    Updateable = false;
-                    body.SetLength(0);
-                    body.Write(dataFile.GetInputStream());
-                    body.Dirty = false;
-                    Updateable = true;
-                }
-                bodyResolved = true;
-            }
-            if (decode)
-            {
-                PdfDataObject filter = Filter;
-                if (filter != null) // Stream encoded.
-                {
-                    header.Updateable = false;
-                    body.Decode(filter, Parameters, Header);
-                    // The stream is free from encodings.
-                    Filter = null;
-                    Parameters = null;
-                    header.Updateable = true;
-                }
-            }
-            body.Seek(0);
-            return body;
-        }
-
-        public IByteStream ExtractBody(bool decode)
-        {
-            var buffer = GetBody(false);
-            if (decode)
-            {
-                PdfDataObject filter = Filter;
-                if (filter != null) // Stream encoded.
-                {
-                    buffer = buffer.Extract(filter, Parameters, Header);
-                }
-            }
-            return buffer;
         }
 
         /// <summary>Gets the stream header.</summary>
@@ -176,17 +113,12 @@ namespace PdfClown.Objects
             set => SetDataFile(value, false);
         }
 
-        public override ContentWrapper ContentsWrapper
-        {
-            get => contentsWrapper;// ?? (GetContentContext() as PdfObject)?.ContentsWrapper
-            internal set => contentsWrapper = value;
-        }
-
         public override IPdfObjectWrapper Wrapper
         {
             get => Header.Wrapper;
             internal set => Header.Wrapper = value;
         }
+
         public override IPdfObjectWrapper Wrapper2
         {
             get => Header.Wrapper2;
@@ -196,6 +128,84 @@ namespace PdfClown.Objects
         {
             get => Header.Wrapper3;
             internal set => Header.Wrapper3 = value;
+        }
+
+        public void SetStream(IInputStream value)
+        {
+            if (body == value)
+                return;
+            Updateable = false;
+            if (body is IByteStream oldByteStream)
+            {
+                oldByteStream.OnChange -= OnChange;
+            }
+            body?.Dispose();
+            body = value;
+            if (body is IByteStream byteStream)
+            {
+                byteStream.OnChange += OnChange;
+            }
+            Updateable = true;
+        }
+
+        public void SetStreamAndRemoveFilters(IInputStream value)
+        {
+            SetStream(value);
+            // The stream is free from encodings.
+            header.Updateable = false;
+            Filter = null;
+            Parameters = null;
+            header.Updateable = true;
+        }
+
+        void OnChange(object sender, EventArgs args) => Update();
+
+        /// <summary>Gets the stream body for edit.</summary>
+        
+        public IByteStream GetOutputStream()
+        {
+            if (GetInputStreamNoDecode() is IByteStream buffer)
+                return buffer;
+            SetStreamAndRemoveFilters(buffer = new ByteStream());
+            return buffer;
+        }
+
+        /// <summary>Gets the stream body.</summary>
+        public IInputStream GetInputStreamNoDecode()
+        {
+            if (!bodyResolved)
+            {
+                // NOTE: In case of stream data from external file, a copy to the local buffer has to be done.
+                if (DataFile is FileSpecification dataFile)
+                {
+                    SetStream(dataFile.GetInputStream());
+                }
+                bodyResolved = true;
+            }
+            body.Position = 0;
+            return body;
+        }
+
+        /// <remarks>NOTE: Encoding filters are removed by default because they belong to a lower layer (token
+        /// layer), so that it's appropriate and consistent to transparently keep the object layer
+        /// unaware of such a facility.</remarks>
+        public IInputStream GetInputStream()
+        {
+            GetInputStreamNoDecode();
+
+            if (Filter is PdfDataObject filter) // Stream encoded.
+            {
+                SetStreamAndRemoveFilters(body.Decode(filter, Parameters, Header));
+            }
+            body.Position = 0;
+            return body;
+        }
+
+        public IInputStream GetExtractedStream()
+        {
+            var buffer = GetInputStreamNoDecode();
+            buffer = buffer.Decode(Filter, Parameters, Header);
+            return buffer;
         }
 
         /// <param name="preserve">Indicates whether the data from the old data source substitutes the
@@ -220,7 +230,7 @@ namespace PdfClown.Objects
               ----------------------------------------------------------------------------------------------
             */
             FileSpecification oldDataFile = DataFile;
-            PdfDirectObject dataFileObject = (value != null ? value.BaseObject : null);
+            PdfDirectObject dataFileObject = value?.BaseObject;
             if (value != null)
             {
                 if (preserve)
@@ -230,7 +240,7 @@ namespace PdfClown.Objects
                         if (!bodyResolved)
                         {
                             // Transfer old file data to local!
-                            GetBody(false); // Ensures that external data is loaded as-is into the local buffer.
+                            GetInputStreamNoDecode(); // Ensures that external data is loaded as-is into the local buffer.
                         }
                     }
                     else // Case B (export local to new file).
@@ -247,8 +257,9 @@ namespace PdfClown.Objects
                 }
                 else // Case A/C (substitute local/old file with new file).
                 {
-                    // Dismiss local/old file data!
-                    body.SetLength(0);
+                    if (body is IByteStream buffered)
+                        // Dismiss local/old file data!
+                        buffered.SetLength(0);
                     // Dismiss local/old file settings!
                     Filter = null;
                     Parameters = null;
@@ -263,8 +274,8 @@ namespace PdfClown.Objects
                     if (preserve) // Case G (import old file to local).
                     {
                         // Transfer old file data to local!
-                        GetBody(false); // Ensures that external data is loaded as-is into the local buffer.
-                                        // Transfer old file settings to local!
+                        GetInputStreamNoDecode(); // Ensures that external data is loaded as-is into the local buffer.
+                                                  // Transfer old file settings to local!
                         header[PdfName.Filter] = header[PdfName.FFilter];
                         header.Remove(PdfName.FFilter);
                         header[PdfName.DecodeParms] = header[PdfName.FDecodeParms];
@@ -272,8 +283,9 @@ namespace PdfClown.Objects
                     }
                     else // Case F (empty local).
                     {
-                        // Dismiss old file data!
-                        body.SetLength(0);
+                        if (body is IByteStream buffered)
+                            // Dismiss old file data!
+                            buffered.SetLength(0);
                         // Dismiss old file settings!
                         Filter = null;
                         Parameters = null;
@@ -291,15 +303,18 @@ namespace PdfClown.Objects
         {
             PdfStream otherStream = (PdfStream)other;
             PdfDictionary otherHeader = otherStream.header;
-            IByteStream otherBody = otherStream.body;
+            var otherBody = otherStream.body;
+            var otherBodyResolved = otherStream.bodyResolved;
             // Update the other!
-            otherStream.header = this.header;
-            otherStream.body = this.body;
+            otherStream.header = header;
+            otherStream.body = body;
+            otherStream.bodyResolved = bodyResolved;
             otherStream.Update();
             // Update this one!
-            this.header = otherHeader;
-            this.body = otherBody;
-            this.Update();
+            header = otherHeader;
+            body = otherBody;
+            bodyResolved = otherBodyResolved;
+            Update();
             return this;
         }
 
@@ -308,60 +323,55 @@ namespace PdfClown.Objects
             // NOTE: The header is temporarily tweaked to accommodate serialization settings.
             header.Updateable = false;
 
-            Memory<byte> bodyData = null;
+            var bodyData = body;
+            bool filterApplied = false;
+            // NOTE: In case of external file, the body buffer has to be saved back only if the file was
+            // actually resolved (that is brought into the body buffer) and modified.
+            FileSpecification dataFile = DataFile;
+            if (dataFile == null || (bodyResolved && body.Dirty))
             {
-                bool filterApplied = false;
+                // NOTE: In order to keep the contents of metadata streams visible as plain text to tools
+                // that are not PDF-aware, no filter is applied to them [PDF:1.7:10.2.2].
+                if (Filter == null
+                   && context.Configuration.StreamFilterEnabled
+                   && !PdfName.Metadata.Equals(header.Get<PdfName>(PdfName.Type))) // Filter needed.
                 {
-                    // NOTE: In case of external file, the body buffer has to be saved back only if the file was
-                    // actually resolved (that is brought into the body buffer) and modified.
-                    FileSpecification dataFile = DataFile;
-                    if (dataFile == null || (bodyResolved && body.Dirty))
+                    // Apply the filter to the stream!
+                    Filter = PdfName.FlateDecode;
+                    bodyData = body.Encode(Bytes.Filters.Filter.Get(PdfName.FlateDecode), null, Header);
+                    filterApplied = true;
+                }
+
+                if (dataFile != null)
+                {
+                    try
                     {
-                        // NOTE: In order to keep the contents of metadata streams visible as plain text to tools
-                        // that are not PDF-aware, no filter is applied to them [PDF:1.7:10.2.2].
-                        if (Filter == null
-                           && context.Configuration.StreamFilterEnabled
-                           && !PdfName.Metadata.Equals(header.Get<PdfName>(PdfName.Type))) // Filter needed.
-                        {
-                            // Apply the filter to the stream!
-                            bodyData = body.Encode(Bytes.Filters.Filter.Get((PdfName)(Filter = PdfName.FlateDecode)), null, Header);
-                            filterApplied = true;
-                        }
-                        else // No filter needed.
-                        { bodyData = body.AsMemory(); }
-
-                        if (dataFile != null)
-                        {
-                            try
-                            {
-                                using (var dataFileOutputStream = dataFile.GetOutputStream())
-                                { dataFileOutputStream.Write(bodyData.Span); }
-                            }
-                            catch (Exception e)
-                            { throw new Exception("Data writing into " + dataFile.Path + " failed.", e); }
-                        }
+                        using var dataFileOutputStream = dataFile.GetOutputStream();
+                        bodyData.CopyTo(dataFileOutputStream);
                     }
-                    if (dataFile != null)
-                    { bodyData = new byte[] { }; }
+                    catch (Exception e)
+                    { throw new Exception("Data writing into " + dataFile.Path + " failed.", e); }
                 }
+            }
+            if (dataFile != null)
+            { bodyData = ByteStream.Empty; }
 
-                // Set the encoded data length!
-                header.Set(PdfName.Length, bodyData.Length);
+            // Set the encoded data length!
+            header.Set(PdfName.Length, bodyData.Length);
 
-                // 1. Header.
-                header.WriteTo(stream, context);
+            // 1. Header.
+            header.WriteTo(stream, context);
 
-                if (filterApplied)
-                {
-                    // Restore actual header entries!
-                    header.Set(PdfName.Length, (int)body.Length);
-                    Filter = null;
-                }
+            if (filterApplied)
+            {
+                // Restore actual header entries!
+                header.Set(PdfName.Length, (int)body.Length);
+                Filter = null;
             }
 
             // 2. Body.
             stream.Write(BeginStreamBodyChunk);
-            stream.Write(bodyData.Span);
+            stream.Write(bodyData);
             stream.Write(EndStreamBodyChunk);
 
             header.Updateable = true;

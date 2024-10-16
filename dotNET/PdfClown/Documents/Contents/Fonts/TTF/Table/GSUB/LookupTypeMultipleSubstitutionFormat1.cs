@@ -19,15 +19,14 @@ using System;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB
 {
-    /**
-     *
-     * @author Tilman Hausherr
-     */
+    /// <summary>
+    /// @author Tilman Hausherr
+    /// </summary>
     public class LookupTypeMultipleSubstitutionFormat1 : LookupSubTable
     {
         private readonly SequenceTable[] sequenceTables;
 
-        public LookupTypeMultipleSubstitutionFormat1(int substFormat, CoverageTable coverageTable, SequenceTable[] sequenceTables)
+        public LookupTypeMultipleSubstitutionFormat1(ushort substFormat, CoverageTable coverageTable, SequenceTable[] sequenceTables)
             : base(substFormat, coverageTable)
         {
             this.sequenceTables = sequenceTables;
@@ -35,7 +34,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB
 
         public SequenceTable[] SequenceTables => sequenceTables;
 
-        public override int DoSubstitution(int gid, int coverageIndex)
+        public override ushort DoSubstitution(ushort gid, int coverageIndex)
         {
             throw new InvalidOperationException("not applicable");
         }

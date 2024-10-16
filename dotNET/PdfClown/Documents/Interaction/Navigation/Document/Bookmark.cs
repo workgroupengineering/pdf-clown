@@ -59,7 +59,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         { }
 
         /// <summary>Gets the child bookmarks.</summary>
-        public Bookmarks Bookmarks => Wrap<Bookmarks>(BaseObject);
+        public Bookmarks Bookmarks => Wrap2<Bookmarks>(BaseObject);
 
         /// <summary>Gets/Sets the bookmark text color.</summary>
         [PDF(VersionEnum.PDF14)]

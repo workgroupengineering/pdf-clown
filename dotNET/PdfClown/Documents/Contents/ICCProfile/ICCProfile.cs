@@ -141,21 +141,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return y0 + (x - x0) * ((y1 - y0) / (x1 - x0));
         }
 
-        //https://stackoverflow.com/a/2887/4682355
-        public static T ByteArrayToStructure<T>(byte[] bytes) where T : struct
-        {
-            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-            try
-            {
-                return Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
-            }
-            finally
-            {
-                handle.Free();
-            }
-
-        }
-
+        
         public ICCHeader Header;
 
         public Dictionary<ICCTagTypes, ICCTagTable> Tags { get; set; } = new Dictionary<ICCTagTypes, ICCTagTable>();

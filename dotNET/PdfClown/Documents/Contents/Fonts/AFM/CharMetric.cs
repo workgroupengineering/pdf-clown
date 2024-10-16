@@ -43,7 +43,7 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
 
         private string name;
         private SKRect boundingBox;
-        private List<Ligature> ligatures = new List<Ligature>();
+        private List<Ligature> ligatures = new();
 
         /** Getter for property boundingBox.
          * @return Value of property boundingBox.

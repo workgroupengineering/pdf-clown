@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
 
@@ -34,11 +33,9 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Inline image entries (anonymous) operation [PDF:1.6:4.8.6].</summary>
-      <remarks>This is a figurative operation necessary to constrain the inline image entries section
-      within the content stream model.</remarks>
-    */
+    /// <summary>Inline image entries (anonymous) operation [PDF:1.6:4.8.6].</summary>
+    /// <remarks>This is a figurative operation necessary to constrain the inline image entries section
+    /// within the content stream model.</remarks>
     [PDF(VersionEnum.PDF10)]
     public sealed class InlineImageHeader : Operation, IDictionary<PdfName, PdfDirectObject>
     {
@@ -76,7 +73,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public float[] Decode
         {
-            get => decode ?? (decode = (((PdfArray)this[PdfName.D]) ?? ((PdfArray)this[PdfName.Decode]))?.Select(p => ((IPdfNumber)p).FloatValue).ToArray());
+            get => decode ??= (((PdfArray)this[PdfName.D]) ?? ((PdfArray)this[PdfName.Decode]))?.ToFloatArray();
             set => this[PdfName.D] = new PdfArray(value.Select(p => PdfInteger.Get((int)p)));
         }
 

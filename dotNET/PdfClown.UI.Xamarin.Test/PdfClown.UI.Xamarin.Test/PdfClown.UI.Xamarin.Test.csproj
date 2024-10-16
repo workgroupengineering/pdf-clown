@@ -1,10 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
   </PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="SkiaSharp.Views.Forms" Version="2.88.8" GeneratePathProperty="true" ExcludeAssets="Compile;Runtime;Build" />
+		<Reference Include="SkiaSharp.Views.Forms">
+			<HintPath>$(PkgSkiaSharp_Views_Forms)\ref\netstandard2.0\SkiaSharp.Views.Forms.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	
+	<ItemGroup>
     <ProjectReference Include="..\..\PdfClown.UI.Xamarin\PdfClown.UI.Xamarin\PdfClown.UI.Xamarin.csproj" />
   </ItemGroup>
 

@@ -23,16 +23,14 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents;
+using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 using PdfClown.Util;
-
-using System;
 using SkiaSharp;
-using PdfClown.Bytes;
+using System;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
@@ -97,7 +95,7 @@ namespace PdfClown.Documents.Interaction.Forms
                 if (valueObject is PdfString pdfString)
                     return pdfString.Value;
                 else if (valueObject is PdfStream pdfStream)
-                    return pdfStream.Body;
+                    return pdfStream.GetInputStream();
                 else
                     return null;
             }
@@ -114,7 +112,7 @@ namespace PdfClown.Documents.Interaction.Forms
                     IByteStream valueObjectBuffer = null;
                     if (oldValueObject is PdfStream stream)
                     {
-                        valueObjectBuffer = stream.Body;
+                        valueObjectBuffer = stream.GetOutputStream();
                         valueObjectBuffer.SetLength(0);
                     }
                     if (value is string stringValue)
@@ -167,33 +165,31 @@ namespace PdfClown.Documents.Interaction.Forms
              */
             var baseComposer = new PrimitiveComposer(normalAppearance);
             var composer = new BlockComposer(baseComposer);
-            ContentScanner currentLevel = composer.Scanner;
+            var scanner = composer.Scanner;
             bool textShown = false;
-            while (currentLevel != null)
+            scanner.OnObjectScanning += OnObjectStarting;
+            scanner.Scan();
+            scanner.OnObjectScanning -= OnObjectStarting;
+            bool OnObjectStarting(ContentObject content, ICompositeObject container, int index)
             {
-                if (!currentLevel.MoveNext())
-                {
-                    currentLevel = currentLevel.ParentLevel;
-                    continue;
-                }
-
-                ContentObject content = currentLevel.Current;
                 if (content is GraphicsMarkedContent markedContent)
                 {
-                    if (PdfName.Tx.Equals(((BeginMarkedContent)markedContent.Header).Tag))
+                    if (PdfName.Tx.Equals(markedContent.MarkerHeader.Tag))
                     {
                         // Remove old text representation!
-                        markedContent.Objects.Clear();
+                        markedContent.Contents.Clear();
                         // Add new text representation!
-                        baseComposer.Scanner = currentLevel.ChildLevel; // Ensures the composer places new contents within the marked content block.
                         ShowText(composer, fontName, fontSize);
                         textShown = true;
                     }
                 }
                 else if (content is GraphicsText)
-                { currentLevel.Remove(); }
-                else if (currentLevel.ChildLevel != null)
-                { currentLevel = currentLevel.ChildLevel; }
+                {
+                    container.Contents.RemoveAt(index);
+                    return false;
+                }
+
+                return true;
             }
             if (!textShown)
             {
@@ -206,15 +202,13 @@ namespace PdfClown.Documents.Interaction.Forms
 
         private void ShowText(BlockComposer composer, PdfName fontName, double fontSize)
         {
-            PrimitiveComposer baseComposer = composer.BaseComposer;
-            ContentScanner scanner = baseComposer.Scanner;
+            var baseComposer = composer.BaseComposer;
+            var scanner = baseComposer.Scanner;
             SKRect textBox = scanner.Context.Box;
             if (scanner.State.Font == null)
             {
-                /*
-                  NOTE: A zero value for size means that the font is to be auto-sized: its size is computed as
-                  a function of the height of the annotation rectangle.
-                */
+                // NOTE: A zero value for size means that the font is to be auto-sized: its size is computed as
+                // a function of the height of the annotation rectangle.
                 if (fontSize == 0)
                 { fontSize = textBox.Height * 0.65; }
                 baseComposer.SetFont(fontName, fontSize);

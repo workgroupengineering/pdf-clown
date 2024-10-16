@@ -32,21 +32,20 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB
      */
     public class LookupTypeSingleSubstFormat2 : LookupSubTable
     {
-        private readonly int[] substituteGlyphIDs;
+        private readonly ushort[] substituteGlyphIDs;
 
-        public LookupTypeSingleSubstFormat2(int substFormat, CoverageTable coverageTable, int[] substituteGlyphIDs)
+        public LookupTypeSingleSubstFormat2(ushort substFormat, CoverageTable coverageTable, ushort[] substituteGlyphIDs)
             : base(substFormat, coverageTable)
         {
-            ;
             this.substituteGlyphIDs = substituteGlyphIDs;
         }
 
-        public override int DoSubstitution(int gid, int coverageIndex)
+        public override ushort DoSubstitution(ushort gid, int coverageIndex)
         {
             return coverageIndex < 0 ? gid : substituteGlyphIDs[coverageIndex];
         }
 
-        public int[] SubstituteGlyphIDs
+        public ushort[] SubstituteGlyphIDs
         {
             get => substituteGlyphIDs;
         }

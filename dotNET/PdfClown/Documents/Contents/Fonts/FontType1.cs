@@ -35,9 +35,7 @@ using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>Type 1 font [PDF:1.6:5.5.1;AFM:4.1].</summary>
-    */
+    /// <summary>Type 1 font [PDF:1.6:5.5.1;AFM:4.1].</summary>
     /*
       NOTE: Type 1 fonts encompass several formats:
       * AFM+PFB;
@@ -118,8 +116,6 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly bool isDamaged;
         private readonly SKMatrix fontMatrixTransform;
         private readonly Dictionary<int, byte[]> codeToBytesMap = new Dictionary<int, byte[]>();
-        private SKMatrix? fontMatrix;
-        private SKRect? fontBBox;
 
         internal FontType1(PdfDocument context) : base(context)
         { }
@@ -149,7 +145,7 @@ namespace PdfClown.Documents.Contents.Fonts
                         int length2 = fontFile.Length2;
 
                         // repair Length1 and Length2 if necessary
-                        var bytes = stream.ExtractBody(true).AsMemory();
+                        var bytes = stream.GetExtractedStream().AsMemory();
                         if (bytes.Length == 0)
                         {
                             throw new IOException("Font data unavailable");
@@ -349,10 +345,6 @@ namespace PdfClown.Documents.Contents.Fonts
             return length2;
         }
 
-        public override float Ascent => Standard14AFM?.Ascender ?? base.Ascent;
-
-        public override float Descent => Standard14AFM?.Descender ?? base.Descent;
-
         public override float GetHeight(int code)
         {
             if (Standard14AFM != null)
@@ -481,9 +473,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * Returns the embedded or substituted Type 1 font, or null if there is none.
-         */
+        /// <summary>Returns the embedded or substituted Type 1 font, or null if there is none.</summary>
         public Type1Font Type1Font
         {
             get => type1font;
@@ -499,12 +489,12 @@ namespace PdfClown.Documents.Contents.Fonts
             get => BaseFont;
         }
 
-        public override SKRect BoundingBox
+        public override bool IsDamaged
         {
-            get => fontBBox ??= GenerateBoundingBox();
+            get => isDamaged;
         }
 
-        private SKRect GenerateBoundingBox()
+        protected override SKRect GenerateBoundingBox()
         {
             if (FontDescriptor != null)
             {
@@ -613,44 +603,43 @@ namespace PdfClown.Documents.Contents.Fonts
             return !Encoding.GetName(code).Equals(".notdef", StringComparison.Ordinal);
         }
 
-        public override SKMatrix FontMatrix
+        protected override SKMatrix GenerateFontMatrix()
         {
-            get
+            // PDF specified that Type 1 fonts use a 1000upem matrix, but some fonts specify
+            // their own custom matrix anyway, for example PDFBOX-2298
+            List<float> numbers = null;
+            try
             {
-                if (fontMatrix == null)
-                {
-                    // PDF specified that Type 1 fonts use a 1000upem matrix, but some fonts specify
-                    // their own custom matrix anyway, for example PDFBOX-2298
-                    List<float> numbers = null;
-                    try
-                    {
-                        numbers = genericFont.FontMatrix;
-                    }
-                    catch (IOException e)
-                    {
-                        Debug.WriteLine("debug: Couldn't get font matrix box - returning default value", e);
-                        fontMatrix = DefaultFontMatrix;
-                    }
+                numbers = genericFont.FontMatrix;
+            }
+            catch (IOException e)
+            {
+                Debug.WriteLine("debug: Couldn't get font matrix box - returning default value", e);
+                return DefaultFontMatrix;
+            }
 
-                    if (numbers != null && numbers.Count == 6)
-                    {
-                        fontMatrix = new SKMatrix(
-                                numbers[0], numbers[1], numbers[4],
-                                numbers[2], numbers[3], numbers[5],
-                                0f, 0f, 1f);
-                    }
-                    else
-                    {
-                        fontMatrix = base.FontMatrix;
-                    }
-                }
-                return (SKMatrix)fontMatrix;
+            if (numbers != null && numbers.Count > 5)
+            {
+                return new SKMatrix(
+                        numbers[0], numbers[1], numbers[4],
+                        numbers[2], numbers[3], numbers[5],
+                        0f, 0f, 1f);
+            }
+            else
+            {
+                return base.FontMatrix;
             }
         }
 
-        public override bool IsDamaged
-        {
-            get => isDamaged;
-        }
+        protected override float GetAscent() => Standard14AFM?.Ascender is float value && value > 10
+            ? value
+            : base.GetAscent();
+
+        protected override float GetDescent() => Standard14AFM?.Descender is float value && value < -10
+            ? value
+            : base.GetDescent();
+
+
+
     }
 }

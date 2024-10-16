@@ -40,11 +40,6 @@ namespace PdfClown.Documents.Contents.Objects
         public GraphicsCompatibilityState(IList<ContentObject> objects) : base(objects)
         { }
 
-        public override void Scan(GraphicsState state)
-        {
-            base.Render(state);
-        }
-
         public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             stream.Write(BeginChunk);

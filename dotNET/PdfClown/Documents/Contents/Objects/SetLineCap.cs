@@ -23,16 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the line cap style' operation [PDF:1.6:4.3.3].</summary>
-    */
+    /// <summary>'Set the line cap style' operation [PDF:1.6:4.3.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetLineCap : Operation
     {
@@ -46,12 +41,12 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state) => state.LineCap = Value;
-
         public LineCapEnum Value
         {
             get => (LineCapEnum)operands.GetInt(0);
             set => operands.Set(0, (int)value);
         }
+
+        public override void Scan(GraphicsState state) => state.LineCap = Value;
     }
 }

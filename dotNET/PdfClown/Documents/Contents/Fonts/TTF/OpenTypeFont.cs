@@ -14,21 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
+using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    using PdfClown.Bytes;
-    using SkiaSharp;
-    using System;
-    using System.IO;
-    using System.Security.Cryptography;
 
-    /**
-     * An OpenType (OTF/TTF) font.
-     */
+    /// <summary>An OpenType(OTF/TTF) font.</summary>
     public class OpenTypeFont : TrueTypeFont
     {
+        //https://stackoverflow.com/a/26394949/4682355
+        public static unsafe uint FloatToUInt32Bits(float f)
+        {
+            return *((uint*)&f);
+        }
+
         private bool? isPostScript;
+        private bool isPostScriptBit;
 
         /**
          * Constructor. Clients should use the OTFParser to create a new OpenTypeFont object.
@@ -45,15 +47,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             get => base.Version;
             set
             {
-                //isPostScript = Float.floatToIntBits(value) == 0x469EA8A9; // OTTO
+                isPostScriptBit = FloatToUInt32Bits(value) == 0x469EA8A9; // OTTO
                 base.Version = value;
             }
         }
-        /**
-         * Get the "CFF" table for this OTF.
-         *
-         * @return The "CFF" table.
-         */
+
+        /// <summary>Get the "CFF" table for this OTF.</summary>
         public CFFTable CFF => (CFFTable)GetTable(CFFTable.TAG);
 
         public override GlyphTable Glyph => base.Glyph;
@@ -68,12 +67,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return base.GetPath(name);
         }
 
-        /**
-         * Returns true if this font is a PostScript outline font.
-         */
+        /// <summary>Returns true if this font is a PostScript outline font.</summary>
         public bool IsPostScript
         {
-            get => isPostScript ??= (tables.ContainsKey(CFFTable.TAG) || tables.ContainsKey("CFF2"));
+            get => isPostScript ??= (isPostScriptBit || tables.ContainsKey(CFFTable.TAG) || tables.ContainsKey("CFF2"));
         }
 
         /**
@@ -93,9 +90,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                     && tables.ContainsKey("CFF2"));
         }
 
-        /**
-         * Returns true if this font uses OpenType Layout (Advanced Typographic) tables.
-         */
+        /// <summary>Returns true if this font uses OpenType Layout (Advanced Typographic) tables.</summary>
         public bool HasLayoutTables()
         {
             return tables.ContainsKey("BASE") ||

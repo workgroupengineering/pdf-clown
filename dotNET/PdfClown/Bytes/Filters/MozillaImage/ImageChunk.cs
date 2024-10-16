@@ -13,16 +13,15 @@
  * limitations under the License.
  */
 
-/* eslint no-var: error */
 using System;
 
 namespace PdfClown.Bytes.Filters
 {
     internal class ImageChunk
     {
-        internal IByteStream Data;
+        internal IInputStream Data;
 
-        public ImageChunk(IByteStream data)
+        public ImageChunk(IInputStream data)
         {
             this.Data = data;
         }

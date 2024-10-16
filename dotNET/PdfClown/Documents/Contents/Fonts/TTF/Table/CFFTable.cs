@@ -21,14 +21,10 @@ using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * PostScript font program (compact font format).
-     */
+    /// <summary>PostScript font program(compact font format).</summary>
     public class CFFTable : TTFTable
     {
-        /**
-         * A tag that identifies this table type.
-         */
+        /// <summary>A tag that identifies this table type.</summary>
         public const string TAG = "CFF ";
 
         private CFFFont cffFont;
@@ -36,34 +32,26 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public CFFTable()
         { }
 
-        /**
-         * This will read the required data from the stream.
-         *
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @throws java.io.IOException If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read</param>
+        /// <param name="data">The stream to read the data from</param>
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             var bytes = data.ReadMemory((int)Length);
 
-            CFFParser parser = new CFFParser();
+            var parser = new CFFParser();
             cffFont = parser.Parse(bytes, new CFFBytesource(ttf))[0];
 
             initialized = true;
         }
 
-        /**
-         * Returns the CFF font, which is a compact representation of a PostScript Type 1, or CIDFont
-         */
+        /// <summary>Returns the CFF font, which is a compact representation of a PostScript Type 1, or CIDFont</summary>
         public CFFFont Font
         {
             get => cffFont;
         }
 
-        /**
-         * Allows bytes to be re-read later by CFFParser.
-         */
+        /// <summary>Allows bytes to be re-read later by CFFParser.</summary>
         internal class CFFBytesource : CFFParser.IByteSource
         {
             private readonly TrueTypeFont ttf;

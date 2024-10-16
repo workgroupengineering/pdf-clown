@@ -25,9 +25,8 @@
 
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
-
-using System.Collections.Generic;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Tools
 {
@@ -82,15 +81,6 @@ namespace PdfClown.Tools
             return true;
         }
 
-        /// <summary>Renders the specified contents into an image context.</summary>
-        /// <param name="contents">Source contents.</param>
-        /// <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
-        /// <returns>Image representing the rendered contents.</returns>
-        public SKBitmap Render(ContentWrapper contents, SKSize size)
-        {
-            return Render(contents, size, null);
-        }
-
         /// <summary>Renders the specified content context into an image context.</summary>
         /// <param name="contentContext">Source content context.</param>
         /// <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
@@ -98,17 +88,6 @@ namespace PdfClown.Tools
         public SKBitmap Render(IContentContext contentContext, SKSize size)
         {
             return Render(contentContext, size, null);
-        }
-
-        /// <summary>Renders the specified contents into an image context.</summary>
-        /// <param name="contents">Source contents.</param>
-        /// <param name="size">Image size expressed in device-space units (that is typically pixels).</param>
-        /// <param name="area">Content area to render; <code>null</code> corresponds to the entire
-        ///  <see cref="IContentContext.Box">content bounding box</see>.</param>
-        /// <returns>Image representing the rendered contents.</returns>
-        public SKBitmap Render(ContentWrapper contents, SKSize size, SKRect? area)
-        {
-            return Render(contents.ContentContext, size, area);
         }
 
         /// <summary>Renders the specified content context into an image context.</summary>

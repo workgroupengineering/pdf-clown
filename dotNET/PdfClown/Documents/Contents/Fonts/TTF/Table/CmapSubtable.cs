@@ -23,11 +23,10 @@ using PdfClown.Bytes;
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
 
-    /**
-     * A "cmap" subtable.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A "cmap" subtable.
+    /// @author Ben Litchfield
+    /// </summary>
     public class CmapSubtable : ICmapLookup
     {
         //private static readonly Log LOG = LogFactory.getLog(CmapSubtable.class);
@@ -42,18 +41,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private readonly Dictionary<int, List<int>> glyphIdToCharacterCodeMultiple = new Dictionary<int, List<int>>();
         private Dictionary<int, int> characterCodeToGlyphId = new Dictionary<int, int>();
 
-        /**
-         * @return Returns the platformEncodingId.
-         */
+        /// <summary>The Platform Encoding Id.</summary>
         public int PlatformEncodingId
         {
             get => platformEncodingId;
             set => platformEncodingId = value;
         }
 
-        /**
-         * @return Returns the platformId.
-         */
+        /// <summary>The Platform Id.</summary>
         public int PlatformId
         {
             get => platformId;
@@ -61,12 +56,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         }
 
         public ICollection<int> Glyphs => characterCodeToGlyphId.Values;
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+
+        /// <summary>
+        /// This will read the required data from the stream.
+        /// </summary>
+        /// <param name="data">The stream to read the data from.</param>
         public void InitData(IInputStream data)
         {
             platformId = data.ReadUInt16();
@@ -74,14 +68,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             subTableOffset = data.ReadUInt32();
         }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param cmap the CMAP this encoding belongs to.
-         * @param numGlyphs number of glyphs.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        // * This will read the required data from the stream.
+        // * @param cmap the CMAP this encoding belongs to.
+        // * @param numGlyphs number of glyphs.
+        // * @param data The stream to read the data from.
+
+
         public void InitSubtable(CmapTable cmap, int numGlyphs, IInputStream data)
         {
             data.Seek(cmap.Offset + subTableOffset);
@@ -688,22 +680,16 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return $"{{{PlatformId} {PlatformEncodingId}}}";
         }
 
-        /**
-         * 
-         * Class used to manage CMap - Format 2.
-         * 
-         */
+        /// <summary>Class used to manage CMap - Format 2.</summary>
         private struct SubHeader
         {
             private readonly ushort firstCode;
             private readonly ushort entryCount;
-            /**
-             * used to compute the GlyphIndex : P = glyphIndexArray.SubArray[pos] GlyphIndex = P + idDelta % 65536.
-             */
+            
+            /// <summary>used to compute the GlyphIndex : P = glyphIndexArray.SubArray[pos] GlyphIndex = P + idDelta % 65536.</summary>
             private readonly short idDelta;
-            /**
-             * Number of bytes to skip to reach the firstCode in the glyphIndexArray.
-             */
+            
+            /// <summary>Number of bytes to skip to reach the firstCode in the glyphIndexArray.</summary>
             private readonly int idRangeOffset;
 
             public SubHeader(ushort firstCodeValue, ushort entryCountValue, short idDeltaValue, int idRangeOffsetValue)
@@ -714,9 +700,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 idRangeOffset = idRangeOffsetValue;
             }
 
-            /**
-             * @return the firstCode
-             */
+            /// <summary>The firstCode</summary>
             public ushort FirstCode
             {
                 get => firstCode;

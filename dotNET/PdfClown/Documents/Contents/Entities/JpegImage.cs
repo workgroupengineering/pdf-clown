@@ -38,9 +38,7 @@ using System.IO;
 
 namespace PdfClown.Documents.Contents.Entities
 {
-    /**
-      <summary>JPEG image object [ISO 10918-1;JFIF:1.02].</summary>
-    */
+    /// <summary>JPEG image object [ISO 10918-1;JFIF:1.02].</summary>
     public sealed class JpegImage : Image
     {
         public JpegImage(Stream stream) : base(stream)

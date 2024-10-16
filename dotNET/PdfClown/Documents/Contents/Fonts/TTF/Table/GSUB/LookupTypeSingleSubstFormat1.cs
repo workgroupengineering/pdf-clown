@@ -19,32 +19,28 @@ using PdfClown.Documents.Contents.Fonts.TTF.Table.Common;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB
 {
-
-
-    /**
-     * This class is a part of the <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/gsub">GSUB — Glyph
-     * Substitution Table</a> system of tables in the Open Type Font specs. This is a part of the <a href=
-     * "https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#lookuptype-1-single-substitution-subtable">LookupType
-     * 1: Single Substitution Subtable</a>. It specifically models the
-     * <a href= "https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#11-single-substitution-format-1">Single
-     * Substitution Format 1</a>.
-     * 
-     * @author Palash Ray
-     *
-     */
+    /// <summary>
+    /// This class is a part of the<a href="https://docs.microsoft.com/en-us/typography/opentype/spec/gsub">GSUB — Glyph
+    /// Substitution Table</a> system of tables in the Open Type Font specs.This is a part of the <a href =
+    /// "https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#lookuptype-1-single-substitution-subtable" > LookupType
+    /// 1: Single Substitution Subtable</a>.It specifically models the
+    /// <a href = "https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#11-single-substitution-format-1" > Single
+    /// Substitution Format 1</a>.
+    /// @author Palash Ray
+    /// </summary> 
     public class LookupTypeSingleSubstFormat1 : LookupSubTable
     {
         private readonly short deltaGlyphID;
 
-        public LookupTypeSingleSubstFormat1(int substFormat, CoverageTable coverageTable, short deltaGlyphID)
+        public LookupTypeSingleSubstFormat1(ushort substFormat, CoverageTable coverageTable, short deltaGlyphID)
             : base(substFormat, coverageTable)
         {
             this.deltaGlyphID = deltaGlyphID;
         }
 
-        public override int DoSubstitution(int gid, int coverageIndex)
+        public override ushort DoSubstitution(ushort gid, int coverageIndex)
         {
-            return coverageIndex < 0 ? gid : gid + deltaGlyphID;
+            return coverageIndex < 0 ? gid : (ushort)(gid + deltaGlyphID);
         }
 
         public short DeltaGlyphID

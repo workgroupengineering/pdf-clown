@@ -29,17 +29,17 @@ namespace PdfClown.UI
         public const int step = 16;
         private const string ahScroll = "VerticalScrollAnimation";
         private SKPoint nullLocation;
-        private StackOrientation nullDirection = StackOrientation.Vertical;
+        private Orientation nullDirection = Orientation.Vertical;
         private double vHeight;
         private double vWidth;
         private double vsHeight;
         private double hsWidth;
         private double kWidth;
         private double kHeight;
-        private readonly SvgImage upSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-up");
-        private readonly SvgImage downSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-down");
-        private readonly SvgImage leftSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-left");
-        private readonly SvgImage rightSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-right");
+        private readonly SvgImage upSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-up");
+        private readonly SvgImage downSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-down");
+        private readonly SvgImage leftSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-left");
+        private readonly SvgImage rightSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-right");
         private bool verticalHovered;
         private bool нorizontalHovered;
         private Thickness verticalPadding = new Thickness(0, 0, 0, step);
@@ -249,7 +249,7 @@ namespace PdfClown.UI
                 e.InContact));
             if (e.ActionType == SKTouchAction.WheelChanged)
             {
-                OnScrolled(e.WheelDelta, KeyModifiers);
+                OnScrolled(e.WheelDelta);
             }
         }
 
@@ -299,13 +299,13 @@ namespace PdfClown.UI
         protected virtual void OnVerticalValueChanged(double oldValue, double newValue)
         {
             InvalidateSurface();
-            verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue, KeyModifiers));
+            verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
         }
 
         protected virtual void OnHorizontalValueChanged(double oldValue, double newValue)
         {
             InvalidateSurface();
-            нorizontalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue, KeyModifiers));
+            нorizontalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
         }
 
         private void OnTargetChanged(SKGLScrollView oldValue, SKGLScrollView newValue)
@@ -352,11 +352,11 @@ namespace PdfClown.UI
                     if (nullLocation != SKPoint.Empty)
                     {
                         var newLocation = location - nullLocation;
-                        if (nullDirection == StackOrientation.Vertical)
+                        if (nullDirection == Orientation.Vertical)
                         {
                             VerticalValue += newLocation.Y / kHeight;
                         }
-                        else if (nullDirection == StackOrientation.Horizontal)
+                        else if (nullDirection == Orientation.Horizontal)
                         {
                             HorizontalValue += newLocation.X / kWidth;
                         }
@@ -388,7 +388,7 @@ namespace PdfClown.UI
                         if (valueBound.Contains(location))
                         {
                             nullLocation = location;
-                            nullDirection = StackOrientation.Vertical;
+                            nullDirection = Orientation.Vertical;
                             return;
                         }
 
@@ -415,7 +415,7 @@ namespace PdfClown.UI
                         if (valueBound.Contains(location))
                         {
                             nullLocation = location;
-                            nullDirection = StackOrientation.Horizontal;
+                            nullDirection = Orientation.Horizontal;
                             return;
                         }
 
@@ -427,7 +427,7 @@ namespace PdfClown.UI
 
         private void OnTargetScrolled(object sender, ScrollEventArgs e)
         {
-            OnScrolled(e.Delta, KeyModifiers.None);
+            OnScrolled(e.WheelDelta);
         }
 
         protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
@@ -569,10 +569,10 @@ namespace PdfClown.UI
             return args.Handled;
         }
 
-        protected virtual void OnScrolled(int delta, KeyModifiers keyModifiers)
+        protected virtual void OnScrolled(int delta)
         {
             VerticalValue = VerticalValue - step * 2 * Math.Sign(delta);
-            verticalScrolledHandler?.Invoke(this, new ScrollEventArgs(delta, keyModifiers));
+            verticalScrolledHandler?.Invoke(this, new ScrollEventArgs(delta));
         }
 
         public virtual bool ContainsCaptureBox(double x, double y)

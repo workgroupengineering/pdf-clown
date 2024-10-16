@@ -25,8 +25,6 @@
 
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Objects
 {
     [PDF(VersionEnum.PDF10)]

@@ -23,17 +23,16 @@
   this list of conditions.
 */
 
-using PdfClown.Objects;
-
-using System;
-using System.Collections.Generic;
-using SkiaSharp;
-using PdfClown.Tools;
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Util;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Objects;
+using PdfClown.Tools;
+using PdfClown.Util;
+using SkiaSharp;
+using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -179,7 +178,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (Box.Width == 0 || Box.Height == 0)
             {
                 SKPoint location = Box.Location;
-                return SKRect.Create(location + new SKPoint(0, -size), new SKSize(size, size));
+                return Box = SKRect.Create(location + new SKPoint(0, -size), new SKSize(size, size));
             }
             return Box;
         }

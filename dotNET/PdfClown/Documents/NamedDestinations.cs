@@ -32,9 +32,7 @@ using System;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Named destinations [PDF:1.6:3.6.3].</summary>
-    */
+    /// <summary>Named destinations [PDF:1.6:3.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class NamedDestinations : NameTree<Destination>
     {

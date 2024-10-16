@@ -1,0 +1,22 @@
+﻿@page "/"
+
+@using PdfClown.UI.Blazor
+
+<PageTitle>Pdf View</PageTitle>
+
+<h1>Pdf View</h1>
+<div><InputFile OnChange="OnInputFileChange">Open File</InputFile></div>
+<PdfView @ref="pdfView" class="canvas-container" />
+
+@code {
+    PdfView pdfView = null;
+
+    private async void OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        using var stream = e.File.OpenReadStream(100 * 1024 * 1024);
+        var fileStream = new MemoryStream((int)stream.Length);
+        await stream.CopyToAsync(fileStream);
+        fileStream.Position = 0;
+        pdfView.Load(fileStream);
+    }
+}

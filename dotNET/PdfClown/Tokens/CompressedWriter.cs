@@ -61,17 +61,13 @@ namespace PdfClown.Tokens
 
                 // 2.1.1. Modified indirect objects serialization.
                 XRefEntry prevFreeEntry = null;
-                /*
-                  NOTE: Any uncompressed indirect object will be compressed.
-                */
+                // NOTE: Any uncompressed indirect object will be compressed.
                 ObjectStream objectStream = null;
-                /*
-                  NOTE: Any previously-compressed indirect object will have its original object stream
-                  updated through a new extension object stream.
-                */
+                // NOTE: Any previously-compressed indirect object will have its original object stream
+                // updated through a new extension object stream.
                 IDictionary<int, ObjectStream> extensionObjectStreams = new Dictionary<int, ObjectStream>();
                 int indirectObjectsPrecompressCount = indirectObjects.Count;
-                foreach (PdfIndirectObject indirectObject in indirectObjects.ModifiedObjects.Values.ToList())
+                foreach (PdfIndirectObject indirectObject in indirectObjects.ModifiedObjects.OrderBy(x => x.Key).Select(x => x.Value).ToList())
                 {
                     if (indirectObject.IsCompressible())
                     {

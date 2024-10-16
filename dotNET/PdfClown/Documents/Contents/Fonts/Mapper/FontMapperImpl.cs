@@ -23,7 +23,6 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-
     /**
      * Font mapper, locates non-embedded fonts via a pluggable FontProvider.
      *
@@ -73,7 +72,7 @@ namespace PdfClown.Documents.Contents.Fonts
             try
             {
                 string ttfName = "fonts.ttf.LiberationSans-Regular";
-                var ttfStream = typeof(IFontMapper).Assembly.GetManifestResourceStream(ttfName);
+                using var ttfStream = typeof(IFontMapper).Assembly.GetManifestResourceStream(ttfName);
                 if (ttfStream == null)
                 {
                     throw new IOException("Error loading resource: " + ttfName);

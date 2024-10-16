@@ -31,30 +31,26 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Show a text string' operation [PDF:1.6:5.3.2].</summary>
-    */
+    /// <summary>'Show a text string' operation [PDF:1.6:5.3.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class ShowSimpleText : ShowText
     {
         public static readonly string OperatorKeyword = "Tj";
 
-        /**
-          <param name="text">Text encoded using current font's encoding.</param>
-        */
+        /// <param name="text">Text encoded using current font's encoding.</param>
         public ShowSimpleText(Memory<byte> text) : base(OperatorKeyword, new PdfByteString(text))
         { }
 
         public ShowSimpleText(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
-        public override Memory<byte> Text
+        public override Memory<byte> TextBytes
         {
             get => ((PdfString)operands[0]).RawValue;
             set => operands[0] = new PdfByteString(value);
         }
 
-        public override IEnumerable<PdfDirectObject> Value
+        public override IEnumerable<PdfDirectObject> TextElements
         {
             get => operands;
             set => operands[0] = value.FirstOrDefault();

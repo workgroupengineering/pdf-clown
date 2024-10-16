@@ -1,12 +1,8 @@
 ﻿using PdfClown.Tools;
-using PdfClown.UI;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
-using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace PdfClown.UI
@@ -24,59 +20,84 @@ namespace PdfClown.UI
 
         public static readonly BindableProperty VerticalValueProperty = BindableProperty.Create(nameof(VerticalValue), typeof(double), typeof(SKScrollView), 0D,
             propertyChanged: (bidable, oldValue, newValue) => ((SKScrollView)bidable).OnVerticalValueChanged((double)oldValue, (double)newValue));
+
         public static readonly BindableProperty HorizontalValueProperty = BindableProperty.Create(nameof(HorizontalValue), typeof(double), typeof(SKScrollView), 0D,
             propertyChanged: (bidable, oldValue, newValue) => ((SKScrollView)bidable).OnHorizontalValueChanged((double)oldValue, (double)newValue));
 
-        public static readonly BindableProperty TargetProperty = BindableProperty.Create(nameof(Target), typeof(SKScrollView), typeof(SKScrollView), null,
-            propertyChanged: (bidable, oldValue, newValue) => ((SKScrollView)bidable).OnTargetChanged((SKScrollView)oldValue, (SKScrollView)newValue));
+        protected EventHandler<ScrollEventArgs> verticalScrolledHandler;
+        protected EventHandler<ScrollEventArgs> нorizontalScrolledHandler;
 
-        public const int step = 16;
-        private const string ahScroll = "VerticalScrollAnimation";
+
+        private static readonly SKPaint bottonPaint = new SKPaint
+        {
+            Style = SKPaintStyle.StrokeAndFill,
+            StrokeWidth = 1,
+            IsAntialias = true,
+            Color = new SKColor(190, 190, 190)
+        };
+
+        private static readonly SKPaint bottonPaintHover = new SKPaint
+        {
+            Style = SKPaintStyle.StrokeAndFill,
+            StrokeWidth = 1,
+            IsAntialias = true,
+            Color = new SKColor(160, 160, 160)
+        };
+
+        private static readonly SKPaint bottonPaintPressed = new SKPaint
+        {
+            Style = SKPaintStyle.StrokeAndFill,
+            StrokeWidth = 1,
+            IsAntialias = true,
+            Color = new SKColor(120, 120, 120)
+        };
+
+        private static readonly SKPaint scrollPaint = new SKPaint
+        {
+            Style = SKPaintStyle.StrokeAndFill,
+            StrokeWidth = 1,
+            IsAntialias = true,
+            Color = new SKColor(240, 240, 240)
+        };
+
+        private static readonly SKPaint svgPaint = new SKPaint
+        {
+            IsAntialias = true,
+            ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Black, SKBlendMode.SrcIn),
+            FilterQuality = SKFilterQuality.Medium
+        };
+
+        private static readonly SvgImage upSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-up");
+        private static readonly SvgImage downSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-down");
+        private static readonly SvgImage leftSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-left");
+        private static readonly SvgImage rightSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-right");
+        private static readonly SvgImage shiftVSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "line");
+        private static readonly SvgImage shiftHSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "link");
+
+
+        private const string ahScroll = "ScrollAnimation";
+        private const string ahVerticalScroll = "VerticalScrollAnimation";
+        private const string ahHorizontalScroll = "HorizontalScrollAnimation";
         private SKPoint nullLocation;
-        private StackOrientation nullDirection = StackOrientation.Vertical;
+
+        private Orientation nullDirection = Orientation.Vertical;
         private double vHeight;
         private double vWidth;
         private double vsHeight;
         private double hsWidth;
         private double kWidth;
         private double kHeight;
-        private readonly SvgImage upSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-up");
-        private readonly SvgImage downSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-down");
-        private readonly SvgImage leftSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-left");
-        private readonly SvgImage rightSvg = SvgImage.GetCache(typeof(SKScrollView).Assembly, "caret-right");
         private bool verticalHovered;
         private bool нorizontalHovered;
-        private Thickness verticalPadding = new Thickness(0, 0, 0, step);
-        private Thickness horizontalPadding = new Thickness(0, 0, step, 0);
-
-        protected EventHandler<ScrollEventArgs> verticalScrolledHandler;
-        protected EventHandler<ScrollEventArgs> нorizontalScrolledHandler;
-        private float xScaleFactor = 1F;
-        private float yScaleFactor = 1F;
-
-        private readonly SKPaint bottonPaint = new SKPaint
-        {
-            Style = SKPaintStyle.StrokeAndFill,
-            StrokeWidth = 1,
-            IsAntialias = true,
-            Color = SKColors.WhiteSmoke.WithAlpha(200)
-        };
-
-        private readonly SKPaint scrollPaint = new SKPaint
-        {
-            Style = SKPaintStyle.StrokeAndFill,
-            StrokeWidth = 1,
-            IsAntialias = true,
-            Color = SKColors.DarkGray.WithAlpha(180)
-        };
-
-        private SKPaint svgPaint = new SKPaint
-        {
-            ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Black, SKBlendMode.SrcIn)
-        };
+        private SKRect verticalPadding = new SKRect(0, 0, 0, DefaultSKStyles.StepSize);
+        private SKRect horizontalPadding = new SKRect(0, 0, DefaultSKStyles.StepSize, 0);
+        private bool isDrawing;
+        private SvgImage hoverButton;
+        private SvgImage pressedButton;
 
         public SKScrollView()
         {
+            Envir.Init();
             IsTabStop = true;
             IgnorePixelScaling = false;
             EnableTouchEvents = true;
@@ -89,6 +110,8 @@ namespace PdfClown.UI
             set => SetValue(CursorProperty, value);
         }
 
+        public bool AllowScrollView { get; set; } = true;
+
         public event EventHandler<ScrollEventArgs> VerticalScrolled
         {
             add => verticalScrolledHandler += value;
@@ -100,14 +123,7 @@ namespace PdfClown.UI
             add => нorizontalScrolledHandler += value;
             remove => нorizontalScrolledHandler -= value;
         }
-
         public event EventHandler<CanvasKeyEventArgs> KeyDown;
-
-        public SKScrollView Target
-        {
-            get => (SKScrollView)GetValue(TargetProperty);
-            set => SetValue(TargetProperty, value);
-        }
 
         public double VerticalMaximum
         {
@@ -126,10 +142,17 @@ namespace PdfClown.UI
             get => (double)GetValue(VerticalValueProperty);
             set
             {
-                var max = VerticalMaximum - Height + step;
-                value = value < 0 || max < 0 ? 0 : value > max ? max : value;
+                if (!VerticalScrollBarVisible && value != 0)
+                {
+                    SetValue(VerticalValueProperty, 0);
+                }
+                else
+                {
+                    var max = VerticalMaximum - Height + DefaultSKStyles.StepSize;
+                    value = value < 0 || max < 0 ? 0 : value > max ? max : value;
 
-                SetValue(VerticalValueProperty, value);
+                    SetValue(VerticalValueProperty, value);
+                }
             }
         }
 
@@ -138,7 +161,7 @@ namespace PdfClown.UI
             get => (double)GetValue(HorizontalValueProperty);
             set
             {
-                var max = HorizontalMaximum - Width + step;
+                var max = HorizontalMaximum - Width + DefaultSKStyles.StepSize;
                 value = value < 0 || max < 0 ? 0 : value > max ? max : value;
 
                 SetValue(HorizontalValueProperty, value);
@@ -147,13 +170,15 @@ namespace PdfClown.UI
 
         public KeyModifiers KeyModifiers { get; set; }
 
-        public Animation ScrollAnimation { get; protected set; }
+        public Animation ScrollAnimation { get; private set; }
+        public Animation VerticalScrollAnimation { get; private set; }
+        public Animation HorizontalScrollAnimation { get; private set; }
 
-        public double VericalSize => VerticalHovered ? 14 : 7;
+        public double VericalSize => VerticalHovered ? DefaultSKStyles.MaxSize : DefaultSKStyles.MinSize;
 
-        public double HorizontalSize => HorizontalHovered ? 14 : 7;
+        public double HorizontalSize => HorizontalHovered ? DefaultSKStyles.MaxSize : DefaultSKStyles.MinSize;
 
-        public Thickness VerticalPadding
+        public SKRect VerticalPadding
         {
             get => verticalPadding;
             set
@@ -166,7 +191,7 @@ namespace PdfClown.UI
             }
         }
 
-        public Thickness HorizontalPadding
+        public SKRect HorizontalPadding
         {
             get => horizontalPadding;
             set
@@ -189,7 +214,7 @@ namespace PdfClown.UI
                     verticalHovered = value;
                     OnPropertyChanged();
                     OnVerticalMaximumChanged(1, VerticalMaximum);
-                    InvalidateSurface();
+                    InvalidatePaint();
                 }
             }
         }
@@ -204,7 +229,33 @@ namespace PdfClown.UI
                     нorizontalHovered = value;
                     OnPropertyChanged();
                     OnHorizontalMaximumChanged(1, HorizontalMaximum);
-                    InvalidateSurface();
+                    InvalidatePaint();
+                }
+            }
+        }
+
+        protected SvgImage PressedButton
+        {
+            get => pressedButton;
+            set
+            {
+                if (pressedButton != value)
+                {
+                    pressedButton = value;
+                    InvalidatePaint();
+                }
+            }
+        }
+
+        protected SvgImage HoverButton
+        {
+            get => hoverButton;
+            set
+            {
+                if (hoverButton != value)
+                {
+                    hoverButton = value;
+                    InvalidatePaint();
                 }
             }
         }
@@ -213,51 +264,21 @@ namespace PdfClown.UI
 
         public event EventHandler<SKPaintSurfaceEventArgs> PaintOver;
 
-        public bool VerticalScrollBarVisible => VerticalMaximum >= (Height + step);
+        public bool VerticalScrollBarVisible => VerticalMaximum >= (Height + DefaultSKStyles.StepSize);
 
-        public bool HorizontalScrollBarVisible => HorizontalMaximum >= (Width + step);
-
-        public float XScaleFactor
-        {
-            get => xScaleFactor;
-            set
-            {
-                if (xScaleFactor != value)
-                {
-                    xScaleFactor = value;
-                    OnWindowScaleChanged();
-                }
-            }
-        }
-
-        public float YScaleFactor
-        {
-            get => yScaleFactor;
-            set
-            {
-                if (yScaleFactor != value)
-                {
-                    yScaleFactor = value;
-                    OnWindowScaleChanged();
-                }
-            }
-        }
+        public bool HorizontalScrollBarVisible => HorizontalMaximum >= (Width + DefaultSKStyles.StepSize);
 
         public bool WheelTouchSupported { get; set; } = true;
 
+        public event EventHandler ScrollComplete;
+
         protected override void OnTouch(SKTouchEventArgs e)
         {
-            base.OnTouch(new SKTouchEventArgs(e.Id, e.ActionType, e.MouseButton, e.DeviceType,
-                new SkiaSharp.SKPoint(e.Location.X / XScaleFactor, e.Location.Y / YScaleFactor),
-                e.InContact));
+            base.OnTouch(e);
             if (WheelTouchSupported && e.ActionType == SKTouchAction.WheelChanged)
             {
-                OnScrolled(e.WheelDelta, KeyModifiers);
+                OnScrolled(e.WheelDelta);
             }
-        }
-
-        protected virtual void OnWindowScaleChanged()
-        {
         }
 
         protected override void OnSizeAllocated(double width, double height)
@@ -269,46 +290,68 @@ namespace PdfClown.UI
 
         private void OnVerticalMaximumChanged(double oldValue, double newValue)
         {
-            vsHeight = (Height - verticalPadding.VerticalThickness) - VericalSize * 2;
-            kHeight = vsHeight / VerticalMaximum;
-            vHeight = (float)((Height - step) * kHeight);
+            vsHeight = (Height - (verticalPadding.Top + verticalPadding.Bottom)) - VericalSize * 2;
+            kHeight = vsHeight / newValue;
+            vHeight = (float)((Height - DefaultSKStyles.StepSize) * kHeight);
 
             if (vHeight < VericalSize)
             {
                 vHeight = VericalSize;
-                vsHeight = (Height - verticalPadding.VerticalThickness) - (VericalSize * 2 + vHeight);
-                kHeight = vsHeight / VerticalMaximum;
+                vsHeight = (Height - (verticalPadding.Top + verticalPadding.Bottom)) - (VericalSize * 2 + vHeight);
+                kHeight = vsHeight / newValue;
             }
+            //else
+            //{
+            //    vHeight += VericalSize;
+            //}
 
             VerticalValue = VerticalValue;
         }
 
         private void OnHorizontalMaximumChanged(double oldValue, double newValue)
         {
-            hsWidth = (Width - horizontalPadding.HorizontalThickness) - HorizontalSize * 2;
-            kWidth = hsWidth / HorizontalMaximum;
-            vWidth = (float)((Width - step) * kWidth);
+            hsWidth = (Width - (horizontalPadding.Left + horizontalPadding.Right)) - HorizontalSize * 2;
+            kWidth = hsWidth / newValue;
+            vWidth = (float)((Width - DefaultSKStyles.StepSize) * kWidth);
 
-            if (vWidth < HorizontalSize)
-            {
-                vWidth = HorizontalSize;
-                hsWidth = (Width - horizontalPadding.HorizontalThickness) - (HorizontalSize * 2 + vWidth);
-                kWidth = hsWidth / HorizontalMaximum;
-            }
+            //if (vWidth < HorizontalSize)
+            //{
+            //    vWidth = HorizontalSize;
+            //    hsWidth = (Width - horizontalPadding.HorizontalThickness) - (HorizontalSize * 2 + vWidth);
+            //    kWidth = hsWidth / newValue;
+            //}
+            //else
+            //{
+            //    vWidth += HorizontalSize;
+            //}
 
             HorizontalValue = HorizontalValue;
         }
 
         protected virtual void OnVerticalValueChanged(double oldValue, double newValue)
         {
-            InvalidateSurface();
-            verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue, KeyModifiers));
+            if (VerticalScrollAnimation == null)
+            {
+                verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
+                InvalidatePaint();
+            }
+            else
+            {
+                InvalidatePaint();
+            }
         }
 
         protected virtual void OnHorizontalValueChanged(double oldValue, double newValue)
         {
-            InvalidateSurface();
-            нorizontalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue, KeyModifiers));
+            if (HorizontalScrollAnimation == null)
+            {
+                InvalidatePaint();
+                нorizontalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
+            }
+            else
+            {
+                InvalidatePaint();
+            }
         }
 
         private void OnTargetChanged(SKScrollView oldValue, SKScrollView newValue)
@@ -326,10 +369,18 @@ namespace PdfClown.UI
 
         protected virtual void OnTouch(object sender, SKTouchEventArgs e)
         {
-            var location = e.Location;// new SKPoint(e.Location.X / XScaleFactor, e.Location.Y / YScaleFactor);
+            //if (ScrollBarVisible)
+            //{
+            //    var scrollBound = GetScrollBounds();
+            //    if (scrollBound.Contains(e.Location))
+            //    {
+            //        e.Handled = true;
+            //    }
+            //}
             switch (e.ActionType)
             {
                 case SKTouchAction.Released:
+                    PressedButton = null;
                     if (nullLocation != SKPoint.Empty)
                     {
                         nullLocation = SKPoint.Empty;
@@ -337,12 +388,70 @@ namespace PdfClown.UI
                     }
                     goto case SKTouchAction.Exited;
                 case SKTouchAction.Exited:
+                    HoverButton = null;
+                    goto case SKTouchAction.Moved;
                 case SKTouchAction.Moved:
                     if (nullLocation == SKPoint.Empty)
                     {
-                        VerticalHovered = VerticalScrollBarVisible && GetVerticalScrollBounds().Contains(location);
-                        HorizontalHovered = HorizontalScrollBarVisible && GetHorizontalScrollBounds().Contains(location);
+                        VerticalHovered = VerticalScrollBarVisible && GetVerticalScrollBounds().Contains(e.Location);
+                        HorizontalHovered = HorizontalScrollBarVisible && GetHorizontalScrollBounds().Contains(e.Location);
+
+                        if (VerticalHovered)
+                        {
+                            e.Handled = true;
+
+                            if (GetUpBounds().Contains(e.Location))
+                            {
+                                HoverButton = upSvg;
+                            }
+                            else if (GetDownBounds().Contains(e.Location))
+                            {
+                                HoverButton = downSvg;
+                            }
+                            else if (GetVerticalValueBounds().Contains(e.Location))
+                            {
+                                HoverButton = shiftVSvg;
+                            }
+                            else
+                            {
+                                HoverButton = null;
+                            }
+                        }
+                        else if (HorizontalHovered)
+                        {
+                            e.Handled = true;
+
+                            if (GetLeftBounds().Contains(e.Location))
+                            {
+                                HoverButton = leftSvg;
+                            }
+                            else if (GetRightBounds().Contains(e.Location))
+                            {
+                                HoverButton = rightSvg;
+                            }
+                            else if (GetHorizontalValueBounds().Contains(e.Location))
+                            {
+                                HoverButton = shiftHSvg;
+                            }
+                            else
+                            {
+                                HoverButton = null;
+                            }
+                        }
+                        else
+                            HoverButton = null;
                     }
+                    break;
+                case SKTouchAction.WheelChanged:
+                    //if (VerticalScrollBarVisible)
+                    //{
+                    //    var temp = VerticalValue;
+                    //    VerticalValue = VerticalValue - step * Math.Sign(e.WheelDelta);
+                    //    if (temp != VerticalValue)
+                    //    {
+                    //        e.Handled = true;
+                    //    }
+                    //}
                     break;
             }
 
@@ -354,75 +463,81 @@ namespace PdfClown.UI
                 case SKTouchAction.Moved:
                     if (nullLocation != SKPoint.Empty)
                     {
-                        var newLocation = location - nullLocation;
-                        if (nullDirection == StackOrientation.Vertical)
+                        var newLocation = e.Location - nullLocation;
+                        if (nullDirection == Orientation.Vertical)
                         {
                             VerticalValue += newLocation.Y / kHeight;
                         }
-                        else if (nullDirection == StackOrientation.Horizontal)
+                        else if (nullDirection == Orientation.Horizontal)
                         {
                             HorizontalValue += newLocation.X / kWidth;
                         }
-                        nullLocation = location;
+                        nullLocation = e.Location;
                         e.Handled = true;
                     }
                     break;
                 case SKTouchAction.Pressed:
                     var verticalScrollBound = GetVerticalScrollBounds();
                     var нorizontalScrollBound = GetHorizontalScrollBounds();
-                    if (verticalScrollBound.Contains(location))
+                    if (verticalScrollBound.Contains(e.Location))
                     {
                         e.Handled = true;
                         var upBound = GetUpBounds();
-                        if (upBound.Contains(location))
+                        if (upBound.Contains(e.Location))
                         {
-                            VerticalValue -= step;
+                            VerticalValue -= DefaultSKStyles.StepSize;
+                            PressedButton = upSvg;
                             return;
                         }
 
                         var downBound = GetDownBounds();
-                        if (downBound.Contains(location))
+                        if (downBound.Contains(e.Location))
                         {
-                            VerticalValue += step;
+                            VerticalValue += DefaultSKStyles.StepSize;
+                            PressedButton = downSvg;
                             return;
                         }
 
                         var valueBound = GetVerticalValueBounds();
-                        if (valueBound.Contains(location))
+                        if (valueBound.Contains(e.Location))
                         {
-                            nullLocation = location;
-                            nullDirection = StackOrientation.Vertical;
+                            nullLocation = e.Location;
+                            nullDirection = Orientation.Vertical;
+                            PressedButton = shiftVSvg;
                             return;
                         }
 
-                        VerticalValue = location.Y / kHeight - Height / 2;
+                        VerticalValue = e.Location.Y / kHeight - Height / 2;
                     }
-                    if (нorizontalScrollBound.Contains(location))
+                    if (нorizontalScrollBound.Contains(e.Location))
                     {
                         e.Handled = true;
                         var leftBound = GetLeftBounds();
-                        if (leftBound.Contains(location))
+                        if (leftBound.Contains(e.Location))
                         {
-                            HorizontalValue -= step;
+                            HorizontalValue -= DefaultSKStyles.StepSize;
+                            PressedButton = leftSvg;
                             return;
                         }
 
                         var rightBound = GetRightBounds();
-                        if (rightBound.Contains(location))
+                        if (rightBound.Contains(e.Location))
                         {
-                            HorizontalValue += step;
+                            HorizontalValue += DefaultSKStyles.StepSize;
+                            PressedButton = rightSvg;
                             return;
                         }
 
                         var valueBound = GetHorizontalValueBounds();
-                        if (valueBound.Contains(location))
+                        if (valueBound.Contains(e.Location))
                         {
-                            nullLocation = location;
-                            nullDirection = StackOrientation.Horizontal;
+                            nullLocation = e.Location;
+                            nullDirection = Orientation.Horizontal;
+                            PressedButton = shiftHSvg;
                             return;
                         }
 
-                        HorizontalValue = location.X / kWidth - Width / 2;
+                        HorizontalValue = e.Location.X / kWidth - Width / 2;
                     }
                     break;
             }
@@ -430,44 +545,61 @@ namespace PdfClown.UI
 
         private void OnTargetScrolled(object sender, ScrollEventArgs e)
         {
-            OnScrolled(e.Delta, KeyModifiers.None);
+            OnScrolled(e.WheelDelta);
+        }
+
+        public virtual bool OnScrolled(int delta)
+        {
+            var temp = VerticalValue;
+            VerticalAnimateScroll(VerticalValue - (delta * 1.5), 16, 160);
+            return temp != VerticalValue;
         }
 
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
-            XScaleFactor = (float)(e.Info.Width / Width);
-            YScaleFactor = (float)(e.Info.Height / Height);
+            var XScaleFactor = (float)(e.Info.Width / Width);
+            var YScaleFactor = (float)(e.Info.Height / Height);
 
             canvas.Scale(XScaleFactor, YScaleFactor);
             canvas.Clear(BackgroundColor.ToSKColor());
-            //canvas.Clear();
-
             base.OnPaintSurface(e);
 
-            //if (!IsVisible)
-            //    return;
+            if (!IsVisible || isDrawing)
+                return;
+            isDrawing = true;
+            try
+            {
+                OnPaintContent(e);
+                PaintScrollBars(canvas);
+                PaintOver?.Invoke(this, e);
+            }
+            finally
+            {
+                isDrawing = false;
+            }
+        }
 
-            canvas.Save();
-            OnPaintContent(e);
-            canvas.Restore();
-
+        private void PaintScrollBars(SKCanvas canvas)
+        {
             if (VerticalScrollBarVisible)
             {
                 canvas.DrawRect(GetVerticalScrollBounds(), scrollPaint);
                 // if (Hovered)
                 {
                     var upBound = GetUpBounds();
-                    canvas.DrawRect(upBound, bottonPaint);
+                    if (HoverButton == upSvg)
+                        canvas.DrawRect(upBound, PressedButton == upSvg ? bottonPaintPressed : bottonPaintHover);
                     SvgImage.DrawImage(canvas, upSvg, svgPaint, upBound, 0.5F);
 
                     var downBound = GetDownBounds();
-                    canvas.DrawRect(downBound, bottonPaint);
+                    if (HoverButton == downSvg)
+                        canvas.DrawRect(downBound, PressedButton == downSvg ? bottonPaintPressed : bottonPaintHover);
                     SvgImage.DrawImage(canvas, downSvg, svgPaint, downBound, 0.5F);
                 }
                 var valueBound = GetVerticalValueBounds();
                 valueBound.Inflate(-1, -1);
-                canvas.DrawRect(valueBound, bottonPaint);
+                canvas.DrawRect(valueBound, HoverButton == shiftVSvg ? PressedButton == shiftVSvg ? bottonPaintPressed : bottonPaintHover : bottonPaint);
             }
 
             if (HorizontalScrollBarVisible)
@@ -476,18 +608,19 @@ namespace PdfClown.UI
                 // if (Hovered)
                 {
                     var leftBound = GetLeftBounds();
-                    canvas.DrawRect(leftBound, bottonPaint);
+                    if (HoverButton == leftSvg)
+                        canvas.DrawRect(leftBound, PressedButton == leftSvg ? bottonPaintPressed : bottonPaintHover);
                     SvgImage.DrawImage(canvas, leftSvg, svgPaint, leftBound, 0.5F);
 
                     var rightBound = GetRightBounds();
-                    canvas.DrawRect(rightBound, bottonPaint);
+                    if (HoverButton == rightSvg)
+                        canvas.DrawRect(rightBound, PressedButton == rightSvg ? bottonPaintPressed : bottonPaintHover);
                     SvgImage.DrawImage(canvas, rightSvg, svgPaint, rightBound, 0.5F);
                 }
                 var valueBound = GetHorizontalValueBounds();
                 valueBound.Inflate(-1, -1);
-                canvas.DrawRect(valueBound, bottonPaint);
+                canvas.DrawRect(valueBound, HoverButton == shiftHSvg ? PressedButton == shiftHSvg ? bottonPaintPressed : bottonPaintHover : bottonPaint);
             }
-            PaintOver?.Invoke(this, e);
         }
 
         protected virtual void OnPaintContent(SKPaintSurfaceEventArgs e)
@@ -500,14 +633,14 @@ namespace PdfClown.UI
             return SKRect.Create((float)(Width - VericalSize),
                 (float)verticalPadding.Top,
                 (float)VericalSize,
-                (float)(Height - verticalPadding.VerticalThickness));
+                (float)(Height - (verticalPadding.Top + verticalPadding.Bottom)));
         }
 
         public SKRect GetHorizontalScrollBounds()
         {
             return SKRect.Create((float)horizontalPadding.Left,
                 (float)(Height - HorizontalSize),
-                (float)(Width - horizontalPadding.HorizontalThickness),
+                (float)(Width - (horizontalPadding.Left + horizontalPadding.Right)),
                 (float)HorizontalSize);
         }
 
@@ -548,7 +681,7 @@ namespace PdfClown.UI
 
         private SKRect GetHorizontalValueBounds()
         {
-            var left = HorizontalSize + horizontalPadding.Left + (float)(HorizontalValue * kWidth);
+            var left = HorizontalSize + horizontalPadding.Left + (HorizontalValue * kWidth);
             return SKRect.Create((float)left, (float)(Height - HorizontalSize), (float)vWidth, (float)HorizontalSize);
         }
 
@@ -557,8 +690,35 @@ namespace PdfClown.UI
             VerticalValue = top;
         }
 
+        public void HorizontalAnimateScroll(double newValue, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = null)
+        {
+            if (HorizontalValue == newValue)
+                return;
+            if (HorizontalScrollAnimation != null)
+            {
+                this.AbortAnimation(ahHorizontalScroll);
+            }
+            HorizontalScrollAnimation = new Animation(v => HorizontalValue = v, HorizontalValue, newValue, asing);
+            HorizontalScrollAnimation.Commit(this, ahHorizontalScroll, rate, legth, finished: OnScrollComplete);
+        }
+
+        public void VerticalAnimateScroll(double newValue, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = null)
+        {
+            if (VerticalValue == newValue)
+                return;
+            if (VerticalScrollAnimation != null)
+            {
+                this.AbortAnimation(ahVerticalScroll);
+            }
+            VerticalScrollAnimation = new Animation(v => VerticalValue = v, VerticalValue, newValue, asing);
+            VerticalScrollAnimation.Commit(this, ahVerticalScroll, rate, legth, finished: OnScrollComplete);
+        }
+
         protected void AnimateScroll(float top, double left)
         {
+            if (VerticalValue == top
+                && HorizontalValue == left)
+                return;
             if (ScrollAnimation != null)
             {
                 this.AbortAnimation(ahScroll);
@@ -575,15 +735,25 @@ namespace PdfClown.UI
 
         public virtual bool OnKeyDown(string keyName, KeyModifiers modifiers)
         {
+            KeyModifiers = modifiers;
             var args = new CanvasKeyEventArgs(keyName, modifiers);
             KeyDown?.Invoke(this, args);
             return args.Handled;
         }
 
-        public virtual void OnScrolled(int delta, KeyModifiers keyModifiers)
+        protected void OnScrollComplete(double arg1, bool arg2)
         {
-            VerticalValue = VerticalValue - delta;
-            verticalScrolledHandler?.Invoke(this, new ScrollEventArgs(delta, keyModifiers));
+            if (HorizontalScrollAnimation != null)
+            {
+                HorizontalScrollAnimation = null;
+                нorizontalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)HorizontalValue));
+            }
+            if (VerticalScrollAnimation != null)
+            {
+                VerticalScrollAnimation = null;
+                verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)VerticalValue));
+            }
+            ScrollComplete?.Invoke(this, EventArgs.Empty);
         }
 
         public virtual bool ContainsCaptureBox(double x, double y)
@@ -595,6 +765,14 @@ namespace PdfClown.UI
         }
 
         public Func<double, double, bool> CheckCaptureBox;
+
+        public virtual void InvalidatePaint()
+        {
+            if (Envir.MainContext == SynchronizationContext.Current)
+                InvalidateSurface();
+            else
+                Envir.MainContext.Post(state => InvalidateSurface(), null);
+        }
 
     }
 }

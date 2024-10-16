@@ -23,25 +23,19 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 using PdfClown.Util;
 
-using System;
-
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Pushbutton field [PDF:1.6:8.6.3].</summary>
-    */
+    /// <summary>Pushbutton field [PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class PushButton : ButtonField
     {
-        /**
-          <summary>Creates a new pushbutton within the given document context.</summary>
-        */
-        public PushButton(string name, Widget widget, string caption) : base(name, widget)
+        /// <summary>Creates a new pushbutton within the given document context.</summary>
+        public PushButton(string name, Widget widget, string caption) 
+            : base(name, widget)
         {
             Flags = EnumUtils.Mask(Flags, FlagsEnum.Pushbutton, true);
             Value = caption;

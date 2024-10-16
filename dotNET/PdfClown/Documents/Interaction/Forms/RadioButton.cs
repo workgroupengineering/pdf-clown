@@ -23,35 +23,24 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 using PdfClown.Util;
 
-using System;
-
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Radio button field [PDF:1.6:8.6.3].</summary>
-    */
+    /// <summary>Radio button field[PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class RadioButton : ButtonField
     {
-        /**
-          <summary>Creates a new radiobutton within the given document context.</summary>
-          <param name="name"></param>
-          <param name="widgets">Dual-state widgets representing the available options.</param>
-          <param name="value"></param>
-        */
+        /// <summary>Creates a new radiobutton within the given document context.</summary>
+        /// <param name = "name" ></param>
+        /// <param name = "widgets" > Dual - state widgets representing the available options.</param>
+        /// <param name = "value" ></param>
         public RadioButton(string name, Widget[] widgets, string value)
             : base(name, widgets[0])
         {
-            Flags = EnumUtils.Mask(
-              EnumUtils.Mask(Flags, FlagsEnum.Radio, true),
-              FlagsEnum.NoToggleToOff,
-              true);
+            Flags = EnumUtils.Mask(EnumUtils.Mask(Flags, FlagsEnum.Radio, true), FlagsEnum.NoToggleToOff, true);
 
             FieldWidgets fieldWidgets = Widgets;
             for (int index = 1, length = widgets.Length; index < length; index++)
@@ -63,9 +52,7 @@ namespace PdfClown.Documents.Interaction.Forms
         internal RadioButton(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets whether all the field buttons can be deselected at the same time.</summary>
-        */
+        /// <summary>Gets/Sets whether all the field buttons can be deselected at the same time.</summary>
         public bool Toggleable
         {
             get => (Flags & FlagsEnum.NoToggleToOff) != FlagsEnum.NoToggleToOff;
@@ -77,11 +64,9 @@ namespace PdfClown.Documents.Interaction.Forms
             get => base.Value;
             set
             {
-                /*
-                  NOTE: The parent field's V entry holds a name object corresponding to the appearance state
-                  of whichever child field is currently in the on state; the default value for this entry is
-                  Off.
-                */
+                // NOTE: The parent field's V entry holds a name object corresponding to the appearance state
+                // of whichever child field is currently in the on state; the default value for this entry is
+                // Off.
                 PdfName selectedValue = PdfName.Get((string)value);
                 bool selected = false;
                 // Selecting the current appearance state for each widget...

@@ -23,19 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents.Contents.Objects;
 using PdfClown.Objects;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Move to the start of the next line, offset from the start of the current line' operation
-      [PDF:1.6:5.2].</summary>
-    */
+    /// <summary>'Move to the start of the next line, offset from the start of the current line' operation
+    /// [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class TranslateTextRelative : Operation
     {
@@ -62,7 +56,7 @@ namespace PdfClown.Documents.Contents.Objects
         public override void Scan(GraphicsState state)
         {
             state.TextState.Tlm =
-                state.TextState.Tm = state.TextState.Tlm.PreConcat(SKMatrix.CreateTranslation(OffsetX, OffsetY));            
+                state.TextState.Tm = state.TextState.Tlm.PreConcat(SKMatrix.CreateTranslation(OffsetX, OffsetY));
         }
     }
 }

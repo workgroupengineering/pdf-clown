@@ -504,19 +504,31 @@ namespace PdfClown.Documents.Contents
             return matrix.PreConcat(ctm);
         }
 
+        public TextGraphicsState PushTextState()
+        {
+            Scanner.TextStateStack.Push(TextState);
+            return TextState = new TextGraphicsState();
+        }
+
+        public TextGraphicsState PopTextState()
+        {
+            return Scanner.TextStateStack.TryPop(out var poped)
+                ? TextState = poped
+                : null;
+        }
 
         public void Save()
         {
-            Scanner?.Canvas?.Save();
-            var stack = Scanner.Context.GetGraphicsStateContext();
+            Scanner.Canvas?.Save();
+            var stack = Scanner.StateStack;
             var cloned = (GraphicsState)Clone();
             stack.Push(cloned);
         }
 
         public void Restore()
         {
-            Scanner?.Canvas?.Restore();
-            var stack = Scanner.Context.GetGraphicsStateContext();
+            Scanner.Canvas?.Restore();
+            var stack = Scanner.StateStack;
             if (stack.Count > 0)
             {
                 var poped = stack.Pop();

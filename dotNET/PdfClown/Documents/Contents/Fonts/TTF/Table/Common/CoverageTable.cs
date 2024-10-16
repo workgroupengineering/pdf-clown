@@ -18,14 +18,12 @@
 namespace PdfClown.Documents.Contents.Fonts.TTF.Table.Common
 {
 
-    /**
-     * This class models the
-     * <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table">Coverage Table</a> in the
-     * Open Type layout common tables.
-     * 
-     * @author Palash Ray
-     *
-     */
+    /// <summary>
+    /// This class models the
+    /// <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table">Coverage Table</a> in the
+    /// Open Type layout common tables.
+    /// @author Palash Ray
+    /// </summary>
     public abstract class CoverageTable
     {
         private readonly int coverageFormat;
@@ -42,10 +40,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Table.Common
             get => coverageFormat;
         }
 
-        public abstract int GetCoverageIndex(int gid);
+        public abstract int GetCoverageIndex(ushort gid);
 
-        public abstract int GetGlyphId(int index);
-
+        public abstract ushort GetGlyphId(int index);
 
     }
 }

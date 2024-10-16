@@ -1,23 +1,15 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Entities;
 using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Forms;
 using PdfClown.Documents.Interaction.Forms.Styles;
-using PdfClown.Files;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to insert AcroForm fields into a PDF document.</summary>
-    */
+    /// <summary>This sample demonstrates how to insert AcroForm fields into a PDF document.</summary>
     public class AcroFormCreationSample : Sample
     {
         public override void Run()
@@ -65,29 +57,17 @@ namespace PdfClown.Samples.CLI
             // 4. Field creation.
             // 4.a. Push button.
             {
-                composer.ShowText(
-                  "PushButton:",
-                  new SKPoint(140, 68),
-                  XAlignmentEnum.Right,
-                  YAlignmentEnum.Middle,
-                  0);
+                composer.ShowText("PushButton:", new SKPoint(140, 68), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
 
-                var fieldWidget = new Widget(
-                  page,
-                  SKRect.Create(150, 50, 136, 36));
-                fieldWidget.Actions.OnActivate = new JavaScript(
-                  document,
+                var fieldWidget = new Widget(page, SKRect.Create(150, 50, 136, 36));
+                fieldWidget.Actions.OnActivate = new JavaScript(document,
                   "app.alert(\"Radio button currently selected: '\" + this.getField(\"myRadio\").value + \"'.\",3,0,\"Activation event\");");
-                var field = new PushButton(
-                  "okButton",
-                  fieldWidget,
-                  "Push" // Current value.
-                  ); // 4.1. Field instantiation.
+                var field = new PushButton("okButton", fieldWidget, "Push"); // 4.1. Field instantiation.
                 fields.Add(field); // 4.2. Field insertion into the fields collection.
                 fieldStyle.Apply(field); // 4.3. Appearance style applied.
 
                 {
-                    BlockComposer blockComposer = new BlockComposer(composer);
+                    var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(SKRect.Create(296, 50, page.Size.Width - 336, 36), XAlignmentEnum.Left, YAlignmentEnum.Middle);
                     composer.SetFont(composer.State.Font, 7);
                     blockComposer.ShowText("If you click this push button, a javascript action should prompt you an alert box responding to the activation event triggered by your PDF viewer.");
@@ -112,11 +92,8 @@ namespace PdfClown.Samples.CLI
             // 4.c. Radio button.
             {
                 composer.ShowText("RadioButton:", new SKPoint(140, 168), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
-                var field = new RadioButton(
-                  "myRadio",
-                  /*
-                    NOTE: A radio button field typically combines multiple alternative widgets.
-                  */
+                var field = new RadioButton("myRadio",
+                  // NOTE: A radio button field typically combines multiple alternative widgets.
                   new Widget[]
                   {
                       new Widget( page, SKRect.Create(150, 150, 36, 36), "first" ),
@@ -135,17 +112,15 @@ namespace PdfClown.Samples.CLI
                 var field = new TextField("myText", new Widget(page, SKRect.Create(150, 200, 200, 36)), "Carmen Consoli"); // 4.1. Field instantiation. // Current value.
 
                 field.SpellChecked = false; // Avoids text spell check.
-                FieldActions fieldActions = new FieldActions(document);
+                var fieldActions = new FieldActions(document);
                 field.Actions = fieldActions;
-                fieldActions.OnValidate = new JavaScript(
-                  document,
-                  "app.alert(\"Text '\" + this.getField(\"myText\").value + \"' has changed!\",3,0,\"Validation event\");"
-                  );
+                fieldActions.OnValidate = new JavaScript(document,
+                  "app.alert(\"Text '\" + this.getField(\"myText\").value + \"' has changed!\",3,0,\"Validation event\");");
                 fields.Add(field); // 4.2. Field insertion into the fields collection.
                 fieldStyle.Apply(field); // 4.3. Appearance style applied.
 
                 {
-                    BlockComposer blockComposer = new BlockComposer(composer);
+                    var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(SKRect.Create(360, 200, page.Size.Width - 400, 36), XAlignmentEnum.Left, YAlignmentEnum.Middle);
                     composer.SetFont(composer.State.Font, 7);
                     blockComposer.ShowText("If you leave this text field after changing its content, a javascript action should prompt you an alert box responding to the validation event triggered by your PDF viewer.");
@@ -156,49 +131,51 @@ namespace PdfClown.Samples.CLI
             // 4.e. Choice fields.
             {
                 // Preparing the item list that we'll use for choice fields (a list box and a combo box (see below))...
-                ChoiceItems items = new ChoiceItems(document);
-                items.Add("Tori Amos");
-                items.Add("Anouk");
-                items.Add("Joan Baez");
-                items.Add("Rachele Bastreghi");
-                items.Add("Anna Calvi");
-                items.Add("Tracy Chapman");
-                items.Add("Carmen Consoli");
-                items.Add("Ani DiFranco");
-                items.Add("Cristina Dona'");
-                items.Add("Nathalie Giannitrapani");
-                items.Add("PJ Harvey");
-                items.Add("Billie Holiday");
-                items.Add("Joan As Police Woman");
-                items.Add("Joan Jett");
-                items.Add("Janis Joplin");
-                items.Add("Angelique Kidjo");
-                items.Add("Patrizia Laquidara");
-                items.Add("Annie Lennox");
-                items.Add("Loreena McKennitt");
-                items.Add("Joni Mitchell");
-                items.Add("Alanis Morissette");
-                items.Add("Yael Naim");
-                items.Add("Noa");
-                items.Add("Sinead O'Connor");
-                items.Add("Dolores O'Riordan");
-                items.Add("Nina Persson");
-                items.Add("Brisa Roche'");
-                items.Add("Roberta Sammarelli");
-                items.Add("Cristina Scabbia");
-                items.Add("Nina Simone");
-                items.Add("Skin");
-                items.Add("Patti Smith");
-                items.Add("Fatima Spar");
-                items.Add("Thony (F.V.Caiozzo)");
-                items.Add("Paola Turci");
-                items.Add("Sarah Vaughan");
-                items.Add("Nina Zilli");
+                var items = new ChoiceItems(document)
+                {
+                    "Tori Amos",
+                    "Anouk",
+                    "Joan Baez",
+                    "Rachele Bastreghi",
+                    "Anna Calvi",
+                    "Tracy Chapman",
+                    "Carmen Consoli",
+                    "Ani DiFranco",
+                    "Cristina Dona'",
+                    "Nathalie Giannitrapani",
+                    "PJ Harvey",
+                    "Billie Holiday",
+                    "Joan As Police Woman",
+                    "Joan Jett",
+                    "Janis Joplin",
+                    "Angelique Kidjo",
+                    "Patrizia Laquidara",
+                    "Annie Lennox",
+                    "Loreena McKennitt",
+                    "Joni Mitchell",
+                    "Alanis Morissette",
+                    "Yael Naim",
+                    "Noa",
+                    "Sinead O'Connor",
+                    "Dolores O'Riordan",
+                    "Nina Persson",
+                    "Brisa Roche'",
+                    "Roberta Sammarelli",
+                    "Cristina Scabbia",
+                    "Nina Simone",
+                    "Skin",
+                    "Patti Smith",
+                    "Fatima Spar",
+                    "Thony (F.V.Caiozzo)",
+                    "Paola Turci",
+                    "Sarah Vaughan",
+                    "Nina Zilli"
+                };
 
                 // 4.e1. List box.
                 {
                     composer.ShowText("ListBox:", new SKPoint(140, 268), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
-                    ListBox field = new ListBox("myList", new Widget(page, SKRect.Create(150, 250, 200, 70))); // 4.1. Field instantiation.
+                    var field = new ListBox("myList", new Widget(page, SKRect.Create(150, 250, 200, 70))); // 4.1. Field instantiation.
                     field.Items = items; // List items assignment.
                     field.MultiSelect = false; // Multiple items may not be selected simultaneously.
                     field.Value = "Carmen Consoli"; // Selected item.
@@ -209,7 +186,7 @@ namespace PdfClown.Samples.CLI
                 // 4.e2. Combo box.
                 {
                     composer.ShowText("ComboBox:", new SKPoint(140, 350), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
-                    ComboBox field = new ComboBox("myCombo", new Widget(page, SKRect.Create(150, 334, 200, 36))); // 4.1. Field instantiation.
+                    var field = new ComboBox("myCombo", new Widget(page, SKRect.Create(150, 334, 200, 36))); // 4.1. Field instantiation.
                     field.Items = items; // Combo items assignment.
                     field.Editable = true; // Text may be edited.
                     field.SpellChecked = false; // Avoids text spell check.

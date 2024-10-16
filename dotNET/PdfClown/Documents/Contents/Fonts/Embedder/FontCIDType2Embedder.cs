@@ -77,10 +77,11 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * Rebuild a font subset.
-         */
-        protected override void BuildSubset(ByteStream ttfSubset, string tag, Dictionary<int, int> gidToCid)
+        /// <summary>Rebuild a font subset.</summary>
+        /// <param name="ttfSubset"></param>
+        /// <param name="tag"></param>
+        /// <param name="gidToCid"></param>
+        protected override void BuildSubset(IOutputStream ttfSubset, string tag, Dictionary<int, int> gidToCid)
         {
             // build CID2GIDMap, because the content stream has been written with the old GIDs
             var cidToGid = new Dictionary<int, int>(gidToCid.Count);

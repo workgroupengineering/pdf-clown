@@ -35,7 +35,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private short ascender;
         private short descender;
         private short lineGap;
-        private int advanceWidthMax;
+        private ushort advanceWidthMax;
         private short minLeftSideBearing;
         private short minRightSideBearing;
         private short xMaxExtent;
@@ -84,7 +84,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the advanceWidthMax.
          */
-        public int AdvanceWidthMax
+        public ushort AdvanceWidthMax
         {
             get => advanceWidthMax;
             set => advanceWidthMax = value;

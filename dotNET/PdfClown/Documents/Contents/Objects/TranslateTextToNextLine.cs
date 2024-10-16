@@ -23,17 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Objects;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Move to the start of the next line' operation [PDF:1.6:5.3.1].</summary>
-    */
+    /// <summary>'Move to the start of the next line' operation [PDF:1.6:5.3.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class TranslateTextToNextLine : Operation
     {

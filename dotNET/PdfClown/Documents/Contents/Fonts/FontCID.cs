@@ -15,14 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using PdfClown.Bytes;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
@@ -79,7 +77,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         protected readonly FontType0 parent;
 
-        private new Dictionary<int, float> widths;
+        private Dictionary<int, float> widths;
         private int? defaultWidth;
         private float averageWidth;
 
@@ -116,12 +114,7 @@ namespace PdfClown.Documents.Contents.Fonts
             ReadVerticalDisplacements();
         }
 
-        /**
-         * The PostScript name of the font.
-         *
-         * @return The postscript name of the font.
-         */
-
+        /// <summary>The PostScript name of the font.</summary>
         public CIDSystemInfo CIDSystemInfo
         {
             get => Wrap<CIDSystemInfo>(Dictionary[PdfName.CIDSystemInfo]);
@@ -398,8 +391,7 @@ namespace PdfClown.Documents.Contents.Fonts
             int[] cid2gid = null;
             if (CIDToGIDMap is PdfStream stream)
             {
-                var body = stream.GetBody(false);
-                using var input = body.Extract(stream.Filter, stream.Parameters, stream.Header);
+                var input = stream.GetInputStream();
                 var mapAsBytes = input.AsMemory().Span;
                 var length = (int)input.Length;
                 int numberOfInts = length / 2;

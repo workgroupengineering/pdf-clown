@@ -16,24 +16,21 @@
  */
 using System.IO;
 using System;
+using System.Buffers;
 
 namespace PdfClown.Documents.Encryption
 {
 
-    /**
-     * An implementation of the RC4 stream cipher.
-     *
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// An implementation of the RC4 stream cipher.
+    /// @author Ben Litchfield
+    /// </summary>
     internal class RC4Cipher
     {
         private readonly int[] salt;
         private int b;
         private int c;
 
-        /**
-		 * Constructor.
-		 */
         public RC4Cipher()
         {
             salt = new int[256];
@@ -139,12 +136,13 @@ namespace PdfClown.Documents.Encryption
 		 */
         public void Write(Stream data, Stream output)
         {
-            var buffer = new byte[1024];
+            var buffer = ArrayPool<byte>.Shared.Rent(1024);
             int amountRead;
             while ((amountRead = data.Read(buffer, 0, buffer.Length)) > 0)
             {
                 Write(buffer, 0, amountRead, output);
             }
+            ArrayPool<byte>.Shared.Return(buffer);
         }
 
         /**

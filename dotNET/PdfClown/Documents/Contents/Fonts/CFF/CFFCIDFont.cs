@@ -24,12 +24,11 @@ using System.Collections.Generic;
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
 
-    /**
-     * A Type 0 CIDFont represented in a CFF file. Thread safe.
-     *
-     * @author Villu Ruusmann
-     * @author John Hewson
-     */
+    /// <summary>
+    /// A Type 0 CIDFont represented in a CFF file.Thread safe.
+    /// @author Villu Ruusmann
+    /// @author John Hewson
+    /// </summary>
     public class CFFCIDFont : CFFFont, IType1CharStringReader
     {
         private string registry;
@@ -154,12 +153,10 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         {
             return GetType2CharString(0);
         }
-        /**
-		 * Returns the Type 2 charstring for the given CID.
-		 *
-		 * @param cid CID
-		 * @throws IOException if the charstring could not be read
-		 */
+
+        /// <summary>Returns the Type 2 charstring for the given CID.</summary>
+        /// <param name="cid">CID</param>
+        /// <returns></returns>
         public override Type2CharString GetType2CharString(int cid)
         {
             if (!charStringCache.TryGetValue(cid, out CIDKeyedType2CharString type2))

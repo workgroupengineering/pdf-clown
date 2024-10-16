@@ -23,17 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the horizontal scaling' operation [PDF:1.6:5.2].</summary>
-    */
+    /// <summary>'Set the horizontal scaling' operation [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetTextScale : Operation
     {
@@ -47,10 +41,8 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, operands)
         { }
 
-        /**
-          <summary>Gets/Sets the horizontal scale expressed as a percentage of the normal width.
-          </summary>
-        */
+        /// <summary>Gets/Sets the horizontal scale expressed as a percentage of the normal width.
+        /// </summary>
         public float Value
         {
             get => operands.GetFloat(0);

@@ -99,7 +99,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             if (skColorSpace == null)
             {
-                skColorSpace = SKColorSpace.CreateIcc(Profile.GetBody(true).AsSpan());
+                skColorSpace = SKColorSpace.CreateIcc(Profile.GetInputStream().AsSpan());
                 if (skColorSpace != null)
                 {
                     skColorSpace.GetNumericalTransferFunction(out var spaceTransfer);
@@ -113,7 +113,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             if (iccProfile == null)
             {
-                iccProfile = ICCProfile.Load(Profile.GetBody(true).AsMemory());
+                iccProfile = ICCProfile.Load(Profile.GetInputStream().AsMemory());
 
             }
         }

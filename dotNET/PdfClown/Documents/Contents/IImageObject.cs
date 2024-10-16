@@ -12,7 +12,7 @@ namespace PdfClown.Documents.Contents
         ColorSpace ColorSpace { get; }
         PdfDirectObject Filter { get; }
         PdfDirectObject Parameters { get; }
-        IByteStream Data { get; }
+        IInputStream Data { get; }
         SKSize Size { get; }
         IImageObject SMask { get; }
         PdfDirectObject Mask { get; }

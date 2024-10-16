@@ -56,7 +56,6 @@ namespace PdfClown.Objects
 
         private PdfObject parent;
         private PdfObjectStatus status;
-        private ContentWrapper contentsWrapper;
 
         public PdfArray() : this(10)
         { }
@@ -132,12 +131,6 @@ namespace PdfClown.Objects
         {
             get => status;
             protected internal set => status = value;
-        }
-
-        public override ContentWrapper ContentsWrapper
-        {
-            get => contentsWrapper;
-            internal set => contentsWrapper = value;
         }
 
         public override PdfObject Accept(IVisitor visitor, object data)

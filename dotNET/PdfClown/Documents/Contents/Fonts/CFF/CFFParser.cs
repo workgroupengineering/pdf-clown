@@ -28,10 +28,10 @@ using System.Text;
 
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-    /**
-     * This class represents a parser for a CFF font. 
-     * //@author Villu Ruusmann
-     */
+    /// <summary>
+    /// this class represents a parser for a cff font.
+    /// @author villu ruusmann
+    /// </summary>
     public class CFFParser
     {
         private static readonly List<float> DefaultMatrixArray = new List<float>(6) { 0.001F, 0F, 0F, 0.001F, 0F, 0F };
@@ -46,25 +46,17 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         // for debugging only
         private string debugFontName;
 
-        /**
-		 * Source from which bytes may be read in the future.
-		 */
+        /// <summary>Source from which bytes may be read in the future.</summary>
         public interface IByteSource
         {
-            /**
-             * Returns the source bytes. May be called more than once.
-             */
+            /// <summary>Returns the source bytes.May be called more than once.</summary>
             Memory<byte> GetBytes();
         }
 
-        /**
-		 * Parse CFF font using byte array, also passing in a byte source for future use.
-		 * 
-		 * //@param bytes source bytes
-		 * //@param source source to re-read bytes from in the future
-		 * //@return the parsed CFF fonts
-		 * //@throws IOException If there is an error reading from the stream
-		 */
+        /// <summary>Parse CFF font using byte array, also passing in a byte source for future use.</summary>
+        /// <param name="bytes">source bytes</param>
+        /// <param name="source"> source to re-read bytes from in the future</param>
+        /// <returns>the parsed CFF fonts</returns>
         public List<CFFFont> Parse(Memory<byte> bytes, IByteSource source) => Parse(new ByteStream(bytes), source);
 
         public List<CFFFont> Parse(Memory<byte> bytes) => Parse(new ByteStream(bytes));
@@ -120,7 +112,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             {
                 CFFFont font = ParseFont(input, nameIndex[i], topDictIndex[i]);
                 font.GlobalSubrIndex = globalSubrIndex;
-                font.SetData(source);
+                font.Data = source;
                 fonts.Add(font);
             }
             return fonts;
@@ -420,9 +412,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             {
                 return float.Parse(sb.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -553,7 +545,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 ParseCIDFontDicts(input, topDict, (CFFCIDFont)font, numEntries);
 
                 List<float> privMatrix = null;
-                List<Dictionary<string, object>> fontDicts = ((CFFCIDFont)font).FontDicts;
+                var fontDicts = ((CFFCIDFont)font).FontDicts;
                 if (fontDicts.Count > 0 && fontDicts[0].ContainsKey("FontMatrix"))
                 {
                     privMatrix = (List<float>)fontDicts[0]["FontMatrix"];
@@ -1132,15 +1124,13 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return charset;
         }
 
-        /**
-         * Inner class holding the header of a CFF font. 
-         */
+        /// <summary>Inner class holding the header of a CFF font. </summary>
         private class Header
         {
-            internal int major;
-            internal int minor;
-            internal int hdrSize;
-            internal int offSize;
+            internal ushort major;
+            internal ushort minor;
+            internal ushort hdrSize;
+            internal ushort offSize;
 
             public override string ToString()
             {
@@ -1148,9 +1138,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         * Inner class holding the DictData of a CFF font. 
-         */
+        /// <summary>Inner class holding the DictData of a CFF font.</summary>
         internal class DictData
         {
             private readonly Dictionary<string, Entry> entries = new Dictionary<string, Entry>(StringComparer.Ordinal);
@@ -1192,17 +1180,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 return entry != null && entry.HasOperands ? entry.GetDelta() : defaultValue;
             }
 
-            /**
-             * {//@inheritDoc} 
-             */
             public override string ToString()
             {
                 return GetType().Name + "[entries=" + entries + "]";
             }
 
-            /**
-             * Inner class holding an operand of a CFF font. 
-             */
+            /// <summary>Inner class holding an operand of a CFF font.</summary>
             internal class Entry
             {
                 internal List<float> operands = new List<float>();
@@ -1236,7 +1219,6 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                             Debug.WriteLine($"warn: Expected boolean, got {operand}, returning default {defaultValue}");
                             return defaultValue;
                     }
-                    throw new ArgumentException();
                 }
 
                 public void AddOperand(float operand)
@@ -1264,16 +1246,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         * Inner class representing a font's built-in CFF encoding. 
-         */
+        /// <summary>Inner class representing a font's built-in CFF encoding. </summary>
         internal abstract class CFFBuiltInEncoding : CFFEncoding
         {
             internal Supplement[] supplement;
 
-            /**
-             * Inner class representing a supplement for an encoding. 
-             */
+            /// <summary>Inner class representing a supplement for an encoding.</summary>
             internal class Supplement
             {
                 internal int code;
@@ -1320,9 +1298,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         * Inner class representing a Format1 encoding. 
-         */
+        /// <summary>Inner class representing a Format1 encoding.</summary>
         internal class Format1Encoding : CFFBuiltInEncoding
         {
             internal int nRanges;
@@ -1333,9 +1309,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-        * An empty charset in a malformed CID font.
-        */
+        /// <summary>An empty charset in a malformed CID font.</summary>
         private class EmptyCharsetCID : CFFCharsetCID
         {
             public EmptyCharsetCID(int numCharStrings)
@@ -1371,9 +1345,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         * Inner class representing a Format0 charset. 
-         */
+        /// <summary>Inner class representing a Format0 charset.</summary>
         internal class Format0Charset : EmbeddedCharset
         {
             internal Format0Charset(bool isCIDFont)
@@ -1382,9 +1354,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         * Inner class representing a Format1 charset. 
-         */
+        /// <summary>Inner class representing a Format1 charset.</summary>
         internal class Format1Charset : EmbeddedCharset
         {
 
@@ -1432,9 +1402,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         * Inner class representing a Format2 charset. 
-         */
+        /// <summary>Inner class representing a Format2 charset.</summary>
         internal class Format2Charset : EmbeddedCharset
         {
             private List<RangeMapping> rangesCID2GID;
@@ -1475,9 +1443,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         * Inner class representing a rang mapping for a CID charset. 
-         */
+        /// <summary>Inner class representing a rang mapping for a CID charset.</summary>
         internal readonly struct RangeMapping
         {
             private readonly int startValue;
@@ -1487,9 +1453,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
             public RangeMapping(int startGID, int first, int nLeft)
             {
-                this.startValue = startGID;
+                startValue = startGID;
                 endValue = startValue + nLeft;
-                this.startMappedValue = first;
+                startMappedValue = first;
                 endMappedValue = startMappedValue + nLeft;
             }
 
@@ -1505,12 +1471,12 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
             public int MapValue(int value)
             {
-                return IsInRange(value) ? startMappedValue + (value - startValue) : 0;
+                return startMappedValue + (value - startValue);
             }
 
             public int MapReverseValue(int value)
             {
-                return IsInReverseRange(value) ? startValue + (value - startMappedValue) : 0;
+                return startValue + (value - startMappedValue);
             }
 
             public override string ToString()

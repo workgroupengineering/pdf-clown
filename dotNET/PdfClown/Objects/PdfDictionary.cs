@@ -25,7 +25,7 @@
 
 using PdfClown.Bytes;
 using PdfClown.Tokens;
-
+using PdfClown.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,7 +35,7 @@ using text = System.Text;
 namespace PdfClown.Objects
 {
     /// <summary>PDF dictionary object [PDF:1.6:3.2.6].</summary>
-    public sealed class PdfDictionary : PdfWrapableDirectObject, IDictionary<PdfName, PdfDirectObject>
+    public sealed class PdfDictionary : PdfWrapableDirectObject, IDictionary<PdfName, PdfDirectObject>, IBiDictionary<PdfName, PdfDirectObject>
     {
         private static readonly byte[] BeginDictionaryChunk = Encoding.Pdf.Encode(Keyword.BeginDictionary);
         private static readonly byte[] EndDictionaryChunk = Encoding.Pdf.Encode(Keyword.EndDictionary);
@@ -187,16 +187,16 @@ namespace PdfClown.Objects
 
         public override int GetHashCode() => entries.GetHashCode();
 
+        public object GetKey(object value) => value is PdfDirectObject tValue ? GetKey(tValue) : default(PdfName);
+
         /// <summary>Gets the key associated to the specified value.</summary>
         /// <param name="value"></param>
         /// <returns></returns>
         public PdfName GetKey(PdfDirectObject value)
         {
-            /*
-              NOTE: Current PdfDictionary implementation doesn't support bidirectional maps, to say that
-              the only currently-available way to retrieve a key from a value is to iterate the whole map
-              (really poor performance!).
-            */
+            // NOTE: Current PdfDictionary implementation doesn't support bidirectional maps, to say that
+            //  the only currently-available way to retrieve a key from a value is to iterate the whole map
+            //  (really poor performance!).
             foreach (KeyValuePair<PdfName, PdfDirectObject> entry in entries)
             {
                 if (entry.Value.Equals(value))

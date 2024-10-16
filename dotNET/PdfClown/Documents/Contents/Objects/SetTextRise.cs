@@ -23,14 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    ///<summary>'Set the text rise' operation [PDF:1.6:5.2].</summary>
+    /// <summary>'Set the text rise' operation [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetTextRise : Operation
     {
@@ -44,16 +41,15 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, operands)
         { }
 
-        public override void Scan(GraphicsState state) => state.Rise = Value;
-
-        /**
-          <summary>Gets/Sets the text rise, which is a number expressed in unscaled text space units.
-          </summary>
-        */
+        /// <summary>Gets/Sets the text rise, which is a number expressed in unscaled text space units.
+        /// </summary>
         public float Value
         {
             get => operands.GetFloat(0);
             set => operands.Set(0, value);
         }
+
+        public override void Scan(GraphicsState state) => state.Rise = Value;
+
     }
 }

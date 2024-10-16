@@ -28,7 +28,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
      */
     public class GsubWorkerFactory
     {
-        public GsubWorker GetGsubWorker(ICmapLookup cmapLookup, GsubData gsubData)
+        public IGsubWorker GetGsubWorker(ICmapLookup cmapLookup, IGsubData gsubData)
         {
             switch (gsubData.Language)
             {

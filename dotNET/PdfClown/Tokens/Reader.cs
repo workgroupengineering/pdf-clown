@@ -41,9 +41,9 @@ namespace PdfClown.Tokens
         {
             private PdfDictionary trailer;
             private PdfVersion version;
-            private SortedDictionary<int, XRefEntry> xrefEntries;
+            private IDictionary<int, XRefEntry> xrefEntries;
 
-            internal FileInfo(PdfVersion version, PdfDictionary trailer, SortedDictionary<int, XRefEntry> xrefEntries)
+            internal FileInfo(PdfVersion version, PdfDictionary trailer, IDictionary<int, XRefEntry> xrefEntries)
             {
                 this.version = version;
                 this.trailer = trailer;
@@ -54,7 +54,7 @@ namespace PdfClown.Tokens
 
             public PdfVersion Version => version;
 
-            public SortedDictionary<int, XRefEntry> XrefEntries => xrefEntries;
+            public IDictionary<int, XRefEntry> XrefEntries => xrefEntries;
         }
 
         private FileParser parser;
@@ -78,7 +78,7 @@ namespace PdfClown.Tokens
             //TODO:hybrid xref table/stream
             PdfVersion version = PdfVersion.Get(parser.RetrieveVersion());
             PdfDictionary trailer = null;
-            var xrefEntries = new SortedDictionary<int, XRefEntry>();
+            var xrefEntries = new Dictionary<int, XRefEntry>();
             long sectionOffset = parser.RetrieveXRefOffset();
             long? xrefStm = null;
             while (sectionOffset > -1)
@@ -181,7 +181,7 @@ namespace PdfClown.Tokens
             }
         }
 
-        private void ReadXRefTable(SortedDictionary<int, XRefEntry> xrefEntries)
+        private void ReadXRefTable(IDictionary<int, XRefEntry> xrefEntries)
         {
             // Looping sequentially across the subsections inside the current xref-table section...
             while (true)

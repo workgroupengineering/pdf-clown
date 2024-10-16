@@ -23,12 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents.Contents;
-using PdfClown.Util;
-
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Objects
 {
     /// <summary>Path-painting operation [PDF:1.6:4.4.2].</summary>

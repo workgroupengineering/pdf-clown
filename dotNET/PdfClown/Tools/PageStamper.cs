@@ -27,14 +27,11 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 namespace PdfClown.Tools
 {
-    /**
-      <summary>Tool for content insertion into existing pages.</summary>
-    */
+    /// <summary>Tool for content insertion into existing pages.</summary>
     public sealed class PageStamper
     {
         private PdfPage page;
@@ -53,26 +50,22 @@ namespace PdfClown.Tools
         public void Flush()
         {
             // Ensuring that there's room for the new content chunks inside the page's content stream...
-            /*
-              NOTE: This specialized stamper is optimized for content insertion without modifying
-              existing content representations, leveraging the peculiar feature of page structures
-              to express their content streams as arrays of data streams.
-            */
+            // NOTE: This specialized stamper is optimized for content insertion without modifying
+            // existing content representations, leveraging the peculiar feature of page structures
+            // to express their content streams as arrays of data streams.
             PdfArray streams;
             {
-                PdfDirectObject contentsObject = page.BaseDataObject[PdfName.Contents];
-                PdfDataObject contentsDataObject = PdfObject.Resolve(contentsObject);
+                var contentsObject = page.BaseDataObject[PdfName.Contents];
+                var contentsDataObject = PdfObject.Resolve(contentsObject);
                 // Single data stream?
                 if (contentsDataObject is PdfStream)
                 {
-                    /*
-                      NOTE: Content stream MUST be expressed as an array of data streams in order to host
-                      background- and foreground-stamped contents.
-                    */
+                    // NOTE: Content stream MUST be expressed as an array of data streams in order to host
+                    // background- and foreground-stamped contents.
                     page.BaseDataObject[PdfName.Contents] = streams = new PdfArray
                     {
                         contentsObject
-                    }; ;
+                    };
                 }
                 else
                 { streams = (PdfArray)contentsDataObject; }
@@ -117,7 +110,7 @@ namespace PdfClown.Tools
                     // Open the middleground local state!
                     background.Add(SaveGraphicsState.Value);
                     // Move into the background!
-                    background.Scanner.Move(1);
+                    background.Index = 1;
 
                     // Foregrond.
                     foreground = CreateFilter();
@@ -127,6 +120,6 @@ namespace PdfClown.Tools
             }
         }
 
-        private PrimitiveComposer CreateFilter() => new PrimitiveComposer(new ContentScanner(ContentWrapper.Wrap(page.File.Register(new PdfStream()), page)));
+        private PrimitiveComposer CreateFilter() => new PrimitiveComposer(new ContentScanner(page, new ContentWrapper(page.File.Register(new PdfStream()))));
     }
 }

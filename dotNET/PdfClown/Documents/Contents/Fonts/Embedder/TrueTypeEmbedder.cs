@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-using Org.BouncyCastle.Utilities.Zlib;
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Objects;
@@ -29,12 +28,11 @@ using System.Text;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-     * Common functionality for embedding TrueType fonts.
-     *
-     * @author Ben Litchfield
-     * @author John Hewson
-     */
+    /// <summary>
+    /// Common functionality for embedding TrueType fonts.
+    /// @author Ben Litchfield
+    /// @author John Hewson
+    /// </summary>
     abstract class TrueTypeEmbedder : ISubsetter
     {
         private static readonly int ITALIC = 1;
@@ -51,9 +49,12 @@ namespace PdfClown.Documents.Contents.Fonts
 
         private readonly ISet<int> allGlyphIds = new HashSet<int>();
 
-        /**
-		 * Creates a new TrueType font for embedding.
-		 */
+        /// <summary>Creates a new TrueType font for embedding.</summary>
+        /// <param name="document"></param>
+        /// <param name="dict"></param>
+        /// <param name="ttf"></param>
+        /// <param name="embedSubset"></param>
+        /// <exception cref="IOException"></exception>
         public TrueTypeEmbedder(PdfDocument document, PdfDictionary dict, TrueTypeFont ttf, bool embedSubset)
         {
             this.document = document;
@@ -88,30 +89,28 @@ namespace PdfClown.Documents.Contents.Fonts
             cmapLookup = ttf.GetUnicodeCmapLookup();
         }
 
-        public void BuildFontFile2(ByteStream ttfStream)
+        public void BuildFontFile2(IOutputStream ttfStream)
         {
-            PdfStream stream = new PdfStream(ttfStream);
+            var stream = new PdfStream(ttfStream);
 
             // as the stream was closed within the PdfStream constructor, we have to recreate it
-            using (var input = (ByteStream)stream.ExtractBody(true))
+            var input = stream.GetInputStream();
+            ttf = new TTFParser().ParseEmbedded(input);
+            if (!IsEmbeddingPermitted(ttf))
             {
-                ttf = new TTFParser().ParseEmbedded(input);
-                if (!IsEmbeddingPermitted(ttf))
-                {
-                    throw new IOException("This font does not permit embedding");
-                }
-                if (fontDescriptor == null)
-                {
-                    fontDescriptor = CreateFontDescriptor(ttf);
-                }
+                throw new IOException("This font does not permit embedding");
+            }
+            if (fontDescriptor == null)
+            {
+                fontDescriptor = CreateFontDescriptor(ttf);
             }
             stream.Header.Set(PdfName.Length1, ttf.OriginalDataSize);
             fontDescriptor.FontFile2 = new FontFile(document, stream);
         }
 
-        /**
-		 * Returns true if the fsType in the OS/2 table permits embedding.
-		 */
+        /// <summary>Returns true if the fsType in the OS/2 table permits embedding.</summary>
+        /// <param name="ttf"></param>
+        /// <returns></returns>
         private bool IsEmbeddingPermitted(TrueTypeFont ttf)
         {
             if (ttf.OS2Windows != null)
@@ -133,9 +132,9 @@ namespace PdfClown.Documents.Contents.Fonts
             return true;
         }
 
-        /**
-		 * Returns true if the fsType in the OS/2 table permits subsetting.
-		 */
+        /// <summary>Returns true if the fsType in the OS/2 table permits subsetting.</summary>
+        /// <param name="ttf"></param>
+        /// <returns></returns>
         private bool IsSubsettingPermitted(TrueTypeFont ttf)
         {
             if (ttf.OS2Windows != null)
@@ -326,21 +325,23 @@ namespace PdfClown.Documents.Contents.Fonts
             ttf.Dispose();
         }
 
-        /**
-		 * Returns true if the font needs to be subset.
-		 */
+        /// <summary>
+        /// Returns true if the font needs to be subset.
+        /// </summary>
         public bool NeedsSubset
         {
             get => embedSubset;
         }
 
-        /**
-		 * Rebuild a font subset.
-		 */
-        protected abstract void BuildSubset(ByteStream ttfSubset, string tag, Dictionary<int, int> gidToCid);
-        /**
-		 * Returns an uppercase 6-character unique tag for the given subset.
-		 */
+        /// <summary>Rebuild a font subset.</summary>
+        /// <param name="ttfSubset"></param>
+        /// <param name="tag"></param>
+        /// <param name="gidToCid"></param>
+        protected abstract void BuildSubset(IOutputStream ttfSubset, string tag, Dictionary<int, int> gidToCid);
+
+        /// <summary>Returns an uppercase 6-character unique tag for the given subset.</summary>
+        /// <param name="gidToCid"></param>
+        /// <returns></returns>
         public string GetTag(Dictionary<int, int> gidToCid)
         {
             // deterministic

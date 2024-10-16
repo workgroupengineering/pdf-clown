@@ -32,17 +32,15 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Device Gray color space [PDF:1.6:4.5.3].</summary>
-    */
+    /// <summary>Device Gray color space [PDF:1.6:4.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceGrayColorSpace : DeviceColorSpace
     {
-        /*
-          NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
-          of the contextual resource dictionary) [PDF:1.6:4.5.7].
-        */
-        public static readonly DeviceGrayColorSpace Default = (DeviceGrayColorSpace)Wrap(PdfName.DeviceGray);
+        // NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
+        // of the contextual resource dictionary) [PDF:1.6:4.5.7].
+        public static readonly DeviceGrayColorSpace Default = new(PdfName.DeviceGray);
+
+        public static readonly DeviceGrayColorSpace DefaultShort = new(PdfName.G);
 
         public DeviceGrayColorSpace(PdfDocument context) : base(context, PdfName.DeviceGray)
         { }
@@ -57,7 +55,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override Color DefaultColor => DeviceGrayColor.Default;
 
-        public override Color GetColor(PdfArray components, IContentContext context = null) 
+        public override Color GetColor(PdfArray components, IContentContext context = null)
             => components == null ? DefaultColor : components.Wrapper as DeviceGrayColor ?? new DeviceGrayColor(this, components);
 
         public override bool IsSpaceColor(Color color)

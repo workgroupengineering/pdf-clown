@@ -34,10 +34,8 @@ using System.IO;
 
 namespace PdfClown.Documents.Functions
 {
-    /**
-      <summary>PostScript calculator function represented as a stream containing code written in a
-      small subset of the PostScript language [PDF:1.6:3.9.4].</summary>
-    */
+    /// <summary>PostScript calculator function represented as a stream containing code written in a
+    /// small subset of the PostScript language [PDF:1.6:3.9.4].</summary>
     [PDF(VersionEnum.PDF13)]
     public sealed class Type4Function : Function
     {
@@ -49,7 +47,7 @@ namespace PdfClown.Documents.Functions
         {
             if (BaseDataObject is PdfStream stream)
             {
-                using var data = (Stream)stream.ExtractBody(true);
+                using var data = (Stream)stream.GetExtractedStream();
                 using var input = new StreamReader(data, Charset.ISO88591);
                 this.instructions = InstructionSequenceBuilder.Parse(input);
             }

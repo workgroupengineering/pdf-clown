@@ -9,5 +9,6 @@ namespace PdfClown.UI
         Alt = 1,
         Ctrl = 2,
         Shift = 4,
+        Meta = 8,
     }
 }

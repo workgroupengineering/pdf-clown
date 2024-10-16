@@ -16,39 +16,38 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 {
 
-    /**
-     * This is an in-efficient implementation based on regex, which helps split the array.
-     * 
-     * @author Palash Ray
-     *
-     */
-    public class GlyphArraySplitterRegexImpl : GlyphArraySplitter
+    /// <summary>
+    /// This is an in-efficient implementation based on regex, which helps split the array.
+    /// @author Palash Ray
+    /// </summary>
+    public class GlyphArraySplitterRegexImpl : IGlyphArraySplitter
     {
         private static readonly char[] GLYPH_ID_SEPARATOR = new[] { '_' };
 
         private readonly CompoundCharacterTokenizer compoundCharacterTokenizer;
 
-        public GlyphArraySplitterRegexImpl(ICollection<List<int>> matchers)
+        public GlyphArraySplitterRegexImpl(ICollection<HashList<ushort>> matchers)
         {
             compoundCharacterTokenizer = new CompoundCharacterTokenizer(GetMatchersAsStrings(matchers));
         }
 
-        public List<List<int>> Split(List<int> glyphIds)
+        public List<HashList<ushort>> Split(HashList<ushort> glyphIds)
         {
             string originalGlyphsAsText = ConvertGlyphIdsToString(glyphIds);
             List<string> tokens = compoundCharacterTokenizer.Tokenize(originalGlyphsAsText);
 
-            List<List<int>> modifiedGlyphs = new List<List<int>>();
+            var modifiedGlyphs = new List<HashList<ushort>>();
             foreach (var token in tokens) modifiedGlyphs.Add(ConvertGlyphIdsToList(token));
             return modifiedGlyphs;
         }
 
-        private ISet<string> GetMatchersAsStrings(ICollection<List<int>> matchers)
+        private ISet<string> GetMatchersAsStrings(ICollection<HashList<ushort>> matchers)
         {
             ISet<string> stringMatchers = new SortedSet<string>(StrangeStringComparer.Instance);
             foreach (var glyphIds in matchers) stringMatchers.Add(ConvertGlyphIdsToString(glyphIds));
@@ -70,29 +69,23 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             }
         }
 
-        private string ConvertGlyphIdsToString(List<int> glyphIds)
+        private string ConvertGlyphIdsToString(HashList<ushort> glyphIds)
         {
-            StringBuilder sb = new StringBuilder(20);
+            var sb = new StringBuilder(20);
             sb.Append(GLYPH_ID_SEPARATOR);
-            foreach (var glyphId in glyphIds) sb.Append(glyphId).Append(GLYPH_ID_SEPARATOR);
+            foreach (var glyphId in glyphIds.Span) 
+                sb.Append(glyphId).Append(GLYPH_ID_SEPARATOR);
             return sb.ToString();
         }
 
-        private List<int> ConvertGlyphIdsToList(string glyphIdsAsString)
+        private HashList<ushort> ConvertGlyphIdsToList(string glyphIdsAsString)
         {
-            List<int> gsubProcessedGlyphsIds = new List<int>();
-
-            foreach (string glyphId in glyphIdsAsString.Split(GLYPH_ID_SEPARATOR, StringSplitOptions.RemoveEmptyEntries))
-            {
-                var trimmed = glyphId.Trim();
-                if (trimmed.Length == 0)
-                {
-                    continue;
-                }
-                gsubProcessedGlyphsIds.Add(int.Parse(trimmed));
-            }
-
-            return gsubProcessedGlyphsIds;
+            var array = glyphIdsAsString.Split(GLYPH_ID_SEPARATOR, StringSplitOptions.RemoveEmptyEntries)
+                                                        .Select(x => x.Trim())
+                                                        .Where(x => x.Length > 0)
+                                                        .Select (x =>ushort.Parse(x))
+                                                        .ToArray();
+            return (HashList<ushort>)array;
         }
 
     }

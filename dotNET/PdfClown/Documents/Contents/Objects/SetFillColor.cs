@@ -23,19 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the color to use for nonstroking operations' operation [PDF:1.6:4.5.7].</summary>
-    */
+    /// <summary>'Set the color to use for nonstroking operations' operation [PDF:1.6:4.5.7].</summary>
     [PDF(VersionEnum.PDF12)]
     public abstract class SetFillColor : SetColor
     {
@@ -47,19 +41,15 @@ namespace PdfClown.Documents.Contents.Objects
             : base(@operator, value.Components)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-         */
+        /// <param name="operator">Graphics operator.</param>
+        /// <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
         protected SetFillColor(string @operator, PdfName name)
             : this(@operator, name, null)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-          <param name="underlyingColor">Color used to colorize the pattern.</param>
-         */
+        /// <param name="operator">Graphics operator.</param>
+        /// <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
+        /// <param name="underlyingColor">Color used to colorize the pattern.</param>
         protected SetFillColor(string @operator, PdfName name, Color underlyingColor)
             : base(@operator, new PdfArray(underlyingColor?.Components ?? Enumerable.Empty<PdfDirectObject>()))
         {

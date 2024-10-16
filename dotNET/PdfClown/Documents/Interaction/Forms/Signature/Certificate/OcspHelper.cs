@@ -221,7 +221,11 @@ namespace PdfClown.Documents.Interaction.Forms.Signature.Sertificate
             var info = certHolder.CertificateStructure.SubjectPublicKeyInfo;
             try
             {
+#if __BC_HASH__
+                var hash = new Sha1Digest();
+#else
                 using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+#endif
                 return hash.Digest(info.PublicKey.GetBytes());
             }
             catch (Exception ex)
@@ -411,8 +415,8 @@ namespace PdfClown.Documents.Interaction.Forms.Signature.Sertificate
             {
 
                 var httpRequest = new HttpRequestMessage();
-                httpRequest.Properties.Add("Content-Type", "application/ocsp-request");
-                httpRequest.Properties.Add("Accept", "application/ocsp-response");
+                httpRequest.Options.Set(new HttpRequestOptionsKey<string>("Content-Type"), "application/ocsp-request");
+                httpRequest.Options.Set(new HttpRequestOptionsKey<string>("Accept"), "application/ocsp-response");
                 httpRequest.Method = HttpMethod.Post;
 
                 httpRequest.Content = new ReadOnlyMemoryContent(request.GetEncoded());

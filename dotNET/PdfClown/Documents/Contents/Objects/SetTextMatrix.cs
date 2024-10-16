@@ -29,11 +29,9 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Set the text matrix' operation [PDF:1.6:5.3.1].</summary>
-      <remarks>The specified matrix is not concatenated onto the current text SKMatrix,
-      but replaces it.</remarks>
-    */
+    /// <summary>'Set the text matrix' operation [PDF:1.6:5.3.1].</summary>
+    /// <remarks>The specified matrix is not concatenated onto the current text SKMatrix,
+    /// but replaces it.</remarks>
     [PDF(VersionEnum.PDF10)]
     public sealed class SetTextMatrix : Operation
     {
@@ -59,12 +57,13 @@ namespace PdfClown.Documents.Contents.Objects
         public SetTextMatrix(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
+        public SKMatrix Value => matrix ??= operands.ToSkMatrix();
+
         public override void Scan(GraphicsState state)
         {
             state.TextState.Tm =
                 state.TextState.Tlm = Value;
         }
 
-        public SKMatrix Value => matrix ??= operands.ToSkMatrix();
     }
 }

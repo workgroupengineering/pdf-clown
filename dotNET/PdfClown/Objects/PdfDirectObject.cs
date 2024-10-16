@@ -28,6 +28,7 @@ using PdfClown.Documents.Contents;
 using PdfClown.Tokens;
 
 using System;
+using System.Collections.Concurrent;
 
 namespace PdfClown.Objects
 {
@@ -35,6 +36,7 @@ namespace PdfClown.Objects
     public abstract class PdfDirectObject : PdfDataObject, IComparable<PdfDirectObject>
     {
         private static readonly byte[] NullChunk = Encoding.Pdf.Encode(Keyword.Null);
+        protected static readonly ConcurrentDictionary<PdfDirectObject, IPdfObjectWrapper> cache = new();
 
         /// <summary>Ensures that the given direct object is properly represented as string.</summary>
         /// <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
@@ -58,13 +60,6 @@ namespace PdfClown.Objects
         { }
 
         public abstract int CompareTo(PdfDirectObject obj);
-
-        public override ContentWrapper ContentsWrapper
-        {
-            get => null;
-            internal set { }
-        }
-
-
+        
     }
 }

@@ -37,7 +37,7 @@ using System.Threading;
 
 namespace PdfClown
 {
-    ///<summary>PDF file representation.</summary>
+    /// <summary>PDF file representation.</summary>
     public sealed class PdfFile : IDisposable
     {
         private sealed class ImplicitContainer : PdfIndirectObject
@@ -71,7 +71,7 @@ namespace PdfClown
         }
 
         public PdfFile(string path)
-            : this((IInputStream)new StreamContainer(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            : this(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
             this.path = path;
         }

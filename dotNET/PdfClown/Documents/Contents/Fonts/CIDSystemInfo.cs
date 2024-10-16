@@ -21,11 +21,10 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-     * Represents a CIDSystemInfo.
-     *
-     * @author John Hewson
-     */
+    /// <summary>
+    /// Represents a CIDSystemInfo.
+    /// @author John Hewson
+    /// </summary>
     public sealed class CIDSystemInfo : PdfObjectWrapper<PdfDictionary>
     {
 

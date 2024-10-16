@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
 using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
 using text = System.Text;
 
@@ -45,18 +46,52 @@ namespace PdfClown.Bytes
         private const int BufferSize = 4 * 1024;
         private const int MaxStackAllockSize = 256;
 
-        public static StreamSegment ReadSegment(this IInputStream target, int length)
+        public static void CopyTo(this IInputStream target, IOutputStream output) => target.CopyTo((Stream)output);
+        
+        public static void CopyTo(this IInputStream target, IOutputStream output, int bufferSize) => target.CopyTo((Stream)output, bufferSize);
+
+        /// <summary>Reads a signed byte integer.</summary>
+        /// <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        public static sbyte ReadSByte(this IInputStream target) => unchecked((sbyte)target.ReadByte());
+
+        /// <summary>Reads a unsigned byte integer.</summary>
+        /// <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        public static byte ReadUByte(this IInputStream target) => unchecked((byte)target.ReadByte());
+
+        public static byte ReadUByteWithThrow(this IInputStream target)
         {
-            target.Skip(length);
-            return new StreamSegment(target, length);
+            if (target.Position >= target.Length)
+                throw new EndOfStreamException();
+
+            return (byte)target.ReadByte();
         }
 
+        public static sbyte ReadSByteWithThrow(this IInputStream target)
+        {
+            if (target.Position >= target.Length)
+                throw new EndOfStreamException();
+
+            return unchecked((sbyte)target.ReadByte());
+        }
+
+        /// <summary>Reads a string.</summary>
+        /// <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
+        /// <param name="length">Number of bytes to read.</param>
         public static string ReadString(this IInputStream target, int length) => target.ReadString(length, Charset.ISO88591);
 
         public static string ReadString(this IInputStream target, int length, System.Text.Encoding encoding)
         {
             var span = target.ReadSpan(length);
             return encoding.GetString(span);
+        }
+
+        public static string ReadString(this IInputStream target, int position, int length)
+        {
+            var temp = target.Position;
+            target.Position = position;
+            var result = target.ReadString(length);
+            target.Position = temp;
+            return result;
         }
 
         public static ReadOnlySpan<char> ReadROS(this IInputStream target, int length, System.Text.Encoding encoding)
@@ -322,40 +357,34 @@ namespace PdfClown.Bytes
             return @object == null ? null : @object.Resolve();
         }
 
-        public static void Decode(this IByteStream buffer, PdfDataObject filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        /// <summary>Applies the specified filter to decode the buffer.</summary>
+        /// <param name="filter">Filter to use for decoding the buffer.</param>
+        /// <param name="parameters">Decoding parameters.</param>
+        public static ByteStream Decode(this IInputStream data, Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
-            if (filter is PdfName name) // Single filter.
-            {
-                buffer.Decode(Filter.Get(name), (PdfDictionary)parameters, header);
-            }
-            else // Multiple filters.
-            {
-                using var filterIterator = ((PdfArray)filter).GetEnumerator();
-                IEnumerator<PdfDirectObject> parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
-                while (filterIterator.MoveNext())
-                {
-                    PdfDictionary filterParameters;
-                    if (parametersIterator == null)
-                    { filterParameters = null; }
-                    else
-                    {
-                        parametersIterator.MoveNext();
-                        filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
-                    }
-                    buffer.Decode(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters, header);
-                }
-            }
+            data.Position = 0;
+            return new ByteStream(filter.Decode(data, parameters, header));
         }
 
-        public static IByteStream Extract(this IByteStream buffer, PdfDataObject filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        /// <summary>Applies the specified filter to encode the buffer.</summary>
+        /// <param name="filter">Filter to use for encoding the buffer.</param>
+        /// <param name="parameters">Encoding parameters.</param>
+        /// <returns>Encoded buffer.</returns>
+        public static ByteStream Encode(this IInputStream data, Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        {
+            data.Position = 0;
+            return new ByteStream(filter.Encode(data, parameters, header));
+        }
+
+        public static IInputStream Decode(this IInputStream buffer, PdfDataObject filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (filter == null)
             {
                 return buffer;
             }
-            if (filter is PdfName) // Single filter.
+            if (filter is PdfName name) // Single filter.
             {
-                buffer = buffer.Extract(Filter.Get((PdfName)filter), parameters, header);
+                buffer = buffer.Decode(Filter.Get(name), (PdfDictionary)parameters, header);
             }
             else // Multiple filters.
             {
@@ -371,10 +400,10 @@ namespace PdfClown.Bytes
                         parametersIterator.MoveNext();
                         filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
                     }
-                    buffer = buffer.Extract(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters, header);
+                    buffer = buffer.Decode(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters, header);
                 }
             }
             return buffer;
-        }
+        }        
     }
 }

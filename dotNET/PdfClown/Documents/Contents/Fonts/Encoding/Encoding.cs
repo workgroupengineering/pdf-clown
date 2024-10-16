@@ -24,16 +24,13 @@
 */
 
 using PdfClown.Objects;
-using PdfClown.Util;
 
 using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>Predefined encodings [PDF:1.6:5.5.5,D].</summary>
-    */
+    /// <summary>Predefined encodings [PDF:1.6:5.5.5,D].</summary>
     // TODO: This hierarchy is going to be superseded by PdfClown.Tokens.Encoding.
     public class Encoding
     {

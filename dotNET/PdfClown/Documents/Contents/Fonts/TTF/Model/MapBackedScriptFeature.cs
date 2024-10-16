@@ -19,21 +19,17 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Model
 {
-
-    /**
-     * 
-     * A {@link Dictionary} based simple implementation of the {@link ScriptFeature}
-     * 
-     * @author Palash Ray
-     *
-     */
-    public class MapBackedScriptFeature : ScriptFeature
+    /// <summary>
+    /// A {@link Dictionary} based simple implementation of the {@link ScriptFeature}
+    /// @author Palash Ray
+    /// </summary>
+    public class MapBackedScriptFeature : IScriptFeature
     {
 
         private readonly string name;
-        private readonly Dictionary<List<int>, int> featureMap;
+        private readonly Dictionary<HashList<ushort>, HashList<ushort>> featureMap;
 
-        public MapBackedScriptFeature(string name, Dictionary<List<int>, int> featureMap)
+        public MapBackedScriptFeature(string name, Dictionary<HashList<ushort>, HashList<ushort>> featureMap)
         {
             this.name = name;
             this.featureMap = featureMap;
@@ -44,23 +40,23 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Model
             get => name;
         }
 
-        public ICollection<List<int>> AllGlyphIdsForSubstitution
+        public ICollection<HashList<ushort>> AllGlyphIdsForSubstitution
         {
             get => featureMap.Keys;
         }
 
-        public bool CanReplaceGlyphs(List<int> glyphIds)
+        public bool CanReplaceGlyphs(HashList<ushort> glyphIds)
         {
             return featureMap.ContainsKey(glyphIds);
         }
 
-        public int GetReplacementForGlyphs(List<int> glyphIds)
+        public HashList<ushort> GetReplacementForGlyphs(HashList<ushort> glyphIds)
         {
-            if (!CanReplaceGlyphs(glyphIds))
+            if (!featureMap.TryGetValue(glyphIds, out var result))
             {
                 throw new NotSupportedException("The glyphs " + glyphIds + " cannot be replaced");
             }
-            return featureMap[glyphIds];
+            return result;
         }
 
         public override int GetHashCode()
@@ -86,7 +82,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Model
             {
                 return false;
             }
-            MapBackedScriptFeature other = (MapBackedScriptFeature)obj;
+            var other = (MapBackedScriptFeature)obj;
             if (featureMap == null)
             {
                 if (other.featureMap != null)

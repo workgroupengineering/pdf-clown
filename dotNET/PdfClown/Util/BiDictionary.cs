@@ -31,7 +31,7 @@ using System.Linq;
 namespace PdfClown.Util
 {
     /// <summary>Bidirectional bijective map.</summary>
-    public class BiDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    public class BiDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IBiDictionary<TKey, TValue>
     {
         private static IEqualityComparer<T> GetEqualityComparer<T>()
         {
@@ -72,17 +72,19 @@ namespace PdfClown.Util
 
         public bool ContainsValue(TValue value) => inverseDictionary.ContainsKey(value);
 
-        public virtual TKey GetKey(TValue value) => inverseDictionary.TryGetValue(value, out var key) ? key : default(TKey);
+        public object GetKey(object value) => value is TValue tvalue ? GetKey(tvalue) : default(TKey);
+
+        public virtual TKey GetKey(TValue value) => inverseDictionary.TryGetValue(value, out var key) ? key : default;
 
         public void Add(TKey key, TValue value)
         {
             dictionary.Add(key, value); // Adds the entry.
             try
             { inverseDictionary.Add(value, key); } // Adds the inverse entry.
-            catch (Exception exception)
+            catch (Exception)
             {
                 dictionary.Remove(key); // Reverts the entry addition.
-                throw exception;
+                throw;
             }
         }
 

@@ -23,22 +23,17 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using SkiaSharp;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Close the current subpath by appending a straight line segment
-      from the current point to the starting point of the subpath' operation
-      [PDF:1.6:4.4.1].</summary>
-    */
+    /// <summary>'Close the current subpath by appending a straight line segment
+    /// from the current point to the starting point of the subpath' operation
+    /// [PDF:1.6:4.4.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class CloseSubpath : Operation
     {
         public static readonly string OperatorKeyword = "h";
 
-        public static readonly CloseSubpath Value = new CloseSubpath();
+        public static readonly CloseSubpath Value = new();
 
         private CloseSubpath() : base(OperatorKeyword)
         { }

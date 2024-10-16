@@ -30,7 +30,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Bytes.Filters
 {
-    ///<summary>Abstract filter [PDF:1.6:3.3].</summary>
+    /// <summary>Abstract filter [PDF:1.6:3.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class Filter
     {
@@ -80,8 +80,8 @@ namespace PdfClown.Bytes.Filters
         protected Filter()
         { }
 
-        public abstract Memory<byte> Decode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
+        public abstract Memory<byte> Decode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
 
-        public abstract Memory<byte> Encode(ByteStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
+        public abstract Memory<byte> Encode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header);
     }
 }

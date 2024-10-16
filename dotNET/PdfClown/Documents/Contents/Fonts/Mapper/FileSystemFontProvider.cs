@@ -32,6 +32,8 @@ using Org.BouncyCastle.Utilities.Encoders;
 using System.Security.Cryptography;
 using System.Buffers;
 using PdfClown.Util.Collections;
+using PdfClown.Util.IO;
+using Org.BouncyCastle.Crypto.Digests;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
@@ -134,42 +136,35 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
             }
 
-
             public override int FamilyClass
             {
                 get => sFamilyClass;
             }
-
 
             public override int WeightClass
             {
                 get => usWeightClass;
             }
 
-
             public override int CodePageRange1
             {
                 get => ulCodePageRange1;
             }
-
 
             public override int CodePageRange2
             {
                 get => ulCodePageRange2;
             }
 
-
             public override int MacStyle
             {
                 get => macStyle;
             }
 
-
             public override PanoseClassification Panose
             {
                 get => panose;
             }
-
 
             public override string ToString()
             {
@@ -249,15 +244,13 @@ namespace PdfClown.Documents.Contents.Fonts
                         }
                     }
 
-                    OTFParser parser = new OTFParser(false);
-                    using (var stream = file.OpenRead())
-                    {
-                        var otf = parser.Parse(stream);
+                    var parser = new OTFParser(false);
+                    using var stream = file.OpenRead();
+                    var otf = parser.Parse(stream);
 #if DEBUG
-                        Debug.WriteLine($"debug: Loaded {postScriptName} from {file}");
+                    Debug.WriteLine($"debug: Loaded {postScriptName} from {file}");
 #endif
-                        return (OpenTypeFont)otf;
-                    }
+                    return (OpenTypeFont)otf;
                 }
                 catch (IOException e)
                 {
@@ -385,9 +378,7 @@ namespace PdfClown.Documents.Contents.Fonts
             //return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
         }
 
-        /**
-		 * Saves the font metadata cache to disk.
-		 */
+        /// <summary>Saves the font metadata cache to disk.</summary>
         private void SaveDiskCache()
         {
             try
@@ -455,9 +446,9 @@ namespace PdfClown.Documents.Contents.Fonts
 
         }
 
-        /**
-		 * Loads the font metadata cache from disk.
-		 */
+        /// <summary>Loads the font metadata cache from disk.</summary>
+        /// <param name="files"></param>
+        /// <returns></returns>
         private List<FSFontInfo> LoadDiskCache(List<FileInfo> files)
         {
             ISet<string> pending = new HashSet<string>(files.Select(x => x.FullName), StringComparer.Ordinal);
@@ -659,10 +650,9 @@ namespace PdfClown.Documents.Contents.Fonts
                         panose = os2windowsMetricsTable.Panose;
                     }
                     string hash = ComputeHash(file.FullName);
-                    string format;
+
                     if (ttf is OpenTypeFont openTypeFont && openTypeFont.IsPostScript)
                     {
-                        format = "OTF";
                         CIDSystemInfo ros = null;
                         if (openTypeFont.IsSupportedOTF && openTypeFont.CFF != null)
                         {
@@ -695,19 +685,11 @@ namespace PdfClown.Documents.Contents.Fonts
                             ros = new CIDSystemInfo(null, registryName, orderName, supplementVersion);
                         }
 
-                        format = "TTF";
                         fontInfoList.Add(new FSFontInfo(file, FontFormat.TTF, ttf.Name, ros,
                                 usWeightClass, sFamilyClass, ulCodePageRange1, ulCodePageRange2,
                                 macStyle, panose, this, hash, file.LastWriteTimeUtc.ToBinary()));
                     }
 
-#if TRACE
-                    NamingTable name = ttf.Naming;
-                    if (name != null)
-                    {
-                        Debug.WriteLine($"trace: {format}: '{name.PostScriptName}' / '{name.FontFamily}' / '{name.FontSubFamily}'");
-                    }
-#endif
                 }
                 else
                 {
@@ -791,14 +773,18 @@ namespace PdfClown.Documents.Contents.Fonts
             var buffer = ArrayPool<byte>.Shared.Rent(4 * 1024);
             try
             {
+#if __BC_HASH__
+                var md = new Sha512Digest();
+#else
                 using var md = IncrementalHash.CreateHash(HashAlgorithmName.SHA512);
+#endif
                 using var file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, buffer.Length);
                 var read = 0;
                 while ((read = file.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    md.AppendData(buffer.AsSpan(0, read));
+                    md.Update(buffer, 0, read);
                 }
-                var sha512 = md.GetHashAndReset();
+                var sha512 = md.Digest();
                 return Hex.ToHexString(sha512);
             }
             catch (CryptographicException)
@@ -809,8 +795,6 @@ namespace PdfClown.Documents.Contents.Fonts
             finally
             {
                 ArrayPool<byte>.Shared.Return(buffer);
-
-
             }
         }
     }

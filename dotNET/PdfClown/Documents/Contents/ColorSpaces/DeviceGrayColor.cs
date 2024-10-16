@@ -30,9 +30,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Device Gray color value [PDF:1.6:4.5.3].</summary>
-    */
+    /// <summary>Device Gray color value [PDF:1.6:4.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class DeviceGrayColor : DeviceColor, IEquatable<DeviceGrayColor>
     {
@@ -41,10 +39,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public static readonly DeviceGrayColor Default = Black;
 
-        /**
-          <summary>Gets the color corresponding to the specified components.</summary>
-          <param name="components">Color components to convert.</param>
-         */
+        /// <summary>Gets the color corresponding to the specified components.</summary>
+        /// <param name="components">Color components to convert.</param>
         public static new DeviceGrayColor Get(PdfArray components)
         {
             return components != null
@@ -61,9 +57,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         { }
 
 
-        /**
-          <summary>Gets/Sets the gray component.</summary>
-        */
+        /// <summary>Gets/Sets the gray component.</summary>
         public float G
         {
             get => this[0];

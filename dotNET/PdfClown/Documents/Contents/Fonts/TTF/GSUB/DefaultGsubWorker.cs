@@ -15,22 +15,21 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 {
-    /**
-     * A default implementation of {@link GsubWorker} that actually does not transform the glyphs yet allows to correctly
-     * {@linkplain GlyphSubstitutionTable#getGsubData(String) load} GSUB table data even from fonts for which a complete
-     * glyph substitution is not implemented.
-     *
-     * @author Vladimir Plizga
-     */
-    class DefaultGsubWorker : GsubWorker
+    /// <summary>
+    /// A default implementation of { @link GsubWorker }
+    /// that actually does not transform the glyphs yet allows to correctly
+    /// {@linkplain GlyphSubstitutionTable#getGsubData(String) load} GSUB table data even from fonts for which a complete
+    /// glyph substitution is not implemented.
+    /// @author Vladimir Plizga
+    /// </summary>
+    class DefaultGsubWorker : IGsubWorker
     {
 
-        public List<int> ApplyTransforms(List<int> originalGlyphIds)
+        public HashList<ushort> ApplyTransforms(HashList<ushort> originalGlyphIds)
         {
             Debug.Write($"warn: {nameof(DefaultGsubWorker)} class does not perform actual GSUB substitutions. Perhaps the selected language is not yet supported by the FontBox library.");
             // Make the result read-only to prevent accidental modifications of the source list

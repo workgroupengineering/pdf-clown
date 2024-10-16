@@ -29,16 +29,12 @@ namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class ShowTextToNextLineNoSpace : ShowTextToNextLine
     {
-        /**
-          <summary>Specifies no text state parameter
-          (just uses the current settings).</summary>
-        */
+        /// <summary>Specifies no text state parameter
+        /// (just uses the current settings).</summary>
         public static readonly string OperatorKeyword = "'";
 
 
-        /**
-          <param name="text">Text encoded using current font's encoding.</param>
-        */
+        /// <param name="text">Text encoded using current font's encoding.</param>
         public ShowTextToNextLineNoSpace(byte[] text)
             : base(OperatorKeyword, text)
         { }
@@ -47,7 +43,7 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, operands)
         { }
 
-        protected override PdfString String
+        protected override PdfString TextElement
         {
             get => (PdfString)operands[0];
             set => operands[0] = value;

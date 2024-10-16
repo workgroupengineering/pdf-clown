@@ -1,19 +1,16 @@
 using PdfClown.Documents;
-using PdfClown.Documents.Contents;
-using PdfClown.Files;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Tools;
-
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to retrieve text content along with its graphic attributes
-      (font, font size, text color, text rendering mode, text bounding box, and so on) from a PDF document;
-      text is automatically sorted and aggregated.</summary>
-    */
+    /// <summary>This sample demonstrates how to retrieve text content along with its graphic attributes
+    /// (font, font size, text color, text rendering mode, text bounding box, and so on) from a PDF document;
+    /// text is automatically sorted and aggregated.</summary>
+
+
     public class AdvancedTextExtractionSample : Sample
     {
         public override void Run()
@@ -39,7 +36,7 @@ namespace PdfClown.Samples.CLI
                     {
                         var textStringQuad = textString.Quad;
                         Console.WriteLine(
-                          $"Text [x:{Math.Round(textStringQuad.Left)},y:{Math.Round(textStringQuad.Top)},w:{Math.Round(textStringQuad.Width)},h:{Math.Round(textStringQuad.Height)}]: {textString.Text}");
+                          $"Text [x:{Math.Round(textStringQuad.MinX)},y:{Math.Round(textStringQuad.MinY)},w:{Math.Round(textStringQuad.Width)},h:{Math.Round(textStringQuad.Height)}]: {textString.Text}");
                     }
                 }
             }

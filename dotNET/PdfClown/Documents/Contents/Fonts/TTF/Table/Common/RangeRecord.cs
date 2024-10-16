@@ -17,34 +17,31 @@
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Table.Common
 {
-
-    /**
-     * This class models the
-     * <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-format-2">Range Record in the
-     * Coverage format 2</a> in the Open Type layout common tables.
-     * 
-     * @author Palash Ray
-     *
-     */
+    /// <summary>
+    /// This class models the
+    /// <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-format-2">Range Record in the
+    /// Coverage format 2</a> in the Open Type layout common tables.
+    /// @author Palash Ray
+    /// </summary>
     public class RangeRecord
     {
-        private readonly int startGlyphID;
-        private readonly int endGlyphID;
+        private readonly ushort startGlyphID;
+        private readonly ushort endGlyphID;
         private readonly int startCoverageIndex;
 
-        public RangeRecord(int startGlyphID, int endGlyphID, int startCoverageIndex)
+        public RangeRecord(ushort startGlyphID, ushort endGlyphID, int startCoverageIndex)
         {
             this.startGlyphID = startGlyphID;
             this.endGlyphID = endGlyphID;
             this.startCoverageIndex = startCoverageIndex;
         }
 
-        public int StartGlyphID
+        public ushort StartGlyphID
         {
             get => startGlyphID;
         }
 
-        public int EndGlyphID
+        public ushort EndGlyphID
         {
             get => endGlyphID;
         }

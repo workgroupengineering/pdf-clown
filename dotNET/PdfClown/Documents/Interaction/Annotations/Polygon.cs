@@ -23,25 +23,18 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
 using SkiaSharp;
-using Org.BouncyCastle.Bcpg.Sig;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Polygon annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It represents a closed polygon to display on a page.</remarks>
-    */
+    /// <summary>Polygon annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It represents a closed polygon to display on a page.</remarks>
     [PDF(VersionEnum.PDF15)]
     public sealed class Polygon : VertexShape
     {
         public Polygon(PdfPage page, SKRect box, string text)
-            : base(page, box, text, PdfName.Polygon)        
+            : base(page, box, text, PdfName.Polygon)
         {
             base.ClosePath = true;
         }

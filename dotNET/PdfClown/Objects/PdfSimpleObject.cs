@@ -28,7 +28,7 @@ using System;
 namespace PdfClown.Objects
 {
     /// <summary>Abstract PDF simple object.</summary>
-    public abstract class PdfSimpleObject<TValue> : PdfWrapableDirectObject, IPdfSimpleObject<TValue>
+    public abstract class PdfSimpleObject<TValue> : PdfDirectObject, IPdfSimpleObject<TValue>
     {
         /// <summary>Gets the object equivalent to the given value.</summary>
         public static PdfDirectObject Get(object value)
@@ -113,6 +113,24 @@ namespace PdfClown.Objects
         {
             get => value;
             protected set => this.value = (TValue)value;
+        }
+
+        public override IPdfObjectWrapper Wrapper
+        {
+            get => cache.TryGetValue(this, out var wrapper) ? wrapper : null;
+            internal set => cache[this] = value;
+        }
+
+        public override IPdfObjectWrapper Wrapper2
+        {
+            get => null;
+            internal set {}
+        }
+
+        public override IPdfObjectWrapper Wrapper3
+        {
+            get => null;
+            internal set { }
         }
 
         public override PdfObject Clone(PdfFile context) => this;  // NOTE: Simple objects are immutable.

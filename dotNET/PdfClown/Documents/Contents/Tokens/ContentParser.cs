@@ -48,10 +48,6 @@ namespace PdfClown.Documents.Contents.Tokens
             Operation operation = ParseOperation();
             switch (operation) // External object.
             {
-                case PaintXObject paintXObject:
-                    return new GraphicsXObject(paintXObject);
-                case PaintShading paintShading:
-                    return new GraphicsShading(paintShading);
                 case BeginSubpath:
                 case DrawRectangle:
                 case ModifyClipPath:
@@ -85,7 +81,7 @@ namespace PdfClown.Documents.Contents.Tokens
                 ContentObject contentObject = ParseContentObject();
                 // Multiple-operation graphics object end?
                 if (contentObject is EndText // Text.
-                  //|| contentObject is RestoreGraphicsState // Local graphics state.
+                                             //|| contentObject is RestoreGraphicsState // Local graphics state.
                   || contentObject is EndMarkedContent // End marked-content sequence.
                   || contentObject is EndCompatibilityState // compatibility state.
                   || contentObject is EndInlineImage // Inline image.
@@ -145,25 +141,24 @@ namespace PdfClown.Documents.Contents.Tokens
                 header = new InlineImageHeader(operands);
             }
 
-            InlineImageBody body;
+            // [FIX:51,74] Wrong 'EI' token handling on inline image parsing.
+            IInputStream stream = Stream;
+            stream.ReadByte(); // Should be the whitespace following the 'ID' token.
+            var startSegment = stream.Position;
+            //var data = new ByteStream();
+            while (true)
             {
-                // [FIX:51,74] Wrong 'EI' token handling on inline image parsing.
-                IInputStream stream = Stream;
-                stream.ReadByte(); // Should be the whitespace following the 'ID' token.
-                var data = new ByteStream();
-                while (true)
+                int curByte = stream.ReadByte();
+                if (((char)curByte == 'E' && (char)stream.PeekByte() == 'I'))
                 {
-                    int curByte = stream.ReadByte();
-                    if (((char)curByte == 'E' && (char)stream.PeekByte() == 'I'))
-                    {
-                        stream.ReadByte();
-                        break;
-                    }
-                    data.WriteByte((byte)curByte);
-
+                    stream.ReadByte();
+                    break;
                 }
-                body = new InlineImageBody(data);
+                //data.WriteByte((byte)curByte);
             }
+            var length = (stream.Position - startSegment) - 2;
+            var data = new StreamSegment(stream, startSegment, length);
+            var body = new InlineImageBody(data);
 
             return new GraphicsInlineImage(header, body);
         }

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -32,7 +33,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Model
      */
     public enum Language
     {
+        CYRILLIC,
         BENGALI,
+        DEVANAGARI,
+        GUJARATI,
         LATIN,
         UNSPECIFIED
     }
@@ -41,9 +45,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Model
     {
         private static readonly Dictionary<Language, string[]> langNames = new()
         {
-            { Language.BENGALI, new string[]{ "bng2", "beng" } },
-            { Language.LATIN, new string[]{ "latn" } },
-            { Language.UNSPECIFIED, new string[]{ } }
+            { Language.CYRILLIC, new string[] { "cyrl" } },
+            { Language.BENGALI, new string[] { "bng2", "beng" } },
+            { Language.DEVANAGARI, new string[] { "dev2", "deva" } },
+            { Language.GUJARATI, new string[] { "gjr2", "gujr" } },
+            { Language.LATIN, new string[] { "latn" } },
+            { Language.UNSPECIFIED, Array.Empty<string>() }
         };
 
         public static string[] GetScriptNames(this Language language)

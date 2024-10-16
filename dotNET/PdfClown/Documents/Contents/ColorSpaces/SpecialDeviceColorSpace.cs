@@ -35,17 +35,13 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Special device color space [PDF:1.6:4.5.5].</summary>
-    */
+    /// <summary>Special device color space [PDF:1.6:4.5.5].</summary>
     [PDF(VersionEnum.PDF12)]
     public abstract class SpecialDeviceColorSpace : SpecialColorSpace
     {
-        /**
-          <summary>Special colorant name never producing any visible output.</summary>
-          <remarks>When a color space with this component name is the current color space, painting
-          operators have no effect.</remarks>
-        */
+        /// <summary>Special colorant name never producing any visible output.</summary>
+        /// <remarks>When a color space with this component name is the current color space, painting
+        /// operators have no effect.</remarks>
         public static readonly string NoneComponentName = PdfName.None.StringValue;
         private ColorSpace alternate;
         private Function function;
@@ -55,21 +51,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         internal SpecialDeviceColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the alternate color space used in case any of the <see cref="ComponentNames">component names</see>
-          in the color space do not correspond to a component available on the device.</summary>
-        */
+        /// <summary>Gets the alternate color space used in case any of the <see cref="ComponentNames">component names</see>
+        /// in the color space do not correspond to a component available on the device.</summary>
         public ColorSpace AlternateSpace => alternate ??= ColorSpace.Wrap(((PdfArray)BaseDataObject)[2]);
 
-        /**
-          <summary>Gets the names of the color components.</summary>
-        */
+        /// <summary>Gets the names of the color components.</summary>
         public abstract IList<string> ComponentNames { get; }
 
-        /**
-          <summary>Gets the function to transform a tint value into color component values
-          in the <see cref="AlternateSpace">alternate color space</see>.</summary>
-        */
+        /// <summary>Gets the function to transform a tint value into color component values
+        /// in the <see cref="AlternateSpace">alternate color space</see>.</summary>
         public Function TintFunction => function ??= Function.Wrap(((PdfArray)BaseDataObject)[3]);
 
         public override SKColor GetSKColor(Color color, float? alpha)

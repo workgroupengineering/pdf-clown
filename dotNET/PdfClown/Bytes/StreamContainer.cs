@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.Composition;
 using PdfClown.Util;
 using PdfClown.Util.IO;
 
@@ -33,14 +34,14 @@ using text = System.Text;
 
 namespace PdfClown.Bytes
 {
-    ///<summary>Generic stream.</summary>
+    /// <summary>Generic stream.</summary>
     public class StreamContainer : Stream, IInputStream, IOutputStream
     {
-        private Stream stream;
+        protected Stream stream;
 
         private ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian;
         private byte currentByte;
-        private int bitShift;
+        private int bitShift = -1;
         private byte[] temp;
         private long mark;
 
@@ -55,7 +56,13 @@ namespace PdfClown.Bytes
             set => byteOrder = value;
         }
 
-        public bool IsAvailable => stream.Length > stream.Position;
+        public bool IsAvailable => Length > Position;
+
+        public bool Dirty
+        {
+            get => false;
+            set { }
+        }
 
         public override long Position
         {
@@ -64,7 +71,11 @@ namespace PdfClown.Bytes
             set => stream.Position = value;
         }
 
-        public override long Length => stream.Length;
+        public override long Length
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => stream.Length;
+        }
 
         public override bool CanRead => stream.CanRead;
 
@@ -77,20 +88,14 @@ namespace PdfClown.Bytes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int Read(Span<byte> data) => stream.Read(data);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int Read(byte[] data) => stream.Read(data, 0, data.Length);
+        public int Read(byte[] data) => Read(data, 0, data.Length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int Read(byte[] data, int offset, int count) => stream.Read(data, offset, count);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int ReadByte() => stream.ReadByte();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public sbyte ReadSByte() => unchecked((sbyte)stream.ReadByte());
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte ReadUByte() => unchecked((byte)stream.ReadByte());
+        
 
         public int PeekByte()
         {
@@ -98,7 +103,7 @@ namespace PdfClown.Bytes
             var peek = ReadByte();
             if (temp != Position)
             {
-                stream.Seek(-1, SeekOrigin.Current);
+                Seek(-1, SeekOrigin.Current);
             }
             return peek;
         }
@@ -107,10 +112,10 @@ namespace PdfClown.Bytes
         {
             var temp = Position;
             Skip(offset);
-            var peek = ReadUByte();
+            var peek = this.ReadUByte();
             if (temp != Position)
             {
-                stream.Seek(temp, SeekOrigin.Begin);
+                Seek(temp, SeekOrigin.Begin);
             }
             return peek;
         }
@@ -141,7 +146,7 @@ namespace PdfClown.Bytes
             var buffer = new text::StringBuilder();
             while (true)
             {
-                int c = stream.ReadByte();
+                int c = ReadByte();
                 if (c == -1)
                     if (buffer.Length == 0)
                         return null;
@@ -184,9 +189,7 @@ namespace PdfClown.Bytes
             return ConvertUtils.ReadUInt64(data, byteOrder);
         }
 
-        public Memory<byte> ReadMemory(int length) => stream is IInputStream inputStream ? inputStream.ReadMemory(length) : ReadBytesAlloc(length);
-
-        public Memory<byte> ReadBytesAlloc(int length)
+        public byte[] ReadBytesAlloc(int length)
         {
             if (Position + length > Length)
             {
@@ -197,7 +200,13 @@ namespace PdfClown.Bytes
             return buffer;
         }
 
-        public Span<byte> ReadSpan(int length) => stream is IInputStream inputStream ? inputStream.ReadSpan(length) : ReadBytesAlloc(length).Span;
+        public Memory<byte> ReadMemory(int length) => stream is IInputStream inputStream 
+            ? inputStream.ReadMemory(length) 
+            : ReadBytesAlloc(length);
+
+        public Span<byte> ReadSpan(int length) => stream is IInputStream inputStream 
+            ? inputStream.ReadSpan(length) 
+            : ReadBytesAlloc(length).AsSpan();
 
         public string ReadString(int length) => StreamExtensions.ReadString(this, length);
 
@@ -210,7 +219,7 @@ namespace PdfClown.Bytes
         {
             if (bitShift < 0)
             {
-                currentByte = ReadUByte();
+                currentByte = this.ReadUByte();
                 bitShift = 7;
             }
             var bit = (currentByte >> bitShift) & 1;
@@ -228,12 +237,11 @@ namespace PdfClown.Bytes
             return result;
         }
 
-        public long Seek(long offset) => stream.Seek(offset, SeekOrigin.Begin);
+        public long Seek(long offset) => Seek(offset, SeekOrigin.Begin);
 
-        public long Skip(long offset) => stream.Seek(offset, SeekOrigin.Current);
+        public long Skip(long offset) => Seek(offset, SeekOrigin.Current);
 
-        public void Clear()
-        { stream.SetLength(0); }
+        public void Clear() => stream.SetLength(0);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void WriteByte(byte data) => stream.WriteByte(data);
@@ -258,30 +266,28 @@ namespace PdfClown.Bytes
         {
             if (disposing)
             {
-                if (stream != null)
-                {
-                    stream.Dispose();
-                    stream = null;
-                }
+                stream?.Dispose();
+                stream = null;
                 GC.SuppressFinalize(this);
             }
         }
 
         public override void Flush() => stream.Flush();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override long Seek(long offset, SeekOrigin origin) => stream.Seek(offset, origin);
 
         public override void SetLength(long value) => stream.SetLength(value);
 
-        public byte[] ToArray()
+        public virtual byte[] ToArray()
         {
             var position = Position;
-            byte[] data = new byte[stream.Length];
+            byte[] data = new byte[Length];
             {
-                stream.Position = 0;
-                stream.Read(data, 0, data.Length);
+                Position = 0;
+                Read(data, 0, data.Length);
             }
-            stream.Position = position;
+            Position = position;
             return data;
         }
 
@@ -290,14 +296,18 @@ namespace PdfClown.Bytes
             return temp ??= ToArray();
         }
 
-        public Memory<byte> AsMemory()
+        public virtual Memory<byte> AsMemory()
         {
-            return GetArrayBuffer().AsMemory();
+            return stream is IInputStream inputStream 
+                ? inputStream.AsMemory() 
+                : GetArrayBuffer().AsMemory();
         }
 
-        public Span<byte> AsSpan()
+        public virtual Span<byte> AsSpan()
         {
-            return GetArrayBuffer().AsSpan();
+            return stream is IInputStream inputStream 
+                ? inputStream.AsSpan() 
+                : GetArrayBuffer().AsSpan();
         }
 
         public void SetBuffer(Memory<byte> data)

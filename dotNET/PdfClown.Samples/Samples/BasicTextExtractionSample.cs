@@ -43,21 +43,19 @@ namespace PdfClown.Samples.CLI
         {
             if (level == null)
                 return;
-
-            while (level.MoveNext())
+            level.OnObjectScanning += OnObjectScanning;
+            level.Scan();
+            level.OnObjectScanning -= OnObjectScanning;
+            bool OnObjectScanning(ContentObject content, ICompositeObject container, int index)
             {
-                ContentObject content = level.Current;
-                if (content is ShowText)
+                if (content is ShowText showText)
                 {
                     Font font = level.State.Font;
                     // Extract the current text chunk, decoding it!
-                    Console.WriteLine(font.Decode(((ShowText)content).Text));
+                    Console.WriteLine(font.Decode(showText.TextBytes));
+                    return false;
                 }
-                else if (content is GraphicsText || content is ContainerObject)
-                {
-                    // Scan the inner level!
-                    Extract(level.ChildLevel);
-                }
+                return true;
             }
         }
     }

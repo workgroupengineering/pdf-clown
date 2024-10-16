@@ -24,30 +24,74 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Objects;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Tokens;
-
+using PdfClown.Util.Math.Geom;
+using SkiaSharp;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Text object [PDF:1.6:5.3].</summary>
-    */
+    /// <summary>Text object [PDF:1.6:5.3].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class GraphicsText : GraphicsObject
+    public sealed class GraphicsText : CompositeObject, IBoxed, ITextBlock
     {
         public static readonly string BeginOperatorKeyword = BeginText.OperatorKeyword;
         public static readonly string EndOperatorKeyword = EndText.OperatorKeyword;
 
         private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
         private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
+        private List<ITextString> textStrings;
+        private string text;
+        private Quad? quad;
 
         public GraphicsText()
         { }
 
         public GraphicsText(IList<ContentObject> objects) : base(objects)
         { }
+
+        public Quad Quad
+        {
+            get
+            {
+                if (quad == null)
+                {
+                    var result = new Quad();
+                    foreach (var textString in textStrings)
+                    {
+                        if (textString.Quad.IsEmpty)
+                            continue;
+                        if (result.IsEmpty)
+                        { result = textString.Quad; }
+                        else
+                        { result.Union(textString.Quad); }
+                    }
+                    quad = result;
+                }
+                return quad.Value;
+            }
+        }
+
+        public string Text
+        {
+            get
+            {
+                if (text == null)
+                {
+                    var textBuilder = new System.Text.StringBuilder();
+                    foreach (var textString in textStrings)
+                    {
+                        textBuilder.Append(textString.Text);
+                    }
+                    text = textBuilder.ToString();
+                }
+                return text;
+            }
+        }
+
+        /// <summary>Gets the text strings.</summary>
+        public List<ITextString> Strings => textStrings;
 
         public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
@@ -56,12 +100,30 @@ namespace PdfClown.Documents.Contents.Objects
             stream.Write(EndChunk);
         }
 
-        public override void Scan(GraphicsState state)
+        public override void OnScanning(GraphicsState state)
         {
-            var temp = state.TextState;
-            state.TextState = new TextGraphicsState();
-            base.Scan(state);
-            state.TextState = temp;
+            if (textStrings == null)
+            {
+                textStrings = new List<ITextString>();
+                state.Scanner.Context?.TextBlocks?.Add(this);
+            }
+            var newState = state.PushTextState();
+            newState.TextBlock = this;
         }
+
+        public override void OnScanned(GraphicsState state)
+        {
+            state.PopTextState();
+        }
+
+        public SKRect GetBox(GraphicsState state)
+        {
+            if (textStrings == null)
+            {
+                Scan(state);
+            }
+            return Quad.GetBounds();
+        }
+
     }
 }

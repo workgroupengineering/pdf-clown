@@ -17,6 +17,7 @@
 
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
@@ -29,11 +30,10 @@ using System.Linq;
 namespace PdfClown.Documents.Contents.Fonts
 {
 
-    /**
-     * A Type 3 character procedure. This is a standalone PDF content stream.
-     *
-     * @author John Hewson
-     */
+    /// <summary>
+    /// A Type 3 character procedure.This is a standalone PDF content stream.
+    /// @author John Hewson
+    /// </summary>
     public sealed class Type3CharProc : PdfObjectWrapper<PdfStream>, IContentContext
     {
         public static Type3CharProc Wrap(PdfDirectObject baseObject, FontType3 font)
@@ -47,7 +47,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         private readonly FontType3 font;
         private SKPicture picture;
-        private Stack<GraphicsState> states;
+        private ContentWrapper contents;
 
         public Type3CharProc(FontType3 font, PdfDirectObject charStream)
             : base(charStream)
@@ -60,7 +60,9 @@ namespace PdfClown.Documents.Contents.Fonts
             get => font;
         }
 
-        public ContentWrapper Contents => ContentWrapper.Wrap(BaseObject, this);
+        public ContentWrapper Contents => contents ??= new ContentWrapper(BaseObject);
+
+        IList<ContentObject> ICompositeObject.Contents => Contents;
 
         public SKMatrix Matrix
         {
@@ -104,13 +106,9 @@ namespace PdfClown.Documents.Contents.Fonts
             get => Contents.OfType<CharProcBBox>().FirstOrDefault()?.BBox;
         }
 
-        /**
-		 * Get the width from a type3 charproc stream.
-		 *
-		 * @return the glyph width.
-		 * @throws IOException if the stream could not be read, or did not have d0 or d1 as first
-		 * operator, or if their first argument was not a number.
-		 */
+		 /// <summary>
+         /// Get the width from a type3 charproc stream.
+         /// </summary>
         public float? Width
         {
             get => (float?)(Contents.OfType<CharProcWidth>().FirstOrDefault()?.WX ?? Contents.OfType<CharProcBBox>().FirstOrDefault()?.WX);
@@ -125,15 +123,13 @@ namespace PdfClown.Documents.Contents.Fonts
             get => SKMatrix.Identity;
         }
 
-        public List<ITextString> Strings { get; set; }
+        public List<ITextBlock> TextBlocks { get; set; }
 
         public TransparencyXObject Group { get => null; }
 
         public AppDataCollection AppData => null;
 
         public DateTime? ModificationDate => null;
-
-        public Stack<GraphicsState> GetGraphicsStateContext() => states ??= new Stack<GraphicsState>();
 
         public SKPicture Render()
         {
@@ -149,7 +145,7 @@ namespace PdfClown.Documents.Contents.Fonts
         public void Render(SKCanvas canvas, SKRect box, SKColor? clearColor = null)
         {
             var scanner = new ContentScanner(this, canvas, box, clearColor);
-            scanner.Render();
+            scanner.Scan();
         }
 
         public AppData GetAppData(PdfName appName)

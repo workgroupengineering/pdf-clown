@@ -23,15 +23,28 @@
   this list of conditions.
 */
 
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
+using System;
 
 namespace PdfClown.Util.Math.Geom
 {
     /// <summary>Quadrilateral shape.</summary>
     public struct Quad : IEquatable<Quad>
     {
+        private static float Min(float lengthTopLeft, float lengthTopRight, float lengthBottomLeft, float lengthBottomRight)
+        {
+            var top = lengthTopLeft < lengthTopRight ? lengthTopLeft : lengthTopRight;
+            var bottom = lengthBottomLeft < lengthBottomRight ? lengthBottomLeft : lengthBottomRight;
+            return top < bottom ? top : bottom;
+        }
+
+        private static float Max(float lengthTopLeft, float lengthTopRight, float lengthBottomLeft, float lengthBottomRight)
+        {
+            var top = lengthTopLeft > lengthTopRight ? lengthTopLeft : lengthTopRight;
+            var bottom = lengthBottomLeft > lengthBottomRight ? lengthBottomLeft : lengthBottomRight;
+            return top > bottom ? top : bottom;
+        }
+
         public static readonly Quad Empty = new Quad(SKPoint.Empty, SKPoint.Empty, SKPoint.Empty, SKPoint.Empty);
 
         public static bool operator ==(Quad value, Quad value2) => value.Equals(value2);
@@ -49,10 +62,10 @@ namespace PdfClown.Util.Math.Geom
             return temp.Transform(ref matrix);
         }
 
-        private SKPoint pointTopLeft;
-        private SKPoint pointTopRight;
-        private SKPoint pointBottomRight;
-        private SKPoint pointBottomLeft;
+        private SKPoint point0;
+        private SKPoint point1;
+        private SKPoint point2;
+        private SKPoint point3;
 
         public Quad(SKRect rectangle)
             : this(new SKPoint(rectangle.Left, rectangle.Top),
@@ -62,78 +75,84 @@ namespace PdfClown.Util.Math.Geom
         { }
 
         public Quad(Quad quad)
-            : this(quad.pointTopLeft,
-                  quad.pointTopRight,
-                  quad.pointBottomRight,
-                  quad.pointBottomLeft)
+            : this(quad.point0,
+                  quad.point1,
+                  quad.point2,
+                  quad.point3)
         { }
 
         public Quad(SKPoint pointTopLeft, SKPoint pointTopRight, SKPoint pointBottomRight, SKPoint pointBottomLeft)
         {
-            this.pointTopLeft = pointTopLeft;
-            this.pointTopRight = pointTopRight;
-            this.pointBottomRight = pointBottomRight;
-            this.pointBottomLeft = pointBottomLeft;
+            this.point0 = pointTopLeft;
+            this.point1 = pointTopRight;
+            this.point2 = pointBottomRight;
+            this.point3 = pointBottomLeft;
         }
 
-        public bool IsEmpty => this.Equals(Empty);
-
-        public SKPoint TopLeft => pointTopLeft;
-
-        public SKPoint TopRight => pointTopRight;
-
-        public SKPoint BottomRight => pointBottomRight;
-
-        public SKPoint BottomLeft => pointBottomLeft;
-
-        public SKPoint? Middle => SKLine.FindIntersection(new SKLine(pointTopLeft, pointBottomRight), new SKLine(pointBottomLeft, pointTopRight), false);
-
-        public float Width => SKPoint.Distance(pointTopLeft, pointTopRight);
-
-        public float HorizontalLength => Right - Left;
-
-        public float Height => SKPoint.Distance(pointTopRight, pointBottomRight);
-
-        public float VerticalLenght => Bottom - Top;
-
-        public float Top =>
-            System.Math.Min(pointTopLeft.Y,
-                System.Math.Min(pointTopRight.Y,
-                    System.Math.Min(pointBottomRight.Y, pointBottomLeft.Y)));
-
-        public float Left =>
-            System.Math.Min(pointTopLeft.X,
-                System.Math.Min(pointTopRight.X,
-                    System.Math.Min(pointBottomRight.X, pointBottomLeft.X)));
-
-        public float Right =>
-            System.Math.Max(pointTopLeft.X,
-                System.Math.Max(pointTopRight.X,
-                    System.Math.Max(pointBottomRight.X, pointBottomLeft.X)));
-
-        public float Bottom =>
-            System.Math.Max(pointTopLeft.Y,
-                System.Math.Max(pointTopRight.Y,
-                    System.Math.Max(pointBottomRight.Y, pointBottomLeft.Y)));
-
-        public SKPoint[] GetPoints()
+        public Quad(float left, float top, float right, float bottom)
         {
-            return new[] { pointTopLeft, pointTopRight, pointBottomRight, pointBottomLeft };
+            this.point0 = new SKPoint(left, top);
+            this.point1 = new SKPoint(right, top);
+            this.point2 = new SKPoint(right, bottom);
+            this.point3 = new SKPoint(left, bottom);
         }
+
+        public bool IsEmpty => this.Equals(Empty)
+            || System.Math.Abs(point3.Y - point0.Y) < 0.1F
+            || System.Math.Abs(point1.X - point0.X) < 0.1F;
+
+        public SKPoint Point0 => point0;
+
+        public SKPoint Point1 => point1;
+
+        public SKPoint Point2 => point2;
+
+        public SKPoint Point3 => point3;
+
+        public SKPoint? Middle => SKLine.FindIntersection(new SKLine(point0, point2), new SKLine(point3, point1), false);
+
+        public float Width => SKPoint.Distance(point0, point1);
+
+        public float HorizontalLength => System.Math.Abs(MaxX - MinX);
+
+        public float Height => SKPoint.Distance(point1, point2);
+
+        public float VerticalLenght => System.Math.Abs(MaxY - MinY);
+
+        public float MinY => Min(point0.Y, point1.Y, point2.Y, point3.Y);
+
+        public float MinX => Min(point0.X, point1.X, point2.X, point3.X);
+
+        public float MaxX => Max(point0.X, point1.X, point2.X, point3.X);
+
+        public float MaxY => Max(point0.Y, point1.Y, point2.Y, point3.Y);
+
+        public SKPoint[] GetPoints() => new SKPoint[4] { point0, point1, point2, point3 };
+
+        public SKPoint[] GetClosedPoints() => new SKPoint[5] { point0, point1, point2, point3, point0 };
 
         public SKPath GetPath()
         {
+            var points = new SKPoint[4] { point0, point1, point2, point3 };
             var path = new SKPath();//FillMode.Alternate
-            path.AddPoly(GetPoints());
+            path.AddPoly(points);
             return path;
         }
 
         public bool Contains(SKPoint p)
         {
-            return (p - pointTopLeft).Cross(pointTopRight - pointTopLeft) <= 0
-                && (p - pointTopRight).Cross(pointBottomRight - pointTopRight) <= 0
-                && (p - pointBottomRight).Cross(pointBottomLeft - pointBottomRight) <= 0
-                && (p - pointBottomLeft).Cross(pointTopLeft - pointBottomLeft) <= 0;
+            return (p - point0).Cross(point1 - point0) <= 0
+                && (p - point1).Cross(point2 - point1) <= 0
+                && (p - point2).Cross(point3 - point2) <= 0
+                && (p - point3).Cross(point0 - point3) <= 0;
+        }
+
+        public bool Contains(SKPoint vectorTopLeft, SKPoint vectorTopRight, SKPoint vectorBottomRight, SKPoint vectorBottomLeft)
+        {
+            return vectorTopLeft.Cross(point1 - point0) <= 0
+                && vectorTopRight.Cross(point2 - point1) <= 0
+                && vectorBottomRight.Cross(point3 - point2) <= 0
+                && vectorBottomLeft.Cross(point0 - point3) <= 0;
         }
 
         public bool Contains(float x, float y)
@@ -143,10 +162,10 @@ namespace PdfClown.Util.Math.Geom
 
         public SKRect GetBounds()
         {
-            var rect = new SKRect(pointTopLeft.X, pointTopLeft.Y, 0, 0);
-            rect.Add(pointTopRight);
-            rect.Add(pointBottomRight);
-            rect.Add(pointBottomLeft);
+            var rect = new SKRect(point0.X, point0.Y, 0, 0);
+            rect.Add(point1);
+            rect.Add(point2);
+            rect.Add(point3);
             return rect;
         }
 
@@ -173,28 +192,26 @@ namespace PdfClown.Util.Math.Geom
             var matrix = SKMatrix.CreateTranslation(oldBounds.MidX, oldBounds.MidY);
             matrix = matrix.PreConcat(SKMatrix.CreateScale(1 + valueX * 2 / oldBounds.Width, 1 + valueY * 2 / oldBounds.Height));
             matrix = matrix.PreConcat(SKMatrix.CreateTranslation(-(oldBounds.MidX), -(oldBounds.MidY)));
-            pointTopLeft = matrix.MapPoint(pointTopLeft);
-            pointTopRight = matrix.MapPoint(pointTopRight);
-            pointBottomRight = matrix.MapPoint(pointBottomRight);
-            pointBottomLeft = matrix.MapPoint(pointBottomLeft);
-            return this;
+            return Transform(ref matrix);
         }
 
         public Quad Transform(ref SKMatrix matrix)
         {
-            pointTopLeft = matrix.MapPoint(pointTopLeft);
-            pointTopRight = matrix.MapPoint(pointTopRight);
-            pointBottomRight = matrix.MapPoint(pointBottomRight);
-            pointBottomLeft = matrix.MapPoint(pointBottomLeft);
+            var points = new SKPoint[4] { point0, point1, point2, point3 };
+            matrix.MapPoints(points, points);
+            point0 = points[0];
+            point1 = points[1];
+            point2 = points[2];
+            point3 = points[3];
             return this;
         }
 
         public bool IntersectsWith(Quad value)
         {
-            return SKLine.FindIntersection(new SKLine(pointTopLeft, pointTopRight), value, true) != null
-                || SKLine.FindIntersection(new SKLine(pointTopRight, pointBottomRight), value, true) != null
-                || SKLine.FindIntersection(new SKLine(pointBottomRight, pointBottomLeft), value, true) != null
-                || SKLine.FindIntersection(new SKLine(pointBottomLeft, pointTopLeft), value, true) != null;
+            return SKLine.FindIntersection(new SKLine(point0, point1), value, true) != null
+                || SKLine.FindIntersection(new SKLine(point1, point2), value, true) != null
+                || SKLine.FindIntersection(new SKLine(point2, point3), value, true) != null
+                || SKLine.FindIntersection(new SKLine(point3, point0), value, true) != null;
         }
 
         public bool ContainsOrIntersect(Quad value)
@@ -206,108 +223,121 @@ namespace PdfClown.Util.Math.Geom
 
         public bool Contains(Quad value)
         {
-            return Contains(value.pointTopLeft)
-                && Contains(value.pointTopRight)
-                && Contains(value.pointBottomRight)
-                && Contains(value.pointBottomLeft);
+            return Contains(value.point0)
+                && Contains(value.point1)
+                && Contains(value.point2)
+                && Contains(value.point3);
         }
 
         public Quad Union(Quad value)
         {
-            Add(value.GetPoints());
+            //var points = new SKPoint[4] { value.point0, value.point1, value.point2, value.point3 };
+            //Add(points);
+            Add(value.Point0);
+            Add(value.Point1);
+            Add(value.Point2);
+            Add(value.Point3);
             return this;
-        }
-
-        public void Add(SKPoint[] points)
-        {
-            KeyValuePair<float, SKPoint>? maxTopLeft = null;
-            KeyValuePair<float, SKPoint>? maxTopRight = null;
-            KeyValuePair<float, SKPoint>? maxBottomRight = null;
-            KeyValuePair<float, SKPoint>? maxBottomLeft = null;
-            for (int i = 0; i < points.Length; i++)
-            {
-                var point = points[i];
-                if (Contains(point))
-                {
-                    continue;
-                }
-                var lengthTopLeft = (point - pointTopLeft).Length;
-                var lengthTopRight = (point - pointTopRight).Length;
-                var lengthBottomLeft = (point - pointBottomLeft).Length;
-                var lengthBottomRight = (point - pointBottomRight).Length;
-                var min = System.Math.Min(lengthTopLeft, System.Math.Min(lengthTopRight, System.Math.Min(lengthBottomLeft, lengthBottomRight)));
-                if (min == lengthTopLeft)
-                {
-                    if (maxTopLeft == null)
-                        maxTopLeft = new KeyValuePair<float, SKPoint>(min, point);
-                    else if (min > maxTopLeft?.Key)
-                        maxTopLeft = new KeyValuePair<float, SKPoint>(min, point);
-                }
-                else if (min == lengthTopRight)
-                {
-                    if (maxTopRight == null)
-                        maxTopRight = new KeyValuePair<float, SKPoint>(min, point);
-                    else if (min > maxTopRight?.Key)
-                        maxTopRight = new KeyValuePair<float, SKPoint>(min, point);
-                }
-                else if (min == lengthBottomLeft)
-                {
-                    if (maxBottomLeft == null)
-                        maxBottomLeft = new KeyValuePair<float, SKPoint>(min, point);
-                    else if (min > maxBottomLeft?.Key)
-                        maxBottomLeft = new KeyValuePair<float, SKPoint>(min, point);
-                }
-                else if (min == lengthBottomRight)
-                {
-                    if (maxBottomRight == null)
-                        maxBottomRight = new KeyValuePair<float, SKPoint>(min, point);
-                    else if (min > maxBottomRight?.Key)
-                        maxBottomRight = new KeyValuePair<float, SKPoint>(min, point);
-                }
-            }
-            if (maxTopLeft != null)
-            {
-                pointTopLeft = maxTopLeft.Value.Value;
-            }
-            if (maxTopRight != null)
-            {
-                pointTopRight = maxTopRight.Value.Value;
-            }
-            if (maxBottomLeft != null)
-            {
-                pointBottomLeft = maxBottomLeft.Value.Value;
-            }
-            if (maxBottomRight != null)
-            {
-                pointBottomRight = maxBottomRight.Value.Value;
-            }
         }
 
         public void Add(SKPoint point)
         {
-            if (Contains(point))
+            var vector0 = point - point0;
+            var vector1 = point - point1;
+            var vector2 = point - point2;
+            var vector3 = point - point3;
+            if (Contains(vector0, vector1, vector2, vector3))
                 return;
-            var lengthTopLeft = (point - pointTopLeft).Length;
-            var lengthTopRight = (point - pointTopRight).Length;
-            var lengthBottomLeft = (point - pointBottomLeft).Length;
-            var lengthBottomRight = (point - pointBottomRight).Length;
-            var min = System.Math.Min(lengthTopLeft, System.Math.Min(lengthTopRight, System.Math.Min(lengthBottomLeft, lengthBottomRight)));
-            if (min == lengthTopLeft)
+            var length0 = vector0.Length;
+            var length1 = vector1.Length;
+            var length2 = vector2.Length;
+            var length3 = vector3.Length;
+            var min = Min(length0, length1, length2, length3);
+            if (min == length0)
             {
-                pointTopLeft = point;
+                if (SKLine.FindIntersection(point0, point1, point, point3, true) != null)
+                {
+                    var line = new SKLine(point0 + vector0, point1 + vector0);
+                    point0 = SKLine.FindIntersection(line, new SKLine(point0, point3), false) ?? point0;
+                    point1 = SKLine.FindIntersection(line, new SKLine(point1, point2), false) ?? point1;
+                }
+                else if (SKLine.FindIntersection(point0, point3, point, point1, true) != null)
+                {
+                    var line = new SKLine(point0 + vector0, point3 + vector0);
+                    point0 = SKLine.FindIntersection(line, new SKLine(point0, point1), false) ?? point0;
+                    point3 = SKLine.FindIntersection(line, new SKLine(point2, point3), false) ?? point3;
+                }
+                else
+                {
+                    point1 = SKLine.FindIntersection(point0 + vector0, point1 + vector0, point1, point2, false) ?? point1;
+                    point3 = SKLine.FindIntersection(point0 + vector0, point3 + vector0, point2, point3, false) ?? point3;
+                    point0 = point;
+                }
             }
-            else if (min == lengthTopRight)
+            else if (min == length1)
             {
-                pointTopRight = point;
+                if (SKLine.FindIntersection(point0, point1, point, point2, true) != null)
+                {
+                    var line = new SKLine(point0 + vector1, point1 + vector1);
+                    point1 = SKLine.FindIntersection(line, new SKLine(point1, point2), false) ?? point1;
+                    point0 = SKLine.FindIntersection(line, new SKLine(point0, point3), false) ?? point0;
+                }
+                else if (SKLine.FindIntersection(point1, point2, point, point0, true) != null)
+                {
+                    var line = new SKLine(point1 + vector1, point2 + vector1);
+                    point1 = SKLine.FindIntersection(line, new SKLine(point0, point1), false) ?? point1;
+                    point2 = SKLine.FindIntersection(line, new SKLine(point2, point3), false) ?? point2;
+                }
+                else
+                {
+                    point0 = SKLine.FindIntersection(point0 + vector1, point1 + vector1, point0, point3, false) ?? point1;
+                    point2 = SKLine.FindIntersection(point1 + vector1, point2 + vector1, point2, point3, false) ?? point2;
+                    point1 = point;
+                }
             }
-            else if (min == lengthBottomLeft)
+            else if (min == length2)
             {
-                pointBottomLeft = point;
+                if (SKLine.FindIntersection(point1, point2, point, point3, true) != null)
+                {
+                    var line = new SKLine(point1 + vector2, point2 + vector2);
+                    point2 = SKLine.FindIntersection(line, new SKLine(point2, point3), false) ?? point2;
+                    point1 = SKLine.FindIntersection(line, new SKLine(point0, point1), false) ?? point1;
+                }
+                else if (SKLine.FindIntersection(point2, point3, point, point1, true) != null)
+                {
+                    var line = new SKLine(point2 + vector2, point3 + vector2);
+                    point2 = SKLine.FindIntersection(line, new SKLine(point1, point2), false) ?? point2;
+                    point3 = SKLine.FindIntersection(line, new SKLine(point0, point3), false) ?? point3;
+                }
+                else
+                {
+                    point1 = SKLine.FindIntersection(point1 + vector2, point2 + vector2, point0, point1, false) ?? point1;
+                    point3 = SKLine.FindIntersection(point2 + vector2, point3 + vector2, point0, point3, false) ?? point3;
+                    point2 = point;
+                }
             }
-            else if (min == lengthBottomRight)
+            else if (min == length3)
             {
-                pointBottomRight = point;
+                if (SKLine.FindIntersection(point3, point0, point, point2, true) != null)
+                {
+                    var line = new SKLine(point3 + vector3, point0 + vector3);
+                    point3 = SKLine.FindIntersection(line, new SKLine(point2, point3), false) ?? point3;
+                    point0 = SKLine.FindIntersection(line, new SKLine(point0, point1), false) ?? point0;
+                }
+                else if (SKLine.FindIntersection(point2, point3, point, point0, true) != null)
+                {
+                    var line = new SKLine(point2 + vector3, point3 + vector3);
+                    point3 = SKLine.FindIntersection(line, new SKLine(point0, point3), false) ?? point3;
+                    point2 = SKLine.FindIntersection(line, new SKLine(point1, point2), false) ?? point2;
+                }
+                else
+                {
+                    point0 = SKLine.FindIntersection(point3 + vector3, point0 + vector3, point0, point1, false) ?? point0;
+                    point2 = SKLine.FindIntersection(point2 + vector3, point3 + vector3, point1, point2, false) ?? point2;
+                    point3 = point;
+                }
             }
+
             //if (point.X < pointTopLeft.X || point.X < pointBottomLeft.X)
             //{
             //    var newLine = new SKLine(point, pointTopLeft - pointBottomLeft);
@@ -316,14 +346,14 @@ namespace PdfClown.Util.Math.Geom
             //}
         }
 
-        public override bool Equals(object other) => Equals(other is Quad quad ? quad : Quad.Empty);
+        public override bool Equals(object other) => other is Quad quad ? Equals(quad) : false;
 
         public bool Equals(Quad other)
         {
-            return this.pointTopLeft == other.pointTopLeft
-                && this.pointTopRight == other.pointTopRight
-                && this.pointBottomRight == other.pointBottomRight
-                && this.pointBottomLeft == other.pointBottomLeft;
+            return point0.Equals(other.point0)
+                && point1.Equals(other.point1)
+                && point2.Equals(other.point2)
+                && point3.Equals(other.point3);
         }
 
         public override string ToString()
@@ -333,7 +363,7 @@ namespace PdfClown.Util.Math.Geom
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(pointTopLeft, pointTopRight, pointBottomRight, pointBottomLeft);
+            return HashCode.Combine(point0, point1, point2, point3);
         }
     }
 }

@@ -33,11 +33,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private float italicAngle;
         private short underlinePosition;
         private short underlineThickness;
-        private long isFixedPitch;
-        private long minMemType42;
-        private long maxMemType42;
-        private long mimMemType1;
-        private long maxMemType1;
+        private uint isFixedPitch;
+        private uint minMemType42;
+        private uint maxMemType42;
+        private uint mimMemType1;
+        private uint maxMemType1;
         private string[] glyphNames = null;
 
         /**
@@ -174,7 +174,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the isFixedPitch.
          */
-        public long IsFixedPitch
+        public uint IsFixedPitch
         {
             get => isFixedPitch;
             set => isFixedPitch = value;
@@ -192,7 +192,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxMemType1.
          */
-        public long MaxMemType1
+        public uint MaxMemType1
         {
             get => maxMemType1;
             set => maxMemType1 = value;
@@ -201,7 +201,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the maxMemType42.
          */
-        public long MaxMemType42
+        public uint MaxMemType42
         {
             get => maxMemType42;
             set => maxMemType42 = value;
@@ -210,7 +210,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the mimMemType1.
          */
-        public long MinMemType1
+        public uint MinMemType1
         {
             get => mimMemType1;
             set => mimMemType1 = value;
@@ -219,7 +219,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the minMemType42.
          */
-        public long MinMemType42
+        public uint MinMemType42
         {
             get => minMemType42;
             set => minMemType42 = value;

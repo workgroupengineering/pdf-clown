@@ -1,27 +1,17 @@
 using PdfClown.Documents;
-using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
+using System;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to manipulate the named destinations within a PDF document.</summary>
-    */
-    public class NamedDestinationSample
-      : Sample
+    /// <summary>This sample demonstrates how to manipulate the named destinations within a PDF document.</summary>
+    public class NamedDestinationSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
@@ -32,9 +22,7 @@ namespace PdfClown.Samples.CLI
 
                 // 2. Inserting page destinations...
                 NamedDestinations destinations = document.Names.Destinations;
-                /*
-                  NOTE: Here we are registering page 1 multiple times to test tree structure sorting and splitting.
-                */
+                // NOTE: Here we are registering page 1 multiple times to test tree structure sorting and splitting.
                 Destination page1Destination = new LocalDestination(pages[0]);
                 destinations[new PdfString("d31e1142")] = page1Destination;
                 destinations[new PdfString("Z1")] = page1Destination;
@@ -48,24 +36,22 @@ namespace PdfClown.Samples.CLI
                 destinations[new PdfString("Z38e1142")] = page1Destination;
                 if (pages.Count > 1)
                 {
-                    LocalDestination page2Destination = new LocalDestination(pages[1], Destination.ModeEnum.FitHorizontal, 0, null);
+                    var page2Destination = new LocalDestination(pages[1], Destination.ModeEnum.FitHorizontal, 0, null);
                     destinations[new PdfString("N84afaba6")] = page2Destination;
 
                     // Let the viewer go to the second page on document opening!
-                    /*
-                      NOTE: Any time a named destination is applied, its name is retrieved and used as reference.
-                    */
+                    // NOTE: Any time a named destination is applied, its name is retrieved and used as reference.
                     document.Actions.OnOpen = new GoToLocal(
                       document,
-                      page2Destination // Its name ("N84afaba6") is retrieved behind the scenes.
-                      );
+                      // Its name ("N84afaba6") is retrieved behind the scenes.
+                      page2Destination);
                     // Define a link to the second page on the first one!
-                    new Link(
+                    pages[0].Annotations.Add(new Link(
                       pages[0],
                       SKRect.Create(0, 0, 100, 50),
                       "Link annotation",
-                      page2Destination // Its name ("N84afaba6") is retrieved behind the scenes.
-                      );
+                      // Its name ("N84afaba6") is retrieved behind the scenes.
+                      page2Destination));
 
                     if (pages.Count > 2)
                     { destinations[new PdfString("1845505298")] = new LocalDestination(pages[2], Destination.ModeEnum.XYZ, new SKPoint(50, Single.NaN), null); }

@@ -27,10 +27,9 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Forms;
 using PdfClown.Objects;
 using PdfClown.Util;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {

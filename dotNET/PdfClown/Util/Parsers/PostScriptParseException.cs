@@ -27,10 +27,8 @@ using System;
 
 namespace PdfClown.Util.Parsers
 {
-    /**
-      <summary>Exception thrown in case of unexpected condition while parsing PostScript-based data.
-      </summary>
-    */
+    /// <summary>Exception thrown in case of unexpected condition while parsing PostScript-based data.
+    /// </summary>
     public class PostScriptParseException : ParseException
     {
         private readonly object token;
@@ -74,14 +72,10 @@ namespace PdfClown.Util.Parsers
             this.tokenType = tokenType;
         }
 
-        /**
-          <summary>Gets the token on which the exception happened.</summary>
-        */
+        /// <summary>Gets the token on which the exception happened.</summary>
         public object Token => token;
 
-        /**
-          <summary>Gets the type of the token on which the exception happened.</summary>
-        */
+        /// <summary>Gets the type of the token on which the exception happened.</summary>
         public PostScriptParser.TokenTypeEnum? TokenType => tokenType;
     }
 }

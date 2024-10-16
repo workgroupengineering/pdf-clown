@@ -26,19 +26,14 @@
 using PdfClown.Bytes;
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Tools
 {
-    /**
-      <summary>Tool for page management.</summary>
-    */
+    /// <summary>Tool for page management.</summary>
     public sealed class PageManager
     {
         /*
@@ -131,36 +126,27 @@ namespace PdfClown.Tools
             return dataSize;
         }
 
-        /**
-          <summary>Gets whether the specified content stream part is blank.</summary>
-          <param name="level">Content stream part to evaluate.</param>
-          <param name="contentBox">Area to evaluate within the page.</param>
-        */
+        /// <summary>Gets whether the specified content stream part is blank.</summary>
+        /// <param name = "level" > Content stream part to evaluate.</param>
+        /// <param name = "contentBox" > Area to evaluate within the page.</param>
         private static bool IsBlank(ContentScanner level, SKRect contentBox)
         {
             if (level == null)
                 return true;
-
-            while (level.MoveNext())
+            bool hasIntersection = false;
+            level.OnObjectScanning += OnObjectScanning;
+            level.Scan();
+            level.OnObjectScanning -= OnObjectScanning;
+            bool OnObjectScanning(ContentObject content, ICompositeObject container, int index)
             {
-                ContentObject content = level.Current;
-                if (content is ContainerObject)
+                if (content is IBoxed boxed)
                 {
-                    // Scan the inner level!
-                    if (!IsBlank(level.ChildLevel, contentBox))
-                        return false;
+                    if (boxed.GetBox(level.State).IntersectsWith(contentBox))
+                        hasIntersection = true;
                 }
-                else
-                {
-                    var contentWrapper = level.CurrentWrapper;
-                    if (contentWrapper == null)
-                        continue;
-
-                    if (contentWrapper.Box.Value.IntersectsWith(contentBox))
-                        return false;
-                }
+                return !hasIntersection;
             }
-            return true;
+            return hasIntersection;
         }
 
         private PdfDocument document;
@@ -174,10 +160,8 @@ namespace PdfClown.Tools
             Document = document;
         }
 
-        /**
-          <summary>Appends a document to the end of the document.</summary>
-          <param name="document">Document to be added.</param>
-        */
+        /// <summary>Appends a document to the end of the document.</summary>
+        /// <param name="document">Document to be added.</param>
         public void Add(PdfDocument document)
         {
             Add((ICollection<PdfPage>)document.Pages);

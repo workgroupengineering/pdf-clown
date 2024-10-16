@@ -348,17 +348,17 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(ComboBox field)
         {
-            PdfDocument document = field.Document;
-            Widget widget = field.Widgets[0];
+            var document = field.Document;
+            var widget = field.Widgets[0];
 
-            Appearance appearance = widget.Appearance;
+            var appearance = widget.Appearance;
             widget.BaseDataObject.Set(PdfName.DA, "/Helv " + FontSize + " Tf 0 0 0 rg");
 
             FormXObject normalAppearanceState;
             {
                 SKSize size = widget.Box.Size;
                 normalAppearanceState = new FormXObject(document, size);
-                PrimitiveComposer composer = new PrimitiveComposer(normalAppearanceState);
+                var composer = new PrimitiveComposer(normalAppearanceState);
 
                 float lineWidth = 1;
                 SKRect frame = SKRect.Create(lineWidth / 2, lineWidth / 2, size.Width - lineWidth, size.Height - lineWidth);
@@ -408,10 +408,10 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             {
                 SKSize size = widget.Box.Size;
                 normalAppearanceState = new FormXObject(document, size);
-                PrimitiveComposer composer = new PrimitiveComposer(normalAppearanceState);
+                var composer = new PrimitiveComposer(normalAppearanceState);
 
                 float lineWidth = 1;
-                SKRect frame = SKRect.Create(lineWidth / 2, lineWidth / 2, size.Width - lineWidth, size.Height - lineWidth);
+                var frame = SKRect.Create(lineWidth / 2, lineWidth / 2, size.Width - lineWidth, size.Height - lineWidth);
                 if (GraphicsVisibile)
                 {
                     composer.BeginLocalState();

@@ -31,6 +31,13 @@ namespace PdfClown.Documents.Contents.Fonts
 {
     public class FontDescriptor : PdfObjectWrapper<PdfDictionary>
     {
+        public static FontDescriptor Wrap(PdfDirectObject baseObject)
+            => baseObject != null
+                ? baseObject.Wrapper is FontDescriptor exist
+                    ? exist
+                    : new FontDescriptor(baseObject)
+                : null;
+
         public FontDescriptor(PdfDirectObject baseObject) : base(baseObject)
         { }
 
@@ -60,7 +67,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public float? FontWeight
         {
-            get => Dictionary.GetFloat(PdfName.FontWeight);
+            get => Dictionary.GetNFloat(PdfName.FontWeight);
             set => Dictionary.Set(PdfName.FontWeight, value);
         }
 
@@ -83,6 +90,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     Flags &= ~FlagsEnum.Nonsymbolic;
             }
         }
+
         public bool Symbolic
         {
             get => (Flags & FlagsEnum.Symbolic) == FlagsEnum.Symbolic;
@@ -97,7 +105,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public Rectangle FontBBox
         {
-            get => Wrap<Rectangle>(Dictionary.Get<PdfArray>(PdfName.FontBBox));
+            get => Rectangle.Wrap(Dictionary.Get<PdfArray>(PdfName.FontBBox));
             set => Dictionary[PdfName.FontBBox] = value?.BaseObject;
         }
 

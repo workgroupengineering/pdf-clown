@@ -35,6 +35,6 @@ namespace PdfClown.Documents.Contents.Objects
         { }
 
         protected ContainerObject(IList<ContentObject> objects) : base(objects)
-        { }
+        { }        
     }
 }

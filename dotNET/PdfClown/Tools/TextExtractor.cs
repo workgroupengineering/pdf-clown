@@ -177,10 +177,10 @@ namespace PdfClown.Tools
         {
             IDictionary<SKRect?, IList<ITextString>> extractedTextStrings;
             {
-                List<ITextString> textStrings = new List<ITextString>();
+                var textStrings = new List<ITextString>();
                 {
                     // 1. Extract the source text strings!
-                    List<TextStringWrapper> rawTextStrings = new List<TextStringWrapper>();
+                    var rawTextStrings = new List<ITextString>();
                     Extract(new ContentScanner(contentContext), rawTextStrings);
 
                     // 2. Sort the target text strings!
@@ -188,7 +188,7 @@ namespace PdfClown.Tools
                     { Sort(rawTextStrings, textStrings); }
                     else
                     {
-                        foreach (TextStringWrapper rawTextString in rawTextStrings)
+                        foreach (ITextString rawTextString in rawTextStrings)
                         { textStrings.Add(rawTextString); }
                     }
                 }
@@ -204,11 +204,6 @@ namespace PdfClown.Tools
             }
             return extractedTextStrings;
         }
-
-        /// <summary>Extracts text strings from the specified contents.</summary>
-        /// <param name="contents">Source contents.</param>
-        public IDictionary<SKRect?, IList<ITextString>> Extract(ContentWrapper contents)
-        { return Extract(contents.ContentContext); }
 
         /// <summary>Gets the text strings matching the specified intervals.</summary>
         /// <param name="textStrings">Text strings to filter.</param>
@@ -234,13 +229,13 @@ namespace PdfClown.Tools
             if (!areaTextStringsIterator.MoveNext())
                 return;
 
-            IList<TextChar> textChars = areaTextStringsIterator.Current.TextChars;
+            var textChars = areaTextStringsIterator.Current.Chars;
             int baseTextCharIndex = 0;
             int textCharIndex = 0;
             while (filter.MoveNext())
             {
                 Interval<int> interval = filter.Current;
-                TextString match = new TextString();
+                var match = new TextString();
                 {
                     int matchStartIndex = interval.Low;
                     int matchEndIndex = interval.High;
@@ -249,7 +244,7 @@ namespace PdfClown.Tools
                         baseTextCharIndex += textChars.Count;
                         if (!areaTextStringsIterator.MoveNext())
                         { areaTextStringsIterator = textStringsIterator.Current.GetEnumerator(); areaTextStringsIterator.MoveNext(); }
-                        textChars = areaTextStringsIterator.Current.TextChars;
+                        textChars = areaTextStringsIterator.Current.Chars;
                     }
                     textCharIndex = matchStartIndex - baseTextCharIndex;
 
@@ -260,10 +255,10 @@ namespace PdfClown.Tools
                             baseTextCharIndex += textChars.Count;
                             if (!areaTextStringsIterator.MoveNext())
                             { areaTextStringsIterator = textStringsIterator.Current.GetEnumerator(); areaTextStringsIterator.MoveNext(); }
-                            textChars = areaTextStringsIterator.Current.TextChars;
+                            textChars = areaTextStringsIterator.Current.Chars;
                             textCharIndex = 0;
                         }
-                        match.TextChars.Add(textChars[textCharIndex++]);
+                        match.Chars.Add(textChars[textCharIndex++]);
                     }
                 }
                 filter.Process(interval, match);
@@ -329,8 +324,8 @@ namespace PdfClown.Tools
                     if (toleratedArea.IntersectsWith(textStringQuad))
                     {
                         TextString filteredTextString = new TextString();
-                        List<TextChar> filteredTextStringChars = filteredTextString.TextChars;
-                        foreach (TextChar textChar in textString.TextChars)
+                        List<TextChar> filteredTextStringChars = filteredTextString.Chars;
+                        foreach (TextChar textChar in textString.Chars)
                         {
                             var textCharQuad = textChar.Quad;
                             if ((areaMode == AreaModeEnum.Containment && toleratedArea.Contains(textCharQuad))
@@ -358,37 +353,31 @@ namespace PdfClown.Tools
         }
 
         /// <summary>Scans a content level looking for text.</summary>
-        private void Extract(ContentScanner level, IList<TextStringWrapper> extractedTextStrings)
+        private void Extract(ContentScanner level, IList<ITextString> extractedTextStrings)
         {
             if (level == null)
                 return;
-
-            while (level.MoveNext())
+            level.OnObjectScanned += OnObjectFinish;
+            level.Scan();
+            level.OnObjectScanned -= OnObjectFinish;
+            void OnObjectFinish(ContentObject content)
             {
-                ContentObject content = level.Current;
-                if (content is GraphicsText)
+                if (content is GraphicsText graphicsText)
                 {
                     // Collect the text strings!
-                    foreach (TextStringWrapper textString in ((TextWrapper)level.CurrentWrapper).TextStrings)
+                    foreach (var textString in graphicsText.Strings)
                     {
-                        if (textString.TextChars.Count > 0)
+                        if (textString.Chars.Count > 0)
                         { extractedTextStrings.Add(textString); }
                     }
                 }
-                else if (content is GraphicsXObject)
+                else if (content is PaintXObject paintXObject)
                 {
                     // Scan the external level!
                     Extract(
-                      ((GraphicsXObject)content).GetScanner(level),
+                      paintXObject.GetScanner(level),
                       extractedTextStrings);
-                }
-                else if (content is ContainerObject)
-                {
-                    // Scan the inner level!
-                    Extract(
-                      level.ChildLevel,
-                      extractedTextStrings);
-                }
+                }                
             }
         }
 
@@ -396,61 +385,55 @@ namespace PdfClown.Tools
         /// <remarks>Sorting implies text position ordering, integration and aggregation.</remarks>
         /// <param name="rawTextStrings">Source (lower-level) text strings.</param>
         /// <param name="textStrings">Target (higher-level) text strings.</param>
-        private void Sort(List<TextStringWrapper> rawTextStrings, List<ITextString> textStrings)
+        private void Sort(List<ITextString> rawTextStrings, List<ITextString> textStrings)
         {
             // Sorting the source text strings...
-            {
-                TextStringPositionComparer<TextStringWrapper> positionComparator = new TextStringPositionComparer<TextStringWrapper>();
-                rawTextStrings.Sort(positionComparator);
-            }
+
+            rawTextStrings.Sort(TextStringPositionComparer<ITextString>.Default);
 
             // Aggregating and integrating the source text strings into the target ones...
             TextString textString = null;
             TextStyle textStyle = null;
-            TextChar previousTextChar = null;
+            TextChar previousTextChar = TextChar.Empty;
             bool dehyphenating = false;
-            foreach (TextStringWrapper rawTextString in rawTextStrings)
+            foreach (var rawTextString in rawTextStrings)
             {
-                /*
-                  NOTE: Contents on the same line are grouped together within the same text string.
-                */
+                // NOTE: Contents on the same line are grouped together within the same text string.
                 // Add a new text string in case of new line!
                 if (textString != null
-                  && textString.TextChars.Count > 0
+                  && textString.Chars.Count > 0
                   && !TextStringPositionComparer<ITextString>.IsOnTheSameLine(textString.Quad, rawTextString.Quad))
                 {
                     if (dehyphenated
                       && previousTextChar.Value == '-') // Hyphened word.
                     {
-                        textString.TextChars.Remove(previousTextChar);
+                        textString.Chars.Remove(previousTextChar);
                         dehyphenating = true;
                     }
                     else // Full word.
                     {
                         // Add synthesized space character!
-                        textString.TextChars.Add(
+                        textString.Chars.Add(
                           new TextChar(
                             ' ',
                             new Quad(SKRect.Create(
-                              previousTextChar.Quad.Right,
-                              previousTextChar.Quad.Top,
+                              previousTextChar.Quad.MaxX,
+                              previousTextChar.Quad.MinY,
                               0,
-                              previousTextChar.Quad.Height)),
-                            textString,
-                            true));
+                              previousTextChar.Quad.Height))));
                         textString = null;
                         dehyphenating = false;
                     }
-                    previousTextChar = null;
+                    previousTextChar = TextChar.Empty;
                 }
                 if (textString == null)
-                { textStrings.Add(textString = new TextString { Context = rawTextString.Context, Style = rawTextString.Style }); }
+                { textStrings.Add(textString = new TextString { Style = rawTextString.Style }); }
 
                 textStyle = rawTextString.Style;
                 double spaceWidth = textStyle.GetWidth(' ') * .5;
-                foreach (TextChar textChar in rawTextString.TextChars)
+                foreach (TextChar textChar in rawTextString.Chars)
                 {
-                    if (previousTextChar != null)
+                    if (previousTextChar.Value != char.MinValue)
                     {
                         /*
                           NOTE: PDF files may have text contents omitting space characters,
@@ -461,34 +444,28 @@ namespace PdfClown.Tools
                         if (!textChar.Contains(' ')
                           && !previousTextChar.Contains(' '))
                         {
-                            float charSpace = textChar.Quad.Left - previousTextChar.Quad.Right;
+                            float charSpace = textChar.Quad.MinX - previousTextChar.Quad.MaxX;
                             if (charSpace > spaceWidth)
                             {
                                 // Add synthesized space character!
-                                textString.TextChars.Add(
+                                textString.Chars.Add(
                                   previousTextChar = new TextChar(
                                     ' ',
                                     new Quad(SKRect.Create(
-                                      previousTextChar.Quad.Right,
-                                      textChar.Quad.Top,
+                                      previousTextChar.Quad.MaxX,
+                                      textChar.Quad.MinY,
                                       charSpace,
                                       textChar.Quad.Height
-                                      )),
-                                    textString,
-                                    true));
+                                      ))));
                             }
                         }
                         else if (dehyphenating && previousTextChar.Contains(' '))
                         {
-                            textStrings.Add(textString = new TextString
-                            {
-                                Context = rawTextString.Context,
-                                Style = rawTextString.Style
-                            });
+                            textStrings.Add(textString = new TextString { Style = rawTextString.Style });
                             dehyphenating = false;
                         }
                     }
-                    textString.TextChars.Add(previousTextChar = textChar);
+                    textString.Chars.Add(previousTextChar = textChar);
                 }
             }
         }

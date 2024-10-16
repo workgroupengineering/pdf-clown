@@ -23,10 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.Objects;
-using PdfClown.Objects;
 using PdfClown.Tokens;
 using System;
 using System.Collections.Generic;
@@ -34,16 +30,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>Adobe standard glyph mapping (unicode-encoding against glyph-naming)
-      [PDF:1.6:D;AGL:2.0].</summary>
-    */
+    /// <summary>Adobe standard glyph mapping (unicode-encoding against glyph-naming)
+    /// [PDF:1.6:D;AGL:2.0].</summary>
     public class GlyphMapping
     {
         public static readonly GlyphMapping Default = new GlyphMapping("AGL20", 4300);

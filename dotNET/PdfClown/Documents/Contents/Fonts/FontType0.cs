@@ -36,8 +36,8 @@ using System.Reflection;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    ///<summary>Composite font associated to a Type 0 CIDFont,
-    ///containing glyph descriptions based on the Adobe Type 1 font format [PDF:1.6:5.6.3].</summary>    
+    /// <summary>Composite font associated to a Type 0 CIDFont,
+    /// containing glyph descriptions based on the Adobe Type 1 font format [PDF:1.6:5.6.3].</summary>    
     [PDF(VersionEnum.PDF12)]
     public sealed class FontType0 : Font
     {
@@ -151,7 +151,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private CMap cMap;
         private CMap cMapUCS2;
         private FontCIDType2Embedder embedder;
-        private GsubData gsubData;
+        private IGsubData gsubData;
         private ICmapLookup cmapLookup;
         private TrueTypeFont ttf;
 #if DEBUG
@@ -244,11 +244,6 @@ namespace PdfClown.Documents.Contents.Fonts
             set => base.Name = value;
         }
 
-        public override SKMatrix FontMatrix
-        {
-            get => DescendantFont.FontMatrix;
-        }
-
         public override bool IsVertical
         {
             get => CMap?.WMode == 1;
@@ -259,26 +254,10 @@ namespace PdfClown.Documents.Contents.Fonts
             get => DescendantFont.IsEmbedded;
         }
 
-        public override SKRect BoundingBox
-        {
-            get => DescendantFont.BoundingBox;
-        }
-
         public override float AverageFontWidth
         {
             get => DescendantFont.AverageFontWidth;
         }
-
-        public override float GetHeight(int code)
-        {
-            return DescendantFont.GetHeight(code);
-        }
-
-        public override int GetBytesCount(int code) => DescendantFont.GetBytesCount(code);
-
-        public override void Encode(Span<byte> bytes, int unicode) => DescendantFont.Encode(bytes, unicode);
-
-        public override bool HasExplicitWidth(int code) => DescendantFont.HasExplicitWidth(code);
 
         public override bool IsStandard14
         {
@@ -294,10 +273,26 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public CMap CMap => cMap;
 
-        public GsubData GsubData
+        public IGsubData GsubData
         {
             get => gsubData;
         }
+
+        protected override SKMatrix GenerateFontMatrix() => DescendantFont.FontMatrix;
+
+        protected override SKRect GenerateBoundingBox() => DescendantFont.BoundingBox;
+
+        public override float GetHeight(int code)
+        {
+            return DescendantFont.GetHeight(code);
+        }
+
+        public override int GetBytesCount(int code) => DescendantFont.GetBytesCount(code);
+
+        public override void Encode(Span<byte> bytes, int unicode) => DescendantFont.Encode(bytes, unicode);
+
+        public override bool HasExplicitWidth(int code) => DescendantFont.HasExplicitWidth(code);
+
 
         public override void AddToSubset(int codePoint)
         {

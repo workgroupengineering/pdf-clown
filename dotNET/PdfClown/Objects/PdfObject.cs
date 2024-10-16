@@ -91,8 +91,6 @@ namespace PdfClown.Objects
         /// <summary>Gets the indirect reference of this object.</summary>
         public virtual PdfReference Reference => IndirectObject?.Reference;
 
-        public abstract ContentWrapper ContentsWrapper { get; internal set; }
-
         public abstract IPdfObjectWrapper Wrapper
         {
             get;
@@ -111,7 +109,6 @@ namespace PdfClown.Objects
             internal set;
         }
 
-
         public IContentContext GetContentContext()
         {
             var parent = this;
@@ -123,7 +120,6 @@ namespace PdfClown.Objects
             }
             return null;
         }
-
 
         /// <summary>Creates a shallow copy of this object.</summary>
         public object Clone()

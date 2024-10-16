@@ -23,26 +23,19 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Files;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Forms;
 using PdfClown.Documents.Multimedia;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
-using PdfClown.Documents.Contents.XObjects;
+using System;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Screen annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It specifies a region of a page upon which media clips may be played.</remarks>
-    */
+    /// <summary>Screen annotation[PDF:1.6:8.4.5].</summary>
+    /// <remarks>It specifies a region of a page upon which media clips may be played.</remarks>
     [PDF(VersionEnum.PDF15)]
     public sealed class Screen : Annotation
     {
@@ -88,10 +81,9 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             Actions.OnPageOpen = render;
 
-            if (rendition is MediaRendition)
+            if (rendition is MediaRendition mediaRendition)
             {
-                PdfObjectWrapper data = ((MediaRendition)rendition).Clip.Data;
-                if (data is FileSpecification fileSpec)
+                if (mediaRendition.Clip.Data is FileSpecification fileSpec)
                 {
                     // Adding fallback annotation...
                     /*
@@ -99,7 +91,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                       degrades to a file attachment that can be opened on the same location of the corresponding
                       screen annotation.
                     */
-                    FileAttachment attachment = new FileAttachment(page, box, text, fileSpec);
+                    var attachment = new FileAttachment(page, box, text, fileSpec);
                     BaseDataObject.Set(PdfName.T, fileSpec.Path);
                     // Force empty appearance to ensure no default icon is drawn on the canvas!
                     attachment.BaseDataObject[PdfName.AP] = new PdfDictionary(3)
@@ -108,6 +100,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         { PdfName.R, new PdfDictionary() },
                         { PdfName.N, new PdfDictionary() }
                     };
+                    page.Annotations.Add(attachment);
                 }
             }
         }

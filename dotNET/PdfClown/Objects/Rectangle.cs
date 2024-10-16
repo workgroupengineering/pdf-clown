@@ -42,6 +42,13 @@ namespace PdfClown.Objects
     /// </remarks>
     public sealed class Rectangle : PdfObjectWrapper<PdfArray>, IEquatable<Rectangle>
     {
+        public static Rectangle Wrap(PdfDirectObject baseObject)
+            => baseObject != null 
+                ? baseObject.Wrapper is Rectangle exist 
+                    ? exist 
+                    : new Rectangle(baseObject)
+                : null;
+
         public static PdfArray Normalize(PdfArray array)
         {
             if (array.Count == 0)

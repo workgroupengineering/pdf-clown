@@ -29,7 +29,7 @@ using System.Xml;
 
 namespace PdfClown.Documents.Interchange.Metadata
 {
-    ///<summary>Metadata stream [PDF:1.6:10.2.2].</summary>
+    /// <summary>Metadata stream [PDF:1.6:10.2.2].</summary>
     [PDF(VersionEnum.PDF14)]
     public sealed class Metadata : PdfObjectWrapper<PdfStream>
     {
@@ -50,14 +50,14 @@ namespace PdfClown.Documents.Interchange.Metadata
         public Metadata(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        ///<summary>Gets/Sets the metadata contents.</summary>
+        ///<summary> Gets/Sets the metadata contents.</summary>
         public XmlDocument Content
         {
             get
             {
                 if (content == null)
                 {
-                    var body = BaseDataObject.Body;
+                    var body = BaseDataObject.GetInputStream();
                     if (body.Length > 0)
                     {
                         content = new XmlDocument();
@@ -71,7 +71,7 @@ namespace PdfClown.Documents.Interchange.Metadata
             }
             set
             {
-                var body = BaseDataObject.Body;
+                var body = BaseDataObject.GetOutputStream();
                 body.SetLength(0);
                 value.Save((Stream)body);
                 content = value;

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Objects;
 using System;
@@ -60,9 +61,9 @@ namespace PdfClown.Documents.Contents.Fonts
             SetWidths(dict, glyphList);
         }
 
-        /**
-		 * Sets the glyph widths in the font dictionary.
-		 */
+        /// <summary>Sets the glyph widths in the font dictionary.</summary>
+        /// <param name="font"></param>
+        /// <param name="glyphList"></param>
         private void SetWidths(PdfDictionary font, GlyphMapping glyphList)
         {
             float scaling = 1000f / ttf.Header.UnitsPerEm;
@@ -99,15 +100,13 @@ namespace PdfClown.Documents.Contents.Fonts
             font[PdfName.Widths] = new PdfArray(widths);
         }
 
-        /**
-		 * Returns the font's encoding.
-		 */
+        /// <summary>Returns the font's encoding.</summary>
         public Encoding FontEncoding
         {
             get => fontEncoding;
         }
 
-        protected override void BuildSubset(Bytes.ByteStream ttfSubset, string tag, Dictionary<int, int> gidToCid)
+        protected override void BuildSubset(IOutputStream ttfSubset, string tag, Dictionary<int, int> gidToCid)
         {
             // use PDType0Font instead
             throw new NotSupportedException();

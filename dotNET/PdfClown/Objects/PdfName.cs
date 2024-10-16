@@ -33,7 +33,7 @@ using tokens = PdfClown.Tokens;
 
 namespace PdfClown.Objects
 {
-    ///<summary>PDF name object [PDF:1.6:3.2.4].</summary>
+    /// <summary>PDF name object [PDF:1.6:3.2.4].</summary>
     public sealed class PdfName : PdfSimpleObject<string>, IPdfString, IEquatable<PdfName>
     {
         //NOTE: As name objects are simple symbols uniquely defined by sequences of characters,
@@ -710,10 +710,10 @@ namespace PdfClown.Objects
 
         private static PdfName Add(string value) => names[value] = new PdfName(value);
 
-        ///<summary>Gets the object equivalent to the given value.</summary>
+        /// <summary>Gets the object equivalent to the given value.</summary>
         public static PdfName Get(object value, bool escaped = false) => Get(value?.ToString(), escaped);
 
-        ///<summary>Gets the object equivalent to the given value.</summary>
+        /// <summary>Gets the object equivalent to the given value.</summary>
         public static PdfName Get(string value, bool escaped = false)
         {
             return value == null ? null : names.GetOrAdd(value, (v) => new PdfName(v, escaped));
@@ -727,9 +727,9 @@ namespace PdfClown.Objects
 
         private PdfName(string value, bool escaped)
         {
-            //NOTE: To avoid ambiguities due to the presence of '#' characters,
-            //it's necessary to explicitly state when a name value has already been escaped.
-            //This is tipically the case of names parsed from a previously-serialized PDF file.
+            // NOTE: To avoid ambiguities due to the presence of '#' characters,
+            // it's necessary to explicitly state when a name value has already been escaped.
+            // This is tipically the case of names parsed from a previously-serialized PDF file.
             if (escaped)
             {
                 RawValue = value;
@@ -829,7 +829,7 @@ namespace PdfClown.Objects
         {
             //NOTE: The textual representation of a name concerns unescaping reserved characters.
             string value = RawValue;
-            
+
             Match escapedMatch = EscapedPattern.Match(value);
             if (escapedMatch.Success)
             {

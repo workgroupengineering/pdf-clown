@@ -15,34 +15,25 @@
  * limitations under the License.
  */
 using PdfClown.Bytes;
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
 
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A table in a true type font.
-     * 
-     * @author Ben Litchfield
-     * 
-     */
+    /// <summary>
+    /// A table in a true type font.
+    /// @author Ben Litchfield
+    /// </summary>
     public class OS2WindowsMetricsTable : TTFTable
     {
 
-        /**
-         * Weight class constant.
-         */
+        /// <summary>Weight class constant.</summary>         
         public const int WEIGHT_CLASS_THIN = 100;
-        /**
-         * Weight class constant.
-         */
+
+        /// <summary>Weight class constant.</summary>         
         public const int WEIGHT_CLASS_ULTRA_LIGHT = 200;
-        /**
-         * Weight class constant.
-         */
+        
+        /// <summary>Weight class constant.</summary>
         public const int WEIGHT_CLASS_LIGHT = 300;
         /**
          * Weight class constant.
@@ -181,11 +172,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
          * may be embedded. Other embedding restrictions specified in bits 0-3 and 8 also apply.
          */
         public static readonly short FSTYPE_BITMAP_ONLY = 0x0200;
+        private static readonly byte[] PanoseBytes = new byte[10];
 
-        private int version;
+        private ushort version;
         private short averageCharWidth;
-        private int weightClass;
-        private int widthClass;
+        private ushort weightClass;
+        private ushort widthClass;
         private short fsType;
         private short subscriptXSize;
         private short subscriptYSize;
@@ -197,28 +189,28 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private short superscriptYOffset;
         private short strikeoutSize;
         private short strikeoutPosition;
-        private int familyClass;
-        private byte[] panose = new byte[10];
-        private long unicodeRange1;
-        private long unicodeRange2;
-        private long unicodeRange3;
-        private long unicodeRange4;
+        private short familyClass;
+        private byte[] panose = PanoseBytes;
+        private uint unicodeRange1;
+        private uint unicodeRange2;
+        private uint unicodeRange3;
+        private uint unicodeRange4;
         private string achVendId = "XXXX";
-        private int fsSelection;
-        private int firstCharIndex;
-        private int lastCharIndex;
-        private int typoAscender;
-        private int typoDescender;
-        private int typoLineGap;
-        private int winAscent;
-        private int winDescent;
-        private long codePageRange1 = 0;
-        private long codePageRange2 = 0;
-        private int sxHeight;
-        private int sCapHeight;
-        private int usDefaultChar;
-        private int usBreakChar;
-        private int usMaxContext;
+        private ushort fsSelection;
+        private ushort firstCharIndex;
+        private ushort lastCharIndex;
+        private short typoAscender;
+        private short typoDescender;
+        private short typoLineGap;
+        private ushort winAscent;
+        private ushort winDescent;
+        private uint codePageRange1;
+        private uint codePageRange2;
+        private short sxHeight;
+        private short sCapHeight;
+        private ushort usDefaultChar;
+        private ushort usBreakChar;
+        private ushort usMaxContext;
 
         public OS2WindowsMetricsTable()
         { }
@@ -244,7 +236,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the codePageRange1.
          */
-        public long CodePageRange1
+        public uint CodePageRange1
         {
             get => codePageRange1;
             set => codePageRange1 = value;
@@ -253,7 +245,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the codePageRange2.
          */
-        public long CodePageRange2
+        public uint CodePageRange2
         {
             get => codePageRange2;
             set => codePageRange2 = value;
@@ -262,7 +254,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the familyClass.
          */
-        public int FamilyClass
+        public short FamilyClass
         {
             get => familyClass;
             set => familyClass = value;
@@ -271,7 +263,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the firstCharIndex.
          */
-        public int FirstCharIndex
+        public ushort FirstCharIndex
         {
             get => firstCharIndex;
             set => firstCharIndex = value;
@@ -280,7 +272,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the fsSelection.
          */
-        public int FsSelection
+        public ushort FsSelection
         {
             get => fsSelection;
             set => fsSelection = value;
@@ -298,7 +290,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the lastCharIndex.
          */
-        public int LastCharIndex
+        public ushort LastCharIndex
         {
             get => lastCharIndex;
             set => lastCharIndex = value;
@@ -406,7 +398,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the typoLineGap.
          */
-        public int TypoLineGap
+        public short TypoLineGap
         {
             get => typoLineGap;
             set => typoLineGap = value;
@@ -415,7 +407,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the typoAscender.
          */
-        public int TypoAscender
+        public short TypoAscender
         {
             get => typoAscender;
             set => typoAscender = value;
@@ -424,7 +416,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the typoDescender.
          */
-        public int TypoDescender
+        public short TypoDescender
         {
             get => typoDescender;
             set => typoDescender = value;
@@ -433,7 +425,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the unicodeRange1.
          */
-        public long UnicodeRange1
+        public uint UnicodeRange1
         {
             get => unicodeRange1;
             set => unicodeRange1 = value;
@@ -442,7 +434,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the unicodeRange2.
          */
-        public long UnicodeRange2
+        public uint UnicodeRange2
         {
             get => unicodeRange2;
             set => unicodeRange2 = value;
@@ -451,7 +443,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the unicodeRange3.
          */
-        public long UnicodeRange3
+        public uint UnicodeRange3
         {
             get => unicodeRange3;
             set => unicodeRange3 = value;
@@ -460,7 +452,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the unicodeRange4.
          */
-        public long UnicodeRange4
+        public uint UnicodeRange4
         {
             get => unicodeRange4;
             set => unicodeRange4 = value;
@@ -469,7 +461,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the version.
          */
-        public int Version
+        public ushort Version
         {
             get => version;
             set => version = value;
@@ -478,7 +470,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the weightClass.
          */
-        public int WeightClass
+        public ushort WeightClass
         {
             get => weightClass;
             set => weightClass = value;
@@ -487,7 +479,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the widthClass.
          */
-        public int WidthClass
+        public ushort WidthClass
         {
             get => widthClass;
             set => widthClass = value;
@@ -496,7 +488,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the winAscent.
          */
-        public int WinAscent
+        public ushort WinAscent
         {
             get => winAscent;
             set => winAscent = value;
@@ -505,7 +497,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * @return Returns the winDescent.
          */
-        public int WinDescent
+        public ushort WinDescent
         {
             get => winDescent;
             set => winDescent = value;
@@ -514,7 +506,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * Returns the sxHeight.
          */
-        public int Height
+        public short Height
         {
             get => sxHeight;
             set => sxHeight = value;
@@ -523,7 +515,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * Returns the sCapHeight.
          */
-        public int CapHeight
+        public short CapHeight
         {
             get => sCapHeight;
         }
@@ -531,7 +523,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * Returns the usDefaultChar.
          */
-        public int DefaultChar
+        public ushort DefaultChar
         {
             get => usDefaultChar;
         }
@@ -539,7 +531,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * Returns the usBreakChar.
          */
-        public int BreakChar
+        public ushort BreakChar
         {
             get => usBreakChar;
         }
@@ -547,7 +539,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         /**
          * Returns the usMaxContext.
          */
-        public int MaxContext
+        public ushort MaxContext
         {
             get => usMaxContext;
         }

@@ -23,26 +23,19 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Objects;
 using PdfClown.Util.Math.Geom;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
+using System.Collections.Generic;
 using System.Linq;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
-using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Freehand "scribble" composed of one or more disjoint paths [PDF:1.6:8.4.5].</summary>
-    */
+    /// <summary>Freehand "scribble" composed of one or more disjoint paths [PDF:1.6:8.4.5].</summary>
     [PDF(VersionEnum.PDF13)]
     public sealed class Scribble : Markup
     {

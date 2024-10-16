@@ -23,19 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Polyline annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It represents a (possibly-open) polygon to display on a page.</remarks>
-    */
+    /// <summary>Polyline annotation [PDF:1.6:8.4.5].</summary>
+    /// <remarks>It represents a (possibly-open) polygon to display on a page.</remarks>
     [PDF(VersionEnum.PDF15)]
     public sealed class Polyline : VertexShape
     {
@@ -48,6 +42,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Polyline(PdfDirectObject baseObject) : base(baseObject)
         {
             base.ClosePath = false;
-        }        
+        }
     }
 }
