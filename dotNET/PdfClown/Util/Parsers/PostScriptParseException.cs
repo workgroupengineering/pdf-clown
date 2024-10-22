@@ -32,7 +32,7 @@ namespace PdfClown.Util.Parsers
     public class PostScriptParseException : ParseException
     {
         private readonly object token;
-        private readonly PostScriptParser.TokenTypeEnum? tokenType;
+        private readonly TokenTypeEnum? tokenType;
 
         public PostScriptParseException(string message) : this(message, -1)
         { }
@@ -45,7 +45,7 @@ namespace PdfClown.Util.Parsers
             : this(message, position, null, null)
         { }
 
-        public PostScriptParseException(string message, long position, object token, PostScriptParser.TokenTypeEnum? tokenType)
+        public PostScriptParseException(string message, long position, object token, TokenTypeEnum? tokenType)
             : this(message, null, position, token, tokenType)
         { }
 
@@ -65,7 +65,7 @@ namespace PdfClown.Util.Parsers
             : this(message, cause, position, null, null)
         { }
 
-        public PostScriptParseException(string message, Exception cause, long position, object token, PostScriptParser.TokenTypeEnum? tokenType)
+        public PostScriptParseException(string message, Exception cause, long position, object token, TokenTypeEnum? tokenType)
             : base(message, cause, position)
         {
             this.token = token;
@@ -76,6 +76,6 @@ namespace PdfClown.Util.Parsers
         public object Token => token;
 
         /// <summary>Gets the type of the token on which the exception happened.</summary>
-        public PostScriptParser.TokenTypeEnum? TokenType => tokenType;
+        public TokenTypeEnum? TokenType => tokenType;
     }
 }

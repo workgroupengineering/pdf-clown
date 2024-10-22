@@ -23,10 +23,9 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Functions;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 

@@ -28,6 +28,7 @@ using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.AFM;
 using PdfClown.Objects;
 using PdfClown.Tokens;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -177,14 +178,18 @@ namespace PdfClown.Documents.Contents.Fonts
             toUnicodeCMap = LoadUnicodeCmap();
         }
 
+        public virtual SKMatrix? NormMatrix => null;
+
         public SKMatrix FontMatrix
         {
             get => fontMatrix ??= GenerateFontMatrix();
         }
 
-        public SKRect BoundingBox
+        /// <summary>This will get the fonts bounding box</summary>
+        /// <value> The fonts bounding box.</value>
+        public SKRect FontBBox
         {
-            get => fontBBox ??= GenerateBoundingBox();
+            get => fontBBox ??= GenerateBBox();
         }
 
         /// <summary>Gets the unscaled vertical offset from the baseline to the ascender line (ascent).
@@ -784,12 +789,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         protected bool IsNonZeroBoundingBox(Rectangle bbox)
         {
-            return bbox != null && (
-                bbox.Left.CompareTo(0) != 0 ||
-                bbox.Bottom.CompareTo(0) != 0 ||
-                bbox.Right.CompareTo(0) != 0 ||
-                bbox.Top.CompareTo(0) != 0
-            );
+            return bbox != null && bbox.Width != 0  && bbox.Height != 0;
         }
 
         public virtual SKTypeface GetTypeface()
@@ -992,7 +992,17 @@ namespace PdfClown.Documents.Contents.Fonts
             return -Math.Abs(value > -10 ? DefaultDescent : value);
         }
 
-        protected abstract SKRect GenerateBoundingBox();
+        protected abstract SKRect GenerateBBox();
+
+        protected SKRect? GetDefaultBBox()
+        {
+            var bbox = FontDescriptor?.FontBBox;
+            if (IsNonZeroBoundingBox(bbox))
+            {
+                return bbox.ToSKRect();
+            }
+            return null;
+        }
 
         protected virtual SKMatrix GenerateFontMatrix()
         {

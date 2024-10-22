@@ -49,7 +49,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using bytes = PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts
 {

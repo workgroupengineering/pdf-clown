@@ -59,12 +59,16 @@ namespace PdfClown.UI.Operations
                 result =
                     NewValue = controlPoint.MappedPoint;
             }
-            Document?.OnEndOperation(result);
+            OperationList?.OnEndOperation(this, result);
             return result;
         }
 
         public override void Redo()
         {
+            if (Annotation.Page?.Annotations.Contains(Annotation) ?? false)
+            {
+                OperationList.SelectedAnnotation = Annotation;
+            }
             switch (Type)
             {
                 case OperationType.AnnotationAdd:
@@ -117,10 +121,18 @@ namespace PdfClown.UI.Operations
                     }
                     break;
             }
+            if (Annotation.Page?.Annotations.Contains(Annotation) ?? false)
+            {
+                OperationList.SelectedAnnotation = Annotation;
+            }
         }
 
         public override void Undo()
         {
+            if (Annotation.Page?.Annotations.Contains(Annotation) ?? false)
+            {
+                OperationList.SelectedAnnotation = Annotation;
+            }
             switch (Type)
             {
                 case OperationType.AnnotationAdd:
@@ -172,6 +184,11 @@ namespace PdfClown.UI.Operations
                         }
                     }
                     break;
+            }
+
+            if (Annotation.Page?.Annotations.Contains(Annotation) ?? false)
+            {
+                OperationList.SelectedAnnotation = Annotation;
             }
         }
     }

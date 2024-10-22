@@ -31,14 +31,11 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 using PdfClown.Util.Math;
-using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using actions = PdfClown.Documents.Interaction.Actions;
-using colors = PdfClown.Documents.Contents.ColorSpaces;
-using objects = PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.ColorSpaces;
 
 namespace PdfClown.Documents.Contents.Composition
 {
@@ -595,7 +592,7 @@ namespace PdfClown.Documents.Contents.Composition
 
         /// <summary>Sets the nonstroking color value [PDF:1.6:4.5.7].</summary>
         /// <seealso cref="SetStrokeColor(Color)"/>
-        public void SetFillColor(colors::Color value)
+        public void SetFillColor(Color value)
         {
             if (!State.FillColorSpace.IsSpaceColor(value))
             {
@@ -676,7 +673,7 @@ namespace PdfClown.Documents.Contents.Composition
 
         /// <summary>Sets the stroking color value [PDF:1.6:4.5.7].</summary>
         /// <seealso cref="SetFillColor(Color)"/>
-        public void SetStrokeColor(colors::Color value)
+        public void SetStrokeColor(Color value)
         {
             if (!State.StrokeColorSpace.IsSpaceColor(value))
             {
@@ -715,7 +712,7 @@ namespace PdfClown.Documents.Contents.Composition
         /// <param name="action">Action to apply when the link is activated.</param>
         /// <returns>Link.</returns>
         /// <exception cref="EncodeException"/>
-        public Link ShowText(string value, actions::Action action) => ShowText(value, new SKPoint(0, 0), action);
+        public Link ShowText(string value, Interaction.Actions.Action action) => ShowText(value, new SKPoint(0, 0), action);
 
         /// <summary>Shows the specified text on the page at the specified location [PDF:1.6:5.3.2].
         /// </summary>
@@ -732,7 +729,7 @@ namespace PdfClown.Documents.Contents.Composition
         /// <param name="action">Action to apply when the link is activated.</param>
         /// <returns>Link.</returns>
         /// <exception cref="EncodeException"/>
-        public Link ShowText(string value, SKPoint location, actions::Action action) => ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0, action);
+        public Link ShowText(string value, SKPoint location, Interaction.Actions.Action action) => ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0, action);
 
         /// <summary>Shows the specified text on the page at the specified location [PDF:1.6:5.3.2].
         /// </summary>
@@ -865,7 +862,7 @@ namespace PdfClown.Documents.Contents.Composition
         /// <param name="action">Action to apply when the link is activated.</param>
         /// <returns>Link.</returns>
         /// <exception cref="EncodeException"/>
-        public Link ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation, actions::Action action)
+        public Link ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation, Interaction.Actions.Action action)
         {
             IContentContext contentContext = Scanner.Context;
             if (contentContext is not PdfPage page)
@@ -1122,11 +1119,11 @@ namespace PdfClown.Documents.Contents.Composition
 
         private PdfName GetResourceName<T>(T value, PdfName defaultName = null) where T : PdfObjectWrapper
         {
-            if (value is colors::DeviceGrayColorSpace)
+            if (value is DeviceGrayColorSpace)
                 return PdfName.DeviceGray;
-            else if (value is colors::DeviceRGBColorSpace)
+            else if (value is DeviceRGBColorSpace)
                 return PdfName.DeviceRGB;
-            else if (value is colors::DeviceCMYKColorSpace)
+            else if (value is DeviceCMYKColorSpace)
                 return PdfName.DeviceCMYK;
             else
             {
@@ -1200,6 +1197,6 @@ namespace PdfClown.Documents.Contents.Composition
 
         /// <summary>Applies a translation to the coordinate system from text space to user space,
         /// moving to the start of the next line [PDF:1.6:5.3.1].</summary>
-        private void TranslateTextToNextLine() => Add(objects::TranslateTextToNextLine.Value);
+        private void TranslateTextToNextLine() => Add(Objects.TranslateTextToNextLine.Value);
     }
 }

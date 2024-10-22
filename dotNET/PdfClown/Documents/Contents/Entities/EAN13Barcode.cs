@@ -23,32 +23,27 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
-using fonts = PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Objects;
-using xObjects = PdfClown.Documents.Contents.XObjects;
-
-using System;
 using SkiaSharp;
+using System;
+using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Contents.Entities
 {
-    /**
-      <see href="http://en.wikipedia.org/wiki/EAN13">EAN-13 Bar Code</see> object [GS1:7.1:5.1.1.3.1].
-
-      <para>The EAN-13 Bar Code Symbol shall be made up as follows, reading from left to right:</para>
-      <list type="number">
-        <item>A left Quiet Zone</item>
-        <item>A normal Guard Bar Pattern (Left Guard)</item>
-        <item>Six symbol characters from number sets A and B (Left Half)</item>
-        <item>A center Guard Bar Pattern (Center Guard)</item>
-        <item>Six symbol characters from number set C (Right Half)</item>
-        <item>A normal Guard Bar Pattern (Right Guard)</item>
-        <item>A right Quiet Zone</item>
-      </list>
-      <para>The rightmost symbol character shall encode the Check Digit.</para>
-    */
+    /// <see href = "http://en.wikipedia.org/wiki/EAN13" > EAN - 13 Bar Code</see> object[GS1:7.1:5.1.1.3.1].
+    /// <para>The EAN-13 Bar Code Symbol shall be made up as follows, reading from left to right:</para>
+    /// <list type = "number" >
+    ///   < item > A left Quiet Zone</item>
+    ///   <item>A normal Guard Bar Pattern (Left Guard)</item>
+    ///   <item>Six symbol characters from number sets A and B (Left Half)</item>
+    ///   <item>A center Guard Bar Pattern (Center Guard)</item>
+    ///   <item>Six symbol characters from number set C (Right Half)</item>
+    ///   <item>A normal Guard Bar Pattern (Right Guard)</item>
+    ///   <item>A right Quiet Zone</item>
+    /// </list>
+    /// <para>The rightmost symbol character shall encode the Check Digit.</para>
     public sealed class EAN13Barcode : Barcode
     {
         /*
@@ -66,17 +61,17 @@ namespace PdfClown.Documents.Contents.Entities
         */
         private static readonly int[][] DigitElementWidths =
         {
-      new int[]{3, 2, 1, 1}, // 0
-      new int[]{2, 2, 2, 1}, // 1
-      new int[]{2, 1, 2, 2}, // 2
-      new int[]{1, 4, 1, 1}, // 3
-      new int[]{1, 1, 3, 2}, // 4
-      new int[]{1, 2, 3, 1}, // 5
-      new int[]{1, 1, 1, 4}, // 6
-      new int[]{1, 3, 1, 2}, // 7
-      new int[]{1, 2, 1, 3}, // 8
-      new int[]{3, 1, 1, 2}  // 9
-    };
+            new int[]{3, 2, 1, 1}, // 0
+            new int[]{2, 2, 2, 1}, // 1
+            new int[]{2, 1, 2, 2}, // 2
+            new int[]{1, 4, 1, 1}, // 3
+            new int[]{1, 1, 3, 2}, // 4
+            new int[]{1, 2, 3, 1}, // 5
+            new int[]{1, 1, 1, 4}, // 6
+            new int[]{1, 3, 1, 2}, // 7
+            new int[]{1, 2, 1, 3}, // 8
+            new int[]{3, 1, 1, 2}  // 9
+        };
 
         /** Bar elements count. */
         private static int ElementCount;
@@ -97,10 +92,10 @@ namespace PdfClown.Documents.Contents.Entities
         /** Guard bar index positions. */
         private static int[] GuardBarIndexes =
         {
-      0, 2, // Left Guard.
-      28, 30, // Center Guard.
-      56, 58 // Right Guard.
-    };
+            0, 2, // Left Guard.
+            28, 30, // Center Guard.
+            56, 58 // Right Guard.
+        };
 
         private static readonly int NumberSet_A = 0;
         private static readonly int NumberSet_B = 1;
@@ -115,23 +110,21 @@ namespace PdfClown.Documents.Contents.Entities
         */
         private static readonly int[][] LeftHalfNumberSets =
         {
-      new int[]{NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A}, // 0
-      new int[]{NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_B}, // 1
-      new int[]{NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_B}, // 2
-      new int[]{NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_B,NumberSet_A}, // 3
-      new int[]{NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B}, // 4
-      new int[]{NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_A,NumberSet_B}, // 5
-      new int[]{NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_A}, // 6
-      new int[]{NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B}, // 7
-      new int[]{NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A}, // 8
-      new int[]{NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_A}  // 9
-    };
+            new int[]{NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A}, // 0
+            new int[]{NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_B}, // 1
+            new int[]{NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_B}, // 2
+            new int[]{NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_B,NumberSet_A}, // 3
+            new int[]{NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B}, // 4
+            new int[]{NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_A,NumberSet_B}, // 5
+            new int[]{NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_A}, // 6
+            new int[]{NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B}, // 7
+            new int[]{NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A}, // 8
+            new int[]{NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_A}  // 9
+        };
 
         static EAN13Barcode()
         {
-            /*
-              Digit metrics.
-            */
+            // Digit metrics.
             {
                 int[] digitElementWidths = DigitElementWidths[0];
 
@@ -151,19 +144,17 @@ namespace PdfClown.Documents.Contents.Entities
                 BarHeight = DigitHeight * 4;
             }
 
-            /*
-              Digit glyph horizontal positions.
-            */
+            // Digit glyph horizontal positions.
             {
                 double[] elementWidths =
                 {
-          DigitWidth,
-          3,
-          DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth,
-          5,
-          DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth,
-          3
-        };
+                    DigitWidth,
+                    3,
+                    DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth,
+                    5,
+                    DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth,
+                    3
+                };
                 int[] digitIndexes = { 0, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
                 DigitGlyphXs = new double[13];
                 int digitXIndex = 0;
@@ -192,7 +183,7 @@ namespace PdfClown.Documents.Contents.Entities
         {
             ContentObject barcodeObject = composer.BeginLocalState();
             {
-                fonts::Font font = fonts::FontType1.Load(composer.Scanner.Contents.Document, fonts.FontName.Helvetica);
+                var font = FontType1.Load(composer.Scanner.Contents.Document, FontName.Helvetica);
                 double fontSize = (DigitGlyphWidth / font.GetWidth(code.Substring(0, 1), 1));
 
                 // 1. Bars.
@@ -254,20 +245,18 @@ namespace PdfClown.Documents.Contents.Entities
             return barcodeObject;
         }
 
-        public override xObjects::XObject ToXObject(PdfDocument context)
+        public override XObject ToXObject(PdfDocument context)
         {
-            xObjects::FormXObject xObject = new xObjects::FormXObject(context, Size);
+            var xObject = new FormXObject(context, Size);
             {
-                PrimitiveComposer composer = new PrimitiveComposer(xObject);
+                var composer = new PrimitiveComposer(xObject);
                 this.ToInlineObject(composer);
                 composer.Flush();
             }
             return xObject;
         }
 
-        /**
-          <summary>Gets the code elements widths.</summary>
-        */
+        /// <summary>Gets the code elements widths.</summary>
         private int[] GetElementWidths()
         {
             // 1. Digit-codes-to-digit-IDs transformation.
@@ -335,9 +324,7 @@ namespace PdfClown.Documents.Contents.Entities
             return elementWidths;
         }
 
-        /**
-          Gets the barcode's graphical size.
-        */
+        /// <summary>Gets the barcode's graphical size.</summary>
         private SKSize Size => new SKSize(
                   DigitWidth * 13 // Digits.
                     + 3 * 2 // Left and right guards.

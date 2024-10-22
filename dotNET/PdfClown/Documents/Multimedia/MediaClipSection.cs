@@ -23,20 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Media clip section [PDF:1.7:9.1.3].</summary>
-    */
+    /// <summary>Media clip section [PDF:1.7:9.1.3].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaClipSection : MediaClip
     {

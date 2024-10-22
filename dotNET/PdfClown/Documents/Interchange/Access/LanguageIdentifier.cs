@@ -23,35 +23,26 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interchange.Access
 {
-    /**
-      <summary>Language identifier [PDF:1.7:10.8.1][RFC 3066].</summary>
-      <remarks>
-        <para>Language identifiers can be based on codes defined by the International Organization for
-        Standardization in ISO 639 (language code) and ISO 3166 (country code) or registered with the
-        Internet Assigned Numbers Authority (<a href="http://iana.org">IANA</a>), or they can include
-        codes created for private use.</para>
-        <para>A language identifier consists of a primary code optionally followed by one or more
-        subcodes (each preceded by a hyphen).</para>
-      </remarks>
-    */
+    /// <summary>Language identifier[PDF:1.7:10.8.1][RFC 3066].</summary>
+    /// <remarks>
+    ///   <para>Language identifiers can be based on codes defined by the International Organization for
+    ///   Standardization in ISO 639 (language code) and ISO 3166 (country code) or registered with the
+    ///   Internet Assigned Numbers Authority(<a href = "http://iana.org" > IANA </ a >), or they can include
+    ///   codes created for private use.</para>
+    ///   <para>A language identifier consists of a primary code optionally followed by one or more
+    ///   subcodes(each preceded by a hyphen).</para>
+    /// </remarks>
+    
     [PDF(VersionEnum.PDF14)]
     public sealed class LanguageIdentifier : PdfObjectWrapper<PdfTextString>
     {
-        /**
-          <summary>Wraps a language identifier base object into a language identifier object.</summary>
-        */
+        /// <summary>Wraps a language identifier base object into a language identifier object.</summary>
         public static LanguageIdentifier Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)

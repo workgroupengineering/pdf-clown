@@ -26,7 +26,6 @@
 using PdfClown.Bytes;
 using SkiaSharp;
 using System;
-using PdfClown.Util.Math.Geom;
 
 namespace PdfClown.Documents.Contents.Patterns.Shadings.Patches
 {

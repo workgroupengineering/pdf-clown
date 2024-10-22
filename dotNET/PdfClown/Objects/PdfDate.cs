@@ -23,28 +23,20 @@
   this list of conditions.
 */
 
-using tokens = PdfClown.Tokens;
-using PdfClown.Util.Parsers;
-
+using PdfClown.Tokens;
+using PdfClown.Util;
 using System;
 using System.Globalization;
-using System.Text;
-using System.Xml.Schema;
-using PdfClown.Util;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF date object [PDF:1.6:3.8.3].</summary>
-    */
+    /// <summary>PDF date object [PDF:1.6:3.8.3].</summary>
     public sealed class PdfDate : PdfString
     {
         private const string FormatString = "yyyyMMddHHmmsszzz";
         private DateTime? date;
 
-        /**
-          <summary>Gets the object equivalent to the given value.</summary>
-        */
+        /// <summary>Gets the object equivalent to the given value.</summary>
         public static PdfDate Get(DateTime? value)
         {
             return value.HasValue ? new PdfDate(Trimm(value).Value) : null;
@@ -55,10 +47,8 @@ namespace PdfClown.Objects
             return value.HasValue ? new PdfDate(data, value.Value) : null;
         }
 
-        /**
-          <summary>Converts a PDF date literal into its corresponding date.</summary>
-          <exception cref="PdfClown.Util.Parsers.ParseException">Thrown when date literal parsing fails.</exception>
-        */
+        /// <summary>Converts a PDF date literal into its corresponding date.</summary>
+        /// <exception cref="PdfClown.Util.Parsers.ParseException">Thrown when date literal parsing fails.</exception>
         public static bool ToDate(ReadOnlySpan<char> value, out DateTime date)
         {
             date = DateTime.MinValue;
@@ -120,7 +110,7 @@ namespace PdfClown.Objects
         }
 
         public PdfDate(Memory<byte> data, DateTime value)
-            :base(data)
+            : base(data)
         {
             date = value;
         }
@@ -153,7 +143,7 @@ namespace PdfClown.Objects
             {
                 if (value is DateTime dateTimeValue)
                 {
-                    RawValue = tokens::Encoding.Pdf.Encode(Format(dateTimeValue));
+                    RawValue = BaseEncoding.Pdf.Encode(Format(dateTimeValue));
                     date = dateTimeValue;
                 }
             }

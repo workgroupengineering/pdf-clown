@@ -119,8 +119,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             if (string.IsNullOrEmpty(@operator))
                 return null;
-            var str = @operator.ToString();
-            if (cache.TryGetValue(str, out var func))
+            if (cache.TryGetValue(@operator, out var func))
                 return func(operands);
             else // No explicit operation implementation available.
                 return new GenericOperation(@operator, operands);

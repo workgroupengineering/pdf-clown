@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Documents.Contents.ColorSpaces;
-using actions = PdfClown.Documents.Interaction.Actions;
 using PdfClown.Objects;
 
 using System;
@@ -149,16 +148,16 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
             set
             {
-                if (value is Destination)
-                { Destination = (Destination)value; }
-                else if (value is Actions.Action)
-                { Action = (actions::Action)value; }
+                if (value is Destination destination)
+                    Destination = destination;
+                else if (value is Actions.Action action)
+                    Action = action;
                 else
                     throw new ArgumentException("It MUST be either a Destination or an Action.");
             }
         }
 
-        private actions::Action Action
+        private Actions.Action Action
         {
             get => Actions.Action.Wrap(BaseDataObject[PdfName.A]);
             set

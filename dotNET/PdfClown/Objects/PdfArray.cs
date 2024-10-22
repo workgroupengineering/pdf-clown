@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents.Contents;
 using PdfClown.Tokens;
 
 using System;
@@ -32,7 +31,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using text = System.Text;
+using System.Text;
 
 namespace PdfClown.Objects
 {
@@ -40,8 +39,8 @@ namespace PdfClown.Objects
     /// objects arranged sequentially [PDF:1.7:3.2.5].</summary>
     public sealed class PdfArray : PdfWrapableDirectObject, IList<PdfDirectObject>
     {
-        private static readonly byte[] BeginArrayChunk = Encoding.Pdf.Encode(Keyword.BeginArray);
-        private static readonly byte[] EndArrayChunk = Encoding.Pdf.Encode(Keyword.EndArray);
+        private static readonly byte[] BeginArrayChunk = BaseEncoding.Pdf.Encode(Keyword.BeginArray);
+        private static readonly byte[] EndArrayChunk = BaseEncoding.Pdf.Encode(Keyword.EndArray);
 
         public static bool SequenceEquals(PdfArray oldValue, PdfArray newValue)
         {
@@ -57,8 +56,10 @@ namespace PdfClown.Objects
         private PdfObject parent;
         private PdfObjectStatus status;
 
-        public PdfArray() : this(10)
-        { }
+        public PdfArray() : base(PdfObjectStatus.Updateable)
+        {
+            items = new List<PdfDirectObject>();
+        }
 
         public PdfArray(int capacity) : base(PdfObjectStatus.Updateable)
         {
@@ -309,16 +310,14 @@ namespace PdfClown.Objects
 
         public override string ToString()
         {
-            var buffer = new text::StringBuilder();
-            {
-                // Begin.
-                buffer.Append("[ ");
-                // Elements.
-                foreach (PdfDirectObject item in items)
-                { buffer.Append(PdfDirectObject.ToString(item)).Append(" "); }
-                // End.
-                buffer.Append("]");
-            }
+            var buffer = new StringBuilder();
+            // Begin.
+            buffer.Append("[ ");
+            // Elements.
+            foreach (PdfDirectObject item in items)
+            { buffer.Append(PdfDirectObject.ToString(item)).Append(" "); }
+            // End.
+            buffer.Append("]");
             return buffer.ToString();
         }
 

@@ -24,10 +24,10 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Tokens;
 using PdfClown.Util;
 using System;
 using System.Runtime.CompilerServices;
-using tokens = PdfClown.Tokens;
 
 namespace PdfClown.Objects
 {
@@ -180,9 +180,9 @@ namespace PdfClown.Objects
                 switch (SerializationMode)
                 {
                     case SerializationModeEnum.Literal:
-                        return stringValue = tokens::Encoding.Pdf.Decode(RawValue.Span);
+                        return stringValue = BaseEncoding.Pdf.Decode(RawValue.Span);
                     case SerializationModeEnum.Hex:
-                        return stringValue = tokens::Encoding.Pdf.Decode(RawValue.Span);
+                        return stringValue = BaseEncoding.Pdf.Decode(RawValue.Span);
                     default:
                         throw new NotImplementedException(SerializationMode + " serialization mode is not implemented.");
                 }
@@ -194,7 +194,7 @@ namespace PdfClown.Objects
                 {
                     case SerializationModeEnum.Literal:
                         stringValue = (string)value;
-                        RawValue = tokens::Encoding.Pdf.Encode(stringValue);
+                        RawValue = BaseEncoding.Pdf.Encode(stringValue);
                         break;
                     case SerializationModeEnum.Hex:
                         stringValue = null;

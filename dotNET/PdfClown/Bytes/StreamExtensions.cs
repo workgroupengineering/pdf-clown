@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes.Filters;
-using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
 using PdfClown.Tokens;
 using PdfClown.Util;
@@ -35,9 +34,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Runtime.CompilerServices;
-using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
-using text = System.Text;
+using System.Text;
 
 namespace PdfClown.Bytes
 {
@@ -285,7 +282,7 @@ namespace PdfClown.Bytes
 
         public static void WriteAsString(this IOutputStream target, int value) => target.WriteAsString(value, Charset.ISO88591);
 
-        public static void WriteAsString(this IOutputStream target, int value, System.Text.Encoding encoding)
+        public static void WriteAsString(this IOutputStream target, int value, Encoding encoding)
         {
             Span<char> chars = stackalloc char[12];
             value.TryFormat(chars, out var lenth, ReadOnlySpan<char>.Empty, CultureInfo.InvariantCulture);
@@ -294,7 +291,7 @@ namespace PdfClown.Bytes
 
         public static void WriteAsString(this IOutputStream target, double value, string format, IFormatProvider provider) => target.WriteAsString(value, format, provider, Charset.ISO88591);
 
-        public static void WriteAsString(this IOutputStream target, double value, string format, IFormatProvider provider, System.Text.Encoding encoding)
+        public static void WriteAsString(this IOutputStream target, double value, string format, IFormatProvider provider, Encoding encoding)
         {
             Span<char> chars = stackalloc char[22];
             value.TryFormat(chars, out var lenth, format, provider);
@@ -303,7 +300,7 @@ namespace PdfClown.Bytes
 
         public static void Write(this IOutputStream target, ReadOnlySpan<char> data) => target.Write(data, Charset.ISO88591);
 
-        public static void Write(this IOutputStream target, ReadOnlySpan<char> data, text::Encoding encoding)
+        public static void Write(this IOutputStream target, ReadOnlySpan<char> data, Encoding encoding)
         {
             var length = encoding.GetByteCount(data);
             Span<byte> buffer = length <= MaxStackAllockSize

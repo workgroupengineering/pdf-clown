@@ -26,7 +26,6 @@
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -256,22 +255,10 @@ namespace PdfClown.Documents.Contents.Fonts
             get => ttf;
         }
 
-        protected override SKRect GenerateBoundingBox()
+        protected override SKRect GenerateBBox()
         {
-            if (FontDescriptor != null)
-            {
-                Rectangle bbox = FontDescriptor.FontBBox;
-                if (bbox != null)
-                {
-                    return bbox.ToSKRect();
-                }
-            }
-            return ttf.FontBBox;
+            return GetDefaultBBox() ?? ttf.FontBBox;
         }
-
-        //protected override float GetAscent() => BoundingBox.Bottom;
-
-        //protected override float GetDescent() => BoundingBox.Top;
 
         public override float ScalingFactor => scaleFactor ??= GenerateScaleFactor();
 

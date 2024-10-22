@@ -24,7 +24,8 @@
 */
 
 using PdfClown.Documents.Contents.Scanner;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 
@@ -36,32 +37,32 @@ namespace PdfClown.Tools
     {
         public static readonly TextBlockPositionComparer<T> Default = new();
         /// <summary>Gets whether the specified boxes lay on the same text line.</summary>
-        public static bool IsOnTheSameLine(Quad box1, Quad box2)
+        public static bool IsOnTheSameLine(SKRect box1, SKRect box2)
         {
             // NOTE: In order to consider the two boxes being on the same line,
             // we apply a simple rule of thumb: at least 25% of a box's height MUST
             // lay on the horizontal projection of the other one.
             double minHeight = Math.Min(box1.Height, box2.Height);
             double yThreshold = minHeight * .75;
-            return ((box1.MinY > box2.MinY - yThreshold
-                && box1.MinY < box2.MaxY + yThreshold - minHeight)
-              || (box2.MinY > box1.MinY - yThreshold
-                && box2.MinY < box1.MaxY + yThreshold - minHeight));
+            return ((box1.Top > box2.Top - yThreshold
+                && box1.Top < box2.Bottom + yThreshold - minHeight)
+              || (box2.Top > box1.Top - yThreshold
+                && box2.Top < box1.Bottom + yThreshold - minHeight));
         }
 
         public int Compare(T textString1, T textString2)
         {
-            var quad1 = textString1.Quad;
-            var quad2 = textString2.Quad;
+            var quad1 = textString1.Box;
+            var quad2 = textString2.Box;
             if (IsOnTheSameLine(quad1, quad2))
             {
                 // [FIX:55:0.1.3] In order not to violate the transitive condition, equivalence on x-axis
                 // MUST fall back on y-axis comparison.
-                int xCompare = quad1.MinX.CompareTo(quad2.MinX);
+                int xCompare = quad1.Left.CompareTo(quad2.Left);
                 if (xCompare != 0)
                     return xCompare;
             }
-            return quad1.MinY.CompareTo(quad2.MinY);
+            return quad1.Top.CompareTo(quad2.Top);
         }
     }
 }

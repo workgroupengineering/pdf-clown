@@ -27,7 +27,7 @@ using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -109,7 +109,7 @@ namespace PdfClown.Documents.Contents.Objects
                         if (result.IsEmpty)
                         { result = textChar.Quad; }
                         else
-                        { result.Union(textChar.Quad); }
+                        { result.Add(textChar.Quad); }
                     }
                     quad = result;
                 }
@@ -141,8 +141,8 @@ namespace PdfClown.Documents.Contents.Objects
         {
             if (chars == null)
             {
-                state.TextState.TextBlock.Strings.Add(this);
-                chars = new List<TextChar>(CalculateCount());
+                state.TextState.TextBlock.Add(this);
+                chars = new List<TextChar>();
             }
             style = new TextStyle(
               state.Font,
@@ -211,7 +211,8 @@ namespace PdfClown.Documents.Contents.Objects
             var parameters = new SKMatrix(
                 fontSize * horizontalScaling, 0f, 0f,
                 0f, fontSize, state.Rise,
-                0f, 0f, 1f);
+                0f, 0f, 1f)
+                .PreConcat(fm);
             var uparameters = new SKMatrix(
                 1f, 0f, 0f,
                 0f, -1f, state.Rise,
@@ -250,8 +251,6 @@ namespace PdfClown.Documents.Contents.Objects
                         SKMatrix trm = parameters.PostConcat(tm).PostConcat(ctm);
                         SKMatrix utm = uparameters.PostConcat(tm).PostConcat(ctm);
 
-                        trm = trm.PreConcat(fm);
-
                         if (canvas != null && !(codeBytes.Length == 1 && textChar == ' '))
                         {
                             canvas.SetMatrix(trm);
@@ -270,7 +269,7 @@ namespace PdfClown.Documents.Contents.Objects
                         float ty = 0;
 
                         //Text Scanner                            
-                        var quad = new Quad(0, -charAscent, tx, charHeight - charAscent);
+                        var quad = new Quad(0, -charAscent, tx, -charDescent);
                         quad.Transform(ref utm);
                         textScanner.ScanChar(textChar, quad);
 
@@ -283,6 +282,105 @@ namespace PdfClown.Documents.Contents.Objects
                     var tj = -pdfNumber.DoubleValue;
                     float tx = (float)(tj / 1000 * fontSize * horizontalScaling);
                     float ty = 0;
+
+                    //SKMatrix utm = uparameters.PostConcat(tm).PostConcat(ctm);
+
+                    //var quad = new Quad(0, -charAscent, tx, -charDescent);
+                    //quad.Transform(ref utm);
+                    //textScanner.ScanChar(' ', quad);
+
+                    tm = tm.PreConcat(SKMatrix.CreateTranslation(tx, ty));
+                }
+            }
+            return tm;
+        }
+
+        private SKMatrix DrawHorizontalCalcQuad(Font font, GraphicsState state, IScanner textScanner)
+        {
+            bool wordSpaceSupported = !(font is FontType0);
+
+            var fontSize = state.FontSize;
+            var horizontalScaling = state.Scale;
+            var wordSpace = wordSpaceSupported ? state.WordSpace : 0;
+            var charSpace = state.CharSpace;
+            var charAscent = font.Ascent;//.GetAscent(fontSize);
+            var charDescent = font.Descent;//.GetDescent(fontSize);
+            var ctm = state.Ctm;
+            var tm = state.TextState.Tm;
+            var canvas = state.Scanner.Canvas;
+
+            // put the text state parameters into matrix form
+            var parameters = new SKMatrix(
+                fontSize * horizontalScaling, 0f, 0f,
+                0f, fontSize, state.Rise,
+                0f, 0f, 1f).PreConcat(font.FontMatrix);
+            
+            var clip = state.GetClipPath();
+            using var fill = canvas != null && state.RenderModeFill ? state.CreateFillPaint() : null;
+            using var stroke = canvas != null && state.RenderModeStroke ? state.CreateStrokePaint() : null;
+
+            var buffer = new ByteStream(0);
+            foreach (var textElement in TextElements)
+            {
+                if (textElement is PdfString pdfString) // Text string.
+                {
+                    buffer.SetBuffer(pdfString.RawValue);
+                    while (buffer.Position < buffer.Length)
+                    {
+                        var code = font.ReadCode(buffer, out var codeBytes);
+                        var textCode = font.ToUnicode(code);
+                        if (textCode == null)
+                        {
+                            // Missing character.
+                            textCode = '?';// font.MissingCharacter(byteElement, code);
+                        }
+                        var textChar = (char)textCode;
+                        // Word spacing shall be applied to every occurrence of the single-byte character code
+                        // 32 in a string when using a simple font or a composite font that defines code 32 as
+                        // a single-byte code.
+                        var wordSpacing = codeBytes.Length == 1 && code == 32 ? wordSpace : 0F;
+
+                        //NOTE: The text rendering matrix is recomputed before each glyph is painted
+                        // during a text-showing operation.
+                        SKMatrix trm = parameters.PostConcat(tm).PostConcat(ctm);
+
+                        if (canvas != null && !(codeBytes.Length == 1 && textChar == ' '))
+                        {
+                            canvas.SetMatrix(trm);
+                            var path = font.DrawChar(canvas, fill, stroke, textChar, code);
+                            if (clip != null && path != null)
+                            {
+                                clip.AddPath(path, ref trm);
+                            }
+                        }
+
+                        var w = font.GetWidth(code);
+                        // NOTE: After the glyph is painted, the text matrix is updated
+                        // according to the glyph displacement and any applicable spacing parameter.
+                        // calculate the combined displacements
+                        float tx = (w * 0.001F * fontSize + charSpace + wordSpacing) * horizontalScaling;
+                        float ty = 0F;
+
+                        //Text Scanner
+                        var quad = new Quad(0, charDescent, w + charSpace, charAscent);
+                        quad.Transform(ref trm);
+                        textScanner.ScanChar(textChar, quad);
+
+                        tm = tm.PreConcat(SKMatrix.CreateTranslation(tx, ty));
+                    }
+                }
+                else if (textElement is IPdfNumber pdfNumber)
+                {
+                    // calculate the combined displacements
+                    var tj = -pdfNumber.FloatValue;
+                    float tx = tj / 1000F * fontSize * horizontalScaling;
+                    float ty = 0;
+
+                    SKMatrix trm = parameters.PostConcat(tm).PostConcat(ctm);
+
+                    var quad = new Quad(0, charDescent, tj, charAscent);
+                    quad.Transform(ref trm);
+                    textScanner.ScanChar(' ', quad);
 
                     tm = tm.PreConcat(SKMatrix.CreateTranslation(tx, ty));
                 }

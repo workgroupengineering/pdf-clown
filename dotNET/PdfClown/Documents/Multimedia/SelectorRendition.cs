@@ -23,20 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Selector rendition [PDF:1.7:9.1.2].</summary>
-    */
+    /// <summary>Selector rendition [PDF:1.7:9.1.2].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class SelectorRendition : Rendition
     {
@@ -47,10 +38,8 @@ namespace PdfClown.Documents.Multimedia
         internal SelectorRendition(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets an ordered collection of renditions. The first viable media rendition found
-          in the array, or nested within a selector rendition in the array, should be used.</summary>
-        */
+        /// <summary>Gets/Sets an ordered collection of renditions. The first viable media rendition found
+        /// in the array, or nested within a selector rendition in the array, should be used.</summary>
         public Renditions Renditions
         {
             get => Wrap<Renditions>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.R));

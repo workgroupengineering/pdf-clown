@@ -30,7 +30,7 @@ using System.Diagnostics;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    ///<summary>Simple font [PDF:1.6:5.5].</summary>
+    /// <summary>Simple font [PDF:1.6:5.5].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class FontSimple : Font
     {

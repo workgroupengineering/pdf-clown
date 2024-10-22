@@ -27,6 +27,7 @@ using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Documents.Contents.Fonts.TTF.Model;
 using PdfClown.Objects;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -280,7 +281,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         protected override SKMatrix GenerateFontMatrix() => DescendantFont.FontMatrix;
 
-        protected override SKRect GenerateBoundingBox() => DescendantFont.BoundingBox;
+        protected override SKRect GenerateBBox() => DescendantFont.FontBBox;
 
         public override float GetHeight(int code)
         {
@@ -544,17 +545,5 @@ namespace PdfClown.Documents.Contents.Fonts
             get => cmapLookup;
         }
     }
-
-    public static class SKPointExtendion
-    {
-        public static SKPoint Scale(this SKPoint point, float scale)
-        {
-            return point.Scale(scale, scale);
-        }
-
-        public static SKPoint Scale(this SKPoint point, float scaleX, float scaleY)
-        {
-            return new SKPoint(point.X * scaleX, point.Y * scaleY);
-        }
-    }
+    
 }

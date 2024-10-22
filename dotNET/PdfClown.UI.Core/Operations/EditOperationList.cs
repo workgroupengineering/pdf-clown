@@ -12,7 +12,7 @@ namespace PdfClown.UI.Operations
 {
     public class EditOperationList : IEnumerable<EditOperation>
     {
-        private LinkedList<EditOperation> operations = new LinkedList<EditOperation>();
+        private LinkedList<EditOperation> operations = new();
         private LinkedListNode<EditOperation> lastLink;
         private OperationType currentType;
         private Markup selectedMarkup;
@@ -61,7 +61,6 @@ namespace PdfClown.UI.Operations
                 if (selectedPoint != value)
                 {
                     selectedPoint = value;
-                    Viewer.SelectedPoint = value;
                     if (selectedPoint != null)
                     {
                         SelectedAnnotation = selectedPoint.Annotation;
@@ -82,7 +81,6 @@ namespace PdfClown.UI.Operations
                 if (hoverPoint != value)
                 {
                     hoverPoint = value;
-                    Viewer.HoverPoint = value;
                     if (hoverPoint != null)
                     {
                         Viewer.Cursor = CursorType.Cross;
@@ -103,7 +101,6 @@ namespace PdfClown.UI.Operations
                 if (hoverAnnotation != value)
                 {
                     hoverAnnotation = value;
-                    Viewer.HoverAnnotation = hoverAnnotation;
                     Viewer.InvalidatePaint();
                 }
             }
@@ -118,7 +115,7 @@ namespace PdfClown.UI.Operations
                 {
                     var oldValue = selectedAnnotation;
                     selectedAnnotation = value;
-                    Viewer.SelectedPoint = null;
+                    SelectedPoint = null;                    
                     SelectedMarkup = value as Markup;
                     Current = OperationType.None;
                     if (oldValue != null)
@@ -142,6 +139,7 @@ namespace PdfClown.UI.Operations
                             }
                         }
                     }
+                    SelectedAnnotationChanged?.Invoke(new PdfAnnotationEventArgs(value));
                     Viewer.InvalidatePaint();
                 }
             }
@@ -176,7 +174,6 @@ namespace PdfClown.UI.Operations
                     {
                         oldValue.AnnotationAdded -= OnDocumentAnnotationAdded;
                         oldValue.AnnotationRemoved -= OnDocumentAnnotationRemoved;
-                        oldValue.EndOperation -= OnDocumentEndOperation;
                     }
                     SelectedAnnotation = null;
                     SelectedPoint = null;
@@ -186,42 +183,37 @@ namespace PdfClown.UI.Operations
                     {
                         document.AnnotationAdded += OnDocumentAnnotationAdded;
                         document.AnnotationRemoved += OnDocumentAnnotationRemoved;
-                        document.EndOperation += OnDocumentEndOperation;
                     }
                 }
             }
         }
 
+        public event EventHandler<DetailedPropertyChangedEventArgs> AnnotationPropertyChanged;
 
-        public event EventHandler<AnnotationEventArgs> AnnotationAdded;
+        public event PdfAnnotationEventHandler AnnotationAdded;
 
-        public event EventHandler<AnnotationEventArgs> AnnotationRemoved;
+        public event PdfAnnotationEventHandler AnnotationRemoved;
+
+        public event PdfAnnotationEventHandler SelectedAnnotationChanged;
 
         public event EventHandler Changed;
 
-        public event EventHandler<AnnotationEventArgs> CheckCanRemove;
+        public event PdfAnnotationEventHandler CheckCanRemove;
 
-        public event EventHandler<EventArgs> DragComplete;
+        public event OperationEventHandler FinishOperation;
 
-        public event EventHandler<EventArgs> SizeComplete;
-
-        private void OnDocumentAnnotationAdded(object sender, AnnotationEventArgs e)
+        private void OnDocumentAnnotationAdded(PdfAnnotationEventArgs e)
         {
-            AnnotationAdded?.Invoke(this, e);
+            AnnotationAdded?.Invoke(e);
             Viewer.InvalidatePaint();
         }
 
-        private void OnDocumentAnnotationRemoved(object sender, AnnotationEventArgs e)
+        private void OnDocumentAnnotationRemoved(PdfAnnotationEventArgs e)
         {
             if (e.Annotation == SelectedAnnotation)
-                Viewer.SelectedAnnotation = null;
-            AnnotationRemoved?.Invoke(this, e);
+                SelectedAnnotation = null;
+            AnnotationRemoved?.Invoke(e);
             Viewer.InvalidatePaint();
-        }
-
-        private void OnDocumentEndOperation(object sender, EventArgs e)
-        {
-            OnChanged();
         }
 
         private void SuspendAnnotationPropertyHandler(Annotation annotation)
@@ -251,12 +243,12 @@ namespace PdfClown.UI.Operations
             {
                 handlePropertyChanged = true;
             }
-        }
+        }        
 
         public void CloseVertextShape(VertexShape vertexShape)
         {
             vertexShape.QueueRefreshAppearance();
-            Viewer.SelectedPoint = null;
+            SelectedPoint = null;
             Current = OperationType.None;
         }
 
@@ -266,7 +258,7 @@ namespace PdfClown.UI.Operations
                 return;
 
             var annotation = (Annotation)sender;
-            if (!string.Equals(e.PropertyName, nameof(SelectedAnnotation.ModificationDate), StringComparison.Ordinal))
+            if (!string.Equals(e.PropertyName, nameof(Markup.ModificationDate), StringComparison.Ordinal))
             {
                 UpdateModificationDate(annotation);
             }
@@ -274,18 +266,18 @@ namespace PdfClown.UI.Operations
             var invoker = Invoker.GetPropertyInvoker(annotation.GetType(), e.PropertyName);
             switch (e.PropertyName)
             {
-                case nameof(SelectedAnnotation.SKColor):
+                case nameof(Markup.SKColor):
                     var colorDetails = (DetailedPropertyChangedEventArgs<SKColor>)details;
                     BeginOperation(annotation, OperationType.AnnotationProperty, invoker, colorDetails.OldValue, colorDetails.NewValue);
                     break;
-                case nameof(SelectedAnnotation.Contents):
-                case nameof(SelectedAnnotation.Subject):
+                case nameof(Markup.Contents):
+                case nameof(Markup.Subject):
                 case nameof(Markup.RichContents):
                 case nameof(Markup.DefaultStyle):
                     var stringDetails = (DetailedPropertyChangedEventArgs<string>)details;
                     BeginOperation(annotation, OperationType.AnnotationProperty, invoker, stringDetails.OldValue, stringDetails.NewValue);
                     break;
-                case nameof(SelectedAnnotation.Border):
+                case nameof(Markup.Border):
                     var borderDetails = (DetailedPropertyChangedEventArgs<Border>)details;
                     BeginOperation(annotation, OperationType.AnnotationProperty, invoker, borderDetails.OldValue, borderDetails.NewValue);
                     break;
@@ -311,6 +303,7 @@ namespace PdfClown.UI.Operations
                     BeginOperation(annotation, OperationType.AnnotationProperty, invoker, lineEndDetails.OldValue, lineEndDetails.NewValue);
                     break;
             }
+            AnnotationPropertyChanged?.Invoke(annotation, details);
             Viewer.InvalidatePaint();
         }
 
@@ -322,19 +315,8 @@ namespace PdfClown.UI.Operations
                 lastLink = lastLink.Previous;
                 try
                 {
-                    handlePropertyChanged = false;
-                    var annotationOperation = operation as AnnotationOperation;
-                    if (annotationOperation != null
-                        && (annotationOperation.Annotation.Page?.Annotations.Contains(annotationOperation.Annotation) ?? false))
-                    {
-                        Viewer.SelectedAnnotation = annotationOperation.Annotation;
-                    }
-                    operation.Undo();
-                    if (annotationOperation != null
-                        && (annotationOperation.Annotation.Page?.Annotations.Contains(annotationOperation.Annotation) ?? false))
-                    {
-                        Viewer.SelectedAnnotation = annotationOperation.Annotation;
-                    }
+                    handlePropertyChanged = false;                    
+                    operation.Undo();                    
                 }
                 finally
                 {
@@ -356,19 +338,8 @@ namespace PdfClown.UI.Operations
                 var operation = lastLink.Value;
                 try
                 {
-                    handlePropertyChanged = false;
-                    var annotationOperation = operation as AnnotationOperation;
-                    if (annotationOperation != null
-                        && (annotationOperation.Annotation.Page?.Annotations.Contains(annotationOperation.Annotation) ?? false))
-                    {
-                        Viewer.SelectedAnnotation = annotationOperation.Annotation;
-                    }
-                    operation.Redo();
-                    if (annotationOperation != null
-                        && (annotationOperation.Annotation.Page?.Annotations.Contains(annotationOperation.Annotation) ?? false))
-                    {
-                        Viewer.SelectedAnnotation = annotationOperation.Annotation;
-                    }
+                    handlePropertyChanged = false;                    
+                    operation.Redo();                    
                 }
                 finally
                 {
@@ -406,7 +377,7 @@ namespace PdfClown.UI.Operations
         {
             operations.Clear();
             lastLink = null;
-            Viewer.SelectedAnnotation = null;
+            SelectedAnnotation = null;
             OnChanged();
         }
 
@@ -431,15 +402,15 @@ namespace PdfClown.UI.Operations
             var operation = BeginOperation(annotation, OperationType.AnnotationRemove);
             if (annotation == SelectedAnnotation)
             {
-                Viewer.SelectedAnnotation = null;
+                SelectedAnnotation = null;
             }
 
             var list = operation.EndOperation() as List<Annotation>;
 
             if (list.Contains(SelectedAnnotation))
-                Viewer.SelectedAnnotation = null;
+                SelectedAnnotation = null;
 
-            AnnotationRemoved?.Invoke(this, new AnnotationEventArgs(annotation));
+            AnnotationRemoved?.Invoke(new PdfAnnotationEventArgs(annotation));
             Viewer.InvalidatePaint();
             return list;
         }
@@ -448,17 +419,24 @@ namespace PdfClown.UI.Operations
         {
             if (CheckCanRemove != null)
             {
-                var args = new AnnotationEventArgs(annotation);
-                CheckCanRemove(this, args);
+                var args = new PdfAnnotationEventArgs(annotation);
+                CheckCanRemove(args);
                 return !args.Cancel;
             }
             return true;
+        }
+
+        public void OnEndOperation(EditOperation operation, object result)
+        {
+            FinishOperation?.Invoke(new OperationEventArgs(operation, result));
+            OnChanged();
         }
 
         public AnnotationOperation BeginOperation(Annotation annotation, OperationType type, object property = null, object begin = null, object end = null)
         {
             var operation = new AnnotationOperation
             {
+                OperationList = this,
                 Document = Viewer.Document.GetDocumentView(annotation.Document),
                 Annotation = annotation,
                 Type = type,
@@ -508,36 +486,29 @@ namespace PdfClown.UI.Operations
 
         private void OnCurrentOperationChanged(OperationType oldValue, OperationType newValue)
         {
-            var selectedAnnotation = Viewer.SelectedAnnotation;
+            var selectedAnnotation = SelectedAnnotation;
+            var lastOperation = lastLink?.Value;
             if (selectedAnnotation != null
-                && lastLink?.Value is AnnotationOperation annotationOperation
+                && lastOperation is AnnotationOperation annotationOperation
                 && annotationOperation.Annotation == selectedAnnotation)
             {
                 switch (oldValue)
                 {
                     case OperationType.AnnotationAdd:
-                        lastLink.Value.EndOperation();
+                        lastOperation.EndOperation();
                         break;
                     case OperationType.AnnotationDrag:
-                        lastLink.Value.EndOperation();
+                        lastOperation.EndOperation();
                         break;
                     case OperationType.AnnotationSize:
-                        lastLink.Value.EndOperation();
+                        lastOperation.EndOperation();
                         break;
                     case OperationType.PointMove:
                     case OperationType.PointAdd:
                     case OperationType.PointRemove:
-                        lastLink.Value.EndOperation();
+                        lastOperation.EndOperation();
                         break;
                 }
-            }
-            if (oldValue == OperationType.AnnotationDrag)
-            {
-                DragComplete?.Invoke(this, new AnnotationEventArgs(selectedAnnotation));
-            }
-            if (oldValue == OperationType.AnnotationSize)
-            {
-                SizeComplete?.Invoke(this, new AnnotationEventArgs(selectedAnnotation));
             }
             if (newValue != OperationType.None)
             {
@@ -565,11 +536,11 @@ namespace PdfClown.UI.Operations
                 case OperationType.PointMove:
                 case OperationType.PointAdd:
                 case OperationType.PointRemove:
-                    if (Viewer.SelectedPoint == null)
+                    if (SelectedPoint == null)
                     {
                         throw new InvalidOperationException("SelectedPoint is not specified!");
                     }
-                    BeginOperation(selectedAnnotation, newValue, Viewer.SelectedPoint);
+                    BeginOperation(selectedAnnotation, newValue, SelectedPoint);
                     Viewer.Cursor = CursorType.Cross;
                     break;
                 case OperationType.None:
@@ -584,13 +555,13 @@ namespace PdfClown.UI.Operations
             {
                 if (!Viewer.IsReadOnly)
                 {
-                    if (Viewer.SelectedPoint is IndexControlPoint indexControlPoint)
+                    if (SelectedPoint is IndexControlPoint indexControlPoint)
                     {
                         BeginOperation(indexControlPoint.Annotation, OperationType.PointRemove, indexControlPoint, indexControlPoint.MappedPoint, indexControlPoint.MappedPoint);
                         ((VertexShape)indexControlPoint.Annotation).RemovePoint(indexControlPoint.Index);
                         return true;
                     }
-                    else if (Viewer.SelectedAnnotation is Annotation annotation)
+                    else if (SelectedAnnotation is Annotation annotation)
                     {
                         RemoveAnnotation(annotation);
                         return true;
@@ -599,9 +570,9 @@ namespace PdfClown.UI.Operations
             }
             else if (string.Equals(keyName, "Escape", StringComparison.OrdinalIgnoreCase))
             {
-                if (Viewer.SelectedPoint != null
-                    && Viewer.SelectedAnnotation is VertexShape vertexShape
-                    && Viewer.Operations.Current == OperationType.PointAdd)
+                if (SelectedPoint != null
+                    && SelectedAnnotation is VertexShape vertexShape
+                    && Current == OperationType.PointAdd)
                 {
                     CloseVertextShape(vertexShape);
                     return true;

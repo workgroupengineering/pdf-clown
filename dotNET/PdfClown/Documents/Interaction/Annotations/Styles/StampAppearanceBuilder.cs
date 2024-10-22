@@ -23,20 +23,17 @@
   this list of conditions.
 */
 
-using colors = PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
-using fonts = PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Objects;
 
 using SkiaSharp;
 
 namespace PdfClown.Documents.Interaction.Annotations.styles
 {
-    /**
-      <summary>Appearance builder for rubber stamp annotations.</summary>
-      <seealso cref="PdfClown.Documents.Interaction.Annotations.Stamp"/>
-    */
+    /// <summary>Appearance builder for rubber stamp annotations.</summary>
+    /// <seealso cref="Stamp"/>
     public class StampAppearanceBuilder
     {
         public enum TypeEnum
@@ -48,20 +45,20 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
 
         private static readonly Length DefaultBorderRadius = new Length(.05, Length.UnitModeEnum.Relative);
         private static readonly Length DefaultBorderWidth = new Length(.025, Length.UnitModeEnum.Relative);
-        private static readonly colors::Color DefaultColor = colors::DeviceRGBColor.Get(SKColors.Red);
+        private static readonly Color DefaultColor = DeviceRGBColor.Get(SKColors.Red);
 
         private bool borderDoubled = true;
         private Length borderRadius = DefaultBorderRadius;
         private Length borderWidth = DefaultBorderWidth;
-        private colors::Color color = DefaultColor;
-        private fonts::Font font;
+        private Color color = DefaultColor;
+        private Font font;
         private string text;
         private TypeEnum type;
         private float width;
 
         private PdfDocument document;
 
-        public StampAppearanceBuilder(PdfDocument document, TypeEnum type, string text, float width, fonts::Font font)
+        public StampAppearanceBuilder(PdfDocument document, TypeEnum type, string text, float width, Font font)
         {
             this.document = document;
             this.type = type;
@@ -143,12 +140,12 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
             return appearance;
         }
 
-        public colors::Color Color
+        public Color Color
         {
             set => color = value;
         }
 
-        public fonts::Font Font
+        public Font Font
         {
             set => font = value;
         }

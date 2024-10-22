@@ -27,7 +27,6 @@ using PdfClown.Bytes;
 using PdfClown.Objects;
 using System;
 using System.IO;
-using io = System.IO;
 
 namespace PdfClown.Documents.Files
 {
@@ -98,11 +97,11 @@ namespace PdfClown.Documents.Files
         public string GetAbsolutePath()
         {
             string path = Path;
-            if (!io::Path.IsPathRooted(path)) // Path needs to be resolved.
+            if (!System.IO.Path.IsPathRooted(path)) // Path needs to be resolved.
             {
                 string basePath = Document.File.Path;
                 if (basePath != null)
-                { path = io::Path.Combine(io::Path.GetDirectoryName(basePath), path); }
+                { path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(basePath), path); }
             }
             return path;
         }

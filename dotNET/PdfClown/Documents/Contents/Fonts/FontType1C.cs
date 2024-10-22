@@ -17,7 +17,6 @@
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.CCF;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -179,21 +178,13 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             else
             {
-                return base.FontMatrix;
+                return DefaultFontMatrix;
             }
         }
 
-        protected override SKRect GenerateBoundingBox()
+        protected override SKRect GenerateBBox()
         {
-            if (FontDescriptor != null)
-            {
-                var bbox = FontDescriptor.FontBBox;
-                if (IsNonZeroBoundingBox(bbox))
-                {
-                    return bbox.ToSKRect();
-                }
-            }
-            return genericFont.FontBBox;
+            return GetDefaultBBox() ?? genericFont.FontBBox;
         }
 
         public override SKPath GetPath(string name)

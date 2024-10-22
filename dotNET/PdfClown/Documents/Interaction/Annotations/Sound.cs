@@ -28,7 +28,6 @@ using PdfClown.Objects;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using multimedia = PdfClown.Documents.Multimedia;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -74,7 +73,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultIconType;
         }
 
-        public Sound(PdfPage page, SKRect box, string text, multimedia::Sound content)
+        public Sound(PdfPage page, SKRect box, string text, Multimedia.Sound content)
             : base(page, PdfName.Sound, box, text)
         { Content = content; }
 
@@ -83,9 +82,9 @@ namespace PdfClown.Documents.Interaction.Annotations
         { }
 
         /// <summary>Gets/Sets the sound to be played.</summary>
-        public multimedia.Sound Content
+        public Multimedia.Sound Content
         {
-            get => Wrap<multimedia.Sound>(BaseDataObject[PdfName.Sound]);
+            get => Wrap<Multimedia.Sound>(BaseDataObject[PdfName.Sound]);
             set
             {
                 if (value == null)

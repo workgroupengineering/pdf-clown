@@ -24,32 +24,24 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
-using System.Collections.Generic;
-using io = System.IO;
-using System.Text;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>PDF file writer.</summary>
-    */
+    /// <summary>PDF file writer.</summary>
     public abstract class Writer
     {
-        private static readonly byte[] BOFChunk = Encoding.Pdf.Encode(Keyword.BOF);
-        private static readonly byte[] EOFChunk = Encoding.Pdf.Encode(Symbol.LineFeed + Keyword.EOF + Symbol.CarriageReturn + Symbol.LineFeed);
+        private static readonly byte[] BOFChunk = BaseEncoding.Pdf.Encode(Keyword.BOF);
+        private static readonly byte[] EOFChunk = BaseEncoding.Pdf.Encode(Symbol.LineFeed + Keyword.EOF + Symbol.CarriageReturn + Symbol.LineFeed);
         private static readonly byte[] HeaderBinaryHintChunk = new byte[] { (byte)Symbol.LineFeed, (byte)Symbol.Percent, (byte)0x80, (byte)0x80, (byte)0x80, (byte)0x80, (byte)Symbol.LineFeed }; // NOTE: Arbitrary binary characters (code >= 128) for ensuring proper behavior of file transfer applications [PDF:1.6:3.4.1].
-        private static readonly byte[] StartXRefChunk = Encoding.Pdf.Encode(Keyword.StartXRef + Symbol.LineFeed);
+        private static readonly byte[] StartXRefChunk = BaseEncoding.Pdf.Encode(Keyword.StartXRef + Symbol.LineFeed);
 
-        /**
-          <summary>Gets a new writer instance for the specified file.</summary>
-          <param name="file">File to serialize.</param>
-          <param name="stream">Target stream.</param>
-        */
+        /// <summary>Gets a new writer instance for the specified file.</summary>
+        /// <param name="file">File to serialize.</param>
+        /// <param name="stream">Target stream.</param>
         public static Writer Get(PdfFile file, IOutputStream stream)
         {
             // Which cross-reference table mode?
@@ -73,20 +65,14 @@ namespace PdfClown.Tokens
             this.stream = stream;
         }
 
-        /**
-          <summary>Gets the file to serialize.</summary>
-        */
+        /// <summary>Gets the file to serialize.</summary>
         public PdfFile File => file;
 
-        /**
-          <summary>Gets the target stream.</summary>
-        */
+        /// <summary>Gets the target stream.</summary>
         public IOutputStream Stream => stream;
 
-        /**
-          <summary>Serializes the <see cref="File">file</see> to the <see cref="Stream">target stream</see>.</summary>
-          <param name="mode">Serialization mode.</param>
-         */
+        /// <summary>Serializes the <see cref="File">file</see> to the <see cref="Stream">target stream</see>.</summary>
+        /// <param name="mode">Serialization mode.</param>
         public void Write(SerializationModeEnum mode)
         {
             switch (mode)
@@ -106,10 +92,8 @@ namespace PdfClown.Tokens
             }
         }
 
-        /**
-          <summary>Updates the specified trailer.</summary>
-          <remarks>This method has to be called just before serializing the trailer object.</remarks>
-        */
+        /// <summary>Updates the specified trailer.</summary>
+        /// <remarks>This method has to be called just before serializing the trailer object.</remarks>
         protected void UpdateTrailer(PdfDictionary trailer, IOutputStream stream)
         {
             // File identifier update.
@@ -119,9 +103,7 @@ namespace PdfClown.Tokens
             identifier.Update(this);
         }
 
-        /**
-          <summary>Serializes the beginning of the file [PDF:1.6:3.4.1].</summary>
-        */
+        /// <summary>Serializes the beginning of the file [PDF:1.6:3.4.1].</summary>
         protected void WriteHeader()
         {
             stream.Write(BOFChunk);
@@ -129,26 +111,18 @@ namespace PdfClown.Tokens
             stream.Write(HeaderBinaryHintChunk);
         }
 
-        /**
-          <summary>Serializes the PDF file as incremental update [PDF:1.6:3.4.5].</summary>
-        */
+        /// <summary>Serializes the PDF file as incremental update [PDF:1.6:3.4.5].</summary>
         protected abstract void WriteIncremental();
 
-        /**
-          <summary>Serializes the PDF file linearized [PDF:1.6:F].</summary>
-        */
+        /// <summary>Serializes the PDF file linearized [PDF:1.6:F].</summary>
         protected abstract void WriteLinearized();
 
-        /**
-          <summary>Serializes the PDF file compactly [PDF:1.6:3.4].</summary>
-        */
+        /// <summary>Serializes the PDF file compactly [PDF:1.6:3.4].</summary>
         protected abstract void WriteStandard();
 
-        /**
-          <summary>Serializes the end of the file [PDF:1.6:3.4.4].</summary>
-          <param name="startxref">Byte offset from the beginning of the file to the beginning
-            of the last cross-reference section.</param>
-        */
+        /// <summary>Serializes the end of the file [PDF:1.6:3.4.4].</summary>
+        /// <param name="startxref">Byte offset from the beginning of the file to the beginning
+        ///  of the last cross-reference section.</param>
         protected void WriteTail(long startxref)
         {
             stream.Write(StartXRefChunk);

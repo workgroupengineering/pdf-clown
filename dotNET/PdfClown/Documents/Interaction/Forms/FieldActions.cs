@@ -23,19 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Actions;
-using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
-
-using system = System;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Form field actions [PDF:1.6:8.5.2].</summary>
-    */
+    /// <summary>Form field actions [PDF:1.6:8.5.2].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class FieldActions : PdfObjectWrapper<PdfDictionary>
     {
@@ -45,41 +38,33 @@ namespace PdfClown.Documents.Interaction.Forms
         public FieldActions(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets a JavaScript action to be performed to recalculate the value
-          of this field when that of another field changes.</summary>
-        */
+        /// <summary>Gets/Sets a JavaScript action to be performed to recalculate the value
+        /// of this field when that of another field changes.</summary>
         public JavaScript OnCalculate
         {
             get => (JavaScript)Action.Wrap(BaseDataObject[PdfName.C]);
             set => BaseDataObject[PdfName.C] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets a JavaScript action to be performed when the user types a keystroke
-          into a text field or combo box or modifies the selection in a scrollable list box.</summary>
-        */
+        /// <summary>Gets/Sets a JavaScript action to be performed when the user types a keystroke
+        /// into a text field or combo box or modifies the selection in a scrollable list box.</summary>
         public JavaScript OnChange
         {
             get => (JavaScript)Action.Wrap(BaseDataObject[PdfName.K]);
             set => BaseDataObject[PdfName.K] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets a JavaScript action to be performed before the field is formatted
-          to display its current value.</summary>
-          <remarks>This action can modify the field's value before formatting.</remarks>
-        */
+        /// <summary>Gets/Sets a JavaScript action to be performed before the field is formatted
+        /// to display its current value.</summary>
+        /// <remarks>This action can modify the field's value before formatting.</remarks>
         public JavaScript OnFormat
         {
             get => (JavaScript)Action.Wrap(BaseDataObject[PdfName.F]);
             set => BaseDataObject[PdfName.F] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets a JavaScript action to be performed when the field's value is changed.</summary>
-          <remarks>This action can check the new value for validity.</remarks>
-        */
+        /// <summary>Gets/Sets a JavaScript action to be performed when the field's value is changed.</summary>
+        /// <remarks>This action can check the new value for validity.</remarks>
         public JavaScript OnValidate
         {
             get => (JavaScript)Action.Wrap(BaseDataObject[PdfName.V]);

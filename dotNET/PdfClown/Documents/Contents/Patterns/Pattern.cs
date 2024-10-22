@@ -26,7 +26,7 @@
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Files;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;

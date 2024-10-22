@@ -1,7 +1,7 @@
 ﻿using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.UI.Operations;
+using PdfClown.UI.Text;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
@@ -22,16 +22,6 @@ namespace PdfClown.UI
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnScaleContentChanged((float)oldValue, (float)newValue));
         public static readonly BindableProperty ShowMarkupProperty = BindableProperty.Create(nameof(ShowMarkup), typeof(bool), typeof(PdfView), true,
             propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnShowMarkupChanged((bool)oldValue, (bool)newValue));
-        public static readonly BindableProperty HoverAnnotationProperty = BindableProperty.Create(nameof(HoverAnnotation), typeof(Annotation), typeof(PdfView), null,
-            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnHoverAnnotationChanged((Annotation)oldValue, (Annotation)newValue));
-        public static readonly BindableProperty SelectedAnnotationProperty = BindableProperty.Create(nameof(SelectedAnnotation), typeof(Annotation), typeof(PdfView), null,
-            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnSelectedAnnotationChanged((Annotation)oldValue, (Annotation)newValue));
-        public static readonly BindableProperty SelectedMarkupProperty = BindableProperty.Create(nameof(SelectedMarkup), typeof(Markup), typeof(PdfView), null,
-            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnSelectedMarkupChanged((Markup)oldValue, (Markup)newValue));
-        public static readonly BindableProperty SelectedPointProperty = BindableProperty.Create(nameof(SelectedPoint), typeof(ControlPoint), typeof(PdfView), null,
-            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnSelectedPointChanged((ControlPoint)oldValue, (ControlPoint)newValue));
-        public static readonly BindableProperty HoverPointProperty = BindableProperty.Create(nameof(HoverPoint), typeof(ControlPoint), typeof(PdfView), null,
-           propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnHoverPointChanged((ControlPoint)oldValue, (ControlPoint)newValue));
         public static readonly BindableProperty IsReadOnlyProperty = BindableProperty.Create(nameof(IsReadOnly), typeof(bool), typeof(PdfView), false,
            propertyChanged: (bindable, oldValue, newValue) => ((PdfView)bindable).OnIsReadOnlyChanged((bool)oldValue, (bool)newValue));
         public static readonly BindableProperty ShowCharBoundProperty = BindableProperty.Create(nameof(ShowCharBound), typeof(bool), typeof(PdfView), false,
@@ -40,7 +30,6 @@ namespace PdfClown.UI
         internal readonly SKPaint paintPageBackground = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White };
 
         private readonly PdfViewState state;
-        private ControlPoint selectedPoint;
 
         private bool showCharBound;
 
@@ -78,41 +67,13 @@ namespace PdfClown.UI
             set => SetValue(ScaleContentProperty, value);
         }
 
+        public bool ScrollByPointer { get; set; }
+
         public bool ShowMarkup
         {
             get => (bool)GetValue(ShowMarkupProperty);
             set => SetValue(ShowMarkupProperty, value);
-        }
-
-        public Annotation SelectedAnnotation
-        {
-            get => (Annotation)GetValue(SelectedAnnotationProperty);
-            set => SetValue(SelectedAnnotationProperty, value);
-        }
-
-        public Annotation HoverAnnotation
-        {
-            get => (Annotation)GetValue(HoverAnnotationProperty);
-            set => SetValue(HoverAnnotationProperty, value);
-        }
-
-        public Markup SelectedMarkup
-        {
-            get => (Markup)GetValue(SelectedMarkupProperty);
-            set => SetValue(SelectedMarkupProperty, value);
-        }
-
-        public ControlPoint SelectedPoint
-        {
-            get => (ControlPoint)GetValue(SelectedPointProperty);
-            set => SetValue(SelectedPointProperty, value);
-        }
-
-        public ControlPoint HoverPoint
-        {
-            get => (ControlPoint)GetValue(HoverPointProperty);
-            set => SetValue(HoverPointProperty, value);
-        }
+        }        
 
         public bool IsReadOnly
         {
@@ -134,7 +95,7 @@ namespace PdfClown.UI
                 if (state.Document != value)
                 {
                     state.Document = value;
-                    DocumentChanged?.Invoke(this, EventArgs.Empty);
+                    DocumentChanged?.Invoke(new PdfDocumentEventArgs(value));
                 }
             }
         }
@@ -224,9 +185,9 @@ namespace PdfClown.UI
 
         public ICommand UndoCommand { get; set; }
 
-        public event EventHandler<AnnotationEventArgs> SelectedAnnotationChanged;
+        public event PdfAnnotationEventHandler SelectedAnnotationChanged;
 
-        public event EventHandler<EventArgs> DocumentChanged;
+        public event PdfDocumentEventHandler DocumentChanged;
 
         public void NextPage() => PageNumberWithScroll += 1;
 
@@ -254,32 +215,6 @@ namespace PdfClown.UI
         private void OnShowMarkupChanged(bool oldValue, bool newValue)
         {
             InvalidatePaint();
-        }
-
-        private void OnHoverAnnotationChanged(Annotation oldValue, Annotation newValue)
-        {
-            Operations.HoverAnnotation = newValue;
-        }
-
-        private void OnSelectedAnnotationChanged(Annotation oldValue, Annotation newValue)
-        {
-            Operations.SelectedAnnotation = newValue;
-            SelectedAnnotationChanged?.Invoke(this, new AnnotationEventArgs(newValue));
-        }
-
-        private void OnSelectedMarkupChanged(Markup oldValue, Markup newValue)
-        {
-            Operations.SelectedMarkup = newValue;
-        }
-
-        private void OnSelectedPointChanged(ControlPoint oldValue, ControlPoint newValue)
-        {
-            Operations.SelectedPoint = newValue;
-        }
-
-        private void OnHoverPointChanged(ControlPoint oldValue, ControlPoint newValue)
-        {
-            Operations.HoverPoint = newValue;
         }
 
         private void OnShowCharBoundChanged(bool oldValue, bool newValue)
@@ -329,7 +264,7 @@ namespace PdfClown.UI
             return base.OnKeyDown(keyName, modifiers);
         }
 
-        private void OnTextSelectionChanged(object sender, EventArgs args)
+        private void OnTextSelectionChanged(TextSelectionEventArgs args)
         {
             InvalidatePaint();
         }
@@ -344,8 +279,10 @@ namespace PdfClown.UI
         protected override void OnTouch(SKTouchEventArgs e)
         {
             base.OnTouch(new SKTouchEventArgs(e.Id, e.ActionType, e.MouseButton, e.DeviceType,
-                new SkiaSharp.SKPoint(e.Location.X / state.XScaleFactor, e.Location.Y / state.YScaleFactor),
+                new SKPoint(e.Location.X / state.XScaleFactor, e.Location.Y / state.YScaleFactor),
                 e.InContact));
+            if (e.Handled)
+                return;
             state.OnTouch((TouchAction)(int)e.ActionType, (MouseButton)(int)e.MouseButton, e.Location);
         }
 

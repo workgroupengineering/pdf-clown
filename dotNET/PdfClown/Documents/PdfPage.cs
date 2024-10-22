@@ -33,7 +33,7 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;

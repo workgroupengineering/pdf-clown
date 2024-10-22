@@ -23,12 +23,8 @@
   this list of conditions.
 */
 
-using bytes = PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Objects;
-
-using System;
 using PdfClown.Bytes;
+using PdfClown.Objects;
 
 namespace PdfClown.Documents.Interaction.Actions
 {

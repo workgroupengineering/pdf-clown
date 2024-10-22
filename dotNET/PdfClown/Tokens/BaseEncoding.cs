@@ -24,16 +24,13 @@
 */
 
 using System;
-using text = System.Text;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>Abstract encoding.</summary>
-    */
-    public abstract class Encoding
+    /// <summary>Abstract encoding.</summary>
+    public abstract class BaseEncoding
     {
-        public static readonly Encoding Pdf = new PdfEncoding();
+        public static readonly BaseEncoding Pdf = new PdfEncoding();
 
         public abstract string Decode(byte[] value);
 

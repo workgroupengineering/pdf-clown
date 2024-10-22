@@ -26,7 +26,7 @@
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Tokens;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System.Collections.Generic;
 
@@ -39,11 +39,11 @@ namespace PdfClown.Documents.Contents.Objects
         public static readonly string BeginOperatorKeyword = BeginText.OperatorKeyword;
         public static readonly string EndOperatorKeyword = EndText.OperatorKeyword;
 
-        private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
-        private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
+        private static readonly byte[] BeginChunk = BaseEncoding.Pdf.Encode(BeginOperatorKeyword + Symbol.LineFeed);
+        private static readonly byte[] EndChunk = BaseEncoding.Pdf.Encode(EndOperatorKeyword + Symbol.LineFeed);
         private List<ITextString> textStrings;
         private string text;
-        private Quad? quad;
+        private SKRect? quad;
 
         public GraphicsText()
         { }
@@ -51,21 +51,21 @@ namespace PdfClown.Documents.Contents.Objects
         public GraphicsText(IList<ContentObject> objects) : base(objects)
         { }
 
-        public Quad Quad
+        public SKRect Box
         {
             get
             {
                 if (quad == null)
                 {
-                    var result = new Quad();
+                    var result = new SKRect();
                     foreach (var textString in textStrings)
                     {
                         if (textString.Quad.IsEmpty)
                             continue;
                         if (result.IsEmpty)
-                        { result = textString.Quad; }
+                        { result = textString.Quad.GetBounds(); }
                         else
-                        { result.Union(textString.Quad); }
+                        { result.Add(textString.Quad); }
                     }
                     quad = result;
                 }
@@ -92,6 +92,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         /// <summary>Gets the text strings.</summary>
         public List<ITextString> Strings => textStrings;
+
+        public void Add(ITextString textString) => textStrings.Add(textString);
 
         public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
@@ -122,7 +124,7 @@ namespace PdfClown.Documents.Contents.Objects
             {
                 Scan(state);
             }
-            return Quad.GetBounds();
+            return Box;
         }
 
     }

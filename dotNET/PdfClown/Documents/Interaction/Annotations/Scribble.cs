@@ -28,7 +28,7 @@ using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System.Collections.Generic;
 using System.Linq;

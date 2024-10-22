@@ -3,7 +3,6 @@ using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Tools;
 using PdfClown.Util.Math;
-using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections;

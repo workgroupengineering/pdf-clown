@@ -26,7 +26,7 @@
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -58,13 +58,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Stamp(PdfPage page, SKPoint location, SKSize? size, string text, StandardStampEnum type)
             : base(page,
                   PdfName.Stamp,
-                  GeomUtils.Align(size.HasValue
+                  (size.HasValue
                       ? SKRect.Create(0, 0,
                           size.Value.Width > 0 ? size.Value.Width : size.Value.Height * type.GetAspect(),
                           size.Value.Height > 0 ? size.Value.Height : size.Value.Width / type.GetAspect())
-                      : SKRect.Create(0, 0, 40 * type.GetAspect(), 40),
-                      location,
-                      new SKPoint(0, 0)),
+                      : SKRect.Create(0, 0, 40 * type.GetAspect(), 40))
+                  .Align(location, new SKPoint(0, 0)),
                   text)
         {
             TypeName = type.GetName().StringValue;
@@ -76,7 +75,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <param name="text">Annotation text.</param>
         /// <param name="appearance">Custom appearance.</param>
         public Stamp(PdfPage page, SKPoint location, string text, FormXObject appearance)
-            : base(page, PdfName.Stamp, GeomUtils.Align(appearance.Matrix.MapRect(appearance.Box), location, new SKPoint(0, 0)), text)
+            : base(page, PdfName.Stamp, appearance.Matrix.MapRect(appearance.Box).Align(location, new SKPoint(0, 0)), text)
         {
             Appearance.Normal[null] = appearance;
             TypeName = CustomTypeName;
@@ -131,7 +130,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
                         SKRect appearanceBox = appearance.Box;
                         appearanceBox = SKRect.Create(0, 0, appearanceBox.Width * scale.Width, appearanceBox.Height * scale.Height);
-                        Box = GeomUtils.Align(appearance.Matrix.MapRect(appearanceBox), oldBox.Center(), new SKPoint(0, 0));
+                        Box = appearance.Matrix.MapRect(appearanceBox).Align(oldBox.Center(), new SKPoint(0, 0));
                     }
                 }
             }

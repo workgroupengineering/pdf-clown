@@ -86,7 +86,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public SKRect FontBBox
         {
-            get => font.BoundingBox;
+            get => font.FontBBox;
         }
 
         /**

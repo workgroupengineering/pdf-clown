@@ -25,17 +25,11 @@
 
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using system = System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Document actions [PDF:1.6:8.5.2].</summary>
-    */
+    /// <summary>Document actions [PDF:1.6:8.5.2].</summary>
     [PDF(VersionEnum.PDF14)]
     public sealed class DocumentActions : PdfObjectWrapper<PdfDictionary>
     {
@@ -45,55 +39,43 @@ namespace PdfClown.Documents
         public DocumentActions(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the action to be performed after printing the document.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed after printing the document.</summary>
         public Action AfterPrint
         {
             get => Action.Wrap(BaseDataObject[PdfName.DP]);
             set => BaseDataObject[PdfName.DP] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed after saving the document.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed after saving the document.</summary>
         public Action AfterSave
         {
             get => Action.Wrap(BaseDataObject[PdfName.DS]);
             set => BaseDataObject[PdfName.DS] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed before printing the document.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed before printing the document.</summary>
         public Action BeforePrint
         {
             get => Action.Wrap(BaseDataObject[PdfName.WP]);
             set => BaseDataObject[PdfName.WP] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed before saving the document.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed before saving the document.</summary>
         public Action BeforeSave
         {
             get => Action.Wrap(BaseDataObject[PdfName.WS]);
             set => BaseDataObject[PdfName.WS] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed before closing the document.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed before closing the document.</summary>
         public Action OnClose
         {
             get => Action.Wrap(BaseDataObject[PdfName.DC]);
             set => BaseDataObject[PdfName.DC] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the destination to be displayed or the action to be performed
-          after opening the document.</summary>
-        */
+        /// <summary>Gets/Sets the destination to be displayed or the action to be performed
+        /// after opening the document.</summary>
         public PdfObjectWrapper OnOpen
         {
             get
@@ -108,7 +90,7 @@ namespace PdfClown.Documents
             {
                 if (!(value is Action
                   || value is LocalDestination))
-                    throw new system::ArgumentException("Value MUST be either an Action or a LocalDestination.");
+                    throw new System.ArgumentException("Value MUST be either an Action or a LocalDestination.");
 
                 Document.BaseDataObject[PdfName.OpenAction] = value.BaseObject;
             }

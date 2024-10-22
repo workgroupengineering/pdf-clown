@@ -34,8 +34,8 @@ namespace PdfClown.Objects
     /// <summary>PDF stream object [PDF:1.6:3.2.7].</summary>
     public class PdfStream : PdfDataObject, IFileResource
     {
-        private static readonly byte[] BeginStreamBodyChunk = Encoding.Pdf.Encode(Symbol.LineFeed + Keyword.BeginStream + Symbol.LineFeed);
-        private static readonly byte[] EndStreamBodyChunk = Encoding.Pdf.Encode(Symbol.LineFeed + Keyword.EndStream);
+        private static readonly byte[] BeginStreamBodyChunk = BaseEncoding.Pdf.Encode(Symbol.LineFeed + Keyword.BeginStream + Symbol.LineFeed);
+        private static readonly byte[] EndStreamBodyChunk = BaseEncoding.Pdf.Encode(Symbol.LineFeed + Keyword.EndStream);
 
         internal IInputStream body;
         internal PdfDictionary header;
