@@ -17,17 +17,6 @@ namespace PdfClown.UI.Blazor.Internal
 
         [JSInvokable]
         public void Invoke(PointerEventArgs args) => action?.Invoke(args);
-
-        //new PointerEventArgs
-        //{
-        //    PointerId = (long)args["pointerId"],
-        //    Button = (long)args["button"],
-        //    ClientX = (long)args["clientX"],
-        //    ClientY = (long)args["clientT"],
-        //    AltKey = (bool)args["altKey"],
-        //    CtrlKey = (bool)args["ctrlKey"],
-        //    ShiftKey = (bool)args["shiftKey"],
-        //    MetaKey = (bool)args["metaKey"],
-        //});
+        
     }
 }

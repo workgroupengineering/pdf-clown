@@ -1,16 +1,22 @@
 ﻿export class SKHtmlScroll {
 
-    static init(element, elementId, moveAction) {
-        if (!SKHtmlScroll.elements)
+    static init(element, elementId, moveAction, sizeAction) {
+        if (!SKHtmlScroll.elements) {
             SKHtmlScroll.elements = new Map();
+            SKHtmlScroll.observer = new ResizeObserver((entries) => {
+                for (let entry of entries) {
+                    SKHtmlScroll.sizeAllocated(entry.target);
+                }
+            });
+        }
         SKHtmlScroll.elements[elementId] = element;
-        const view = new SKHtmlScroll(element, elementId, moveAction);
+        const view = new SKHtmlScroll(element, elementId, moveAction, sizeAction);
         element.SKHtmlScroll = view;        
     }
 
-    static initById(elementId, moveAction) {
+    static initById(elementId, moveAction, sizeAction) {
         const element = document.getElementById(elementId);
-        SKHtmlScroll.init(element, elementId, moveAction);
+        SKHtmlScroll.init(element, elementId, moveAction, sizeAction);
     }
 
     static deinit(elementId) {
@@ -55,6 +61,10 @@
         SKHtmlScroll.changeCursor(element, cursorName);
     }
 
+    static sizeAllocated(element) {
+        element.SKHtmlScroll.sizeAction.invokeMethod("Invoke", element.clientWidth, element.clientHeight);
+    }
+
     static eventArgsCreator(event) {
         return {
             "pointerId": event.pointerId,
@@ -68,15 +78,18 @@
         };
     }
 
-    constructor(element, elementId, moveAction) {
+    constructor(element, elementId, moveAction, sizeAction) {
         this.htmlElement = element;
         this.htmlElementId = elementId;
         this.moveAction = moveAction;
-        element.addEventListener('pointermove', this.OnPointerMove);       
+        this.sizeAction = sizeAction;
+        this.htmlElement.addEventListener('pointermove', this.OnPointerMove);        
+        SKHtmlScroll.observer.observe(this.htmlElement);
     }
 
     deinit() {
         this.htmlElement.removeEventListener('pointermove', this.OnPointerMove);     
+        SKHtmlScroll.observer.unobserve(this.htmlElement);
     }
 
     OnPointerMove = (e) => {

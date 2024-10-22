@@ -28,14 +28,10 @@ using System;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>Adobe standard Latin character set [PDF:1.7:D].</summary>
-    */
-    public class LatinEncoding : Encoding
+    /// <summary>Adobe standard Latin character set [PDF:1.7:D].</summary>
+    public class LatinEncoding : BaseEncoding
     {
-        /**
-          <summary>Code-to-Unicode map.</summary>
-        */
+        /// <summary>Code-to-Unicode map.</summary>
         protected BiDictionary<int, char> chars;
 
         public override string Decode(byte[] value) => Decode(value, 0, value.Length);
@@ -45,7 +41,7 @@ namespace PdfClown.Tokens
             char[] stringChars = new char[length];
             for (int decodeIndex = index, decodeLength = length + index; decodeIndex < decodeLength; decodeIndex++)
             { stringChars[decodeIndex - index] = chars[value[decodeIndex] & 0xff]; }
-            return new String(stringChars);
+            return new string(stringChars);
         }
 
         public override string Decode(ReadOnlySpan<byte> value)
@@ -54,7 +50,7 @@ namespace PdfClown.Tokens
             char[] stringChars = new char[value.Length];
             for (int decodeIndex = index, decodeLength = value.Length + index; decodeIndex < decodeLength; decodeIndex++)
             { stringChars[decodeIndex - index] = chars[value[decodeIndex] & 0xff]; }
-            return new String(stringChars);
+            return new string(stringChars);
         }
 
         public override byte[] Encode(string value)

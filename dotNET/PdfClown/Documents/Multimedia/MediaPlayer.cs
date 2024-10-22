@@ -23,20 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Media player info [PDF:1.7:9.1.6].</summary>
-    */
+    /// <summary>Media player info [PDF:1.7:9.1.6].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaPlayer : PdfObjectWrapper<PdfDictionary>
     {
@@ -48,9 +39,7 @@ namespace PdfClown.Documents.Multimedia
         public MediaPlayer(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the player identifier.</summary>
-        */
+        /// <summary>Gets/Sets the player identifier.</summary>
         public SoftwareIdentifier Identifier
         {
             get => Wrap<SoftwareIdentifier>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PID));

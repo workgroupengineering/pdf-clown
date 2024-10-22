@@ -26,8 +26,6 @@
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Objects;
 
-using system = System;
-
 namespace PdfClown.Documents.Interaction.Annotations
 {
     /// <summary>Annotation actions [PDF:1.6:8.5.2].</summary>
@@ -50,7 +48,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         { this.parent = parent; }
 
         public override object Clone(PdfDocument context)
-        { throw new system::NotImplementedException(); } // TODO: verify parent reference.
+        { throw new System.NotImplementedException(); } // TODO: verify parent reference.
 
         /// <summary>Gets/Sets the action to be performed when the annotation is activated.</summary>
         public Action OnActivate

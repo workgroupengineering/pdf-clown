@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System.Collections.Generic;
 
@@ -31,8 +30,10 @@ namespace PdfClown.Documents.Contents.Scanner
 {
     public interface ITextBlock
     {
-        Quad Quad { get; }
+        SKRect Box { get; }
 
         List<ITextString> Strings { get; }
+
+        void Add(ITextString textString);
     }
 }

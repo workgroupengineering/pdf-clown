@@ -1,21 +1,29 @@
 ﻿export class SKHtmlScroll {
-    static elements: any;
+    static elements: Map<string, HTMLElement>;
+    static observer: ResizeObserver;
     htmlElement: HTMLElement;
     htmlElementId: string;
     moveAction: any;
+    sizeAction: any;
     SKHtmlScroll: SKHtmlScroll;
 
-    public static init(element: HTMLElement, elementId: string, moveAction: any) {
-        if (!SKHtmlScroll.elements)
-            SKHtmlScroll.elements = new Map();
+    public static init(element: HTMLElement, elementId: string, moveAction: any, sizeAction: any) {
+        if (!SKHtmlScroll.elements) {
+            SKHtmlScroll.elements = new Map<string, HTMLElement>();
+            SKHtmlScroll.observer = new ResizeObserver((entries) => {
+                for (let entry of entries) {
+                    SKHtmlScroll.sizeAllocated(entry.target);
+                }
+            });
+        }
         SKHtmlScroll.elements[elementId] = element;
-        const view = new SKHtmlScroll(element, elementId, moveAction);
+        const view = new SKHtmlScroll(element, elementId, moveAction, sizeAction);
         element.SKHtmlScroll = view;
     }
 
-    public static initById(elementId: string, moveAction: any) {
+    public static initById(elementId: string, moveAction: any, sizeAction: any) {
         const element = document.getElementById(elementId);
-        SKHtmlScroll.init(element, elementId, moveAction);
+        SKHtmlScroll.init(element, elementId, moveAction, sizeAction);
     }
 
     public static requestLock(element: HTMLElement) {
@@ -54,11 +62,8 @@
         SKHtmlScroll.changeCursor(element, cursorName);
     }
 
-    public constructor(element: HTMLElement, elementId: string, moveAction: any) {
-        this.htmlElement = element;
-        this.htmlElementId = elementId;
-        this.moveAction = moveAction;
-        element.addEventListener('pointermove', this.OnPointerMove);
+    static sizeAllocated(element: Element) {
+        element.SKHtmlScroll.sizeAction.invokeMethod("Invoke", element.clientWidth, element.clientHeight);
     }
 
     static eventArgsCreator(e: PointerEvent): object {
@@ -74,8 +79,18 @@
         };
     }
 
+    public constructor(element: HTMLElement, elementId: string, moveAction: any, sizeAction: any) {
+        this.htmlElement = element;
+        this.htmlElementId = elementId;
+        this.moveAction = moveAction;
+        this.sizeAction = sizeAction;
+        this.htmlElement.addEventListener('pointermove', this.OnPointerMove);
+        SKHtmlScroll.observer.observe(this.htmlElement);
+    }    
+
     deinit() {
         this.htmlElement.removeEventListener('pointermove', this.OnPointerMove);
+        SKHtmlScroll.observer.unobserve(this.htmlElement);
     }
 
     OnPointerMove = (e: PointerEvent) => {

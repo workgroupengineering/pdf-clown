@@ -34,8 +34,8 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF10)]
     public sealed class GraphicsLocalState : ContainerObject
     {
-        private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(SaveGraphicsState.OperatorKeyword + Symbol.LineFeed);
-        private static readonly byte[] EndChunk = Encoding.Pdf.Encode(RestoreGraphicsState.OperatorKeyword + Symbol.LineFeed);
+        private static readonly byte[] BeginChunk = BaseEncoding.Pdf.Encode(SaveGraphicsState.OperatorKeyword + Symbol.LineFeed);
+        private static readonly byte[] EndChunk = BaseEncoding.Pdf.Encode(RestoreGraphicsState.OperatorKeyword + Symbol.LineFeed);
 
         public GraphicsLocalState()
         { }

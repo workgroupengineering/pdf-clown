@@ -15,20 +15,25 @@ namespace PdfClown.UI.Blazor.Internal
 
         private readonly string htmlElementId;
         private readonly PointerActionHelper moveCallback;
+        private readonly SizeActionHelper sizeCallback;
         private DotNetObjectReference<PointerActionHelper> moveCallbackReference;
+        private DotNetObjectReference<SizeActionHelper> sizeCallbackReference;
 
-        public static async Task<SKHtmlScrollInterop> ImportAsync(IJSRuntime js, string elementId, Action<PointerEventArgs> moveAction)
+        public static async Task<SKHtmlScrollInterop> ImportAsync(IJSRuntime js, string elementId, 
+            Action<PointerEventArgs> moveAction,
+            Action<float, float> sizeAction)
         {
-            var interop = new SKHtmlScrollInterop(js, elementId, moveAction);
+            var interop = new SKHtmlScrollInterop(js, elementId, moveAction, sizeAction);
             await interop.ImportAsync();
             return interop;
         }
 
-        public SKHtmlScrollInterop(IJSRuntime js, string elementId, Action<PointerEventArgs> moveAction)
+        public SKHtmlScrollInterop(IJSRuntime js, string elementId, Action<PointerEventArgs> moveAction, Action<float, float> sizeAction)
             : base(js, JsFilename)
         {
             htmlElementId = elementId;
             moveCallback = new PointerActionHelper(moveAction);
+            sizeCallback = new SizeActionHelper(sizeAction);
         }
 
         protected override void OnDisposingModule()
@@ -37,7 +42,8 @@ namespace PdfClown.UI.Blazor.Internal
         public void Init()
         {
             moveCallbackReference = DotNetObjectReference.Create(moveCallback);
-            Invoke(InitSymbol, htmlElementId, moveCallbackReference);
+            sizeCallbackReference = DotNetObjectReference.Create(sizeCallback);
+            Invoke(InitSymbol, htmlElementId, moveCallbackReference, sizeCallbackReference);
         }
         public void RequestLock() =>
             Invoke(RequestLockSymbol, htmlElementId);

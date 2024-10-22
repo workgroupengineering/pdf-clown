@@ -23,20 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Media rendition [PDF:1.7:9.1.2].</summary>
-    */
+    /// <summary>Media rendition [PDF:1.7:9.1.2].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaRendition : Rendition
     {
@@ -46,29 +37,23 @@ namespace PdfClown.Documents.Multimedia
         internal MediaRendition(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the content to be played.</summary>
-        */
+        /// <summary>Gets/Sets the content to be played.</summary>
         public MediaClip Clip
         {
             get => MediaClip.Wrap(BaseDataObject[PdfName.C]);
             set => BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the parameters that specify how this media rendition should be played.
-          </summary>
-        */
+        /// <summary>Gets/Sets the parameters that specify how this media rendition should be played.
+        /// </summary>
         public MediaPlayParameters PlayParameters
         {
             get => Wrap<MediaPlayParameters>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.P));
             set => BaseDataObject[PdfName.P] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets the parameters that specify where the media rendition object should be
-          played.<summary>
-        */
+        /// <summary>Gets/Sets the parameters that specify where the media rendition object should be
+        /// played.<summary>
         public MediaScreenParameters ScreenParameters
         {
             get => Wrap<MediaScreenParameters>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.SP));

@@ -4,7 +4,7 @@
     <OutputType>Library</OutputType>
     <AssemblyName>PdfClown</AssemblyName>
     <RootNamespace>PdfClown</RootNamespace>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     <Version>0.2.2.0</Version>
     <Company>Stefano Chizzolini</Company>
     <Product>PDF Clown for .NET Core</Product>
@@ -522,6 +522,6 @@
     <PackageReference Include="SkiaSharp" Version="2.88.8" />
     <PackageReference Include="System.DirectoryServices.Protocols" Version="8.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
-  </ItemGroup> 
+  </ItemGroup>
  
 </Project>

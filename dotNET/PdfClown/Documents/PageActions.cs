@@ -24,17 +24,11 @@
 */
 
 using PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using system = System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Page actions [PDF:1.6:8.5.2].</summary>
-    */
+    /// <summary>Page actions [PDF:1.6:8.5.2].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class PageActions : PdfObjectWrapper<PdfDictionary>
     {
@@ -44,18 +38,14 @@ namespace PdfClown.Documents
         public PageActions(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the page is closed.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the page is closed.</summary>
         public Action OnClose
         {
             get => Action.Wrap(BaseDataObject[PdfName.C]);
             set => BaseDataObject[PdfName.C] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the page is opened.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the page is opened.</summary>
         public Action OnOpen
         {
             get => Action.Wrap(BaseDataObject[PdfName.O]);

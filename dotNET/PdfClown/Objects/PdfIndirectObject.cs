@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents.Contents;
 using PdfClown.Tokens;
 
 using System;
@@ -35,8 +34,8 @@ namespace PdfClown.Objects
     ///<summary>PDF indirect object [PDF:1.6:3.2.9].</summary>
     public class PdfIndirectObject : PdfObject, IPdfIndirectObject
     {
-        private static readonly byte[] BeginIndirectObjectChunk = Tokens.Encoding.Pdf.Encode(Symbol.Space + Keyword.BeginIndirectObject + Symbol.LineFeed);
-        private static readonly byte[] EndIndirectObjectChunk = Tokens.Encoding.Pdf.Encode(Symbol.LineFeed + Keyword.EndIndirectObject + Symbol.LineFeed);
+        private static readonly byte[] BeginIndirectObjectChunk = BaseEncoding.Pdf.Encode(Symbol.Space + Keyword.BeginIndirectObject + Symbol.LineFeed);
+        private static readonly byte[] EndIndirectObjectChunk = BaseEncoding.Pdf.Encode(Symbol.LineFeed + Keyword.EndIndirectObject + Symbol.LineFeed);
 
         private PdfDataObject dataObject;
         private PdfFile file;

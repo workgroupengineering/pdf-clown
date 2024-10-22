@@ -1,6 +1,4 @@
-using System;
-using System.Linq;
-using text = System.Text;
+using System.Text;
 
 namespace PdfClown.Tokens
 {
@@ -8,17 +6,17 @@ namespace PdfClown.Tokens
     {
         static Charset()
         {
-            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
-        public static readonly text::Encoding ISO88591 = text::Encoding.GetEncoding("ISO-8859-1");
-        public static readonly text::Encoding UTF16BE = text::Encoding.BigEndianUnicode;
-        public static readonly text::Encoding UTF16LE = text::Encoding.Unicode;
-        public static readonly text::Encoding ASCII = text::Encoding.ASCII;
-        public static readonly text::Encoding UTF8 = text::Encoding.UTF8;
+        public static readonly Encoding ISO88591 = Encoding.GetEncoding("ISO-8859-1");
+        public static readonly Encoding UTF16BE = Encoding.BigEndianUnicode;
+        public static readonly Encoding UTF16LE = Encoding.Unicode;
+        public static readonly Encoding ASCII = Encoding.ASCII;
+        public static readonly Encoding UTF8 = Encoding.UTF8;
 
-        public static text::Encoding GetEnconding(string name)
+        public static Encoding GetEnconding(string name)
         {
-            return text::Encoding.GetEncoding(name);
+            return Encoding.GetEncoding(name);
         }
     }
 }

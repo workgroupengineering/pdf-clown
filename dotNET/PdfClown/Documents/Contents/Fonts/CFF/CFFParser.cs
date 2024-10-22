@@ -209,7 +209,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 return Array.Empty<string>();
             }
             int count = offsets.Length - 1;
-            string[] indexDataValues = new string[count];
+            var indexDataValues = new string[count];
             for (int i = 0; i < count; i++)
             {
                 int Length = offsets[i + 1] - offsets[i];

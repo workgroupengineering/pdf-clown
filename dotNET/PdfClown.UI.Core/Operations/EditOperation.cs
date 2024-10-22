@@ -2,6 +2,7 @@
 {
     public abstract class EditOperation
     {
+        public EditOperationList OperationList { get; set; }
         public PdfDocumentViewModel Document { get; set; }
 
         public OperationType Type { get; set; }
@@ -16,7 +17,7 @@
 
         public virtual object EndOperation()
         {
-            Document?.OnEndOperation(null);
+            OperationList?.OnEndOperation(this, null);
             return null;
         }
 

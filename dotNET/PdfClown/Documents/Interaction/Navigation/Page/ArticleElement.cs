@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Interaction.Navigation

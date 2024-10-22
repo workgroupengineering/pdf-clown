@@ -2,13 +2,16 @@
 
 namespace PdfClown.UI.Operations
 {
+    public delegate void OperationEventHandler(OperationEventArgs e);
     public class OperationEventArgs : EventArgs
     {
-        public OperationEventArgs(object result)
+        public OperationEventArgs(EditOperation operation, object result = null)
         {
-            this.Result = result;
+            Operation = operation;
+            Result = result;
         }
 
+        public EditOperation Operation { get; }
         public object Result { get; set; }
     }
 }

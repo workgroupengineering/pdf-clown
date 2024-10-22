@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Components;
 using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.UI.Operations;
+using PdfClown.UI.Text;
+using PdfClown.Util.Math;
 using SkiaSharp.Views.Blazor;
 
 namespace PdfClown.UI.Blazor
@@ -10,11 +11,11 @@ namespace PdfClown.UI.Blazor
     public partial class PdfView : SKScrollView, IPdfView
     {
         private readonly PdfViewState state;
-        
+
         private bool showCharBound;
         private PdfViewFitMode fitMode = PdfViewFitMode.PageSize;
         private bool showMarkup = true;
-        private bool isReadOnly;        
+        private bool isReadOnly;
 
         public PdfView()
         {
@@ -25,7 +26,7 @@ namespace PdfClown.UI.Blazor
             TextSelection.Changed += OnTextSelectionChanged;
 
             Operations = new EditOperationList { Viewer = this };
-            Operations.Changed += OnOperationsChanged;            
+            Operations.Changed += OnOperationsChanged;
         }
 
         [Parameter]
@@ -67,41 +68,7 @@ namespace PdfClown.UI.Blazor
             }
         }
 
-        public Annotation SelectedAnnotation
-        {
-            get => Operations.SelectedAnnotation;
-            set
-            {
-                if (SelectedAnnotation != value)
-                {
-                    OnSelectedAnnotationChanged(SelectedAnnotation, value);
-                }
-            }
-        }
-
-        public Annotation HoverAnnotation
-        {
-            get => Operations.HoverAnnotation;
-            set => Operations.HoverAnnotation = value;
-        }
-
-        public Markup SelectedMarkup
-        {
-            get => Operations.SelectedMarkup;
-            set => Operations.SelectedMarkup = value;
-        }
-
-        public ControlPoint SelectedPoint
-        {
-            get => Operations.SelectedPoint;
-            set => Operations.SelectedPoint = value;
-        }
-
-        public ControlPoint HoverPoint
-        {
-            get => Operations.HoverPoint;
-            set => Operations.HoverPoint = value;
-        }
+        public bool ScrollByPointer { get; set; } = true;
 
         [Parameter]
         public bool IsReadOnly
@@ -131,7 +98,7 @@ namespace PdfClown.UI.Blazor
                 if (state.Document != value)
                 {
                     state.Document = value;
-                    DocumentChanged?.Invoke(this, EventArgs.Empty);
+                    DocumentChanged?.Invoke(new PdfDocumentEventArgs(value));
                 }
             }
         }
@@ -205,9 +172,7 @@ namespace PdfClown.UI.Blazor
             }
         }
 
-        public event EventHandler<AnnotationEventArgs> SelectedAnnotationChanged;
-
-        public event EventHandler<EventArgs> DocumentChanged;
+        public event PdfDocumentEventHandler DocumentChanged;
 
         public void NextPage() => PageNumberWithScroll += 1;
 
@@ -233,13 +198,6 @@ namespace PdfClown.UI.Blazor
         {
             showMarkup = newValue;
             InvalidatePaint();
-        }
-
-        private void OnSelectedAnnotationChanged(Annotation oldValue, Annotation newValue)
-        {
-            Operations.SelectedAnnotation = newValue;
-           
-            SelectedAnnotationChanged?.Invoke(this, new AnnotationEventArgs(newValue));            
         }
 
         private void OnShowCharBoundChanged(bool oldValue, bool newValue)
@@ -278,9 +236,6 @@ namespace PdfClown.UI.Blazor
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
 #endif
         {
-            if(e.Info.Width != Width
-                || e.Info.Height != Height)
-            OnSizeAllocated(e.Info.Width, e.Info.Height);
             state.XScaleFactor = (float)(e.Info.Width / Width);
             state.YScaleFactor = (float)(e.Info.Height / Height);
             base.OnPaintSurface(e);
@@ -304,7 +259,7 @@ namespace PdfClown.UI.Blazor
             return base.OnKeyDown(keyName, modifiers);
         }
 
-        private void OnTextSelectionChanged(object sender, EventArgs args)
+        private void OnTextSelectionChanged(TextSelectionEventArgs args)
         {
             InvalidatePaint();
         }
@@ -317,7 +272,9 @@ namespace PdfClown.UI.Blazor
         protected override void OnTouch(TouchEventArgs e)
         {
             base.OnTouch(e);
-            state.OnTouch(e.ActionType, e.MouseButton, e.Location);
+            if (e.Handled)
+                return;
+            state.OnTouch(e.ActionType, e.MouseButton, e.Location.Scale(XScaleFactor, YScaleFactor));
         }
 
         public override bool OnScrolled(double delta)
@@ -333,7 +290,7 @@ namespace PdfClown.UI.Blazor
             return false;
         }
 
-        protected override void OnSizeAllocated(double width, double height)
+        protected override void OnSizeAllocated(float width, float height)
         {
             base.OnSizeAllocated(width, height);
             state.UpdateCurrentMatrix((float)width, (float)height);

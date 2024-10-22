@@ -23,7 +23,6 @@
   this list of conditions.
 */
 using PdfClown.Bytes;
-using bytes = PdfClown.Bytes;
 using PdfClown.Util;
 
 using System;
@@ -31,9 +30,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>CMap builder [PDF:1.6:5.6.4,5.9.2;CMAP].</summary>
-    */
+    /// <summary>CMap builder [PDF:1.6:5.6.4,5.9.2;CMAP].</summary>
     internal sealed class CMapBuilder
     {
         public enum EntryTypeEnum

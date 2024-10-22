@@ -24,18 +24,15 @@
 */
 
 using System;
-using text = System.Text;
 
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>PDF serialization encoding [PDF:1.6:3.1].</summary>
-      <remarks>PDF can be entirely represented using byte values corresponding to the visible
-      printable subset of the ASCII character set, plus white space characters such as space, tab,
-      carriage return, and line feed characters. However, a PDF file is not restricted to the ASCII
-      character set; it can contain arbitrary 8-bit bytes.</remarks>
-    */
-    public sealed class PdfEncoding : Encoding
+    /// <summary>PDF serialization encoding[PDF:1.6:3.1].</summary>
+    /// <remarks>PDF can be entirely represented using byte values corresponding to the visible
+    /// printable subset of the ASCII character set, plus white space characters such as space, tab,
+    /// carriage return, and line feed characters.However, a PDF file is not restricted to the ASCII
+    /// character set; it can contain arbitrary 8-bit bytes.</remarks>
+    public sealed class PdfEncoding : BaseEncoding
     {
         internal PdfEncoding()
         { }

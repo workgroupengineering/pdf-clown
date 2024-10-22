@@ -33,8 +33,8 @@ using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Util.Math.Geom;
 using PdfClown.Documents.Contents.Scanner;
+using PdfClown.Util.Math;
 
 namespace PdfClown.Documents.Contents.Patterns
 {

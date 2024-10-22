@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Documents.Contents.Scanner;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System.Collections.Generic;
 
@@ -37,30 +37,30 @@ namespace PdfClown.Tools
             var buffer = new TextBlock();
             foreach (var textString in textBlock.Strings)
             {
-                buffer.Strings.Add(TextString.Transform(textString, ctm));
+                buffer.Add(TextString.Transform(textString, ctm));
             }
             return buffer;
         }
 
         private List<ITextString> strings;
-        private Quad? quad;
+        private SKRect? quad;
         private string text;
 
-        public Quad Quad
+        public SKRect Box
         {
             get
             {
                 if (quad == null)
                 {
-                    var result = new Quad();
+                    var result = new SKRect();
                     foreach (var textString in Strings)
                     {
                         if (textString.Quad.IsEmpty)
                             continue;
                         if (result.IsEmpty)
-                        { result = textString.Quad; }
+                        { result = textString.Quad.GetBounds(); }
                         else
-                        { result.Union(textString.Quad); }
+                        { result.Add(textString.Quad); }
                     }
                     quad = result;
                 }
@@ -87,6 +87,9 @@ namespace PdfClown.Tools
 
         public List<ITextString> Strings => strings ??= new List<ITextString>();
 
-        
+        public void Add(ITextString textString)
+        {
+            Strings.Add(textString);
+        }
     }
 }

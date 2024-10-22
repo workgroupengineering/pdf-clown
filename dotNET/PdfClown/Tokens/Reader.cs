@@ -88,7 +88,7 @@ namespace PdfClown.Tokens
 
                 PdfDictionary sectionTrailer = null;
                 if (parser.MoveNextComplex()
-                    && parser.TokenType == PostScriptParser.TokenTypeEnum.Keyword
+                    && parser.TokenType == TokenTypeEnum.Keyword
                     && MemoryExtensions.Equals(parser.CharsToken, Keyword.XRef, StringComparison.Ordinal)) // XRef-table section.
                 {
                     ReadXRefTable(xrefEntries);
@@ -160,7 +160,7 @@ namespace PdfClown.Tokens
             parser.Stream.Position = 0;
             while (parser.MoveNextComplex())
             {
-                if (parser.TokenType == PostScriptParser.TokenTypeEnum.InderectObject)
+                if (parser.TokenType == TokenTypeEnum.InderectObject)
                 {
                     var reference = parser.ReferenceToken;
                     var pdfObject = parser.ParsePdfObject(1);
@@ -191,10 +191,10 @@ namespace PdfClown.Tokens
                 // its entries.
                 // 1. First object number.
                 parser.MoveNext();
-                if (parser.TokenType == PostScriptParser.TokenTypeEnum.Keyword
+                if (parser.TokenType == TokenTypeEnum.Keyword
                     && parser.CharsToken.Equals(Keyword.Trailer, StringComparison.Ordinal)) // XRef-table section ended.
                     break;
-                else if (parser.TokenType != PostScriptParser.TokenTypeEnum.Integer)
+                else if (parser.TokenType != TokenTypeEnum.Integer)
                     throw new PostScriptParseException("Neither object number of the first object in this xref subsection nor end of xref section found.", parser);
 
                 // Get the object number of the first object in this xref-table subsection!
@@ -202,7 +202,7 @@ namespace PdfClown.Tokens
 
                 // 2. Last object number.
                 parser.MoveNext();
-                if (parser.TokenType != PostScriptParser.TokenTypeEnum.Integer)
+                if (parser.TokenType != TokenTypeEnum.Integer)
                     throw new PostScriptParseException("Number of entries in this xref subsection not found.", parser);
 
                 // Get the object number of the last object in this xref-table subsection!

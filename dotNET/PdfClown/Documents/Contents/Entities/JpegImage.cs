@@ -23,17 +23,12 @@
   this list of conditions.
 */
 
-using bytes = PdfClown.Bytes;
-using PdfClown.Documents;
+using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
-using xObjects = PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 using PdfClown.Util.IO;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Entities
@@ -57,12 +52,12 @@ namespace PdfClown.Documents.Contents.Entities
                       PdfName.BPC, BitsPerComponent,
                       PdfName.F, PdfName.DCT
                   }),
-                new InlineImageBody(new bytes::ByteStream(Stream))));
+                new InlineImageBody(new ByteStream(Stream))));
         }
 
-        public override xObjects::XObject ToXObject(PdfDocument context)
+        public override XObject ToXObject(PdfDocument context)
         {
-            return new xObjects::ImageXObject(
+            return new ImageXObject(
               context,
               new PdfStream(
                 new PdfDictionary(5)
@@ -73,15 +68,13 @@ namespace PdfClown.Documents.Contents.Entities
                   { PdfName.ColorSpace, PdfName.DeviceRGB },
                   { PdfName.Filter, PdfName.DCTDecode }
                },
-                new bytes::ByteStream(Stream)));
+                new ByteStream(Stream)));
         }
 
         private void Load()
         {
-            /*
-              NOTE: Big-endian data expected.
-            */
-            System.IO.Stream stream = Stream;
+            // NOTE: Big-endian data expected.
+            Stream stream = Stream;
             BigEndianBinaryReader streamReader = new BigEndianBinaryReader(stream);
 
             int index = 4;

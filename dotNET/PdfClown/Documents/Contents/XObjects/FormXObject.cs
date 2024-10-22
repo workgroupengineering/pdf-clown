@@ -29,7 +29,7 @@ using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;

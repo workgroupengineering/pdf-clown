@@ -2,9 +2,7 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Files;
-using PdfClown.Util.Math.Geom;
-
+using PdfClown.Util.Math;
 using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
@@ -59,7 +57,7 @@ namespace PdfClown.Samples.CLI
                 composer.ShowXObject(
                   form,
                   new SKPoint(pageSize.Width / 2, pageSize.Height / 2),
-                  GeomUtils.Scale(formSize, new SKSize(300, 0)),
+                  formSize.Scale(new SKSize(300, 0)),
                   XAlignmentEnum.Center,
                   YAlignmentEnum.Middle,
                   45);
@@ -67,7 +65,7 @@ namespace PdfClown.Samples.CLI
                 composer.ShowXObject(
                   form,
                   new SKPoint(0, pageSize.Height),
-                  GeomUtils.Scale(formSize, new SKSize(0, 300)),
+                  formSize.Scale(new SKSize(0, 300)),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Bottom,
                   0);

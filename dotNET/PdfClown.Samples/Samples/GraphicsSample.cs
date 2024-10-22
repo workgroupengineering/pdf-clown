@@ -2,16 +2,13 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
-using entities = PdfClown.Documents.Contents.Entities;
-using fonts = PdfClown.Documents.Contents.Fonts;
-using PdfClown.Documents.Contents.Objects;
-using xObjects = PdfClown.Documents.Contents.XObjects;
-using PdfClown.Files;
-using PdfClown.Util.Math.Geom;
-
+using PdfClown.Util.Math;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
+using entities = PdfClown.Documents.Contents.Entities;
+using fonts = PdfClown.Documents.Contents.Fonts;
+using xObjects = PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Samples.CLI
 {
@@ -421,7 +418,7 @@ namespace PdfClown.Samples.CLI
             composer.ShowXObject(
               imageXObject,
               new SKPoint(170, 320),
-              GeomUtils.Scale(imageXObject.Size, new SKSize(450, 0)));
+              imageXObject.Size.Scale(new SKSize(450, 0)));
             composer.End(); // End local state.
 
             // 4. Flush the contents into the page!

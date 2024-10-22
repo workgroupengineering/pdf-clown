@@ -35,7 +35,7 @@ namespace PdfClown.Objects
     /// <summary>Abstract PDF direct object.</summary>
     public abstract class PdfDirectObject : PdfDataObject, IComparable<PdfDirectObject>
     {
-        private static readonly byte[] NullChunk = Encoding.Pdf.Encode(Keyword.Null);
+        private static readonly byte[] NullChunk = BaseEncoding.Pdf.Encode(Keyword.Null);
         protected static readonly ConcurrentDictionary<PdfDirectObject, IPdfObjectWrapper> cache = new();
 
         /// <summary>Ensures that the given direct object is properly represented as string.</summary>

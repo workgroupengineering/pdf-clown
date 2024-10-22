@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Documents.Contents.Scanner;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System.Collections.Generic;
 using System.Text;
@@ -66,7 +66,7 @@ namespace PdfClown.Tools
                         if (result.IsEmpty)
                         { result = textChar.Quad; }
                         else
-                        { result.Union(textChar.Quad); }
+                        { result.Add(textChar.Quad); }
                     }
                     quad = result;
                 }

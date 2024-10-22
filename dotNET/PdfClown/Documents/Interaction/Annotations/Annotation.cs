@@ -33,7 +33,7 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Objects;
 using PdfClown.Util;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -557,6 +557,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         }
 
         public bool IsDrawed { get; private set; }
+
+        public object Tag { get; set; }
 
         public virtual void MoveTo(SKRect newBox)
         {

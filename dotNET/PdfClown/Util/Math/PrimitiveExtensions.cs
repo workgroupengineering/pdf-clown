@@ -23,16 +23,12 @@
   this list of conditions.
 */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
 using SkiaSharp;
-using static PdfClown.Documents.Functions.Type4.BitwiseOperators;
+using System.Collections.Generic;
 
-namespace PdfClown.Util.Math.Geom
+namespace PdfClown.Util.Math
 {
     public static class PrimitiveExtensions
     {
@@ -78,7 +74,7 @@ namespace PdfClown.Util.Math.Geom
             for (int pointIndex = 0; pointIndex < pointLength; pointIndex += 2)
             {
                 var point = GetPagePoint(array, pointIndex);
-                
+
                 if (path.IsEmpty)
                 {
                     path.MoveTo(point);
@@ -95,7 +91,7 @@ namespace PdfClown.Util.Math.Geom
             }
             //path.Close();
             return path;
-            
+
             static SKPoint GetPagePoint(PdfArray pathObject, int pointIndex)
             {
                 return new SKPoint(
@@ -165,7 +161,7 @@ namespace PdfClown.Util.Math.Geom
             return u.X * v.Y - u.Y * v.X;
         }
 
-        public static bool Contains(SKPoint point, SKPoint point1, SKPoint point2, SKPoint point3)
+        public static bool ContainsInTriangle(this SKPoint point, SKPoint point1, SKPoint point2, SKPoint point3)
         {
             //Calculate barycentric coordinates
             var denominator1 = (point2.Y - point1.Y) * (point3.X - point1.X) + (point1.X - point2.X) * (point3.Y - point1.Y);
@@ -174,6 +170,22 @@ namespace PdfClown.Util.Math.Geom
             var gamma1 = 1 - alpha1 - beta1;
 
             return alpha1 >= 0 && beta1 >= 0 && gamma1 >= 0;
+        }
+
+        public static bool Contains(this SKRect rect, Quad quad)
+        {
+            return rect.Contains(quad.Point0)
+                && rect.Contains(quad.Point1)
+                && rect.Contains(quad.Point2)
+                && rect.Contains(quad.Point3); 
+        }
+
+        public static bool ContainsAny(this SKRect rect, Quad quad)
+        {
+            return rect.Contains(quad.Point0)
+                || rect.Contains(quad.Point1)
+                || rect.Contains(quad.Point2)
+                || rect.Contains(quad.Point3);
         }
 
         public static SKPoint Invert(this SKPoint p)
@@ -282,6 +294,13 @@ namespace PdfClown.Util.Math.Geom
             {
                 rectangle.Add(rect);
             }
+        }
+        public static void Add(this ref SKRect rectangle, Quad quad)
+        {
+            rectangle.Add(quad.Point0);
+            rectangle.Add(quad.Point1);
+            rectangle.Add(quad.Point2);
+            rectangle.Add(quad.Point3);
         }
 
         public static void Add(this ref SKRect rectangle, SKRect rect)
@@ -392,6 +411,67 @@ namespace PdfClown.Util.Math.Geom
         //  matrix.MapPoints(points);
         //  return points[0];
         //}
+
+        public static SKRect Align(this SKRect rectangle, SKPoint anchor, SKPoint alignment)
+        {
+            return SKRect.Create(
+              anchor.X - rectangle.Width * (1 - alignment.X.CompareTo(0)) / 2,
+              anchor.Y - rectangle.Height * (1 - alignment.Y.CompareTo(0)) / 2,
+              rectangle.Width,
+              rectangle.Height);
+        }
+
+        /// <summary>Gets the size scaled to the specified limit.</summary>
+        /// <remarks>In particular, the limit matches the largest dimension and proportionally scales the
+        /// other one; for example, a limit 300 applied to size Dimension2D(100, 200) returns
+        /// Dimension2D(150, 300).</remarks>
+        /// <param name = "size" > Size to scale.</param>
+        /// <param name = "limit" > Scale limit.</param>
+        /// <returns>Scaled size.</returns>
+        public static SKSize Scale(this SKSize size, float limit)
+        {
+            if (limit == 0)
+                return size;
+            else
+            {
+                float sizeRatio = size.Width / size.Height;
+                return sizeRatio > 1
+                  ? new SKSize(limit, limit / sizeRatio)
+                  : new SKSize(limit * sizeRatio, limit);
+            }
+        }
+
+        /// <summary>Gets the size scaled to the specified limit.</summary>
+        /// <remarks>In particular, implicit (zero-valued) limit dimensions correspond to proportional
+        /// dimensions; for example, a limit Dimension2D(0, 300) means 300 high and proportionally wide.
+        /// </remarks>
+        /// <param name = "size" > Size to scale.</param>
+        /// <param name = "limit" > Scale limit.</param>
+        /// <returns>Scaled size.</returns>
+        public static SKSize Scale(this SKSize size, SKSize limit)
+        {
+            if (limit.Width == 0)
+            {
+                if (limit.Height == 0)
+                    return size;
+                else
+                    return new SKSize(limit.Height * size.Width / size.Height, limit.Height);
+            }
+            else if (limit.Height == 0)
+                return new SKSize(limit.Width, limit.Width * size.Height / size.Width);
+            else
+                return limit;
+        }
+
+        public static SKPoint Scale(this SKPoint point, float scale)
+        {
+            return point.Scale(scale, scale);
+        }
+
+        public static SKPoint Scale(this SKPoint point, float scaleX, float scaleY)
+        {
+            return new SKPoint(point.X * scaleX, point.Y * scaleY);
+        }
     }
 }
 

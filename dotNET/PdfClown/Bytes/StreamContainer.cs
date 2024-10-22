@@ -23,14 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Composition;
 using PdfClown.Util;
 using PdfClown.Util.IO;
 
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
-using text = System.Text;
+using System.Text;
 
 namespace PdfClown.Bytes
 {
@@ -143,7 +142,7 @@ namespace PdfClown.Bytes
 
         public string ReadLine()
         {
-            var buffer = new text::StringBuilder();
+            var buffer = new StringBuilder();
             while (true)
             {
                 int c = ReadByte();

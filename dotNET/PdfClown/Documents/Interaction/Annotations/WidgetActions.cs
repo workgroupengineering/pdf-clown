@@ -24,17 +24,11 @@
 */
 
 using PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using system = System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Widget actions [PDF:1.6:8.5.2].</summary>
-    */
+    /// <summary>Widget actions [PDF:1.6:8.5.2].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class WidgetActions : AnnotationActions
     {
@@ -52,20 +46,16 @@ namespace PdfClown.Documents.Interaction.Annotations
         { }
 
         public override object Clone(PdfDocument context)
-        { throw new system::NotImplementedException(); } // TODO: verify parent reference.
+        { throw new System.NotImplementedException(); } // TODO: verify parent reference.
 
-        /**
-          <summary>Gets/Sets the action to be performed when the annotation loses the input focus.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the annotation loses the input focus.</summary>
         public Action OnBlur
         {
             get => Action.Wrap(BaseDataObject[PdfName.Bl]);
             set => BaseDataObject[PdfName.Bl] = value.BaseObject;
         }
 
-        /**
-          <summary>Gets/Sets the action to be performed when the annotation receives the input focus.</summary>
-        */
+        /// <summary>Gets/Sets the action to be performed when the annotation receives the input focus.</summary>
         public Action OnFocus
         {
             get => Action.Wrap(BaseDataObject[PdfName.Fo]);

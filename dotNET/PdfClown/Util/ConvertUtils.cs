@@ -47,6 +47,18 @@ namespace PdfClown.Util
         private static readonly char[] HexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
         public static readonly string HexAlphabet = "0123456789ABCDEF";
 
+        public static int GetHex(int c)
+        {
+            if (c >= '0' && c <= '9')
+                return (c - '0');
+            else if (c >= 'A' && c <= 'F')
+                return (c - 'A' + 10);
+            else if (c >= 'a' && c <= 'f')
+                return (c - 'a' + 10);
+            else
+                return -1;
+        }
+
         public static readonly int[] HexValue = new int[] {
             0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

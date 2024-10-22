@@ -35,7 +35,7 @@ namespace PdfClown.Tokens
     /// <summary>PDF file writer implementing classic cross-reference table [PDF:1.6:3.4.3].</summary>
     internal sealed class PlainWriter : Writer
     {
-        private static readonly byte[] TrailerChunk = Encoding.Pdf.Encode(Keyword.Trailer + Symbol.LineFeed);
+        private static readonly byte[] TrailerChunk = BaseEncoding.Pdf.Encode(Keyword.Trailer + Symbol.LineFeed);
         private static readonly string XRefChunk = Keyword.XRef + Symbol.LineFeed;
         private static readonly string XRefEOLChunk = "" + Symbol.CarriageReturn + Symbol.LineFeed;
 

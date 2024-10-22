@@ -36,54 +36,6 @@ namespace PdfClown.Util.Parsers
     /// <summary>PostScript (non-procedural subset) parser [PS].</summary>
     public class PostScriptParser : IDisposable
     {
-        public struct Reference
-        {
-            public readonly int ObjectNumber;
-            public readonly int GenerationNumber;
-            public readonly long Offset;
-
-            public Reference(int objectNumber, int generationNumber, long baseOffset)
-            {
-                ObjectNumber = objectNumber;
-                GenerationNumber = generationNumber;
-                Offset = baseOffset;
-            }
-        }
-
-        public enum TokenTypeEnum // [PS:3.3].
-        {
-            Keyword,
-            Boolean,
-            Integer,
-            Real,
-            Literal,
-            Date,
-            Hex,
-            Name,
-            Comment,
-            ArrayBegin,
-            ArrayEnd,
-            DictionaryBegin,
-            DictionaryEnd,
-            Null,
-            Reference,
-            InderectObject
-        }
-
-        protected static int GetHex(int c)
-        {
-            if (c >= '0' && c <= '9')
-                return (c - '0');
-            else if (c >= 'A' && c <= 'F')
-                return (c - 'A' + 10);
-            else if (c >= 'a' && c <= 'f')
-                return (c - 'a' + 10);
-            else
-                return -1;
-        }
-
-        
-
         private IInputStream stream;
         private TokenTypeEnum tokenType;
         private StringStream sBuffer = new(128);

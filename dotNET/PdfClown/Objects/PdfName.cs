@@ -29,7 +29,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using tokens = PdfClown.Tokens;
+using PdfClown.Tokens;
 
 namespace PdfClown.Objects
 {
@@ -46,7 +46,7 @@ namespace PdfClown.Objects
         //  - '#' (number sign character).
         private static readonly Regex EscapedPattern = new("#([\\da-fA-F]{2})");
         private static readonly Regex UnescapedPattern = new("[\\s\\(\\)<>\\[\\]{}/%#]");
-        private static readonly byte[] NamePrefixChunk = tokens::Encoding.Pdf.Encode(tokens.Keyword.NamePrefix);
+        private static readonly byte[] NamePrefixChunk = Tokens.BaseEncoding.Pdf.Encode(Keyword.NamePrefix);
         private static readonly ConcurrentDictionary<string, PdfName> names = new(Environment.ProcessorCount, 800, StringComparer.Ordinal);
 
 #pragma warning disable 0108

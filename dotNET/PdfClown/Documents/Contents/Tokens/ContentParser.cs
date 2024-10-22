@@ -28,6 +28,7 @@ using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Objects;
 using PdfClown.Tokens;
+using PdfClown.Util.Parsers;
 using System;
 using System.Collections.Generic;
 

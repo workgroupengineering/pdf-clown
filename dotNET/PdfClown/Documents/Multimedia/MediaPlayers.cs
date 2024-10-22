@@ -23,20 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Media player rules [PDF:1.7:9.1.6].</summary>
-    */
+    /// <summary>Media player rules [PDF:1.7:9.1.6].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaPlayers : PdfObjectWrapper<PdfDictionary>
     {
@@ -46,32 +37,26 @@ namespace PdfClown.Documents.Multimedia
         public MediaPlayers(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets a set of players, any of which may be used in playing the associated media object.
-          </summary>
-          <remarks>This collection is ignored if <see cref="RequiredPlayers"/> is non-empty.</remarks>
-        */
+        /// <summary>Gets/Sets a set of players, any of which may be used in playing the associated media object.
+        /// </summary>
+        /// <remarks>This collection is ignored if <see cref="RequiredPlayers"/> is non-empty.</remarks>
         public Array<MediaPlayer> AllowedPlayers
         {
             get => Wrap<Array<MediaPlayer>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.A));
             set => BaseDataObject[PdfName.A] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets a set of players that must NOT be used in playing the associated media object.
-          </summary>
-          <remarks>This collection takes priority over <see cref="RequiredPlayers"/>.</remarks>
-        */
+        /// <summary>Gets/Sets a set of players that must NOT be used in playing the associated media object.
+        /// </summary>
+        /// <remarks>This collection takes priority over <see cref="RequiredPlayers"/>.</remarks>
         public Array<MediaPlayer> ForbiddenPlayers
         {
             get => Wrap<Array<MediaPlayer>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.NU));
             set => BaseDataObject[PdfName.NU] = PdfObjectWrapper.GetBaseObject(value);
         }
 
-        /**
-          <summary>Gets/Sets a set of players, one of which must be used in playing the associated media object.
-          </summary>
-        */
+        /// <summary>Gets/Sets a set of players, one of which must be used in playing the associated media object.
+        /// </summary>
         public Array<MediaPlayer> RequiredPlayers
         {
             get => Wrap<Array<MediaPlayer>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.MU));

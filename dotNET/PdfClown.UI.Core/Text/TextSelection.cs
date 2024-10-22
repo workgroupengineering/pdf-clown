@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PdfClown.UI
+namespace PdfClown.UI.Text
 {
     public class TextSelection
     {
@@ -24,6 +24,9 @@ namespace PdfClown.UI
         private TextChar startChar;
         private ITextString startString;
         private ITextBlock startBlock;
+        private TextSelectionEventArgs args;
+
+        private TextSelectionEventArgs Args => args ??= new TextSelectionEventArgs(this);
 
         public Dictionary<IContentContext, PageTextSelection> Chars { get; private set; } = new();
 
@@ -60,11 +63,13 @@ namespace PdfClown.UI
 
         public ITextBlock StartBlock { get => startBlock; }
 
-        public IContentContext StartContext => startPage;
-        
+        public IContentContext StartPage => startPage;
+
+        public PageTextSelection StartSelection => startPageSelection;
+
         public bool Any => Chars.Count > 0;// && Chars.Values.Any(c => c.Chars.Count > 0);
 
-        public event EventHandler Changed;
+        public event TextSelectionEventHandler Changed;
 
 
         public bool SetHoverChar(IContentContext page, ITextBlock textBlock, ITextString textString, TextChar textChar)
@@ -123,16 +128,20 @@ namespace PdfClown.UI
             Reset();
             ClearStartChar();
             ClearHoverChar();
-            foreach (var list in Chars.Values)
-                list.Dispose();
-            Chars.Clear();
+            if (Chars.Count > 0)
+            {
+                foreach (var list in Chars.Values)
+                    list.Dispose();
+                Chars.Clear();
+                OnChanged();
+            }
         }
 
         public void OnChanged()
         {
             Reset();
-            Changed?.Invoke(this, EventArgs.Empty);
-        }        
+            Changed?.Invoke(Args);
+        }
 
 
     }

@@ -19,9 +19,8 @@ namespace PdfClown.UI
         IEnumerable<Field> Fields { get; }
         IPdfPageViewModel this[int inde] { get; }
 
-        event EventHandler EndOperation;
-        event EventHandler<AnnotationEventArgs> AnnotationAdded;
-        event EventHandler<AnnotationEventArgs> AnnotationRemoved;
+        event PdfAnnotationEventHandler AnnotationAdded;
+        event PdfAnnotationEventHandler AnnotationRemoved;
 
         PdfDocumentViewModel GetDocumentView(PdfDocument document);
         PdfPageViewModel GetPageView(PdfPage page);

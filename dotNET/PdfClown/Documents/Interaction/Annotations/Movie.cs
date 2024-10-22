@@ -27,7 +27,6 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
-using multimedia = PdfClown.Documents.Multimedia;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -35,7 +34,7 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF12)]
     public sealed class Movie : Annotation
     {
-        public Movie(PdfPage page, SKRect box, string text, multimedia::Movie content)
+        public Movie(PdfPage page, SKRect box, string text, Multimedia.Movie content)
             : base(page, PdfName.Movie, box, text)
         { Content = content; }
 
@@ -43,9 +42,9 @@ namespace PdfClown.Documents.Interaction.Annotations
         { }
 
         /// <summary>Gets/Sets the movie to be played.</summary>
-        public multimedia::Movie Content
+        public Multimedia.Movie Content
         {
-            get => Wrap<multimedia::Movie>(BaseDataObject[PdfName.Movie]);
+            get => Wrap<Multimedia.Movie>(BaseDataObject[PdfName.Movie]);
             set
             {
                 if (value == null)

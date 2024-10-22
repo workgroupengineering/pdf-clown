@@ -35,7 +35,7 @@ namespace PdfClown.Documents.Contents.Objects
     [PDF(VersionEnum.PDF12)]
     public sealed class GraphicsMarkedContent : CompositeObject
     {
-        private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndMarkedContent.OperatorKeyword + Symbol.LineFeed);
+        private static readonly byte[] EndChunk = BaseEncoding.Pdf.Encode(EndMarkedContent.OperatorKeyword + Symbol.LineFeed);
 
         private BeginMarkedContent header;
 

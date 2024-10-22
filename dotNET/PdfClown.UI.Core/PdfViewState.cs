@@ -2,7 +2,7 @@
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.UI.Operations;
 using PdfClown.UI.ToolTip;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Linq;
@@ -27,6 +27,8 @@ namespace PdfClown.UI
         //Common
         public IPdfView Viewer;
 
+        public EditOperationList Operations => Viewer?.Operations;
+
         public IPdfDocumentViewModel Document
         {
             get => document;
@@ -39,8 +41,8 @@ namespace PdfClown.UI
                 {
                     document.BoundsChanged -= OnDocumentBoundsChanged;
                 }
-                Viewer.Operations.Document = value;
-                
+                Operations.Document = value;
+
                 ToolTipAnnotation = null;
                 document = value;
                 UpdateMaximums();
@@ -73,7 +75,7 @@ namespace PdfClown.UI
             {
                 if (currentPage != value)
                 {
-                    currentPage = value;                    
+                    currentPage = value;
                 }
             }
         }
@@ -240,7 +242,7 @@ namespace PdfClown.UI
             {
                 if (value != scale)
                 {
-                    var oldScale = scale; 
+                    var oldScale = scale;
                     scale = value;
                     UpdateMaximums();
                     Viewer.ScaleContent = value;
@@ -309,7 +311,7 @@ namespace PdfClown.UI
                 Canvas = null;
             }
         }
-        
+
 
         private void DrawSelectionRect(Quad selectionRect)
         {
@@ -470,37 +472,58 @@ namespace PdfClown.UI
             TouchAction = actionType;
             TouchButton = mouseButton;
             PointerLocation = location;
-
-            if (TouchButton == MouseButton.Middle)
+            try
             {
-                if (TouchAction == TouchAction.Pressed)
+                if (TouchButton == MouseButton.Middle
+                    && TouchDrag())
                 {
-                    MoveLocation = PointerLocation;
+                    return;
+                }
+                if (Viewer.Document == null
+                    || !Viewer.Document.IsPaintComplete)
+                {
+                    return;
+                }
+                if (Touch())
+                {
+                    return;
+                }
+                if (Viewer.Operations.Current != OperationType.AnnotationDrag)
+                    Viewer.Cursor = CursorType.Arrow;
+                PageView = null;
+            }
+            finally
+            {
+                if (CanDragByPointer())
+                {
+                    TouchDrag();
+                }
+            }
+        }
+
+        private bool CanDragByPointer() => Viewer.ScrollByPointer
+                && TouchButton == MouseButton.Left
+                && Viewer.Cursor == CursorType.Arrow;
+
+        private bool TouchDrag()
+        {
+            if (TouchAction == TouchAction.Pressed)
+            {
+                MoveLocation = PointerLocation;
+                if (TouchButton == MouseButton.Middle)
                     Viewer.Cursor = CursorType.ScrollAll;
-                    return;
-                }
-                else if (TouchAction == TouchAction.Moved)
-                {
-                    var vector = PointerLocation - MoveLocation;
-                    Viewer.HorizontalValue -= vector.X;
-                    Viewer.VerticalValue -= vector.Y;
-                    MoveLocation = PointerLocation;
-                    return;
-                }
+                return true;
             }
-            if (Viewer.Document == null || !Viewer.Document.IsPaintComplete)
+            else if (TouchAction == TouchAction.Moved)
             {
-                return;
+                var vector = PointerLocation - MoveLocation;
+                Viewer.HorizontalValue -= vector.X;
+                Viewer.VerticalValue -= vector.Y;
+                MoveLocation = PointerLocation;
+                return true;
             }
-            if (Touch())
-            {
-                return;
-            }
-
-            if (Viewer.Operations.Current != OperationType.AnnotationDrag)
-                Viewer.Cursor = CursorType.Arrow;
-            PageView = null;
-        }        
+            return false;
+        }
 
         private void OnDocumentBoundsChanged(object sender, EventArgs e)
         {

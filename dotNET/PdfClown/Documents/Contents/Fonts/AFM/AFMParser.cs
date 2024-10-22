@@ -653,7 +653,7 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             //        throw new IOException($"Error parsing AFM file:{e}");
             //    }
             //}
-            return PdfClown.Tokens.Encoding.Pdf.Decode(data);
+            return PdfClown.Tokens.BaseEncoding.Pdf.Decode(data);
         }
 
         /**

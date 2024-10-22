@@ -24,16 +24,14 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.Patterns.Shadings.Patches;
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System;
 using System.Linq;
-using PdfClown.Util.Math.Geom;
-using PdfClown.Documents.Contents.Patterns.Shadings.Patches;
 
 namespace PdfClown.Documents.Contents.Patterns.Shadings
 {

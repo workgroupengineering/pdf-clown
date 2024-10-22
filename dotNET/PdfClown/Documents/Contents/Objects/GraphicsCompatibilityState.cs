@@ -31,8 +31,8 @@ namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class GraphicsCompatibilityState : ContainerObject
     {
-        private static readonly byte[] BeginChunk = Encoding.Pdf.Encode(BeginCompatibilityState.OperatorKeyword + Symbol.LineFeed);
-        private static readonly byte[] EndChunk = Encoding.Pdf.Encode(EndCompatibilityState.OperatorKeyword + Symbol.LineFeed);
+        private static readonly byte[] BeginChunk = BaseEncoding.Pdf.Encode(BeginCompatibilityState.OperatorKeyword + Symbol.LineFeed);
+        private static readonly byte[] EndChunk = BaseEncoding.Pdf.Encode(EndCompatibilityState.OperatorKeyword + Symbol.LineFeed);
 
         public GraphicsCompatibilityState()
         { }

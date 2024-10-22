@@ -53,7 +53,7 @@
                 Text="Open File..."
                 VerticalOptions="CenterAndExpand" />
         </StackLayout>
-        <ListView
+        <!--<ListView
             x:Name="list"
             Grid.Row="1"
             Grid.Column="0"
@@ -65,11 +65,12 @@
                     </ViewCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
-        </ListView>
+        </ListView>-->
         <pdf:PdfView
             x:Name="viewer"
             Grid.Row="1"
-            Grid.Column="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
             BackgroundColor="#484848" />
 
     </Grid>

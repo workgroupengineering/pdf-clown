@@ -30,7 +30,7 @@ using PdfClown.Util.IO;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
-using text = System.Text;
+using System.Text;
 
 namespace PdfClown.Bytes
 {
@@ -219,7 +219,7 @@ namespace PdfClown.Bytes
             NotifyChange();
         }
 
-        public void Insert(int index, string data) => Insert(index, Encoding.Pdf.Encode(data));
+        public void Insert(int index, string data) => Insert(index, BaseEncoding.Pdf.Encode(data));
 
         public void Insert(int index, IInputStream data) => Insert(index, data.AsMemory().Span);
 
@@ -234,7 +234,7 @@ namespace PdfClown.Bytes
             NotifyChange();
         }
 
-        public void Replace(int index, string data) => Replace(index, Encoding.Pdf.Encode(data));
+        public void Replace(int index, string data) => Replace(index, BaseEncoding.Pdf.Encode(data));
 
         public void Replace(int index, IInputStream data) => Replace(index, data.AsMemory().Span);
 
@@ -387,7 +387,7 @@ namespace PdfClown.Bytes
             if (position >= length)
                 throw new EndOfStreamException();
 
-            var buffer = new text::StringBuilder();
+            var buffer = new StringBuilder();
             while (position < length)
             {
                 int c = GetByte(position++);

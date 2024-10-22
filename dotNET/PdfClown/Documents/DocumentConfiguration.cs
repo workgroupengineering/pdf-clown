@@ -27,7 +27,7 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 using PdfClown.Util.IO;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using System;
 using System.Collections.Generic;
 using System.IO;

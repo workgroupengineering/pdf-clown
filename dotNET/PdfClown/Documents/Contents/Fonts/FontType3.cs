@@ -25,7 +25,7 @@
 
 using PdfClown.Bytes;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Diagnostics;
@@ -118,14 +118,6 @@ namespace PdfClown.Documents.Contents.Fonts
             get => charProcs ??= Dictionary.Get<PdfDictionary>(PdfName.CharProcs);
         }
 
-        /// <summary>This will get the fonts bounding box from its dictionary.</summary>
-        /// <value> The fonts bounding box.</value>
-        public Rectangle FontBBox
-        {
-            get => Rectangle.Wrap(BaseDataObject.Get<PdfArray>(PdfName.FontBBox));
-            set => BaseDataObject[PdfName.FontBBox] = value?.BaseObject;
-        }
-
         public override float ScalingFactor => FontMatrix.ScaleX;
 
         public override SKPath GetPath(int code)
@@ -160,10 +152,9 @@ namespace PdfClown.Documents.Contents.Fonts
             return FontMatrix.MapVector(base.GetWidth(code), 0);
         }
 
+        protected override float GetAscent() => FontBBox.Bottom;
 
-        protected override float GetAscent() => BoundingBox.Bottom;
-
-        protected override float GetDescent() => BoundingBox.Top;
+        protected override float GetDescent() => FontBBox.Top;
 
         public override float GetWidth(int code)
         {
@@ -253,9 +244,10 @@ namespace PdfClown.Documents.Contents.Fonts
                                         : base.GenerateFontMatrix();
         }
 
-        protected override SKRect GenerateBoundingBox()
+        protected override SKRect GenerateBBox()
         {
-            var rect = FontBBox?.ToSKRect() ?? SKRect.Empty;
+            var pdfRect = Rectangle.Wrap(BaseDataObject.Get<PdfArray>(PdfName.FontBBox));
+            var rect = pdfRect?.ToSKRect() ?? SKRect.Empty;
             if (rect.Width == 0 || rect.Height == 0)
             {
                 // Plan B: get the max bounding box of the glyphs

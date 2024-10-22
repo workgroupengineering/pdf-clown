@@ -1,25 +1,29 @@
 ﻿using SkiaSharp;
 
-namespace PdfClown.Util.Math.Geom
+namespace PdfClown.Util.Math
 {
     //https://gamedev.stackexchange.com/a/111106
     public struct SKLine
     {
-        public SKPoint a;
-        public SKPoint b;
+        public SKPoint A;
+        public SKPoint B;
+
+        public SKLine(float ax, float ay, float bx, float by)
+            : this(new SKPoint(ax, ay), new SKPoint(bx, by))
+        { }
 
         public SKLine(SKPoint a, SKPoint b)
         {
-            this.a = a;
-            this.b = b;
+            this.A = a;
+            this.B = b;
         }
 
-        public SKPoint Vector => a - b;
+        public SKPoint Vector => A - B;
 
         public SKPoint NormalVector => SKPoint.Normalize(Vector);
 
         public static SKPoint? FindIntersection(SKLine a, SKLine b, bool segment)
-            => FindIntersection(a.a, a.b, b.a, b.b, segment);
+            => FindIntersection(a.A, a.B, b.A, b.B, segment);
         public static SKPoint? FindIntersection(SKPoint aa, SKPoint ab, SKPoint ba, SKPoint bb, bool segment)
         {
             float x1 = aa.X;
@@ -54,17 +58,17 @@ namespace PdfClown.Util.Math.Geom
 
         }
 
-        public static SKPoint? FindIntersection(SKLine a, Quad q, bool segment)
+        public SKPoint? FindIntersection(Quad q)
         {
-            return FindIntersection(a, q.Point0, q.Point1, q.Point2, q.Point3, segment);
+            return FindIntersection(q.Point0, q.Point1, q.Point2, q.Point3);
         }
 
-        public static SKPoint? FindIntersection(SKLine a, SKPoint c0, SKPoint c1, SKPoint c2, SKPoint c3, bool segment)
+        public SKPoint? FindIntersection(SKPoint c0, SKPoint c1, SKPoint c2, SKPoint c3)
         {
-            return FindIntersection(a, new SKLine(c0, c1), segment) ??
-                FindIntersection(a, new SKLine(c1, c2), segment) ??
-                FindIntersection(a, new SKLine(c2, c3), segment) ??
-                FindIntersection(a, new SKLine(c3, c0), segment);
+            return FindIntersection(this, new SKLine(c0, c1), true) ??
+                FindIntersection(this, new SKLine(c1, c2), true) ??
+                FindIntersection(this, new SKLine(c2, c3), true) ??
+                FindIntersection(this, new SKLine(c3, c0), true);
         }
 
     }

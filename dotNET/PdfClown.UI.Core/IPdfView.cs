@@ -1,6 +1,7 @@
 ﻿using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.UI.Text;
 using PdfClown.UI.Operations;
 using System;
 
@@ -14,15 +15,12 @@ namespace PdfClown.UI
         CursorType Cursor { get; set; }
         bool ShowMarkup { get; }
         bool ShowCharBound { get; }
+        bool ScrollByPointer { get; set; }
         EditOperationList Operations { get; }
-        ControlPoint SelectedPoint { get; set; }
-        ControlPoint HoverPoint { get; set; }
         bool IsReadOnly { get; set; }
         int PagesCount { get; set; }
         int PageNumber { get; set; }
 
-        Annotation SelectedAnnotation { get; set; }
-        Annotation HoverAnnotation { get; set; }
         TextSelection TextSelection { get; }
 
         double Width { get; }
@@ -35,8 +33,7 @@ namespace PdfClown.UI
         PdfViewFitMode FitMode { get; set; }
         float ScaleContent { get; set; }
 
-        event EventHandler<AnnotationEventArgs> SelectedAnnotationChanged;
-        event EventHandler<EventArgs> DocumentChanged;
+        event PdfDocumentEventHandler DocumentChanged;
 
         void InvalidatePaint();
 

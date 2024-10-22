@@ -28,7 +28,6 @@ using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
 using SkiaSharp;
-using system = System;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -76,7 +75,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 else if (value is Action)
                 { Action = (Action)value; }
                 else
-                    throw new system::ArgumentException("It MUST be either a Destination or an Action.");
+                    throw new System.ArgumentException("It MUST be either a Destination or an Action.");
             }
         }
 

@@ -26,7 +26,6 @@
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.Type1;
 using PdfClown.Objects;
-using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -36,12 +35,10 @@ using System.IO;
 namespace PdfClown.Documents.Contents.Fonts
 {
     /// <summary>Type 1 font [PDF:1.6:5.5.1;AFM:4.1].</summary>
-    /*
-      NOTE: Type 1 fonts encompass several formats:
-      * AFM+PFB;
-      * CFF;
-      * OpenFont/CFF (in case "CFF" table's Top DICT has no CIDFont operators).
-    */
+    // NOTE: Type 1 fonts encompass several formats:
+    // * AFM+PFB;
+    // * CFF;
+    // * OpenFont/CFF (in case "CFF" table's Top DICT has no CIDFont operators).
     [PDF(VersionEnum.PDF10)]
     public class FontType1 : FontSimple
     {
@@ -114,7 +111,7 @@ namespace PdfClown.Documents.Contents.Fonts
         private readonly BaseFont genericFont;
         private readonly bool isEmbedded;
         private readonly bool isDamaged;
-        private readonly SKMatrix fontMatrixTransform;
+        private readonly SKMatrix normMatrix;
         private readonly Dictionary<int, byte[]> codeToBytesMap = new Dictionary<int, byte[]>();
 
         internal FontType1(PdfDocument context) : base(context)
@@ -195,7 +192,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             else
             {
-                FontMapping<BaseFont> mapping = FontMappers.Instance.GetBaseFont(BaseFont, fd);
+                var mapping = FontMappers.Instance.GetBaseFont(BaseFont, fd);
                 genericFont = mapping.Font;
 
                 if (mapping.IsFallback)
@@ -204,8 +201,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
             }
             ReadEncoding();
-            fontMatrixTransform = FontMatrix;
-            fontMatrixTransform = fontMatrixTransform.PreConcat(SKMatrix.CreateScale(1000, 1000));
+            normMatrix = FontMatrix.PreConcat(SKMatrix.CreateScale(1000, 1000));
         }
 
         public FontType1(PdfDocument context, FontName baseFont) : base(context, baseFont)
@@ -247,7 +243,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             isEmbedded = false;
             isDamaged = false;
-            fontMatrixTransform = SKMatrix.Identity;
+            normMatrix = SKMatrix.Identity;
         }
 
         public FontType1(PdfDocument doc, IInputStream pfbIn) : this(doc, pfbIn, null)
@@ -255,15 +251,15 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public FontType1(PdfDocument doc, IInputStream pfbIn, Encoding encoding) : base(doc)
         {
-            FontType1Embedder embedder = new FontType1Embedder(doc, Dictionary, pfbIn, encoding);
+            var embedder = new FontType1Embedder(doc, Dictionary, pfbIn, encoding);
             this.encoding = encoding ?? embedder.FontEncoding;
             glyphList = embedder.GlyphList;
             type1font = embedder.Type1Font;
             genericFont = embedder.Type1Font;
             isEmbedded = true;
             isDamaged = false;
-            fontMatrixTransform = SKMatrix.Identity;
             codeToBytesMap = new Dictionary<int, byte[]>();
+            normMatrix = SKMatrix.Identity;
         }
 
         /**
@@ -345,6 +341,39 @@ namespace PdfClown.Documents.Contents.Fonts
             return length2;
         }
 
+        public override SKMatrix? NormMatrix => normMatrix;
+
+        public override bool IsEmbedded
+        {
+            get => isEmbedded;
+        }
+
+        public override float AverageFontWidth
+        {
+            get => Standard14AFM?.GetAverageCharacterWidth() ?? base.AverageFontWidth;
+        }
+
+        /// <summary>Returns the embedded or substituted Type 1 font, or null if there is none.</summary>
+        public Type1Font Type1Font
+        {
+            get => type1font;
+        }
+
+        public override BaseFont Font
+        {
+            get => genericFont;
+        }
+
+        public override string Name
+        {
+            get => BaseFont;
+        }
+
+        public override bool IsDamaged
+        {
+            get => isDamaged;
+        }
+
         public override float GetHeight(int code)
         {
             if (Standard14AFM != null)
@@ -416,28 +445,8 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             float width = genericFont.GetWidth(name);
 
-            var p = fontMatrixTransform.MapVector(width, 0);
+            var p = normMatrix.MapVector(width, 0);
             return p.X;
-        }
-
-        public override bool IsEmbedded
-        {
-            get => isEmbedded;
-        }
-
-        public override float AverageFontWidth
-        {
-            get
-            {
-                if (Standard14AFM != null)
-                {
-                    return Standard14AFM.GetAverageCharacterWidth();
-                }
-                else
-                {
-                    return base.AverageFontWidth;
-                }
-            }
         }
 
         public override int ReadCode(IInputStream input, out ReadOnlySpan<byte> bytes)
@@ -471,40 +480,6 @@ namespace PdfClown.Documents.Contents.Fonts
                     return StandardEncoding.Instance;
                 }
             }
-        }
-
-        /// <summary>Returns the embedded or substituted Type 1 font, or null if there is none.</summary>
-        public Type1Font Type1Font
-        {
-            get => type1font;
-        }
-
-        public override BaseFont Font
-        {
-            get => genericFont;
-        }
-
-        public override string Name
-        {
-            get => BaseFont;
-        }
-
-        public override bool IsDamaged
-        {
-            get => isDamaged;
-        }
-
-        protected override SKRect GenerateBoundingBox()
-        {
-            if (FontDescriptor != null)
-            {
-                Rectangle bbox = FontDescriptor.FontBBox;
-                if (IsNonZeroBoundingBox(bbox))
-                {
-                    return bbox.ToSKRect();
-                }
-            }
-            return genericFont.FontBBox;
         }
 
         public string CodeToName(int code)
@@ -603,6 +578,11 @@ namespace PdfClown.Documents.Contents.Fonts
             return !Encoding.GetName(code).Equals(".notdef", StringComparison.Ordinal);
         }
 
+        protected override SKRect GenerateBBox()
+        {
+            return GetDefaultBBox() ?? genericFont.FontBBox;
+        }
+
         protected override SKMatrix GenerateFontMatrix()
         {
             // PDF specified that Type 1 fonts use a 1000upem matrix, but some fonts specify
@@ -627,7 +607,7 @@ namespace PdfClown.Documents.Contents.Fonts
             }
             else
             {
-                return base.FontMatrix;
+                return DefaultFontMatrix;
             }
         }
 

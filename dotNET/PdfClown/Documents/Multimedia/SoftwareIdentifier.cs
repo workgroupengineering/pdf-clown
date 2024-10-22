@@ -23,11 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 using PdfClown.Util.Metadata;
@@ -38,9 +33,7 @@ using System.Linq;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Software identifier [PDF:1.7:9.1.6].</summary>
-    */
+    /// <summary>Software identifier [PDF:1.7:9.1.6].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class SoftwareIdentifier : PdfObjectWrapper<PdfDictionary>
     {
@@ -48,7 +41,7 @@ namespace PdfClown.Documents.Multimedia
         private Uri url;
         private Interval<VersionObject> version;
 
-        ///<summary>Software version number [PDF:1.7:9.1.6].</summary>
+        /// <summary>Software version number [PDF:1.7:9.1.6].</summary>
         public sealed class VersionObject : PdfObjectWrapper<PdfArray>, IVersion
         {
             private int[] numbers;
@@ -82,35 +75,29 @@ namespace PdfClown.Documents.Multimedia
         public SoftwareIdentifier(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the operating system identifiers that indicate which operating systems this
-          object applies to.</summary>
-          <remarks>The defined values are the same as those defined for SMIL 2.0's systemOperatingSystem
-          attribute. An empty list is considered to represent all operating systems.</remarks>
-        */
+        /// <summary>Gets the operating system identifiers that indicate which operating systems this
+        /// object applies to.</summary>
+        /// <remarks>The defined values are the same as those defined for SMIL 2.0's systemOperatingSystem
+        /// attribute.An empty list is considered to represent all operating systems.</remarks>
         public IList<string> OSes
         {
             get => oSes ??= BaseDataObject.Get<PdfArray>(PdfName.OS)?.ToStringArray();
             set => BaseDataObject[PdfName.OS] = new PdfArray(oSes = value);
         }
 
-        /**
-          <summary>Gets the URI that identifies a piece of software.</summary>
-          <remarks>It is interpreted according to its scheme; the only presently defined scheme is
-          vnd.adobe.swname. The scheme name is case-insensitive; if is not recognized by the viewer
-          application, the software must be considered a non-match. The syntax of URIs of this scheme is
-          "vnd.adobe.swname:" software_name where software_name is equivalent to reg_name as defined in
-          Internet RFC 2396, Uniform Resource Identifiers (URI): Generic Syntax.</remarks>
-        */
+        /// <summary>Gets the URI that identifies a piece of software.</summary>
+        /// <remarks>It is interpreted according to its scheme; the only presently defined scheme is
+        /// vnd.adobe.swname.The scheme name is case-insensitive; if is not recognized by the viewer
+        /// application, the software must be considered a non-match.The syntax of URIs of this scheme is
+        /// "vnd.adobe.swname:" software_name where software_name is equivalent to reg_name as defined in
+        /// Internet RFC 2396, Uniform Resource Identifiers (URI): Generic Syntax.</remarks>
         public Uri URI
         {
             get => url ??= BaseDataObject.GetString(PdfName.U) is string stringValue ? new Uri(stringValue) : null;
             set => BaseDataObject.Set(PdfName.U, value?.ToString());
         }
 
-        /**
-          <summary>Gets the software version bounds.</summary>
-        */
+        /// <summary>Gets the software version bounds.</summary>
         public Interval<VersionObject> Version
         {
             get => version ??= new Interval<VersionObject>(

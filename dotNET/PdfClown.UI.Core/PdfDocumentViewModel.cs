@@ -192,13 +192,12 @@ namespace PdfClown.UI
             get => pageViews[index];
         }
 
-        public event EventHandler EndOperation;
+        public event PdfAnnotationEventHandler AnnotationAdded;
 
-        public event EventHandler<AnnotationEventArgs> AnnotationAdded;
-
-        public event EventHandler<AnnotationEventArgs> AnnotationRemoved;
+        public event PdfAnnotationEventHandler AnnotationRemoved;
 
         public event EventHandler BoundsChanged;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private SKRect CalculateBounds()
@@ -380,11 +379,6 @@ namespace PdfClown.UI
                 : SerializationModeEnum.Standard;
         }
 
-        public void OnEndOperation(object result)
-        {
-            EndOperation?.Invoke(this, new OperationEventArgs(result));
-        }
-
         public Field GetField(string name)
         {
             return Fields[name];
@@ -452,7 +446,7 @@ namespace PdfClown.UI
                     page.Annotations.Add(annotation);
                     list.Add(annotation);
                 }
-                AnnotationAdded?.Invoke(this, new AnnotationEventArgs(annotation));
+                AnnotationAdded?.Invoke(new PdfAnnotationEventArgs(annotation));
                 foreach (var item in annotation.Replies)
                 {
                     if (item is Markup markup)
@@ -493,7 +487,7 @@ namespace PdfClown.UI
 
             annotation.Remove();
 
-            AnnotationRemoved?.Invoke(this, new AnnotationEventArgs(annotation));
+            AnnotationRemoved?.Invoke(new PdfAnnotationEventArgs(annotation));
             if (annotation is Popup popup)
             {
                 list.AddRange(RemoveAnnotation(popup.Parent));

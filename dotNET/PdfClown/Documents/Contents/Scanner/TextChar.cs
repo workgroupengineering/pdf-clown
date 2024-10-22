@@ -23,7 +23,7 @@
   this list of conditions.
 */
 
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using System;
 using System.Diagnostics.CodeAnalysis;
 

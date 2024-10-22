@@ -30,15 +30,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using text = System.Text;
+using System.Text;
 
 namespace PdfClown.Objects
 {
     /// <summary>PDF dictionary object [PDF:1.6:3.2.6].</summary>
     public sealed class PdfDictionary : PdfWrapableDirectObject, IDictionary<PdfName, PdfDirectObject>, IBiDictionary<PdfName, PdfDirectObject>
     {
-        private static readonly byte[] BeginDictionaryChunk = Encoding.Pdf.Encode(Keyword.BeginDictionary);
-        private static readonly byte[] EndDictionaryChunk = Encoding.Pdf.Encode(Keyword.EndDictionary);
+        private static readonly byte[] BeginDictionaryChunk = BaseEncoding.Pdf.Encode(Keyword.BeginDictionary);
+        private static readonly byte[] EndDictionaryChunk = BaseEncoding.Pdf.Encode(Keyword.EndDictionary);
 
         internal Dictionary<PdfName, PdfDirectObject> entries;
 
@@ -317,7 +317,7 @@ namespace PdfClown.Objects
 
         public override string ToString()
         {
-            var buffer = new text::StringBuilder();
+            var buffer = new StringBuilder();
             {
                 // Begin.
                 buffer.Append("<< ");

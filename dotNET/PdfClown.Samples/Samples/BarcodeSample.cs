@@ -3,11 +3,7 @@ using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Entities;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Files;
-using PdfClown.Util.Math.Geom;
-
-using System;
-using System.Collections.Generic;
+using PdfClown.Util.Math;
 using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
@@ -76,7 +72,7 @@ namespace PdfClown.Samples.CLI
                 composer.ShowXObject(
                   barcodeXObject,
                   new SKPoint(pageSize.Width - Margin, pageSize.Height - Margin),
-                  GeomUtils.Scale(barcodeXObject.Size, new SKSize(100, 0)),
+                  barcodeXObject.Size.Scale(new SKSize(100, 0)),
                   XAlignmentEnum.Right,
                   YAlignmentEnum.Bottom,
                   0);
@@ -94,11 +90,10 @@ namespace PdfClown.Samples.CLI
                 composer.ShowXObject(
                   barcodeXObject,
                   new SKPoint(pageSize.Width / 2, pageSize.Height / 2),
-                  GeomUtils.Scale(barcodeXObject.Size, new SKSize(pageSize.Width / 3, 0)),
+                  barcodeXObject.Size.Scale(new SKSize(pageSize.Width / 3, 0)),
                   XAlignmentEnum.Center,
                   YAlignmentEnum.Middle,
-                  25
-                  );
+                  25);
                 composer.Flush();
             }
 
@@ -116,8 +111,7 @@ namespace PdfClown.Samples.CLI
                   new SKSize(pageSize.Height, pageSize.Width),
                   XAlignmentEnum.Center,
                   YAlignmentEnum.Middle,
-                  -90
-                  );
+                  -90);
                 composer.Flush();
             }
         }

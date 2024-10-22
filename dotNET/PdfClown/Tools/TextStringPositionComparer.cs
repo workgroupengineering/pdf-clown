@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Documents.Contents.Scanner;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using System;
 using System.Collections.Generic;
 

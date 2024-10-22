@@ -23,33 +23,24 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Interaction;
-using actions = PdfClown.Documents.Interaction.Actions;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
 
 namespace PdfClown.Documents.Multimedia
 {
-    /**
-      <summary>Media clip object [PDF:1.7:9.1.3].</summary>
-    */
+    /// <summary>Media clip object [PDF:1.7:9.1.3].</summary>
     [PDF(VersionEnum.PDF15)]
     public abstract class MediaClip : PdfObjectWrapper<PdfDictionary>
     {
-        /**
-          <summary>Wraps a clip base object into a clip object.</summary>
-        */
+        /// <summary>Wraps a clip base object into a clip object.</summary>
         public static MediaClip Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
             if (baseObject.Wrapper is MediaClip clip)
                 return clip;
-            
+
             var subtype = ((PdfDictionary)baseObject.Resolve()).Get<PdfName>(PdfName.S);
             if (PdfName.MCD.Equals(subtype))
                 return new MediaClipData(baseObject);
@@ -70,10 +61,8 @@ namespace PdfClown.Documents.Multimedia
         public MediaClip(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the actual media data.</summary>
-          <returns>Either a <see cref="FullFileSpecification"/> or a <see cref="FormXObject"/>.</returns>
-        */
+        /// <summary>Gets/Sets the actual media data.</summary>
+        /// <returns>Either a <see cref="FullFileSpecification"/> or a <see cref="FormXObject"/>.</returns>
         public abstract PdfObjectWrapper Data { get; set; }
     }
 }

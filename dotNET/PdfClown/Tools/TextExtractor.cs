@@ -27,7 +27,6 @@ using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Util.Math;
-using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections;

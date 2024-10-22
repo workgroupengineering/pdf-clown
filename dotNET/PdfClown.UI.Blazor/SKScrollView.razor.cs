@@ -72,7 +72,7 @@ namespace PdfClown.UI.Blazor
         private SKCanvasView canvasView = null;
 #endif
         private SKHtmlScrollInterop interop = null;
-        
+
         private SKPoint nullLocation;
         private Orientation nullDirection = Orientation.Vertical;
         private double vHeight;
@@ -93,8 +93,10 @@ namespace PdfClown.UI.Blazor
         private CursorType cursor;
         protected double verticalValue;
         protected double horizontalValue;
-        private double height;
-        private double width;
+        private double height = 1;
+        private double width = 1;
+        protected float XScaleFactor = 1;
+        protected float YScaleFactor = 1;
 
         public SKScrollView()
         {
@@ -342,7 +344,7 @@ namespace PdfClown.UI.Blazor
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                interop = await SKHtmlScrollInterop.ImportAsync(JS, CanvasId, OnPointerMove);
+                interop = await SKHtmlScrollInterop.ImportAsync(JS, CanvasId, OnPointerMove, OnSizeAllocated);
                 interop.Init();
             }
         }
@@ -528,7 +530,7 @@ namespace PdfClown.UI.Blazor
             }
         }
 
-        protected virtual void OnSizeAllocated(double width, double height)
+        protected virtual void OnSizeAllocated(float width, float height)
         {
             Width = width;
             Height = height;
@@ -614,9 +616,10 @@ namespace PdfClown.UI.Blazor
         protected virtual void OnPaintSurface(SKPaintSurfaceEventArgs e)
 #endif
         {
+            XScaleFactor = (float)(e.Info.Width / Width);
+            YScaleFactor = (float)(e.Info.Height / Height);
+
             var canvas = e.Surface.Canvas;
-            var XScaleFactor = (float)(e.Info.Width / Width);
-            var YScaleFactor = (float)(e.Info.Height / Height);
 
             canvas.Scale(XScaleFactor, YScaleFactor);
             canvas.Clear(SKColors.Silver);
@@ -830,7 +833,7 @@ namespace PdfClown.UI.Blazor
                 || (HorizontalScrollBarVisible && GetHorizontalValueBounds().Contains((float)x, (float)y));
         }
 
-        public Func<double, double, bool> CheckCaptureBox;
+        public Func<double, double, bool> CheckCaptureBox;        
 
         private static KeyModifiers GetKeyModifiers(MouseEventArgs e)
         {

@@ -29,12 +29,10 @@ using PdfClown.Documents.Functions;
 using PdfClown.Objects;
 using PdfClown.Util.Collections;
 using PdfClown.Util.Math;
-using PdfClown.Util.Math.Geom;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 
 namespace PdfClown.Documents.Contents.Patterns.Shadings

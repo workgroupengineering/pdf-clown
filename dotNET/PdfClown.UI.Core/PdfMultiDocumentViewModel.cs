@@ -1,8 +1,7 @@
 ﻿using PdfClown.Documents;
-using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Forms;
 using PdfClown.UI.Operations;
-using PdfClown.Util.Math.Geom;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -49,11 +48,9 @@ namespace PdfClown.UI
 
         public IPdfPageViewModel this[int index] => pages[index];
 
-        public event EventHandler EndOperation;
+        public event PdfAnnotationEventHandler AnnotationAdded;
 
-        public event EventHandler<AnnotationEventArgs> AnnotationAdded;
-
-        public event EventHandler<AnnotationEventArgs> AnnotationRemoved;
+        public event PdfAnnotationEventHandler AnnotationRemoved;
 
         public event EventHandler BoundsChanged;
 
@@ -66,8 +63,7 @@ namespace PdfClown.UI
         private void Subscribe(PdfDocumentViewModel document)
         {
             document.PropertyChanged += OnItemPropertyChanged;
-            document.BoundsChanged += OnItemBoundsChanged;
-            document.EndOperation += OnItemEndOperation;
+            document.BoundsChanged += OnItemBoundsChanged;            
             document.AnnotationAdded += OnItemAnnotationAdded;
             document.AnnotationRemoved += OnItemAnnotationRemoved;
         }
@@ -76,7 +72,6 @@ namespace PdfClown.UI
         {
             document.PropertyChanged -= OnItemPropertyChanged;
             document.BoundsChanged -= OnItemBoundsChanged;
-            document.EndOperation -= OnItemEndOperation;
             document.AnnotationAdded -= OnItemAnnotationAdded;
             document.AnnotationRemoved -= OnItemAnnotationRemoved;
         }
@@ -92,11 +87,9 @@ namespace PdfClown.UI
             BoundsChanged?.Invoke(this, e);
         }
 
-        private void OnItemAnnotationRemoved(object sender, AnnotationEventArgs e) => AnnotationRemoved?.Invoke(sender, e);
+        private void OnItemAnnotationRemoved(PdfAnnotationEventArgs e) => AnnotationRemoved?.Invoke(e);
 
-        private void OnItemAnnotationAdded(object sender, AnnotationEventArgs e) => AnnotationAdded?.Invoke(sender, e);
-
-        private void OnItemEndOperation(object sender, EventArgs e) => EndOperation?.Invoke(sender, e);
+        private void OnItemAnnotationAdded(PdfAnnotationEventArgs e) => AnnotationAdded?.Invoke(e);
 
         public PdfDocumentViewModel GetDocumentView(PdfDocument document) => items.FirstOrDefault(x => x.Document == document);
 
