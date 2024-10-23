@@ -145,8 +145,8 @@ namespace PdfClown.Tokens
                 { trailer = sectionTrailer; }
 
                 // Get the previous xref-table section's offset!
-                sectionOffset = sectionTrailer.GetInt(PdfName.Prev, -1);
-                xrefStm = sectionTrailer.GetNInt(PdfName.XRefStm);
+                sectionOffset = sectionTrailer?.GetInt(PdfName.Prev, -1) ?? -1;
+                xrefStm = sectionTrailer?.GetNInt(PdfName.XRefStm);                
             }
 
             return new FileInfo(version, trailer, xrefEntries);

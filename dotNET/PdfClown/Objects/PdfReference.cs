@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents.Contents;
 using PdfClown.Tokens;
 
 using System;
