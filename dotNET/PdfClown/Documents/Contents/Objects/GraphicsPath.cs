@@ -56,7 +56,9 @@ namespace PdfClown.Documents.Contents.Objects
         }
 
         protected virtual void PostScan(GraphicsState state)
-        { }
+        {
+            state.Scanner.Path = null;
+        }
 
         public SKRect GetBox(GraphicsState state)
         {

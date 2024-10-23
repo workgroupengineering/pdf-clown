@@ -42,8 +42,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected override void PostScan(GraphicsState state)
         {
-            base.PostScan(state);
             ClipPathOperator.Scan(state);
+            base.PostScan(state);
         }
 
         public override void WriteTo(IOutputStream stream, PdfDocument context)
