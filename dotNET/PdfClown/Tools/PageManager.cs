@@ -315,7 +315,7 @@ namespace PdfClown.Tools
         */
         public IList<PdfDocument> Split(params int[] indexes)
         {
-            IList<PdfDocument> documents = new List<PdfDocument>();
+            var documents = new List<PdfDocument>();
             {
                 int startIndex = 0;
                 foreach (int index in indexes)
@@ -336,7 +336,7 @@ namespace PdfClown.Tools
         */
         public IList<PdfDocument> Split(long maxDataSize)
         {
-            IList<PdfDocument> documents = new List<PdfDocument>();
+            var documents = new List<PdfDocument>();
             {
                 int startPageIndex = 0;
                 long incrementalDataSize = 0;

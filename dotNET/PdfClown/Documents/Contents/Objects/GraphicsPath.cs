@@ -39,7 +39,7 @@ namespace PdfClown.Documents.Contents.Objects
         { }
 
         /// <summary>Creates the rendering object corresponding to this container.</summary>
-        private SKPath CreatePath() => new SKPath();
+        private static SKPath CreatePath() => new();
 
         public override void Scan(GraphicsState state)
         {

@@ -78,7 +78,7 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        private static SKMatrix GenerateMatrix(ContentScanner scanner, Shading shading)
+        public static SKMatrix GenerateMatrix(ContentScanner scanner, Shading shading)
         {
             var matrix = SKMatrix.Identity;
             if (scanner.Canvas.GetLocalClipBounds(out var clipBound))

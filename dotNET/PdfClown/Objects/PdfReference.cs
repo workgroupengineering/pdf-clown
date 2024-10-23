@@ -40,7 +40,7 @@ namespace PdfClown.Objects
 
         private PdfIndirectObject indirectObject;
 
-        private PdfFile file;
+        private readonly PdfFile file;
         private PdfObject parent;
         private string id;
         private PdfObjectStatus status;

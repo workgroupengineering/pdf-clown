@@ -41,7 +41,6 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected ModifyClipPath(string @operator) : base(@operator)
         {
-
         }
     }
 }

@@ -47,7 +47,7 @@ namespace PdfClown
             { }
         }
 
-        private static Random hashCodeGenerator = new Random();
+        private static readonly Random hashCodeGenerator = new();
 
         private FileConfiguration configuration;
         private readonly PdfDocument document;

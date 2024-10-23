@@ -39,9 +39,9 @@ namespace PdfClown.Tokens
     {
         public sealed class FileInfo
         {
-            private PdfDictionary trailer;
-            private PdfVersion version;
-            private IDictionary<int, XRefEntry> xrefEntries;
+            private readonly PdfDictionary trailer;
+            private readonly PdfVersion version;
+            private readonly IDictionary<int, XRefEntry> xrefEntries;
 
             internal FileInfo(PdfVersion version, PdfDictionary trailer, IDictionary<int, XRefEntry> xrefEntries)
             {
@@ -141,8 +141,7 @@ namespace PdfClown.Tokens
                     }
                 }
 
-                if (trailer == null)
-                { trailer = sectionTrailer; }
+                trailer ??= sectionTrailer;
 
                 // Get the previous xref-table section's offset!
                 sectionOffset = sectionTrailer?.GetInt(PdfName.Prev, -1) ?? -1;
@@ -181,7 +180,7 @@ namespace PdfClown.Tokens
             }
         }
 
-        private void ReadXRefTable(IDictionary<int, XRefEntry> xrefEntries)
+        private void ReadXRefTable(Dictionary<int, XRefEntry> xrefEntries)
         {
             // Looping sequentially across the subsections inside the current xref-table section...
             while (true)

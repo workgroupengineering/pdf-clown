@@ -55,7 +55,7 @@ namespace PdfClown.Tools
             { RemoveLayerContents(page, removedLayers, layerEntities, layerXObjects, preserveContent); }
 
             // 2. Layer definitions.
-            HashSet<PdfReference> removedLayerReferences = new HashSet<PdfReference>();
+            var removedLayerReferences = new HashSet<PdfReference>();
             foreach (var removedLayer in removedLayers)
             { removedLayerReferences.Add((PdfReference)removedLayer.BaseObject); }
             var layerDefinition = document.Layer;
@@ -89,16 +89,17 @@ namespace PdfClown.Tools
             var pageResources = page.Resources;
 
             // Collect the page's layer entities containing the layers!
-            HashSet<PdfName> layerEntityNames = new HashSet<PdfName>();
+            var layerEntityNames = new HashSet<PdfName>();
             var pagePropertyLists = pageResources.PropertyLists;
             foreach (var propertyListEntry in pagePropertyLists)
             {
-                if (!(propertyListEntry.Value is LayerEntity))
+                if (propertyListEntry.Value is not LayerEntity layerEntity)
                     continue;
 
-                var layerEntity = (LayerEntity)propertyListEntry.Value;
                 if (layerEntities.Contains(layerEntity))
-                { layerEntityNames.Add(propertyListEntry.Key); }
+                {
+                    layerEntityNames.Add(propertyListEntry.Key);
+                }
                 else
                 {
                     var members = layerEntity.VisibilityMembers;
@@ -115,7 +116,7 @@ namespace PdfClown.Tools
             }
 
             // Collect the page's xobjects associated to the layers!
-            HashSet<PdfName> layerXObjectNames = new HashSet<PdfName>();
+            var layerXObjectNames = new HashSet<PdfName>();
             var pageXObjects = pageResources.XObjects;
             foreach (var xObjectEntry in pageXObjects)
             {
@@ -168,7 +169,7 @@ namespace PdfClown.Tools
             }
         }
 
-        private void RemoveLayerContents(ContentScanner level, ICollection<PdfName> layerEntityNames, ICollection<PdfName> layerXObjectNames, bool preserveContent)
+        private void RemoveLayerContents(ContentScanner level, HashSet<PdfName> layerEntityNames, HashSet<PdfName> layerXObjectNames, bool preserveContent)
         {
             if (level == null)
                 return;
@@ -206,7 +207,7 @@ namespace PdfClown.Tools
             }
         }
 
-        private void RemoveLayerReferences(LayerConfiguration layerConfiguration, ICollection<PdfReference> layerReferences)
+        private static void RemoveLayerReferences(LayerConfiguration layerConfiguration, ICollection<PdfReference> layerReferences)
         {
             if (layerConfiguration == null)
                 return;
@@ -225,7 +226,7 @@ namespace PdfClown.Tools
             RemoveLayerReferences(layerConfigurationDictionary, PdfName.RBGroups, layerReferences);
         }
 
-        private void RemoveLayerReferences(PdfDictionary dictionaryObject, PdfName key, ICollection<PdfReference> layerReferences)
+        private static void RemoveLayerReferences(PdfDictionary dictionaryObject, PdfName key, ICollection<PdfReference> layerReferences)
         {
             if (dictionaryObject == null)
                 return;
@@ -233,7 +234,7 @@ namespace PdfClown.Tools
             RemoveLayerReferences(dictionaryObject.Get<PdfArray>(key), layerReferences);
         }
 
-        private void RemoveLayerReferences(PdfArray arrayObject, ICollection<PdfReference> layerReferences)
+        private static void RemoveLayerReferences(PdfArray arrayObject, ICollection<PdfReference> layerReferences)
         {
             if (arrayObject == null)
                 return;

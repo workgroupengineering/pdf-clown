@@ -29,6 +29,7 @@ using PdfClown.Tokens;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace PdfClown.Files
@@ -53,7 +54,7 @@ namespace PdfClown.Files
     public sealed class IndirectObjects : IList<PdfIndirectObject>
     {
         /// <summary>Associated file.</summary>
-        private PdfFile file;
+        private readonly PdfFile file;
 
         /// <summary>Map of matching references of imported indirect objects.</summary>
         /// <remarks>
@@ -62,14 +63,14 @@ namespace PdfClown.Files
         ///   <para><code>Key</code> is the external indirect object hashcode, <code>Value</code> is the
         ///   matching internal indirect object.</para>
         /// </remarks>
-        private Dictionary<int, PdfIndirectObject> importedObjects = new();
+        private readonly Dictionary<int, PdfIndirectObject> importedObjects = new();
 
         /// <summary>Collection of newly-registered indirect objects.</summary>
-        private Dictionary<int, PdfIndirectObject> modifiedObjects = new();
+        private readonly Dictionary<int, PdfIndirectObject> modifiedObjects = new();
 
         /// <summary>Collection of instantiated original indirect objects.</summary>
         /// <remarks>This collection is used as a cache to avoid unconsistent parsing duplications.</remarks>
-        private Dictionary<int, PdfIndirectObject> wokenObjects = new();
+        private readonly Dictionary<int, PdfIndirectObject> wokenObjects = new();
 
         /// <summary>Object counter.</summary>
         private int lastObjectNumber;
@@ -78,7 +79,7 @@ namespace PdfClown.Files
         /// (to say: implicit collection of the original indirect objects).</summary>
         /// <remarks>This information is vital to randomly retrieve the indirect-object
         /// persistent representation inside the associated file.</remarks>
-        private IDictionary<int, XRefEntry> xrefEntries;
+        private readonly IDictionary<int, XRefEntry> xrefEntries;
 
         internal IndirectObjects(PdfFile file, IDictionary<int, XRefEntry> xrefEntries)
         {
@@ -141,9 +142,8 @@ namespace PdfClown.Files
             if (cloner.Context != file)
                 throw new ArgumentException("cloner file context incompatible");
 
-            PdfIndirectObject indirectObject;
             // Hasn't the external indirect object been imported yet?
-            if (!importedObjects.TryGetValue(obj.GetHashCode(), out indirectObject))
+            if (!importedObjects.TryGetValue(obj.GetHashCode(), out var indirectObject))
             {
                 // Keep track of the imported indirect object!
                 importedObjects.Add(
@@ -208,13 +208,11 @@ namespace PdfClown.Files
                     // as a reference to the null object [PDF:1.7:3.2.9] [FIX:59].
                     return null;
 
-                PdfIndirectObject obj;
-                if (!modifiedObjects.TryGetValue(index, out obj))
+                if (!modifiedObjects.TryGetValue(index, out var obj))
                 {
                     if (!wokenObjects.TryGetValue(index, out obj))
                     {
-                        XRefEntry xrefEntry;
-                        if (!xrefEntries.TryGetValue(index, out xrefEntry))
+                        if (!xrefEntries.TryGetValue(index, out var xrefEntry))
                         {
                             // NOTE: The cross-reference table (comprising the original cross-reference section and
                             // all update sections) MUST contain one entry for each object number from 0 to the

@@ -48,12 +48,12 @@ namespace PdfClown.Documents.Contents
         public event OnContentObjectScanningEventHandler OnObjectScanning;
         public event OnContentObjectEventHandler OnObjectScanned;
 
-        private IContentContext context;
+        private readonly IContentContext context;
         // Content objects collection.
-        private ContentWrapper contents;
+        private readonly ContentWrapper contents;
         
         // Parent level.
-        private ContentScanner parentLevel;
+        private readonly ContentScanner parentLevel;
         private ContentScanner resourceParentLevel;
         // Current graphics state.
         private GraphicsState state;

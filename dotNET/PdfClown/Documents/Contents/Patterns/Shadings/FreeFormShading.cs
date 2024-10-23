@@ -181,7 +181,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         * @param dstMax max dst value
         * @return interpolated value
         */
-        protected float Interpolate(float src, long srcMax, float dstMin, float dstMax)
+        protected static float Interpolate(float src, long srcMax, float dstMin, float dstMax)
         {
             return dstMin + src * (dstMax - dstMin) / srcMax;
         }
@@ -253,7 +253,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
             var triangleLength = triangleBitLength / 8;
 
             var input = stream.GetInputStream();
-            byte flag = 0;
+            byte flag;
             try
             {
                 flag = (byte)(input.ReadBits(bitsPerFlag) & 3);
