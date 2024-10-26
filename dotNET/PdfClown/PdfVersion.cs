@@ -33,14 +33,25 @@ using System.Text.RegularExpressions;
 
 namespace PdfClown
 {
-    /**
-      <summary>Generic PDF version number [PDF:1.6:H.1].</summary>
-      <seealso cref="VersionEnum"/>
-    */
+    /// <summary>Generic PDF version number [PDF:1.6:H.1].</summary>
+    /// <seealso cref="VersionEnum"/>
     public sealed class PdfVersion : IVersion
     {
         private static readonly Regex versionPattern = new Regex("^(\\d+)\\.(\\d+)$");
-        private static readonly IDictionary<string, PdfVersion> versions = new Dictionary<string, PdfVersion>(StringComparer.Ordinal);
+        private static readonly Dictionary<string, PdfVersion> versions = new(8, StringComparer.Ordinal);
+        private static readonly Dictionary<VersionEnum, PdfVersion> versionEnums = new(8)
+        {
+            { VersionEnum.PDF10, Get("1.0") },
+            { VersionEnum.PDF11, Get("1.1") },
+            { VersionEnum.PDF12, Get("1.2") },
+            { VersionEnum.PDF13, Get("1.3") },
+            { VersionEnum.PDF14, Get("1.4") },
+            { VersionEnum.PDF15, Get("1.5") },
+            { VersionEnum.PDF16, Get("1.6") },
+            { VersionEnum.PDF17, Get("1.7") },
+        };
+
+        public static PdfVersion Get(VersionEnum version) => versionEnums[version];
 
         public static PdfVersion Get(PdfName version) => Get(version.RawValue);
 
@@ -52,7 +63,7 @@ namespace PdfClown
                 if (!versionMatch.Success)
                     throw new Exception("Invalid PDF version format: '" + versionPattern + "' pattern expected.");
 
-                PdfVersion versionObject = new PdfVersion(Int32.Parse(versionMatch.Groups[1].Value), Int32.Parse(versionMatch.Groups[2].Value));
+                var versionObject = new PdfVersion(Int32.Parse(versionMatch.Groups[1].Value), Int32.Parse(versionMatch.Groups[2].Value));
                 versions[version] = versionObject;
             }
             return versions[version];

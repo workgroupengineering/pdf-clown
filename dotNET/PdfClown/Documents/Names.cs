@@ -28,9 +28,8 @@ using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Documents.Multimedia;
 using PdfClown.Objects;
-
+using PdfClown.Util;
 using System;
-using System.Collections;
 
 namespace PdfClown.Documents
 {
@@ -84,7 +83,7 @@ namespace PdfClown.Documents
             set => BaseDataObject[PdfName.Renditions] = value.BaseObject;
         }
 
-        public PdfObjectWrapper Get(Type type)
+        public IBiDictionary Get(Type type)
         {
             if (typeof(Destination).IsAssignableFrom(type))
                 return Destinations;
@@ -102,8 +101,7 @@ namespace PdfClown.Documents
 
         public T Get<T>(PdfString key) where T : PdfObjectWrapper
         {
-            PdfObjectWrapper names = Get(typeof(T));
-            return names is IDictionary dictionary ? (T)dictionary[key] : default(T);
+            return (T)Get(typeof(T))?[key];
         }
     }
 }

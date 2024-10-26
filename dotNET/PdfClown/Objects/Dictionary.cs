@@ -122,6 +122,12 @@ namespace PdfClown.Objects
             set => this[(PdfName)key] = (TValue)value;
         }
 
+        object IBiDictionary.this[object key]
+        {
+            get => this[(PdfName)key];
+            set => this[(PdfName)key] = (TValue)value;
+        }
+
         public override Metadata Metadata
         {
             get => Dictionary is PdfDictionary dictionary ? Metadata.Wrap(dictionary.Get<PdfStream>(PdfName.Metadata)?.Reference) : null;

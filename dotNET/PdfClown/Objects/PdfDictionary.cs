@@ -46,8 +46,10 @@ namespace PdfClown.Objects
         private PdfObjectStatus status;
 
         /// <summary>Creates a new empty dictionary object with the default initial capacity.</summary>
-        public PdfDictionary() : this(4)
-        { }
+        public PdfDictionary() : base(PdfObjectStatus.Updateable)
+        {
+            entries = new Dictionary<PdfName, PdfDirectObject>();
+        }
 
         /// <summary>Creates a new empty dictionary object with the specified initial capacity.</summary>
         /// <param name="capacity">Initial capacity.</param>
@@ -83,13 +85,10 @@ namespace PdfClown.Objects
 
         /// <summary>Creates a new dictionary object with the specified entries.</summary>
         /// <param name="entries">Map whose entries have to be added to this dictionary.</param>
-        public PdfDictionary(IDictionary<PdfName, PdfDirectObject> entries)
-            : this(entries.Count)
+        public PdfDictionary(Dictionary<PdfName, PdfDirectObject> entries)
+            : base(PdfObjectStatus.Updateable)
         {
-            Updateable = false;
-            foreach (KeyValuePair<PdfName, PdfDirectObject> entry in entries)
-            { this[entry.Key] = (PdfDirectObject)Include(entry.Value); }
-            Updateable = true;
+            this.entries = entries;
         }
 
         public override PdfObject Parent
@@ -415,6 +414,12 @@ namespace PdfClown.Objects
                     Update();
                 }
             }
+        }
+
+        object IBiDictionary.this[object key]
+        {
+            get => this[(PdfName)key];
+            set => this[(PdfName)key] = (PdfDirectObject)value;
         }
 
         public bool TryGetValue(PdfName key, out PdfDirectObject value) => entries.TryGetValue(key, out value);

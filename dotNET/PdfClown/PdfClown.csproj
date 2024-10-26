@@ -14,8 +14,7 @@
     <Copyright>Copyright 2006-2015 Stefano Chizzolini</Copyright>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-	<DefineConstants>__BC_HASH__</DefineConstants>
-	<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+	<DefineConstants>__BC_HASH__</DefineConstants>	
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Documents\Contents\Fonts\CffParser.cs" />    

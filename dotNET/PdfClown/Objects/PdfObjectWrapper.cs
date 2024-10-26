@@ -27,11 +27,7 @@ using PdfClown.Documents;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Util;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 
 namespace PdfClown.Objects
 {
@@ -85,13 +81,13 @@ namespace PdfClown.Objects
 
         private PdfDirectObject baseObject;
 
-        ///<summary>Instantiates an empty wrapper.</summary>
+        /// <summary>Instantiates an empty wrapper.</summary>
         protected PdfObjectWrapper()
         { }
 
-        ///<summary>Instantiates a wrapper from the specified base object.</summary>
-        ///<param name="baseObject">PDF object backing this wrapper. MUST be a <see cref="PdfReference"/>
-        ///every time available.</param>
+        /// <summary>Instantiates a wrapper from the specified base object.</summary>
+        /// <param name="baseObject">PDF object backing this wrapper. MUST be a <see cref="PdfReference"/>
+        /// every time available.</param>
         public PdfObjectWrapper(PdfDirectObject baseObject)
         {
             BaseObject = baseObject;
@@ -106,11 +102,11 @@ namespace PdfClown.Objects
         /// <summary>Gets the indirect object containing the base data object.</summary>
         public PdfIndirectObject DataContainer => baseObject.DataContainer;
 
-        ///<summary>Gets/Sets the metadata associated to this object.</summary>
-        ///<returns><code>null</code>, if base data object's type isn't suitable (only
-        ///<see cref="PdfDictionary"/> and <see cref="PdfStream"/> objects are allowed).</returns>
-        ///<throws>NotSupportedException If base data object's type isn't suitable (only
-        ///<see cref="PdfDictionary"/> and <see cref="PdfStream"/> objects are allowed).</throws>
+        /// <summary>Gets/Sets the metadata associated to this object.</summary>
+        /// <returns><code>null</code>, if base data object's type isn't suitable (only
+        /// <see cref="PdfDictionary"/> and <see cref="PdfStream"/> objects are allowed).</returns>
+        /// <throws>NotSupportedException If base data object's type isn't suitable (only
+        /// <see cref="PdfDictionary"/> and <see cref="PdfStream"/> objects are allowed).</throws>
         public virtual Metadata Metadata
         {
             get => Dictionary is PdfDictionary dictionary ? Metadata.Wrap(dictionary.GetOrCreate<PdfStream>(PdfName.Metadata, false)) : null;
@@ -139,10 +135,10 @@ namespace PdfClown.Objects
         /// <returns>Whether the object was removed from its document context.</returns>
         public virtual bool Delete() => baseObject.Delete();
 
-        ///<summary>Gets the document context.</summary>
+        /// <summary>Gets the document context.</summary>
         public PdfDocument Document => File?.Document;
 
-        ///<summary>Gets the file context.</summary>
+        /// <summary>Gets the file context.</summary>
         public PdfFile File => baseObject.File;
 
         public virtual PdfDirectObject BaseObject
@@ -151,17 +147,17 @@ namespace PdfClown.Objects
             protected set => baseObject = value;
         }
 
-        ///<summary>Gets the underlying data object.</summary>
+        /// <summary>Gets the underlying data object.</summary>
         public PdfDataObject BaseDataObject => PdfObject.Resolve(BaseObject);
 
-        ///<summary>Gets whether the underlying data object is concrete.</summary>
+        /// <summary>Gets whether the underlying data object is concrete.</summary>
         public bool Exists() => !BaseDataObject.Virtual;
 
-        ///<summary>Gets a clone of the object, registered inside the specified document context using
-        ///the default object cloner.</summary>
+        /// <summary>Gets a clone of the object, registered inside the specified document context using
+        /// the default object cloner.</summary>
         public virtual object Clone(PdfDocument context) => Clone(context.File.Cloner);
 
-        ///<summary>Gets a clone of the object, registered using the specified object cloner.</summary>
+        /// <summary>Gets a clone of the object, registered using the specified object cloner.</summary>
         public virtual object Clone(Cloner cloner)
         {
             PdfObjectWrapper clone = (PdfObjectWrapper)base.MemberwiseClone();
@@ -193,72 +189,66 @@ namespace PdfClown.Objects
         /// <param name="feature">Entity whose compatibility has to be checked. Supported types:
         ///   <list type="bullet">
         ///     <item><see cref="VersionEnum"/></item>
-        ///     <item><see cref="string">Property name</see> resolvable to an <see cref="MemberInfo">annotated getter method</see></item>
-        ///     <item><see cref="MemberInfo"/></item>
         ///   </list>
         /// </param>
-        internal void CheckCompatibility(object feature)
+        internal void CheckCompatibility(VersionEnum feature)
         {
-            /*
-              TODO: Caching!
-            */
+            // TODO: Caching!
             var compatibilityMode = Document.Configuration.CompatibilityMode;
             if (compatibilityMode == CompatibilityModeEnum.Passthrough) // No check required.
                 return;
 
-            if (feature is Enum)
-            {
-                Type enumType = feature.GetType();
-                if (enumType.GetCustomAttributes(typeof(FlagsAttribute), true).Length > 0)
-                {
-                    int featureEnumValues = Convert.ToInt32(feature);
-                    List<Enum> featureEnumItems = new List<Enum>();
-                    foreach (int enumValue in Enum.GetValues(enumType))
-                    {
-                        if ((featureEnumValues & enumValue) == enumValue)
-                        { featureEnumItems.Add((Enum)Enum.ToObject(enumType, enumValue)); }
-                    }
-                    if (featureEnumItems.Count > 1)
-                    { feature = featureEnumItems; }
-                }
-            }
-            if (feature is ICollection)
-            {
-                foreach (Object featureItem in (ICollection)feature)
-                { CheckCompatibility(featureItem); }
-                return;
-            }
+            //if (feature is Enum)
+            //{
+            //    Type enumType = feature.GetType();
+            //    if (enumType.GetCustomAttributes(typeof(FlagsAttribute), true).Length > 0)
+            //    {
+            //        int featureEnumValues = Convert.ToInt32(feature);
+            //        var featureEnumItems = new List<Enum>();
+            //        foreach (int enumValue in Enum.GetValues(enumType))
+            //        {
+            //            if ((featureEnumValues & enumValue) == enumValue)
+            //            { featureEnumItems.Add((Enum)Enum.ToObject(enumType, enumValue)); }
+            //        }
+            //        if (featureEnumItems.Count > 1)
+            //        { feature = featureEnumItems; }
+            //    }
+            //}
+            //if (feature is ICollection)
+            //{
+            //    foreach (Object featureItem in (ICollection)feature)
+            //    { CheckCompatibility(featureItem); }
+            //    return;
+            //}
 
-            PdfVersion featureVersion;
-            if (feature is VersionEnum) // Explicit version.
-            { featureVersion = ((VersionEnum)feature).GetVersion(); }
-            else // Implicit version (element annotation).
-            {
-                PDFAttribute annotation;
-                {
-                    if (feature is string) // Property name.
-                    { feature = GetType().GetProperty((string)feature); }
-                    else if (feature is Enum) // Enum constant.
-                    { feature = feature.GetType().GetField(feature.ToString()); }
-                    if (!(feature is MemberInfo))
-                        throw new ArgumentException("Feature type '" + feature.GetType().Name + "' not supported.");
-
-                    while (true)
-                    {
-                        var annotations = ((MemberInfo)feature).GetCustomAttributes<PDFAttribute>(true);
-                        if (annotations.Any())
-                        {
-                            annotation = annotations.FirstOrDefault();
-                            break;
-                        }
-
-                        feature = ((MemberInfo)feature).DeclaringType;
-                        if (feature == null) // Element hierarchy walk complete.
-                            return; // NOTE: As no annotation is available, we assume the feature has no specific compatibility requirements.
-                    }
-                }
-                featureVersion = annotation.Value.GetVersion();
-            }
+            var featureVersion = PdfVersion.Get(feature);
+            //if (feature is VersionEnum) // Explicit version.
+            //{ featureVersion = ((VersionEnum)feature).GetVersion(); }
+            //else // Implicit version (element annotation).
+            //{
+            //    PDFAttribute annotation;
+            //    {
+            //        if (feature is string) // Property name.
+            //        { feature = GetType().GetProperty((string)feature); }
+            //        else if (feature is Enum) // Enum constant.
+            //        { feature = feature.GetType().GetField(feature.ToString()); }
+            //        if (!(feature is MemberInfo))
+            //            throw new ArgumentException("Feature type '" + feature.GetType().Name + "' not supported.");
+            //        while (true)
+            //        {
+            //            var annotations = ((MemberInfo)feature).GetCustomAttributes<PDFAttribute>(true);
+            //            if (annotations.Any())
+            //            {
+            //                annotation = annotations.FirstOrDefault();
+            //                break;
+            //            }
+            //            feature = ((MemberInfo)feature).DeclaringType;
+            //            if (feature == null) // Element hierarchy walk complete.
+            //                return; // NOTE: As no annotation is available, we assume the feature has no specific compatibility requirements.
+            //        }
+            //    }
+            //    featureVersion = annotation.Value.GetVersion();
+            //}
             // Is the feature version compatible?
             if (Document.Version.CompareTo(featureVersion) >= 0)
                 return;
@@ -278,8 +268,8 @@ namespace PdfClown.Objects
             }
         }
 
-        ///<summary>Retrieves the name possibly associated to this object, walking through the document's
-        ///name dictionary.</summary>
+        /// <summary>Retrieves the name possibly associated to this object, walking through the document's
+        /// name dictionary.</summary>
         protected virtual PdfString RetrieveName()
         {
             return Document.Names.Get(GetType()) is IBiDictionary biDictionary 

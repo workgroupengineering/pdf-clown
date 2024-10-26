@@ -27,9 +27,7 @@ using System;
 
 namespace PdfClown.Files
 {
-    /**
-      <summary>File configuration.</summary>
-    */
+    /// <summary>File configuration.</summary>
     public sealed class FileConfiguration
     {
         private string realFormat;
@@ -46,36 +44,32 @@ namespace PdfClown.Files
             StreamFilterEnabled = true;
         }
 
-        /**
-          <summary>Gets the file associated with this configuration.</summary>
-        */
+        /// <summary>Gets the file associated with this configuration.</summary>
         public PdfFile File => file;
 
-        /**
-          <summary>Gets/Sets the number of decimal places applied to real numbers' serialization.</summary>
-        */
+        /// <summary>Gets/Sets the number of decimal places applied to real numbers' serialization.</summary>
         public int RealPrecision
         {
             get => realFormat.Length - realFormat.IndexOf('.') - 1;
             set => realFormat = "0." + new string('#', value <= 0 ? 5 : value);
         }
 
-        /**
-          <summary>Gets/Sets whether PDF stream objects have to be filtered for compression.</summary>
-        */
+        /// <summary>Gets/Sets whether PDF stream objects have to be filtered for compression.</summary>
         public bool StreamFilterEnabled
         {
             get => streamFilterEnabled;
             set => streamFilterEnabled = value;
         }
 
-        /**
-          <summary>Gets the document's cross-reference mode.</summary>
-        */
+        /// <summary>Gets the document's cross-reference mode.</summary>
         public XRefModeEnum XRefMode
         {
             get => xrefMode;
-            set => file.Document.CheckCompatibility(xrefMode = value);
+            set
+            {
+                xrefMode = value;
+                file.Document.CheckCompatibility(xrefMode == XRefModeEnum.Compressed ? VersionEnum.PDF15 : VersionEnum.PDF10);
+            }
         }
 
         internal string RealFormat => realFormat;

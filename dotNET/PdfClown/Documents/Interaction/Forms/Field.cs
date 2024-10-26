@@ -185,18 +185,7 @@ namespace PdfClown.Documents.Interaction.Forms
         /// -form</see> action} is executed.</summary>
         public object DefaultValue
         {
-            get
-            {
-                PdfDataObject defaultValueObject = PdfObject.Resolve(GetInheritableAttribute(PdfName.DV));
-                return defaultValueObject != null
-                  ? defaultValueObject.GetType().InvokeMember(
-                    "Value",
-                    BindingFlags.GetProperty,
-                    null,
-                    defaultValueObject,
-                    null)
-                  : null;
-            }
+            get => ((IPdfValued)PdfObject.Resolve(GetInheritableAttribute(PdfName.DV)))?.Value;
         }
 
         /// <summary>Gets/Sets whether the field is exported by a submit-form action.</summary>

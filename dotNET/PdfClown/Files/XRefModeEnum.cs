@@ -27,19 +27,13 @@ using System;
 
 namespace PdfClown.Files
 {
-    /**
-      <summary>Cross-reference mode [PDF:1.6:3.4].</summary>
-    */
+    /// <summary>Cross-reference mode [PDF:1.6:3.4].</summary>
     public enum XRefModeEnum
     {
-        /**
-          <summary>Cross-reference table [PDF:1.6:3.4.3].</summary>
-        */
+        /// <summary>Cross-reference table [PDF:1.6:3.4.3].</summary>
         [PDF(VersionEnum.PDF10)]
         Plain,
-        /**
-          <summary>Cross-reference stream [PDF:1.6:3.4.7].</summary>
-        */
+        /// <summary>Cross-reference stream [PDF:1.6:3.4.7].</summary>
         [PDF(VersionEnum.PDF15)]
         Compressed
     }

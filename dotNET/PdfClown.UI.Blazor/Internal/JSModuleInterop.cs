@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -37,10 +38,17 @@ namespace PdfClown.UI.Blazor.Internal
         protected ValueTask InvokeAsync(string identifier, params object[] args) =>
             Module.InvokeVoidAsync(identifier, args);
 
-        protected TValue Invoke<TValue>(string identifier, params object[] args) =>
+        [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+        protected TValue Invoke<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors
+			| DynamicallyAccessedMemberTypes.PublicFields
+			| DynamicallyAccessedMemberTypes.PublicProperties)] TValue>
+			(string identifier, params object[] args) =>
 			Module.Invoke<TValue>(identifier, args);
 
-        protected ValueTask<TValue> InvokeAsync<TValue>(string identifier, params object[] args) =>
+        protected ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors
+			| DynamicallyAccessedMemberTypes.PublicFields
+			| DynamicallyAccessedMemberTypes.PublicProperties)] TValue>
+			(string identifier, params object[] args) =>
             Module.InvokeAsync<TValue>(identifier, args);
         
 		protected virtual void OnDisposingModule() { }

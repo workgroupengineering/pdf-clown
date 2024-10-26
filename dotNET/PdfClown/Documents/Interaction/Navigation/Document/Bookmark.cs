@@ -71,7 +71,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                 { BaseDataObject.Remove(PdfName.C); }
                 else
                 {
-                    CheckCompatibility("Color");
+                    CheckCompatibility(VersionEnum.PDF14);
                     BaseDataObject[PdfName.C] = value.BaseObject;
                 }
             }
@@ -86,9 +86,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                 if (Expanded == value)
                     return;
 
-                /*
-                  NOTE: Positive Count entry means open, negative Count entry means closed [PDF:1.6:8.2.2].
-                */
+                // NOTE: Positive Count entry means open, negative Count entry means closed [PDF:1.6:8.2.2].
                 BaseDataObject.Set(PdfName.Count, (value ? 1 : -1) * Math.Abs(BaseDataObject.GetInt(PdfName.Count)));
             }
         }
@@ -104,7 +102,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                 { BaseDataObject.Remove(PdfName.F); }
                 else
                 {
-                    CheckCompatibility(value);
+                    CheckCompatibility(VersionEnum.PDF14);
                     BaseDataObject.Set(PdfName.F, (int)value);
                 }
             }

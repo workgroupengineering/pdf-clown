@@ -76,7 +76,7 @@ namespace PdfClown.Tokens
         public FileInfo ReadInfo()
         {
             //TODO:hybrid xref table/stream
-            PdfVersion version = PdfVersion.Get(parser.RetrieveVersion());
+            var version = PdfVersion.Get(parser.RetrieveVersion());
             PdfDictionary trailer = null;
             var xrefEntries = new Dictionary<int, XRefEntry>();
             long sectionOffset = parser.RetrieveXRefOffset();

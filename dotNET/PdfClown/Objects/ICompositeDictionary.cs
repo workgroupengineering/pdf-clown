@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using PdfClown.Util;
 using System;
 
 namespace PdfClown.Objects
@@ -31,7 +32,7 @@ namespace PdfClown.Objects
     public interface ICompositeDictionary<TKey>
     {
         /// <summary>Gets the value dictionary associated to the specified type.</summary>
-        PdfObjectWrapper Get(Type type);
+        IBiDictionary Get(Type type);
 
         /// <summary>Gets the value associated to the specified key for the specified type.</summary>
         T Get<T>(TKey key) where T : PdfObjectWrapper;

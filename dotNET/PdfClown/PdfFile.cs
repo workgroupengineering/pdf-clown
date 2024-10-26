@@ -64,7 +64,7 @@ namespace PdfClown
         {
             Initialize();
 
-            version = VersionEnum.PDF14.GetVersion();
+            version = PdfVersion.Get(VersionEnum.PDF14);
             trailer = PrepareTrailer(new PdfDictionary());
             indirectObjects = new IndirectObjects(this, null);
             document = new PdfDocument(this);
@@ -245,7 +245,7 @@ namespace PdfClown
                 information.CreationDate = DateTime.Now;
                 try
                 {
-                    string assemblyTitle = ((AssemblyTitleAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute))).Title;
+                    string assemblyTitle = Assembly.GetExecutingAssembly().GetName().Name;
                     string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
                     information.Producer = assemblyTitle + " " + assemblyVersion;
                 }

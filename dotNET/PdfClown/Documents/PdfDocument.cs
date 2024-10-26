@@ -39,7 +39,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace PdfClown.Documents
 {
@@ -60,6 +59,7 @@ namespace PdfClown.Documents
         internal ConcurrentDictionary<TrueTypeFont, FontType0> Type0FontCache = new();
 
         private DocumentConfiguration configuration;
+        private PdfVersion version;
 
         internal PdfDocument(PdfFile context) :
             base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Catalog } })
@@ -158,7 +158,7 @@ namespace PdfClown.Documents
             get => Wrap<LayerDefinition>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.OCProperties));
             set
             {
-                CheckCompatibility("Layer");
+                CheckCompatibility(VersionEnum.PDF15);
                 BaseDataObject[PdfName.OCProperties] = PdfObjectWrapper.GetBaseObject(value);
             }
         }
@@ -178,7 +178,7 @@ namespace PdfClown.Documents
             get => PageLabels.Wrap(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PageLabels));
             set
             {
-                CheckCompatibility("PageLabels");
+                CheckCompatibility(VersionEnum.PDF13);
                 BaseDataObject[PdfName.PageLabels] = PdfObjectWrapper.GetBaseObject(value);
             }
         }
@@ -257,8 +257,8 @@ namespace PdfClown.Documents
         /// <returns>Registered named object.</returns>
         public T Register<T>(PdfString name, T @object) where T : PdfObjectWrapper
         {
-            PdfObjectWrapper namedObjects = Names.Get(@object.GetType());
-            namedObjects.GetType().GetMethod("set_Item", BindingFlags.Public | BindingFlags.Instance).Invoke(namedObjects, new object[] { name, @object });
+            var namedObjects = Names.Get(@object.GetType());
+            namedObjects[name] = @object;
             return @object;
         }
 
@@ -300,24 +300,25 @@ namespace PdfClown.Documents
         [PDF(VersionEnum.PDF14)]
         public PdfVersion Version
         {
-            get
-            {
-                //NOTE: If the header specifies a later version, or if this entry is absent, the document
-                //conforms to the version specified in the header.
+            get => version ??= GetVersion();
+            set => BaseDataObject[PdfName.Version] = PdfName.Get(version = value);
+        }
 
-                PdfVersion fileVersion = File.Version;
+        private PdfVersion GetVersion()
+        {
+            //NOTE: If the header specifies a later version, or if this entry is absent, the document
+            //conforms to the version specified in the header.
+            var fileVersion = File.Version;
 
-                var versionObject = BaseDataObject.Get<PdfName>(PdfName.Version);
-                if (versionObject == null)
-                    return fileVersion;
+            var versionObject = BaseDataObject.Get<PdfName>(PdfName.Version);
+            if (versionObject == null)
+                return fileVersion;
 
-                PdfVersion version = PdfVersion.Get(versionObject);
-                if (File.Reader == null)
-                    return version;
+            var version = PdfVersion.Get(versionObject);
+            if (File.Reader == null)
+                return version;
 
-                return (version.CompareTo(fileVersion) > 0 ? version : fileVersion);
-            }
-            set => BaseDataObject[PdfName.Version] = PdfName.Get(value);
+            return (version.CompareTo(fileVersion) > 0 ? version : fileVersion);
         }
 
         /// <summary>Gets the way the document is to be presented.</summary>

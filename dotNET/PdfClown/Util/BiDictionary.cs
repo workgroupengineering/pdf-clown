@@ -129,6 +129,12 @@ namespace PdfClown.Util
             }
         }
 
+        object IBiDictionary.this[object key]
+        {
+            get => this[(TKey)key];
+            set => this[(TKey)key] = (TValue)value;
+        }
+
         public bool TryGetValue(TKey key, out TValue value) => dictionary.TryGetValue(key, out value);
 
         public ICollection<TValue> Values => dictionary.Values;

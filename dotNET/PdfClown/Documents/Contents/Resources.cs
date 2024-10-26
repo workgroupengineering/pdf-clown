@@ -23,25 +23,18 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Patterns;
 using PdfClown.Documents.Contents.Patterns.Shadings;
 using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Files;
 using PdfClown.Objects;
-
+using PdfClown.Util;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Resources collection [PDF:1.6:3.7.2].</summary>
-    */
+    /// <summary>Resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class Resources : PdfObjectWrapper<PdfDictionary>, ICompositeDictionary<PdfName>
     {
@@ -81,7 +74,7 @@ namespace PdfClown.Documents.Contents
             get => Wrap<PropertyListResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Properties));
             set
             {
-                CheckCompatibility("PropertyLists");
+                CheckCompatibility(VersionEnum.PDF12);
                 BaseDataObject[PdfName.Properties] = value.BaseObject;
             }
         }
@@ -99,7 +92,7 @@ namespace PdfClown.Documents.Contents
             set => BaseDataObject[PdfName.XObject] = value.BaseObject;
         }
 
-        public PdfObjectWrapper Get(Type type)
+        public IBiDictionary Get(Type type)
         {
             if (typeof(ColorSpace).IsAssignableFrom(type))
                 return ColorSpaces;
@@ -121,8 +114,7 @@ namespace PdfClown.Documents.Contents
 
         public T Get<T>(PdfName key) where T : PdfObjectWrapper
         {
-            PdfObjectWrapper resources = Get(typeof(T));
-            return resources is IDictionary dictionary ? (T)dictionary[key] : default(T);
+            return (T)Get(typeof(T))?[key] ?? default(T);
         }
     }
 }

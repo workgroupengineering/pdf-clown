@@ -28,8 +28,10 @@ namespace PdfClown.Util
     public interface IBiDictionary
     {
         object GetKey(object value);
+
+        object this[object key] { get; set; }
     }
-    
+
     public interface IBiDictionary<TKey, TValue> : IBiDictionary
     {
         TKey GetKey(TValue value);

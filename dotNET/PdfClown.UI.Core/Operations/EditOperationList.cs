@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace PdfClown.UI.Operations
@@ -115,7 +116,7 @@ namespace PdfClown.UI.Operations
                 {
                     var oldValue = selectedAnnotation;
                     selectedAnnotation = value;
-                    SelectedPoint = null;                    
+                    SelectedPoint = null;
                     SelectedMarkup = value as Markup;
                     Current = OperationType.None;
                     if (oldValue != null)
@@ -243,7 +244,7 @@ namespace PdfClown.UI.Operations
             {
                 handlePropertyChanged = true;
             }
-        }        
+        }
 
         public void CloseVertextShape(VertexShape vertexShape)
         {
@@ -263,7 +264,9 @@ namespace PdfClown.UI.Operations
                 UpdateModificationDate(annotation);
             }
             var details = (DetailedPropertyChangedEventArgs)e;
-            var invoker = Invoker.GetPropertyInvoker(annotation.GetType(), e.PropertyName);
+            var type = annotation.GetType();
+            if (!Invoker.TryGetPropertyInvoker(type, e.PropertyName, out var invoker))
+                return;
             switch (e.PropertyName)
             {
                 case nameof(Markup.SKColor):
@@ -315,8 +318,8 @@ namespace PdfClown.UI.Operations
                 lastLink = lastLink.Previous;
                 try
                 {
-                    handlePropertyChanged = false;                    
-                    operation.Undo();                    
+                    handlePropertyChanged = false;
+                    operation.Undo();
                 }
                 finally
                 {
@@ -338,8 +341,8 @@ namespace PdfClown.UI.Operations
                 var operation = lastLink.Value;
                 try
                 {
-                    handlePropertyChanged = false;                    
-                    operation.Redo();                    
+                    handlePropertyChanged = false;
+                    operation.Redo();
                 }
                 finally
                 {
@@ -437,7 +440,7 @@ namespace PdfClown.UI.Operations
             var operation = new AnnotationOperation
             {
                 OperationList = this,
-                Document = Viewer.Document.GetDocumentView(annotation.Document),
+                Document = Document.GetDocumentView(annotation.Document),
                 Annotation = annotation,
                 Type = type,
                 Property = property,
