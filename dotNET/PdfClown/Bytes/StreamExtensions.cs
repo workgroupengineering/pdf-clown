@@ -23,17 +23,15 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes.Filters;
-using PdfClown.Objects;
+using PdfClown.Bytes;
 using PdfClown.Tokens;
-using PdfClown.Util;
-using PdfClown.Util.IO;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace PdfClown.Bytes
@@ -43,9 +41,243 @@ namespace PdfClown.Bytes
         private const int BufferSize = 4 * 1024;
         private const int MaxStackAllockSize = 256;
 
+        public static void Reset(this MemoryStream stream)
+        {
+            stream.SetLength(0);
+        }
+
         public static void CopyTo(this IInputStream target, IOutputStream output) => target.CopyTo((Stream)output);
-        
+
         public static void CopyTo(this IInputStream target, IOutputStream output, int bufferSize) => target.CopyTo((Stream)output, bufferSize);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ReadInt32(this byte[] data, int index = 0, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+        {
+            var buffer = data.AsSpan(index, sizeof(int));
+            return ReadInt32(buffer, byteOrder);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ReadInt32(this ReadOnlySpan<byte> buffer, int offset, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+           => ReadInt32(buffer.Slice(offset, sizeof(int)), byteOrder);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ReadInt32(ReadOnlySpan<byte> buffer, ByteOrderEnum byteOrder)
+        {
+            return byteOrder == ByteOrderEnum.BigEndian
+                ? BinaryPrimitives.ReadInt32BigEndian(buffer)
+                : BinaryPrimitives.ReadInt32LittleEndian(buffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteInt32(Span<byte> buffer, int value, ByteOrderEnum byteOrder)
+        {
+            if (byteOrder == ByteOrderEnum.BigEndian)
+                BinaryPrimitives.WriteInt32BigEndian(buffer, value);
+            else
+                BinaryPrimitives.WriteInt32LittleEndian(buffer, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint ReadUInt32(this byte[] data, int index = 0, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+        {
+            var buffer = data.AsSpan(index, sizeof(uint));
+            return ReadUInt32(buffer, byteOrder);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint ReadUInt32(this ReadOnlySpan<byte> buffer, int offset, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+           => ReadUInt32(buffer.Slice(offset, sizeof(uint)), byteOrder);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint ReadUInt32(ReadOnlySpan<byte> buffer, ByteOrderEnum byteOrder)
+        {
+            return byteOrder == ByteOrderEnum.BigEndian
+                ? BinaryPrimitives.ReadUInt32BigEndian(buffer)
+                : BinaryPrimitives.ReadUInt32LittleEndian(buffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteUInt32(Span<byte> buffer, uint value, ByteOrderEnum byteOrder)
+        {
+            if (byteOrder == ByteOrderEnum.BigEndian)
+                BinaryPrimitives.WriteUInt32BigEndian(buffer, value);
+            else
+                BinaryPrimitives.WriteUInt32LittleEndian(buffer, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short ReadInt16(this byte[] data, int index = 0, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+        {
+            var buffer = data.AsSpan(index, sizeof(short));
+            return ReadInt16(buffer, byteOrder);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short ReadInt16(this ReadOnlySpan<byte> buffer, int offset, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+            => ReadInt16(buffer.Slice(offset, sizeof(short)), byteOrder);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short ReadInt16(ReadOnlySpan<byte> buffer, ByteOrderEnum byteOrder)
+        {
+            return byteOrder == ByteOrderEnum.BigEndian
+                ? BinaryPrimitives.ReadInt16BigEndian(buffer)
+                : BinaryPrimitives.ReadInt16LittleEndian(buffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteInt16(Span<byte> buffer, short value, ByteOrderEnum byteOrder)
+        {
+            if (byteOrder == ByteOrderEnum.BigEndian)
+                BinaryPrimitives.WriteInt16BigEndian(buffer, value);
+            else
+                BinaryPrimitives.WriteInt16LittleEndian(buffer, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ushort ReadUInt16(this byte[] data, int index = 0, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+        {
+            var buffer = data.AsSpan(index, sizeof(ushort));
+            return ReadUInt16(buffer, byteOrder);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ushort ReadUInt16(this ReadOnlySpan<byte> buffer, int offset, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+            => ReadUInt16(buffer.Slice(offset, sizeof(ushort)), byteOrder);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ushort ReadUInt16(ReadOnlySpan<byte> buffer, ByteOrderEnum byteOrder)
+        {
+            return byteOrder == ByteOrderEnum.BigEndian
+                ? BinaryPrimitives.ReadUInt16BigEndian(buffer)
+                : BinaryPrimitives.ReadUInt16LittleEndian(buffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteUInt16(Span<byte> buffer, ushort value, ByteOrderEnum byteOrder)
+        {
+            if (byteOrder == ByteOrderEnum.BigEndian)
+                BinaryPrimitives.WriteUInt16BigEndian(buffer, value);
+            else
+                BinaryPrimitives.WriteUInt16LittleEndian(buffer, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long ReadInt64(this byte[] data, int position = 0, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+        {
+            var buffer = data.AsSpan(position, sizeof(long));
+            return ReadInt64(buffer, byteOrder);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long ReadInt64(ReadOnlySpan<byte> buffer, ByteOrderEnum byteOrder)
+        {
+            return byteOrder == ByteOrderEnum.BigEndian
+                ? BinaryPrimitives.ReadInt64BigEndian(buffer)
+                : BinaryPrimitives.ReadInt64LittleEndian(buffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteInt64(Span<byte> buffer, long value, ByteOrderEnum byteOrder)
+        {
+            if (byteOrder == ByteOrderEnum.BigEndian)
+                BinaryPrimitives.WriteInt64BigEndian(buffer, value);
+            else
+                BinaryPrimitives.WriteInt64LittleEndian(buffer, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong ReadUint64(this byte[] data, int position = 0, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+        {
+            var buffer = data.AsSpan(position, sizeof(ulong));
+            return ReadUInt64(buffer, byteOrder);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong ReadUInt64(Span<byte> buffer, ByteOrderEnum byteOrder)
+        {
+            return byteOrder == ByteOrderEnum.BigEndian
+                ? BinaryPrimitives.ReadUInt64BigEndian(buffer)
+                : BinaryPrimitives.ReadUInt64LittleEndian(buffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteUInt64(Span<byte> buffer, ulong value, ByteOrderEnum byteOrder)
+        {
+            if (byteOrder == ByteOrderEnum.BigEndian)
+                BinaryPrimitives.WriteUInt64BigEndian(buffer, value);
+            else
+                BinaryPrimitives.WriteUInt64LittleEndian(buffer, value);
+        }
+
+
+
+        public static byte[] IntToByteArray(int data, bool compact = false)
+        {
+            if (compact)
+            {
+                if (data < 1 << 8)
+                {
+                    return new byte[] { (byte)data };
+                }
+                else if (data < 1 << 16)
+                {
+                    return new byte[] { (byte)(data >> 8), (byte)data };
+                }
+                else if (data < 1 << 24)
+                {
+                    return new byte[] { (byte)(data >> 16), (byte)(data >> 8), (byte)data };
+                }
+            }
+            return new byte[] { (byte)(data >> 24), (byte)(data >> 16), (byte)(data >> 8), (byte)data };
+        }
+
+        public static int ReadIntOffset(byte[] data, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian) => ReadIntOffset(data, 0, data.Length, byteOrder);
+
+        public static int ReadIntOffset(byte[] data, int index, int length, ByteOrderEnum byteOrder)
+        {
+            int value = 0;
+            length = (int)System.Math.Min(length, data.Length - index);
+            for (int i = index, endIndex = index + length; i < endIndex; i++)
+            { value |= (data[i] & 0xff) << 8 * (byteOrder == ByteOrderEnum.LittleEndian ? i - index : endIndex - i - 1); }
+            return value;
+        }
+
+        public static int ReadIntOffset(this ReadOnlySpan<byte> data, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+        {
+            int value = 0;
+            var length = data.Length;
+            for (int i = 0, endIndex = length; i < endIndex; i++)
+            { value |= (data[i] & 0xff) << 8 * (byteOrder == ByteOrderEnum.LittleEndian ? i : endIndex - i - 1); }
+            return value;
+        }
+
+        //public static void WriteInt(Span<byte> result, int data, ByteOrderEnum byteOrder)
+        //{
+        //    switch (result.Length)
+        //    {
+        //        case 1: result[0] = (byte)data; break;
+        //        case 2: WriteUInt16(result, (ushort)data, byteOrder); break;
+        //        case 4: WriteInt32(result, data, byteOrder); break;
+        //        case 8: WriteInt64(result, (long)data, byteOrder); break;
+        //        default: WriteIntByLength(result, data, byteOrder); break;
+        //    }
+        //}
+
+        public static byte[] WriteIntOffset(int data, int length, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+        {
+            byte[] result = new byte[length];
+            for (int index = 0; index < length; index++)
+            { result[index] = (byte)(data >> 8 * (byteOrder == ByteOrderEnum.LittleEndian ? index : length - index - 1)); }
+            return result;
+        }
+
+        public static void WriteIntOffset(Span<byte> result, int data, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
+        {
+            var length = result.Length;
+            for (int index = 0; index < length; index++)
+            { result[index] = (byte)(data >> 8 * (byteOrder == ByteOrderEnum.LittleEndian ? index : length - index - 1)); }
+        }
 
         /// <summary>Reads a signed byte integer.</summary>
         /// <remarks>This operation causes the stream pointer to advance after the read data.</remarks>
@@ -225,42 +457,42 @@ namespace PdfClown.Bytes
         public static void Write(this IOutputStream target, short value, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
         {
             Span<byte> buffer = stackalloc byte[sizeof(short)];
-            ConvertUtils.WriteInt16(buffer, value, byteOrder);
+            WriteInt16(buffer, value, byteOrder);
             target.Write(buffer);
         }
 
         public static void Write(this IOutputStream target, ushort value, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
         {
             Span<byte> buffer = stackalloc byte[sizeof(ushort)];
-            ConvertUtils.WriteUInt16(buffer, value, byteOrder);
+            WriteUInt16(buffer, value, byteOrder);
             target.Write(buffer);
         }
 
         public static void Write(this IOutputStream target, int value, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
         {
             Span<byte> buffer = stackalloc byte[sizeof(int)];
-            ConvertUtils.WriteInt32(buffer, value, byteOrder);
+            WriteInt32(buffer, value, byteOrder);
             target.Write(buffer);
         }
 
         public static void Write(this IOutputStream target, uint value, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
         {
             Span<byte> buffer = stackalloc byte[sizeof(uint)];
-            ConvertUtils.WriteUInt32(buffer, value, byteOrder);
+            WriteUInt32(buffer, value, byteOrder);
             target.Write(buffer);
         }
 
         public static void Write(this IOutputStream target, long value, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
         {
             Span<byte> buffer = stackalloc byte[sizeof(long)];
-            ConvertUtils.WriteInt64(buffer, value, byteOrder);
+            WriteInt64(buffer, value, byteOrder);
             target.Write(buffer);
         }
 
         public static void Write(this IOutputStream target, ulong value, ByteOrderEnum byteOrder = ByteOrderEnum.BigEndian)
         {
             Span<byte> buffer = stackalloc byte[sizeof(ulong)];
-            ConvertUtils.WriteUInt64(buffer, value, byteOrder);
+            WriteUInt64(buffer, value, byteOrder);
             target.Write(buffer);
         }
 
@@ -348,59 +580,6 @@ namespace PdfClown.Bytes
                 throw new EndOfStreamException();
             }
         }
-
-        public static PdfDataObject Resolve(PdfObject @object)
-        {
-            return @object == null ? null : @object.Resolve();
-        }
-
-        /// <summary>Applies the specified filter to decode the buffer.</summary>
-        /// <param name="filter">Filter to use for decoding the buffer.</param>
-        /// <param name="parameters">Decoding parameters.</param>
-        public static ByteStream Decode(this IInputStream data, Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
-        {
-            data.Position = 0;
-            return new ByteStream(filter.Decode(data, parameters, header));
-        }
-
-        /// <summary>Applies the specified filter to encode the buffer.</summary>
-        /// <param name="filter">Filter to use for encoding the buffer.</param>
-        /// <param name="parameters">Encoding parameters.</param>
-        /// <returns>Encoded buffer.</returns>
-        public static ByteStream Encode(this IInputStream data, Filter filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
-        {
-            data.Position = 0;
-            return new ByteStream(filter.Encode(data, parameters, header));
-        }
-
-        public static IInputStream Decode(this IInputStream buffer, PdfDataObject filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
-        {
-            if (filter == null)
-            {
-                return buffer;
-            }
-            if (filter is PdfName name) // Single filter.
-            {
-                buffer = buffer.Decode(Filter.Get(name), (PdfDictionary)parameters, header);
-            }
-            else // Multiple filters.
-            {
-                using var filterIterator = ((PdfArray)filter).GetEnumerator();
-                IEnumerator<PdfDirectObject> parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
-                while (filterIterator.MoveNext())
-                {
-                    PdfDictionary filterParameters;
-                    if (parametersIterator == null)
-                    { filterParameters = null; }
-                    else
-                    {
-                        parametersIterator.MoveNext();
-                        filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
-                    }
-                    buffer = buffer.Decode(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters, header);
-                }
-            }
-            return buffer;
-        }        
+        
     }
 }

@@ -489,7 +489,6 @@ namespace PdfClown.Bytes.Filters.CCITT
          * @param {CCITTFaxDecoderSource} source - The data which should be decoded.
          * @param {Object} [options] - Decoding options.
          */
-        // eslint-disable-next-line no-shadow
         public CCITTFaxDecoder(IInputStream source, CCITTFaxParams options)
         {
             this.source = source;

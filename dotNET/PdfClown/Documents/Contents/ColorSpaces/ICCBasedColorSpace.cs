@@ -23,26 +23,19 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
+using System;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>ICC-based color space [PDF:1.6:4.5.4].</summary>
-    */
+    /// <summary>ICC-based color space [PDF:1.6:4.5.4].</summary>
     // TODO:IMPL improve profile support (see ICC.1:2003-09 spec)!!!
     [PDF(VersionEnum.PDF13)]
     public sealed class ICCBasedColorSpace : ColorSpace
     {
         private SKColorSpace skColorSpace;
         private SKMatrix44 xyzD50 = SKMatrix44.CreateIdentity();
-        private ICCProfile iccProfile;
         private SKColorSpaceTransferFn transfer;
         private ColorSpace alternate;
         //TODO:IMPL new element constructor!
@@ -107,15 +100,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 }
             }
             return skColorSpace;
-        }
-
-        private void GetIccProfile()
-        {
-            if (iccProfile == null)
-            {
-                iccProfile = ICCProfile.Load(Profile.GetInputStream().AsMemory());
-
-            }
         }
 
         private SKPoint3 XYZtoRGB(float x, float y, float z)

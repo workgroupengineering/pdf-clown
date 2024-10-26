@@ -32,9 +32,7 @@ namespace PdfClown.Objects
     {
     }
 
-    /**
-      <summary>PDF simple object interface.</summary>
-    */
+    /// <summary>PDF simple object interface.</summary>
     public interface IPdfSimpleObject<TValue> : IPdfSimpleObject
     {
         TValue RawValue { get; }

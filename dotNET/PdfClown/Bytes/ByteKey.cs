@@ -28,14 +28,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PdfClown.Util
+namespace PdfClown.Bytes
 {
-    /**
-      <summary>Byte array.</summary>
-    */
-    /*
-      NOTE: This class is useful when applied as key for dictionaries using the default IEqualityComparer.
-    */
+    /// <summary>Byte array.</summary>
+    // NOTE: This class is useful when applied as key for dictionaries using the default IEqualityComparer.
     public readonly struct ByteKey : IComparable<ByteKey>, IEquatable<ByteKey>
     {
         public static implicit operator int(ByteKey value) => value.Data;
@@ -47,7 +43,7 @@ namespace PdfClown.Util
             get => Data > 255 ? 2 : 1;
         }
 
-        public ByteKey(int b0, int b1) : this((b0 << 8) | b1)
+        public ByteKey(int b0, int b1) : this(b0 << 8 | b1)
         { }
 
         public ByteKey(int data)
@@ -96,7 +92,7 @@ namespace PdfClown.Util
 
         public byte[] ToArray()
         {
-            return ConvertUtils.WriteIntOffset(Data, Length);
+            return StreamExtensions.WriteIntOffset(Data, Length);
         }
     }
 }

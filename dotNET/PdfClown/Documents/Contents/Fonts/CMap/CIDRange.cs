@@ -14,15 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Org.BouncyCastle.Utilities;
-using PdfClown.Util;
+using PdfClown.Bytes;
 using System;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-     * Range of continuous CIDs between two Unicode characters.
-     */
+    /// <summary>Range of continuous CIDs between two Unicode characters.</summary>
     public class CIDRange
     {
 

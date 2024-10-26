@@ -24,18 +24,11 @@
 */
 
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Article threads [PDF:1.7:3.6.1].</summary>
-    */
+    /// <summary>Article threads [PDF:1.7:3.6.1].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class Articles : Array<Article>
     {

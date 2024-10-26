@@ -41,8 +41,6 @@
 
 using PdfClown.Bytes;
 using PdfClown.Objects;
-using PdfClown.Util;
-using PdfClown.Util.IO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -52,22 +50,22 @@ using System.Runtime.CompilerServices;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    ///<summary>Character map [PDF:1.6:5.6.4].</summary>
+    /// <summary>Character map [PDF:1.6:5.6.4].</summary>
     public sealed class CMap
     {
         private static readonly int SPACE = ' ';
         private static readonly ConcurrentDictionary<string, CMap> cMapCache = new();
 
-        ///<summary>Gets the character map extracted from the given data.</summary>
-        ///<param name="stream">Character map data.</param>
+        /// <summary>Gets the character map extracted from the given data.</summary>
+        /// <param name="stream">Character map data.</param>
         public static CMap Get(IInputStream stream)
         {
             var parser = new CMapParser(stream);
             return parser.Parse();
         }
 
-        ///<summary>Gets the character map extracted from the given encoding object.</summary>
-        ///<param name="encodingObject">Encoding object.</param>
+        /// <summary>Gets the character map extracted from the given encoding object.</summary>
+        /// <param name="encodingObject">Encoding object.</param>
         public static CMap Get(PdfDataObject encodingObject)
         {
             if (encodingObject == null)
@@ -81,18 +79,18 @@ namespace PdfClown.Documents.Contents.Fonts
                 throw new NotSupportedException("Unknown encoding object type: " + encodingObject.GetType().Name);
         }
 
-        ///<summary>Gets the character map extracted from the given data.</summary>
-        ///<param name="stream">Character map data.</param>
+        /// <summary>Gets the character map extracted from the given data.</summary>
+        /// <param name="stream">Character map data.</param>
         public static CMap Get(PdfStream stream) => Get(stream.GetInputStream());
 
-        ///<summary>Gets the character map corresponding to the given name.</summary>
-        ///<param name="name">Predefined character map name.</param>
-        ///<returns>null, in case no name matching occurs.</returns>
+        /// <summary>Gets the character map corresponding to the given name.</summary>
+        /// <param name="name">Predefined character map name.</param>
+        /// <returns>null, in case no name matching occurs.</returns>
         public static CMap Get(PdfName name) => Get(name.StringValue);
 
-        ///<summary>Gets the character map corresponding to the given name.</summary>
-        ///<param name="name">Predefined character map name.</param>
-        ///<returns>null, in case no name matching occurs.</returns>
+        /// <summary>Gets the character map corresponding to the given name.</summary>
+        /// <param name="name">Predefined character map name.</param>
+        /// <returns>null, in case no name matching occurs.</returns>
         public static CMap Get(string name) => cMapCache.GetOrAdd(name, Load);
 
         private static CMap Load(string name)
@@ -179,23 +177,23 @@ namespace PdfClown.Documents.Contents.Fonts
             set => spaceMapping = value;
         }
 
-        ///<summary>This will tell if this cmap has any CID mappings.</summary>
-        ///<remarks>@return true If there are any CID mappings, false otherwise.</remarks> 
+        /// <summary>This will tell if this cmap has any CID mappings.</summary>
+        /// <remarks>@return true If there are any CID mappings, false otherwise.</remarks> 
         public bool HasCIDMappings
         {
             get => codeToCid.Count > 0 || codeToCidRanges.Count > 0;
         }
 
-        ///<summary> This will tell if this cmap has any Unicode mappings.</summary>
-        ///<value>true If there are any Unicode mappings, false otherwise.</value> 
+        /// <summary> This will tell if this cmap has any Unicode mappings.</summary>
+        /// <value>true If there are any Unicode mappings, false otherwise.</value> 
         public bool HasUnicodeMappings
         {
             get => charToUnicode.Count > 0;
         }
 
-        ///<summary>Returns the sequence of Unicode characters for the given character code.</summary>
-        ///<param name="code">code character code</param>
-        ///<returns>Unicode characters (may be more than one, e.g "fi" ligature)</returns>
+        /// <summary>Returns the sequence of Unicode characters for the given character code.</summary>
+        /// <param name="code">code character code</param>
+        /// <returns>Unicode characters (may be more than one, e.g "fi" ligature)</returns>
         public int? ToUnicode(int code)
         {
             return charToUnicode.TryGetValue(code, out var unicode) ? unicode : null;
@@ -206,9 +204,9 @@ namespace PdfClown.Documents.Contents.Fonts
             return unicodeToByteCodes.TryGetValue(unicode, out var codes) ? codes : null;
         }
 
-        ///<summary>Returns the CID for the given character code.</summary>
-        ///<param name="code">character code as byte array</param>
-        ///<returns>CID</returns>
+        /// <summary>Returns the CID for the given character code.</summary>
+        /// <param name="code">character code as byte array</param>
+        /// <returns>CID</returns>
         public int? ToCID(ReadOnlySpan<byte> code)
         {
             if (!HasCIDMappings || code.Length < minCidLength || code.Length > maxCidLength)
@@ -224,9 +222,9 @@ namespace PdfClown.Documents.Contents.Fonts
             return cid ?? ToCIDFromRanges(code);
         }
 
-        ///<summary>Returns the CID for the given character code.</summary>
-        ///<param name="code">character code</param>
-        ///<returns>CID</returns>
+        /// <summary>Returns the CID for the given character code.</summary>
+        /// <param name="code">character code</param>
+        /// <returns>CID</returns>
         public int? ToCID(int code)
         {
             if (!HasCIDMappings)
@@ -386,7 +384,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     if (range.IsFullMatch(bytes, byteCount))
                     {
-                        return ConvertUtils.ReadIntOffset(bytes, 0, byteCount, ByteOrderEnum.BigEndian);
+                        return StreamExtensions.ReadIntOffset(bytes, 0, byteCount, ByteOrderEnum.BigEndian);
                     }
                 }
                 if (byteCount < maxCodeLength)

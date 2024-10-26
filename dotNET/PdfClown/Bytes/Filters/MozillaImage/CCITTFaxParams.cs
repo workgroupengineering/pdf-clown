@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-/* eslint no-var: error */
 namespace PdfClown.Bytes.Filters
 {
     internal class CCITTFaxParams

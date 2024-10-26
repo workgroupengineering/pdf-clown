@@ -319,7 +319,7 @@ namespace PdfClown.Documents.Encryption
                 // "Bytes 0-3 of the decrypted Perms entry, treated as a little-endian integer, 
                 // are the user permissions. They should match the value in the P key."
                 // perms[0] & 0xFF | (perms[1] & 0xFF) << 8 | (perms[2] & 0xFF) << 16 | (perms[3] & 0xFF) << 24
-                int permsP = ConvertUtils.ReadInt32(perms, 0, ByteOrderEnum.LittleEndian);
+                int permsP = StreamExtensions.ReadInt32(perms, 0, ByteOrderEnum.LittleEndian);
 
                 if (permsP != dicPermissions)
                 {
@@ -449,7 +449,7 @@ namespace PdfClown.Documents.Encryption
 
                 // Algorithm 10: compute "Perms" value
                 byte[] perms = new byte[16];
-                ConvertUtils.WriteInt32(perms.AsSpan(0, 4), permissionInt, ByteOrderEnum.LittleEndian);
+                StreamExtensions.WriteInt32(perms.AsSpan(0, 4), permissionInt, ByteOrderEnum.LittleEndian);
                 Array.Fill(perms, (byte)0xFF, 4, 4);
                 perms[8] = (byte)'T';    // we always encrypt Metadata
                 perms[9] = (byte)'a';

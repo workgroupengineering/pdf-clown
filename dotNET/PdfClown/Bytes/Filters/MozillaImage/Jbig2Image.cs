@@ -20,19 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace PdfClown.Bytes.Filters.JBig
-{
-    //import { BaseException, shadow}from "../shared/util.js";
-    //import { log2, readInt8, readUint16, readUint32 } from "./core_utils.js";
-    //import { ArithmeticDecoder } from "./arithmetic_decoder.js";
-    //import { CCITTFaxDecoder } from "./ccitt.js";
-
-    internal class Jbig2Error : Exception
-    {
-        public Jbig2Error(string msg) : base($"JBIG2 error: {msg}")
-        {
-
-        }
-    }
+{   
 
     internal class Jbig2Image
     {

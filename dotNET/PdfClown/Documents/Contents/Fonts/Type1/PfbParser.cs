@@ -125,7 +125,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                     throw new IOException("Incorrect record type: " + recordType);
                 }
 
-                int size = ConvertUtils.ReadInt32(input.ReadSpan(4), Util.IO.ByteOrderEnum.LittleEndian);
+
+                int size = StreamExtensions.ReadInt32(input.ReadSpan(4), Bytes.ByteOrderEnum.LittleEndian);
 
                 //Debug.WriteLine($"debug: record type: {recordType}, segment size: {size}");
                 var ar = input.ReadMemory(size);

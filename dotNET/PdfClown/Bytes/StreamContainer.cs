@@ -23,8 +23,7 @@
   this list of conditions.
 */
 
-using PdfClown.Util;
-using PdfClown.Util.IO;
+using PdfClown.Bytes;
 
 using System;
 using System.IO;
@@ -123,21 +122,21 @@ namespace PdfClown.Bytes
         {
             Span<byte> data = stackalloc byte[sizeof(int)];
             Read(data);
-            return ConvertUtils.ReadInt32(data, byteOrder);
+            return StreamExtensions.ReadInt32(data, byteOrder);
         }
 
         public uint ReadUInt32()
         {
             Span<byte> data = stackalloc byte[sizeof(uint)];
             Read(data);
-            return ConvertUtils.ReadUInt32(data, byteOrder);
+            return StreamExtensions.ReadUInt32(data, byteOrder);
         }
 
         public int ReadInt(int length)
         {
             Span<byte> data = stackalloc byte[length];
             Read(data);
-            return ConvertUtils.ReadIntOffset(data, byteOrder);
+            return StreamExtensions.ReadIntOffset(data, byteOrder);
         }
 
         public string ReadLine()
@@ -164,28 +163,28 @@ namespace PdfClown.Bytes
         {
             Span<byte> data = stackalloc byte[sizeof(short)];
             Read(data);
-            return ConvertUtils.ReadInt16(data, byteOrder);
+            return StreamExtensions.ReadInt16(data, byteOrder);
         }
 
         public ushort ReadUInt16()
         {
             Span<byte> data = stackalloc byte[sizeof(ushort)];
             Read(data);
-            return ConvertUtils.ReadUInt16(data, byteOrder);
+            return StreamExtensions.ReadUInt16(data, byteOrder);
         }
 
         public long ReadInt64()
         {
             Span<byte> data = stackalloc byte[sizeof(long)];
             Read(data);
-            return ConvertUtils.ReadInt64(data, byteOrder);
+            return StreamExtensions.ReadInt64(data, byteOrder);
         }
 
         public ulong ReadUInt64()
         {
             Span<byte> data = stackalloc byte[sizeof(ulong)];
             Read(data);
-            return ConvertUtils.ReadUInt64(data, byteOrder);
+            return StreamExtensions.ReadUInt64(data, byteOrder);
         }
 
         public byte[] ReadBytesAlloc(int length)
@@ -248,7 +247,7 @@ namespace PdfClown.Bytes
         public void Write(int data, int length)
         {
             Span<byte> result = stackalloc byte[length];
-            ConvertUtils.WriteIntOffset(result, data, byteOrder);
+            StreamExtensions.WriteIntOffset(result, data, byteOrder);
             Write(result);
         }
 

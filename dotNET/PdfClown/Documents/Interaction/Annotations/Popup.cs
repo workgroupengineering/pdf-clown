@@ -36,12 +36,10 @@ using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Pop-up annotation [PDF:1.6:8.4.5].</summary>
-      <remarks>It displays text in a pop-up window for entry and editing.
-      It typically does not appear alone but is associated with a markup annotation,
-      its parent annotation, and is used for editing the parent's text.</remarks>
-    */
+    /// <summary>Pop-up annotation[PDF:1.6:8.4.5].</summary>
+    /// <remarks>It displays text in a pop-up window for entry and editing.
+    /// It typically does not appear alone but is associated with a markup annotation,
+    /// its parent annotation, and is used for editing the parent's text.</remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class Popup : Annotation
     {
@@ -56,18 +54,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         { }
 
 
-        //public override PdfPage Page
-        //{
-        //    get => Parent?.Page ?? base.Page;
-        //    set
-        //    {
-        //        if (Parent != null)
-        //        { parent.Page = value; }
-        //        else
-        //        { base.Page = value; }
-        //    }
-        //}
-
         public override DeviceColor Color
         {
             get => Parent?.Color ?? base.Color;
@@ -80,9 +66,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets/Sets whether the annotation should initially be displayed open.</summary>
-        */
+        /// <summary>Gets/Sets whether the annotation should initially be displayed open.</summary>
         public bool IsOpen
         {
             get => BaseDataObject.GetBool(PdfName.Open, false);
@@ -97,9 +81,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        /**
-          <summary>Gets the markup associated with this annotation.</summary>
-        */
+        /// <summary>Gets the markup associated with this annotation.</summary>
         public Markup Parent
         {
             get => parent ??= (Markup)Annotation.Wrap(BaseDataObject[PdfName.Parent]);

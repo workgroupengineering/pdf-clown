@@ -23,11 +23,9 @@
   this list of conditions.
 */
 
-namespace PdfClown.Util.IO
+namespace PdfClown.Bytes
 {
-    /**
-      <summary>Byte order.</summary>
-    */
+    /// <summary>Byte order.</summary>
     public enum ByteOrderEnum
     {
         BigEndian,

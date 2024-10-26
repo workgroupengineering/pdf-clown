@@ -25,17 +25,15 @@
 
 using PdfClown.Documents;
 using PdfClown.Objects;
-using PdfClown.Util;
 
 using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Indexed color space [PDF:1.6:4.5.5].</summary>
-    */
+    /// <summary>Indexed color space [PDF:1.6:4.5.5].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class IndexedColorSpace : SpecialColorSpace
     {

@@ -23,9 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Util;
-using PdfClown.Util.IO;
-
 using System;
 using System.IO;
 

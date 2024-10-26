@@ -28,9 +28,7 @@ using PdfClown.Objects;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>CIE-based calibrated color value [PDF:1.6:4.5.4].</summary>
-    */
+    /// <summary>CIE-based calibrated color value [PDF:1.6:4.5.4].</summary>
     [PDF(VersionEnum.PDF11)]
     public abstract class CalColorSpace : CIEBasedColorSpace
     {
@@ -39,9 +37,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         protected CalColorSpace(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the gamma of this color space.</summary>
-        */
+        /// <summary>Gets the gamma of this color space.</summary>
         public abstract float[] Gamma
         {
             get;

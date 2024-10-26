@@ -185,7 +185,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 // 1. Beginning input code.
                 MoveNext();
                 var beginInputCode = ParseInputCode();
-                int beginInput = ConvertUtils.ReadIntOffset(beginInputCode);
+                int beginInput = StreamExtensions.ReadIntOffset(beginInputCode);
                 // 2. Ending input code.
                 MoveNext();
                 var endInputCode = ParseInputCode();
@@ -223,11 +223,11 @@ namespace PdfClown.Documents.Contents.Fonts
                 // 1. Beginning input code.
                 MoveNext();
                 var beginInputCode = ParseInputCode();
-                int beginInput = ConvertUtils.ReadIntOffset(beginInputCode);
+                int beginInput = StreamExtensions.ReadIntOffset(beginInputCode);
                 // 2. Ending input code.
                 MoveNext();
                 var endInputCode = ParseInputCode();
-                int entInput = ConvertUtils.ReadIntOffset(endInputCode);
+                int entInput = StreamExtensions.ReadIntOffset(endInputCode);
                 // end has to be bigger than start or equal
                 if (entInput < beginInput)
                 {
@@ -353,7 +353,7 @@ namespace PdfClown.Documents.Contents.Fonts
                     return IntegerToken;
                 case TokenTypeEnum.Hex: // Character code in hexadecimal format.
                 case TokenTypeEnum.Literal:
-                    return ConvertUtils.ReadIntOffset(BytesToken);
+                    return StreamExtensions.ReadIntOffset(BytesToken);
                 case TokenTypeEnum.Name: // Character name.
                     return GlyphMapping.Default.ToUnicode(CharsToken.ToString()).Value;
                 default:
@@ -365,7 +365,7 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             foreach (byte[] tokenBytes in tokenBytesList)
             {
-                var value = ConvertUtils.ReadIntOffset(tokenBytes);
+                var value = StreamExtensions.ReadIntOffset(tokenBytes);
                 cmap.AddCharMapping(startCode, value);
                 startCode.Increment();
             }
@@ -375,7 +375,7 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             for (int i = 0; i < values; i++)
             {
-                var value = ConvertUtils.ReadIntOffset(tokenBytes);
+                var value = StreamExtensions.ReadIntOffset(tokenBytes);
                 cmap.AddCharMapping(startCode, value);
                 if (!tokenBytes.Increment()
                     || !startCode.Increment())

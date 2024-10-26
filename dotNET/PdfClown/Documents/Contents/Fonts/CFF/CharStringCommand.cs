@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using PdfClown.Util;
+using PdfClown.Bytes;
 using System;
 using System.Collections.Generic;
 

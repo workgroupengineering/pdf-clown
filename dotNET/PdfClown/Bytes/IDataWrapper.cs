@@ -25,7 +25,7 @@
 
 using System;
 
-namespace PdfClown.Util
+namespace PdfClown.Bytes
 {
     /// <summary>Generic data buffer.</summary>
     public interface IDataWrapper

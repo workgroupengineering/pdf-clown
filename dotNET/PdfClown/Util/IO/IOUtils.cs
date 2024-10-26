@@ -37,16 +37,6 @@ namespace PdfClown.Util.IO
         public static bool Exists(string path)
         { return Directory.Exists(path) || File.Exists(path); }
 
-        public static void Write(this Stream stream, byte[] bytes)
-        {
-            stream.Write(bytes, 0, bytes.Length);
-        }
-
-        public static void Reset(this MemoryStream stream)
-        {
-            stream.SetLength(0);
-        }
-
         public static void Update(this HashAlgorithm digest, byte oneByte)
         {
             Update(digest, new byte[] { oneByte });

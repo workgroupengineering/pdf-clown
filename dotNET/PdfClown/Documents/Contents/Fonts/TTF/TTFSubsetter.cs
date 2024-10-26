@@ -178,7 +178,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             output.Write(bytes.Length);
 
             // account for the checksum twice, once for the header field, once for the content itself
-            return (long)ConvertUtils.ReadUInt32(tagbytes) + checksum + checksum + offset + bytes.Length;
+            return (long)StreamExtensions.ReadUInt32(tagbytes) + checksum + checksum + offset + bytes.Length;
         }
 
         private void WriteTableBody(IOutputStream os, ByteStream bytes)

@@ -27,15 +27,11 @@ using System;
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>PDF object wrapper interface.</summary>
-    */
+    /// <summary>PDF object wrapper interface.</summary>
     public interface IPdfObjectWrapper
     {
-        /**
-          <summary>Gets the underlying reference object, if available; otherwise, gets the underlying 
-          data object.</summary>
-        */
+        /// <summary>Gets the underlying reference object, if available; otherwise, gets the underlying 
+        /// data object.</summary>
         PdfDirectObject BaseObject { get; }
     }
 }

@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-using PdfClown.Documents.Interaction.Forms;
-using PdfClown.Util;
 using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;

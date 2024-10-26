@@ -14,7 +14,6 @@
  */
 using System;
 
-/* eslint no-var: error */
 namespace PdfClown.Bytes.Filters
 {
     public static class FiltersExtension

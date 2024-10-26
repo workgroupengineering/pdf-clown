@@ -24,8 +24,6 @@
 */
 
 using PdfClown.Tokens;
-using PdfClown.Util;
-using PdfClown.Util.IO;
 
 using System;
 using System.IO;
@@ -34,7 +32,6 @@ using System.Text;
 
 namespace PdfClown.Bytes
 {
-    //TODO:IMPL Substitute System.Array static class invocations with System.Buffer static class invocations (better performance)!!!
     /// <summary>Byte buffer.</summary>
     public class ByteStream : Stream, IByteStream
     {
@@ -335,49 +332,49 @@ namespace PdfClown.Bytes
 
         public short ReadInt16()
         {
-            short value = ConvertUtils.ReadInt16(AsSpan(position, sizeof(short)), byteOrder);
+            short value = StreamExtensions.ReadInt16(AsSpan(position, sizeof(short)), byteOrder);
             position += sizeof(short);
             return value;
         }
 
         public ushort ReadUInt16()
         {
-            ushort value = ConvertUtils.ReadUInt16(AsSpan(position, sizeof(ushort)), byteOrder);
+            ushort value = StreamExtensions.ReadUInt16(AsSpan(position, sizeof(ushort)), byteOrder);
             position += sizeof(ushort);
             return value;
         }
 
         public int ReadInt32()
         {
-            int value = ConvertUtils.ReadInt32(AsSpan(position, sizeof(int)), byteOrder);
+            int value = StreamExtensions.ReadInt32(AsSpan(position, sizeof(int)), byteOrder);
             position += sizeof(int);
             return value;
         }
 
         public uint ReadUInt32()
         {
-            var value = ConvertUtils.ReadUInt32(AsSpan(position, sizeof(uint)), byteOrder);
+            var value = StreamExtensions.ReadUInt32(AsSpan(position, sizeof(uint)), byteOrder);
             position += sizeof(uint);
             return value;
         }
 
         public int ReadInt(int length)
         {
-            int value = ConvertUtils.ReadIntOffset(AsSpan(position, length), byteOrder);
+            int value = StreamExtensions.ReadIntOffset(AsSpan(position, length), byteOrder);
             position += length;
             return value;
         }
 
         public long ReadInt64()
         {
-            var value = ConvertUtils.ReadInt64(AsSpan(position, sizeof(long)), byteOrder);
+            var value = StreamExtensions.ReadInt64(AsSpan(position, sizeof(long)), byteOrder);
             position += sizeof(long);
             return value;
         }
 
         public ulong ReadUInt64()
         {
-            var value = ConvertUtils.ReadUInt64(AsSpan(position, sizeof(ulong)), byteOrder);
+            var value = StreamExtensions.ReadUInt64(AsSpan(position, sizeof(ulong)), byteOrder);
             position += sizeof(ulong);
             return value;
         }
@@ -469,7 +466,7 @@ namespace PdfClown.Bytes
         public void Write(int data, int length)
         {
             Span<byte> result = stackalloc byte[length];
-            ConvertUtils.WriteIntOffset(result, data, byteOrder);
+            StreamExtensions.WriteIntOffset(result, data, byteOrder);
             Write(result);
         }
 

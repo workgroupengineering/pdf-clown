@@ -25,7 +25,6 @@
 
 using PdfClown.Bytes;
 using PdfClown.Objects;
-using PdfClown.Util.IO;
 using PdfClown.Util.Parsers;
 
 using System;
