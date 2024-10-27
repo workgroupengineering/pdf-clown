@@ -1,9 +1,7 @@
 ﻿using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.UI.Text;
 using PdfClown.UI.Operations;
-using System;
 
 namespace PdfClown.UI
 {
@@ -11,15 +9,16 @@ namespace PdfClown.UI
     {
         IPdfDocumentViewModel Document { get; set; }
         IPdfPageViewModel Page { get; set; }
-        PdfPage CurrentPage { get; set; }
+        PdfPage PdfPage { get; set; }
         CursorType Cursor { get; set; }
         bool ShowMarkup { get; }
         bool ShowCharBound { get; }
         bool ScrollByPointer { get; set; }
         EditOperationList Operations { get; }
         bool IsReadOnly { get; set; }
-        int PagesCount { get; set; }
+        int PagesCount { get; }
         int PageNumber { get; set; }
+        int NewPageNumber { get; set; }
 
         TextSelection TextSelection { get; }
 

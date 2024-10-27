@@ -23,6 +23,11 @@ namespace PdfClown.UI
         private float scale = 1;
         private IPdfDocumentViewModel document;
         private IPdfPageViewModel currentPage;
+        private IPdfPageViewModel newPage;
+
+        private PdfPageEventArgs cacheCurrentArgs = new(null);
+        private FloatEventArgs cacheScaleArgs = new(0F);
+
 
         //Common
         public IPdfView Viewer;
@@ -46,11 +51,11 @@ namespace PdfClown.UI
                 ToolTipAnnotation = null;
                 document = value;
                 UpdateMaximums();
-                Viewer.PagesCount = document?.PagesCount ?? 0;
+                PagesCount = document?.PagesCount ?? 0;
                 if (document != null)
                 {
                     document.BoundsChanged += OnDocumentBoundsChanged;
-                    CurrentPage = Viewer.Page = document.PageViews.FirstOrDefault();
+                    CurrentPage = document.PageViews.FirstOrDefault();
                     Viewer.ScrollTo(CurrentPage);
                 }
                 else
@@ -67,7 +72,7 @@ namespace PdfClown.UI
                 if (currentPage == null
                     || currentPage.Document != Document)
                 {
-                    currentPage = GetCenterPage();
+                    CurrentPage = GetCenterPage();
                 }
                 return currentPage;
             }
@@ -75,7 +80,59 @@ namespace PdfClown.UI
             {
                 if (currentPage != value)
                 {
-                    currentPage = value;
+                    OnCurrentPageChanged(value);
+                }
+            }
+        }
+
+        public int CurrentPageNumber
+        {
+            get => (CurrentPage?.Index ?? -1) + 1;
+            set
+            {
+                if (Document == null
+                    || PagesCount == 0)
+                {
+                    return;
+                }
+                int index = GetPageIndex(value);
+                if ((index + 1) != CurrentPageNumber)
+                {
+                    CurrentPage = Document[index];
+                }
+            }
+        }
+
+        public IPdfPageViewModel NewPage
+        {
+            get => newPage;
+            private set
+            {
+                if (newPage != value)
+                {
+                    newPage = value;
+                    if (newPage != null)
+                        Viewer.ScrollTo(newPage);
+                }
+            }
+        }
+
+        public int NewPageNumber
+        {
+            get => NewPage != null
+                ? NewPage.Index + 1
+                : CurrentPageNumber;
+            set
+            {
+                if (Document == null
+                    || PagesCount == 0)
+                {
+                    return;
+                }
+                int index = GetPageIndex(value);
+                if ((index + 1) != CurrentPageNumber)
+                {
+                    NewPage = Document[index];
                 }
             }
         }
@@ -109,6 +166,8 @@ namespace PdfClown.UI
         public bool VerticalScrollBarVisible => Viewer.VerticalMaximum >= (Viewer.Height + DefaultSKStyles.StepSize);
 
         public bool HorizontalScrollBarVisible => Viewer.HorizontalMaximum >= (Viewer.Width + DefaultSKStyles.StepSize);
+
+        public SKMatrix ScaleMatrix;
 
         public SKMatrix WindowScaleMatrix
         {
@@ -236,30 +295,45 @@ namespace PdfClown.UI
             }
         }
 
-        public float ScaleContent
+        public float Scale
         {
-            get => scale; set
+            get => scale;
+            set
             {
                 if (value != scale)
                 {
-                    var oldScale = scale;
-                    scale = value;
-                    UpdateMaximums();
-                    Viewer.ScaleContent = value;
+                    OnScaleContentChanged(scale, value);
                 }
             }
         }
+
+        public int PagesCount { get; private set; }
 
         public ToolTipRenderer ToolTipRenderer;
 
         //Draw
         public SKCanvas Canvas;
 
+        public event PdfPageEventHandler CurrentPageChanged;
+
+        public event FloatEventHandler ScaleChanged;
+
+        private void OnCurrentPageChanged(IPdfPageViewModel page)
+        {
+            if (newPage != null && newPage == page)
+            {
+                NewPage = null;
+            }
+            cacheCurrentArgs.Page =
+                currentPage = page;
+            CurrentPageChanged?.Invoke(cacheCurrentArgs);
+        }
+
         public IPdfPageViewModel GetCenterPage()
         {
-            if (Viewer.Document == null)
+            if (Document == null)
                 return null;
-            var doc = Viewer.Document;
+            var doc = Document;
             var area = WindowArea;
             area.Inflate(-area.Width / 3F, -area.Height / 3F);
             area = InvertNavigationMatrix.MapRect(area);
@@ -277,7 +351,7 @@ namespace PdfClown.UI
         public int GetDisplayPageIndex()
         {
             var verticalValue = -(NavigationMatrix.TransY);
-            var page = Viewer.Document.PageViews.FirstOrDefault(p => (p.Bounds.Bottom * NavigationMatrix.ScaleY) > verticalValue);
+            var page = Document.PageViews.FirstOrDefault(p => (p.Bounds.Bottom * NavigationMatrix.ScaleY) > verticalValue);
             return page?.Order ?? 0;
         }
 
@@ -288,10 +362,9 @@ namespace PdfClown.UI
                 Canvas = canvas;
                 Canvas.Save();
                 Canvas.SetMatrix(ViewMatrix);
-                var doc = Viewer.Document;
-                for (int i = GetDisplayPageIndex(); i < doc.PagesCount; i++)
+                for (int i = GetDisplayPageIndex(); i < document.PagesCount; i++)
                 {
-                    var pageView = doc[i];
+                    var pageView = document[i];
                     var pageBounds = pageView.Bounds;
                     if (pageBounds.IntersectsWith(NavigationArea))
                     {
@@ -326,7 +399,7 @@ namespace PdfClown.UI
         {
             if (ToolTipAnnotation != null)
             {
-                var pageView = Viewer.Document.GetPageView(ToolTipAnnotation.Page);
+                var pageView = Document.GetPageView(ToolTipAnnotation.Page);
                 if (pageView?.Bounds.IntersectsWith(NavigationArea) ?? false)
                 {
                     ToolTipRenderer?.Draw(this);
@@ -336,10 +409,9 @@ namespace PdfClown.UI
 
         public bool Touch()
         {
-            var doc = Viewer.Document;
-            for (int i = GetDisplayPageIndex(); i < doc.PagesCount; i++)
+            for (int i = GetDisplayPageIndex(); i < document.PagesCount; i++)
             {
-                var pageView = doc[i];
+                var pageView = document[i];
                 if (pageView.Bounds.Contains(ViewPointerLocation))
                 {
                     pageView.Touch(this);
@@ -357,7 +429,7 @@ namespace PdfClown.UI
         public void UpdateMaximums()
         {
             UpdateCurrentMatrix();
-            var size = Viewer.Document?.Size ?? SKSize.Empty;
+            var size = Document?.Size ?? SKSize.Empty;
             Viewer.HorizontalMaximum = size.Width * scale;
             Viewer.VerticalMaximum = size.Height * scale;
             Viewer.InvalidatePaint();
@@ -369,7 +441,7 @@ namespace PdfClown.UI
         {
             var horizontalValue = (float)Viewer.HorizontalValue;
             var verticalValue = (float)Viewer.VerticalValue;
-            var size = Viewer.Document?.Size ?? SKSize.Empty;
+            var size = Document?.Size ?? SKSize.Empty;
             WindowArea = SKRect.Create(0, 0, width, height);
             var maximumWidth = size.Width * scale;
             var maximumHeight = size.Height * scale;
@@ -391,31 +463,34 @@ namespace PdfClown.UI
 
         public SKPoint ScrollTo(IPdfPageViewModel page)
         {
-            if (page == null || Viewer.Document == null)
+            if (page == null || Document == null)
             {
                 return SKPoint.Empty;
             }
 
-            if (Viewer.FitMode == PdfViewFitMode.DocumentWidth)
+            switch (Viewer.FitMode)
             {
-                ScaleContent = (float)Viewer.Width / Viewer.Document.Size.Width;
-            }
-            else if (Viewer.FitMode == PdfViewFitMode.PageWidth)
-            {
-                ScaleContent = (float)Viewer.Width / (page.Bounds.Width + 10);
-            }
-            else if (Viewer.FitMode == PdfViewFitMode.PageSize)
-            {
-                var vScale = (float)Viewer.Height / (page.Bounds.Height + 10);
-                var hScale = (float)Viewer.Width / (page.Bounds.Width + 10);
-                ScaleContent = hScale < vScale ? hScale : vScale;
+                case PdfViewFitMode.MaxWidth:
+                    Scale = (float)WindowArea.Width / Document.Size.Width;
+                    break;
+                case PdfViewFitMode.PageHeight:
+                    Scale = (float)WindowArea.Height / (page.Bounds.Height + 6);
+                    break;
+                case PdfViewFitMode.PageWidth:
+                    Scale = (float)WindowArea.Width / (page.Bounds.Width + 20);
+                    break;
+                case PdfViewFitMode.PageSize:
+                    var vScale = (float)WindowArea.Height / (page.Bounds.Height + 6);
+                    var hScale = (float)WindowArea.Width / (page.Bounds.Width + 20);
+                    Scale = hScale < vScale ? hScale : vScale;
+                    break;
             }
 
-            var matrix = SKMatrix.CreateScale(ScaleContent, ScaleContent);
-            var bound = matrix.MapRect(page.Bounds);
+            var bound = ScaleMatrix.MapRect(page.Bounds);
             return new SKPoint(bound.Left - (WindowArea.MidX - bound.Width / 2),
-                               bound.Top - (WindowArea.MidY - bound.Height / 2));
-
+                               bound.Height <= WindowArea.Height
+                                ? bound.Top - (WindowArea.MidY - bound.Height / 2)
+                                : bound.Top - 5);
         }
 
         public SKPoint ScrollTo(Annotation annotation)
@@ -425,7 +500,7 @@ namespace PdfClown.UI
                 return SKPoint.Empty;
             }
 
-            var pageView = Viewer.Document.GetPageView(annotation.Page);
+            var pageView = Document.GetPageView(annotation.Page);
             if (pageView == null)
             {
                 return SKPoint.Empty;
@@ -438,7 +513,9 @@ namespace PdfClown.UI
                                bound.Top - (WindowArea.MidY - bound.Height / 2));
         }
 
-        public void Scale(float delta)
+        public void ScaleToPointer(float delta) => ScaleToPointer(delta, PointerLocation);
+
+        public void ScaleToPointer(float delta, SKPoint pointerLocation)
         {
             var scaleStep = 0.06F * Math.Sign(delta);
             var newScale = scale + scaleStep + scaleStep * scale;
@@ -448,10 +525,10 @@ namespace PdfClown.UI
                 newScale = 60F;
             if (newScale != scale)
             {
-                var unscaleLocations = new SKPoint(PointerLocation.X / XScaleFactor, PointerLocation.Y / YScaleFactor);
+                var unscaleLocations = new SKPoint(pointerLocation.X / XScaleFactor, pointerLocation.Y / YScaleFactor);
                 var oldSpacePoint = InvertNavigationMatrix.MapPoint(unscaleLocations);
 
-                ScaleContent = newScale;
+                Scale = newScale;
 
                 var newCurrentLocation = NavigationMatrix.MapPoint(oldSpacePoint);
 
@@ -479,8 +556,8 @@ namespace PdfClown.UI
                 {
                     return;
                 }
-                if (Viewer.Document == null
-                    || !Viewer.Document.IsPaintComplete)
+                if (Document == null
+                    || !Document.IsPaintComplete)
                 {
                     return;
                 }
@@ -529,5 +606,31 @@ namespace PdfClown.UI
         {
             UpdateMaximums();
         }
+
+        private int GetPageIndex(int value)
+        {
+            var index = value - 1;
+            if (index < 0)
+            {
+                index = PagesCount - 1;
+            }
+            else if (index >= PagesCount)
+            {
+                index = 0;
+            }
+
+            return index;
+        }
+
+        private void OnScaleContentChanged(float oldValue, float newValue)
+        {
+            scale = newValue;
+            ScaleMatrix = SKMatrix.CreateScale(Scale, Scale);
+
+            UpdateMaximums();
+            cacheScaleArgs.Value = newValue;
+            ScaleChanged?.Invoke(cacheScaleArgs);
+        }
     }
+
 }

@@ -33,9 +33,7 @@ a, .btn-link {
 .content {
     padding: 4px;
     width: 100%;
-    height: 100%;
-    background-color: silver;
-    background-blend-mode: color-burn;
+    height: 100%;    
 }
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
@@ -123,7 +121,7 @@ code {
 
     .canvas-container canvas {
         width: 100%;
-        height: 85%;
+        height: 95%;
         touch-action: none;
         pointer-events: auto;
     }

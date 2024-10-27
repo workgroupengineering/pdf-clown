@@ -726,7 +726,7 @@ namespace PdfClown.UI
             ScrollAnimation = new Animation();
             ScrollAnimation.Add(0, 1, new Animation(v => VerticalValue = v, VerticalValue, top, Easing.SinOut));
             ScrollAnimation.Add(0, 1, new Animation(v => HorizontalValue = v, HorizontalValue, left, Easing.SinOut));
-            ScrollAnimation.Commit(this, ahScroll, 16, 270, finished: (d, f) => ScrollAnimation = null);
+            ScrollAnimation.Commit(this, ahScroll, 16, 270, finished: OnScrollComplete);
         }
 
         private void OnCursorChanged(CursorType oldValue, CursorType newValue)
@@ -741,7 +741,7 @@ namespace PdfClown.UI
             return args.Handled;
         }
 
-        protected void OnScrollComplete(double arg1, bool arg2)
+        protected virtual void OnScrollComplete(double arg1, bool arg2)
         {
             if (HorizontalScrollAnimation != null)
             {
@@ -752,6 +752,10 @@ namespace PdfClown.UI
             {
                 VerticalScrollAnimation = null;
                 verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)VerticalValue));
+            }
+            if (ScrollAnimation != null)
+            {
+                ScrollAnimation = null;
             }
             ScrollComplete?.Invoke(this, EventArgs.Empty);
         }

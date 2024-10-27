@@ -36,6 +36,8 @@ namespace PdfClown.UI
         public PdfView()
         {
             state = new PdfViewState { Viewer = this };
+            state.CurrentPageChanged += OnCurrentPageChanged;
+            state.ScaleChanged += OnScaleChanged;
 
             TextSelection = new TextSelection();
             TextSelection.Changed += OnTextSelectionChanged;
@@ -73,7 +75,7 @@ namespace PdfClown.UI
         {
             get => (bool)GetValue(ShowMarkupProperty);
             set => SetValue(ShowMarkupProperty, value);
-        }        
+        }
 
         public bool IsReadOnly
         {
@@ -96,13 +98,14 @@ namespace PdfClown.UI
                 {
                     state.Document = value;
                     DocumentChanged?.Invoke(new PdfDocumentEventArgs(value));
+                    OnPropertyChanged(nameof(PagesCount));
                 }
             }
         }
 
         public SKSize DocumentSize => Document?.Size ?? SKSize.Empty;
 
-        public PdfPage CurrentPage
+        public PdfPage PdfPage
         {
             get => Page?.GetPage(state);
             set => Page = Document.GetPageView(value);
@@ -111,19 +114,7 @@ namespace PdfClown.UI
         public IPdfPageViewModel Page
         {
             get => state.CurrentPage;
-            set
-            {
-                if (state.CurrentPage != value)
-                {
-                    state.CurrentPage = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(CurrentPage));
-                    OnPropertyChanged(nameof(PageNumber));
-                    OnPropertyChanged(nameof(PageNumberWithScroll));
-                    ((Command)NextPageCommand).ChangeCanExecute();
-                    ((Command)PrevPageCommand).ChangeCanExecute();
-                }
-            }
+            set => state.CurrentPage = value;
         }
 
         public TextSelection TextSelection { get; private set; }
@@ -134,47 +125,19 @@ namespace PdfClown.UI
 
         public int PagesCount
         {
-            get => Document?.PagesCount ?? 0;
-            set => OnPropertyChanged(nameof(PagesCount));
+            get => state.PagesCount;
         }
 
-        public int PageNumberWithScroll
+        public int NewPageNumber
         {
-            get => PageNumber;
-            set
-            {
-                if (PageNumber != value)
-                {
-                    PageNumber = value <= 0 ? 1 : value > PagesCount ? PagesCount : value;
-                    ScrollTo(Page);
-                }
-            }
+            get => state.NewPageNumber;
+            set => state.NewPageNumber = value;
         }
 
         public int PageNumber
         {
-            get => (Page?.Index ?? -1) + 1;
-            set
-            {
-                if (Document == null
-                    || PagesCount == 0)
-                {
-                    return;
-                }
-                var index = value - 1;
-                if (index < 0)
-                {
-                    index = PagesCount - 1;
-                }
-                else if (index >= PagesCount)
-                {
-                    index = 0;
-                }
-                if ((index + 1) != PageNumber)
-                {
-                    Page = Document[index];
-                }
-            }
+            get => state.CurrentPageNumber;
+            set => state.CurrentPageNumber = value;
         }
 
         public ICommand NextPageCommand { get; set; }
@@ -185,15 +148,13 @@ namespace PdfClown.UI
 
         public ICommand UndoCommand { get; set; }
 
-        public event PdfAnnotationEventHandler SelectedAnnotationChanged;
-
         public event PdfDocumentEventHandler DocumentChanged;
 
-        public void NextPage() => PageNumberWithScroll += 1;
+        public void NextPage() => NewPageNumber += 1;
 
         private bool CanNextPage() => PageNumber < PagesCount;
 
-        public void PrevPage() => PageNumberWithScroll -= 1;
+        public void PrevPage() => NewPageNumber -= 1;
 
         private bool CanPrevPage() => PageNumber > 1;
 
@@ -209,7 +170,7 @@ namespace PdfClown.UI
 
         private void OnScaleContentChanged(float oldValue, float newValue)
         {
-            state.ScaleContent = newValue;
+            state.Scale = newValue;
         }
 
         private void OnShowMarkupChanged(bool oldValue, bool newValue)
@@ -264,6 +225,21 @@ namespace PdfClown.UI
             return base.OnKeyDown(keyName, modifiers);
         }
 
+        private void OnScaleChanged(FloatEventArgs e)
+        {
+            ScaleContent = e.Value;
+        }
+
+        private void OnCurrentPageChanged(PdfPageEventArgs e)
+        {
+            OnPropertyChanged(nameof(Page));
+            OnPropertyChanged(nameof(PdfPage));
+            OnPropertyChanged(nameof(PageNumber));
+            OnPropertyChanged(nameof(NewPageNumber));
+            ((Command)NextPageCommand).ChangeCanExecute();
+            ((Command)PrevPageCommand).ChangeCanExecute();
+        }
+
         private void OnTextSelectionChanged(TextSelectionEventArgs args)
         {
             InvalidatePaint();
@@ -294,7 +270,7 @@ namespace PdfClown.UI
             }
             if (KeyModifiers == KeyModifiers.Ctrl)
             {
-                state.Scale(delta);
+                state.ScaleToPointer(delta);
             }
             return false;
         }
@@ -349,6 +325,5 @@ namespace PdfClown.UI
             var location = state.ScrollTo(annotation);
             AnimateScroll(Math.Max(location.Y, 0), Math.Max(location.X, 0));
         }
-
     }
 }

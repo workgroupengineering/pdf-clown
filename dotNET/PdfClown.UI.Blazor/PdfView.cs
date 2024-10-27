@@ -20,7 +20,10 @@ namespace PdfClown.UI.Blazor
         public PdfView()
         {
             Envir.Init();
+            
             state = new PdfViewState { Viewer = this };
+            state.CurrentPageChanged += OnCurrentPageChanged;
+            state.ScaleChanged += OnScaleChanged;
 
             TextSelection = new TextSelection();
             TextSelection.Changed += OnTextSelectionChanged;
@@ -30,65 +33,36 @@ namespace PdfClown.UI.Blazor
         }
 
         [Parameter]
-        public PdfViewFitMode FitMode
-        {
-            get => fitMode;
-            set
-            {
-                if (fitMode != value)
-                {
-                    OnFitModeChanged(fitMode, value);
-                }
-            }
-        }
+        public PdfViewFitMode FitMode { get; set; }
 
         [Parameter]
-        public float ScaleContent
-        {
-            get => state.ScaleContent;
-            set
-            {
-                if (ScaleContent != value)
-                {
-                    OnScaleContentChanged(state.ScaleContent, value);
-                }
-            }
-        }
+        public EventCallback<PdfViewFitMode> FitModeChanged { get; set; }
 
         [Parameter]
-        public bool ShowMarkup
-        {
-            get => showMarkup;
-            set
-            {
-                if (showMarkup != value)
-                {
-                    OnShowMarkupChanged(showMarkup, value);
-                }
-            }
-        }
+        public float ScaleContent { get; set; }
+
+        [Parameter]
+        public EventCallback<float> ScaleContentChanged { get; set; }
+
+        [Parameter]
+        public bool ShowMarkup { get; set; }
+
+        [Parameter]
+        public EventCallback<bool> ShowMarkupChanged { get; set; }
 
         public bool ScrollByPointer { get; set; } = true;
 
         [Parameter]
-        public bool IsReadOnly
-        {
-            get => isReadOnly;
-            set => OnIsReadOnlyChanged(isReadOnly, value);
-        }
+        public bool IsReadOnly { get; set; }
 
         [Parameter]
-        public bool ShowCharBound
-        {
-            get => showCharBound;
-            set
-            {
-                if (ShowCharBound != value)
-                {
-                    OnShowCharBoundChanged(showCharBound, value);
-                }
-            }
-        }
+        public EventCallback<bool> IsReadOnlyChanged { get; set; }
+
+        [Parameter]
+        public bool ShowCharBound { get; set; }
+
+        [Parameter]
+        public EventCallback<bool> ShowCharBoundChanged { get; set; }
 
         public IPdfDocumentViewModel Document
         {
@@ -98,12 +72,12 @@ namespace PdfClown.UI.Blazor
                 if (state.Document != value)
                 {
                     state.Document = value;
-                    DocumentChanged?.Invoke(new PdfDocumentEventArgs(value));
+                    OnDocumentChanged(value);
                 }
             }
         }
 
-        public PdfPage CurrentPage
+        public PdfPage PdfPage
         {
             get => Page?.GetPage(state);
             set => Page = Document.GetPageView(value);
@@ -112,86 +86,86 @@ namespace PdfClown.UI.Blazor
         public IPdfPageViewModel Page
         {
             get => state.CurrentPage;
-            set
-            {
-                if (state.CurrentPage != value)
-                {
-                    state.CurrentPage = value;
-                }
-            }
+            set => state.CurrentPage = value;
         }
 
         public TextSelection TextSelection { get; private set; }
 
         public EditOperationList Operations { get; private set; }
 
-        public bool IsChanged => Operations.HashOperations;
+        [Parameter]
+        public bool IsEdited { get; set; }
 
-        public int PagesCount
-        {
-            get => Document?.PagesCount ?? 0;
-            set { }
-        }
+        [Parameter]
+        public EventCallback<bool> IsEditedChanged { get; set; }
 
-        public int PageNumberWithScroll
-        {
-            get => PageNumber;
-            set
-            {
-                if (PageNumber != value)
-                {
-                    PageNumber = value <= 0 ? 1 : value > PagesCount ? PagesCount : value;
-                    ScrollTo(Page);
-                }
-            }
-        }
+        [Parameter]
+        public int PagesCount { get; set; }
 
-        public int PageNumber
-        {
-            get => (Page?.Index ?? -1) + 1;
-            set
-            {
-                if (Document == null
-                    || PagesCount == 0)
-                {
-                    return;
-                }
-                var index = value - 1;
-                if (index < 0)
-                {
-                    index = PagesCount - 1;
-                }
-                else if (index >= PagesCount)
-                {
-                    index = 0;
-                }
-                if ((index + 1) != PageNumber)
-                {
-                    Page = Document[index];
-                }
-            }
-        }
+        [Parameter]
+        public EventCallback<int> PagesCountChanged { get; set; }
+
+        [Parameter]
+        public int NewPageNumber { get; set; }
+
+        [Parameter]
+        public EventCallback<int> NewPageNumberChanged { get; set; }
+
+        [Parameter]
+        public int PageNumber { get; set; }
+
+        [Parameter]
+        public EventCallback<int> PageNumberChanged { get; set; }
+
 
         public event PdfDocumentEventHandler DocumentChanged;
 
-        public void NextPage() => PageNumberWithScroll += 1;
+        public void NextPage() => NewPageNumber += 1;
 
         private bool CanNextPage() => PageNumber < PagesCount;
 
-        public void PrevPage() => PageNumberWithScroll -= 1;
+        public void PrevPage() => NewPageNumber -= 1;
 
         private bool CanPrevPage() => PageNumber > 1;
+
+        protected override void OnParametersSet()
+        {
+            base.OnParametersSet();
+            if (fitMode != FitMode)
+            {
+                OnFitModeChanged(fitMode, FitMode);
+            }
+            if (state.Scale != ScaleContent)
+            {
+                state.Scale = ScaleContent; 
+            }
+            if (showMarkup != ShowMarkup)
+            {
+                OnShowMarkupChanged(showMarkup, ShowMarkup);
+            }
+            if (isReadOnly != IsReadOnly)
+            {
+                OnIsReadOnlyChanged(isReadOnly, IsReadOnly);
+            }
+            if (showCharBound != ShowCharBound)
+            {
+                OnShowCharBoundChanged(showCharBound, ShowCharBound);
+            }
+            //if (state.CurrentPageNumber != PageNumber)
+            //{
+            //    state.CurrentPageNumber = PageNumber;
+            //}
+            if (state.NewPageNumber != NewPageNumber)
+            {
+                state.NewPageNumber = NewPageNumber;
+            }
+        }
 
         private void OnFitModeChanged(PdfViewFitMode oldValue, PdfViewFitMode newValue)
         {
             fitMode = newValue;
             //InvalidateSurface();
             ScrollTo(Page);
-        }
-
-        private void OnScaleContentChanged(float oldValue, float newValue)
-        {
-            state.ScaleContent = newValue;
         }
 
         private void OnShowMarkupChanged(bool oldValue, bool newValue)
@@ -259,6 +233,27 @@ namespace PdfClown.UI.Blazor
             return base.OnKeyDown(keyName, modifiers);
         }
 
+        private void OnDocumentChanged(IPdfDocumentViewModel value)
+        {
+            _ = PagesCountChanged.InvokeAsync(state.PagesCount);
+            DocumentChanged?.Invoke(new PdfDocumentEventArgs(value));
+        }
+
+        private void OnCurrentPageChanged(PdfPageEventArgs e)
+        {
+            if (state.CurrentPageNumber != PageNumber)
+                _ = PageNumberChanged.InvokeAsync(state.CurrentPageNumber);
+            if (state.NewPageNumber != NewPageNumber)
+                _ = NewPageNumberChanged.InvokeAsync(state.NewPageNumber);
+        }
+
+        private void OnScaleChanged(FloatEventArgs e)
+        {
+            if (e.Value != ScaleContent)
+                _ = ScaleContentChanged.InvokeAsync(e.Value);
+        }
+
+
         private void OnTextSelectionChanged(TextSelectionEventArgs args)
         {
             InvalidatePaint();
@@ -266,7 +261,7 @@ namespace PdfClown.UI.Blazor
 
         private void OnOperationsChanged(object sender, EventArgs e)
         {
-            //event is changed
+            IsEditedChanged.InvokeAsync(Operations.HashOperations);
         }
 
         protected override void OnTouch(TouchEventArgs e)
@@ -285,7 +280,7 @@ namespace PdfClown.UI.Blazor
             }
             if (KeyModifiers == KeyModifiers.Ctrl)
             {
-                state.Scale((float)delta);
+                state.ScaleToPointer((float)delta);
             }
             return false;
         }

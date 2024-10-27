@@ -28,7 +28,7 @@ namespace PdfClown.UI.Test
                 var fileInfo = await service.OpenFileDialog();
                 if (fileInfo.Stream != null)
                 {
-                    label.Text = Path.GetFileName(fileInfo.FileName);
+                    Title = Path.GetFileNameWithoutExtension(fileInfo.FileName);
                     viewer.Load(fileInfo.Stream);
                     objects.Clear();
                     //var items = new List<string>();

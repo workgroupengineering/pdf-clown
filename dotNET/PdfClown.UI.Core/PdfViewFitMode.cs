@@ -8,8 +8,10 @@ namespace PdfClown.UI
         PageSize,
         [EnumMember(Value = "Page Width")]
         PageWidth,
-        [EnumMember(Value = "Document Width")]
-        DocumentWidth,
+        [EnumMember(Value = "Page Height")]
+        PageHeight,
+        [EnumMember(Value = "Max Width")]
+        MaxWidth,
         [EnumMember(Value = "Zoom")]
         Zoom
     }
