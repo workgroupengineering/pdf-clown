@@ -63,7 +63,7 @@ namespace PdfClown.Documents.Functions
                 return TypeIdentityFunction.Instance;
             }
 
-            var dictionary = GetDictionary(dataObject);
+            var dictionary = dataObject as PdfDictionary;
             int functionType = dictionary.GetInt(PdfName.FunctionType);
             switch (functionType)
             {
@@ -78,16 +78,6 @@ namespace PdfClown.Documents.Functions
                 default:
                     throw new NotSupportedException("Function type " + functionType + " unknown.");
             }
-        }
-
-        /// <summary>Gets a function's dictionary.</summary>
-        /// <param name="functionDataObject">Function data object.</param>
-        private static PdfDictionary GetDictionary(PdfDataObject functionDataObject)
-        {
-            if (functionDataObject is PdfDictionary)
-                return (PdfDictionary)functionDataObject;
-            else // MUST be PdfStream.
-                return ((PdfStream)functionDataObject).Header;
         }
 
         protected Function(PdfDocument context, PdfDataObject baseDataObject)

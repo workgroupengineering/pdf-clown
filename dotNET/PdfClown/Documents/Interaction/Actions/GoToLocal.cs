@@ -23,24 +23,16 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
 
-using System;
-
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Change the view to a specified destination within the same PDF file' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Change the view to a specified destination within the same PDF file' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class GoToLocal : GoToDestination<LocalDestination>
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public GoToLocal(PdfDocument context, LocalDestination destination)
             : base(context, PdfName.GoTo, destination)
         { }

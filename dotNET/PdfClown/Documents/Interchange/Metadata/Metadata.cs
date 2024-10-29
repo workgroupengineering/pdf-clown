@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 
@@ -40,7 +41,7 @@ namespace PdfClown.Documents.Interchange.Metadata
         private XmlDocument content;
 
         public Metadata(PdfDocument context)
-            : base(context, new PdfStream(new PdfDictionary(2)
+            : base(context, new PdfStream(new Dictionary<PdfName, PdfDirectObject>(2)
                       {
                           { PdfName.Type, PdfName.Metadata },
                           { PdfName.Subtype, PdfName.XML }

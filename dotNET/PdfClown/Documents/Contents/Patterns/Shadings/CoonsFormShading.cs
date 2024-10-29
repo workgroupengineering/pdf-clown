@@ -83,7 +83,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
         List<Patch> LoadPatches()
         {
             var dict = BaseDataObject;
-            if (!(dict is PdfStream stream)
+            if (dict is not PdfStream stream
                 || Decodes == null
                 || Decodes.Count != 2 + NumberOfColorComponents)
             {

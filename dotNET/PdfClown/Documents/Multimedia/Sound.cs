@@ -24,25 +24,21 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
     //TODO: this is just a stub.
-    /**
-      <summary>Sound object [PDF:1.6:9.2].</summary>
-    */
+    /// <summary>Sound object [PDF:1.6:9.2].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class Sound : PdfObjectWrapper<PdfStream>
     {
-        /**
-          <summary>Creates a new sound within the given document context.</summary>
-        */
+        /// <summary>Creates a new sound within the given document context.</summary>
         public Sound(PdfDocument context, IInputStream stream)
-            : base(context, new PdfStream(new PdfDictionary { { PdfName.Type, PdfName.Sound } }))
+            : base(context, new PdfStream(new Dictionary<PdfName, PdfDirectObject>() { { PdfName.Type, PdfName.Sound } }))
         { throw new NotImplementedException("Process the sound stream!"); }
 
         public Sound(PdfDirectObject baseObject) : base(baseObject)

@@ -98,19 +98,7 @@ namespace PdfClown.Tokens
                 else // XRef-stream section.
                 {
                     var obj = parser.ParsePdfObject(1);
-                    if (obj is PdfDictionary dictinary
-                        && dictinary.ContainsKey(PdfName.Linearized))
-                    {
-                        var xrefOffcet = dictinary.GetInt(PdfName.T, -1);
-                        if (xrefOffcet > -1)
-                        {
-                            parser.Seek(xrefOffcet);
-                            ReadXRefTable(xrefEntries);
-                            // Get the previous trailer!
-                            sectionTrailer = (PdfDictionary)parser.ParsePdfObject(1);
-                        }
-                    }
-                    else if (obj is XRefStream stream)
+                    if (obj is XRefStream stream)
                     {
                         try
                         {
@@ -122,7 +110,7 @@ namespace PdfClown.Tokens
                             RecoveryXRefStream(stream);
                         }
 
-                        foreach (XRefEntry xrefEntry in stream.Values)
+                        foreach (XRefEntry xrefEntry in stream.RefValues)
                         {
                             if (xrefEntries.ContainsKey(xrefEntry.Number)) // Already-defined entry.
                                 continue;
@@ -132,7 +120,19 @@ namespace PdfClown.Tokens
                         }
 
                         // Get the previous trailer!
-                        sectionTrailer = stream.Header;
+                        sectionTrailer = stream;
+                    }
+                    else if (obj is PdfDictionary dictinary
+                        && dictinary.ContainsKey(PdfName.Linearized))
+                    {
+                        var xrefOffcet = dictinary.GetInt(PdfName.T, -1);
+                        if (xrefOffcet > -1)
+                        {
+                            parser.Seek(xrefOffcet);
+                            ReadXRefTable(xrefEntries);
+                            // Get the previous trailer!
+                            sectionTrailer = (PdfDictionary)parser.ParsePdfObject(1);
+                        }
                     }
                     else if (xrefStm != null)
                     {
@@ -145,7 +145,7 @@ namespace PdfClown.Tokens
 
                 // Get the previous xref-table section's offset!
                 sectionOffset = sectionTrailer?.GetInt(PdfName.Prev, -1) ?? -1;
-                xrefStm = sectionTrailer?.GetNInt(PdfName.XRefStm);                
+                xrefStm = sectionTrailer?.GetNInt(PdfName.XRefStm);
             }
 
             return new FileInfo(version, trailer, xrefEntries);
@@ -154,7 +154,7 @@ namespace PdfClown.Tokens
         private void RecoveryXRefStream(XRefStream stream)
         {
             Debug.WriteLine("Restore XRef stream");
-            stream.Header[PdfName.Prev] = null;
+            stream[PdfName.Prev] = null;
             stream.Entries.Clear();
             parser.Stream.Position = 0;
             while (parser.MoveNextComplex())

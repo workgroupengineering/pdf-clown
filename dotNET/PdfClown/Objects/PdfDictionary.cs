@@ -35,7 +35,7 @@ using System.Text;
 namespace PdfClown.Objects
 {
     /// <summary>PDF dictionary object [PDF:1.6:3.2.6].</summary>
-    public sealed class PdfDictionary : PdfWrapableDirectObject, IDictionary<PdfName, PdfDirectObject>, IBiDictionary<PdfName, PdfDirectObject>
+    public class PdfDictionary : PdfWrapableDirectObject, IDictionary<PdfName, PdfDirectObject>, IBiDictionary<PdfName, PdfDirectObject>
     {
         private static readonly byte[] BeginDictionaryChunk = BaseEncoding.Pdf.Encode(Keyword.BeginDictionary);
         private static readonly byte[] EndDictionaryChunk = BaseEncoding.Pdf.Encode(Keyword.EndDictionary);
@@ -85,10 +85,13 @@ namespace PdfClown.Objects
 
         /// <summary>Creates a new dictionary object with the specified entries.</summary>
         /// <param name="entries">Map whose entries have to be added to this dictionary.</param>
-        public PdfDictionary(Dictionary<PdfName, PdfDirectObject> entries)
+        internal PdfDictionary(Dictionary<PdfName, PdfDirectObject> entries)
             : base(PdfObjectStatus.Updateable)
         {
             this.entries = entries;
+            foreach (var value in entries.Values)
+                if (value != null)
+                    value.Parent = this;
         }
 
         public override PdfObject Parent

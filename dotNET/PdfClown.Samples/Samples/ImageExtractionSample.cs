@@ -28,16 +28,15 @@ namespace PdfClown.Samples.CLI
                     // Get the data object associated to the indirect object!
                     PdfDataObject dataObject = indirectObject.DataObject;
                     // Is this data object a stream?
-                    if (dataObject is PdfStream)
+                    if (dataObject is PdfStream stream)
                     {
-                        PdfDictionary header = ((PdfStream)dataObject).Header;
                         // Is this stream an image?
-                        if (header.ContainsKey(PdfName.Type)
-                          && PdfName.XObject.Equals(header.Get<PdfName>(PdfName.Type))
-                          && PdfName.Image.Equals(header.Get<PdfName>(PdfName.Subtype)))
+                        if (stream.ContainsKey(PdfName.Type)
+                          && PdfName.XObject.Equals(stream.Get<PdfName>(PdfName.Type))
+                          && PdfName.Image.Equals(stream.Get<PdfName>(PdfName.Subtype)))
                         {
                             // Which kind of image?
-                            if (PdfName.DCTDecode.Equals(header.Get<PdfName>(PdfName.Filter))) // JPEG image.
+                            if (PdfName.DCTDecode.Equals(stream.Get<PdfName>(PdfName.Filter))) // JPEG image.
                             {
                                 // Get the image data (keeping it encoded)!
                                 var body = ((PdfStream)dataObject).GetInputStreamNoDecode();
@@ -47,7 +46,7 @@ namespace PdfClown.Samples.CLI
                                   "ImageExtractionSample_" + (index++) + ".jpg");
                             }
                             else // Unsupported image.
-                            { Console.WriteLine("Image XObject " + indirectObject.Reference + " couldn't be extracted (filter: " + header[PdfName.Filter] + ")"); }
+                            { Console.WriteLine("Image XObject " + indirectObject.Reference + " couldn't be extracted (filter: " + stream[PdfName.Filter] + ")"); }
                         }
                     }
                 }

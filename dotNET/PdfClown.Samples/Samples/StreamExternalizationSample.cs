@@ -41,9 +41,8 @@ namespace PdfClown.Samples.CLI
                     foreach (PdfIndirectObject indirectObject in file.IndirectObjects)
                     {
                         PdfDataObject dataObject = indirectObject.DataObject;
-                        if (dataObject is PdfStream)
+                        if (dataObject is PdfStream stream)
                         {
-                            PdfStream stream = (PdfStream)dataObject;
                             if (stream.DataFile == null) // Internal stream to externalize.
                             {
                                 stream.SetDataFile(
@@ -70,9 +69,8 @@ namespace PdfClown.Samples.CLI
                     foreach (PdfIndirectObject indirectObject in file.IndirectObjects)
                     {
                         PdfDataObject dataObject = indirectObject.DataObject;
-                        if (dataObject is PdfStream)
+                        if (dataObject is PdfStream stream)
                         {
-                            PdfStream stream = (PdfStream)dataObject;
                             if (stream.DataFile != null) // External stream to internalize.
                             {
                                 stream.SetDataFile(

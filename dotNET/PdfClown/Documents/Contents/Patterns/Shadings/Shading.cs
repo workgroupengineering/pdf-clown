@@ -31,9 +31,7 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Patterns.Shadings
 {
-    /**
-      <summary>Shading object [PDF:1.6:4.6.3].</summary>
-    */
+    /// <summary>Shading object [PDF:1.6:4.6.3].</summary>
     [PDF(VersionEnum.PDF13)]
     public abstract class Shading : PdfObjectWrapper<PdfDataObject>
     {
@@ -46,7 +44,7 @@ namespace PdfClown.Documents.Contents.Patterns.Shadings
                 return shading;
 
             var dataObject = baseObject.Resolve();
-            var dictionary = TryGetDictionary(dataObject);
+            var dictionary = dataObject as PdfDictionary;
             var type = dictionary.GetInt(PdfName.ShadingType);
             switch (type)
             {

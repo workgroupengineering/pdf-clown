@@ -56,7 +56,7 @@ namespace PdfClown.Documents.Files
         private EmbeddedFile(PdfDocument context, IInputStream stream) : base(
             context,
             new PdfStream(
-              new PdfDictionary(1) { { PdfName.Type, PdfName.EmbeddedFile } },
+              new (1) { { PdfName.Type, PdfName.EmbeddedFile } },
               new ByteStream(stream)))
         { }
 
@@ -97,6 +97,6 @@ namespace PdfClown.Documents.Files
         /// <summary>Gets the file parameters.</summary>
         private PdfDictionary Params => Header.Resolve<PdfDictionary>(PdfName.Params);
 
-        private PdfDictionary Header => BaseDataObject.Header;
+        private PdfDictionary Header => BaseDataObject;
     }
 }

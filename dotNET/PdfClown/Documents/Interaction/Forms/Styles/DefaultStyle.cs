@@ -83,10 +83,10 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     widgetDataObject[PdfName.H] = PdfName.P;
                 }
 
-                Appearance appearance = widget.Appearance;
-                AppearanceStates normalAppearance = appearance.Normal;
+                var appearance = widget.Appearance;
+                var normalAppearance = appearance.Normal;
                 SKSize size = widget.Box.Size;
-                FormXObject onState = new FormXObject(document, size);
+                var onState = new FormXObject(document, size);
                 normalAppearance[PdfName.Yes] = onState;
 
                 //TODO:verify!!!

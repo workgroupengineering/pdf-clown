@@ -147,8 +147,9 @@ namespace PdfClown.Documents.Contents.Fonts
             var cMapStream = new ByteStream { };
             toUniWriter.WriteTo(cMapStream);
 
-            var header = new PdfDictionary() { { PdfName.Length, cMapStream.Length } };
-            var stream = new PdfStream(header, cMapStream);
+            var stream = new PdfStream(new Dictionary<PdfName, PdfDirectObject>() {
+                { PdfName.Length, PdfInteger.Get(cMapStream.Length) }
+            }, cMapStream);
 
             // surrogate code points, requires PDF 1.5
             if (hasSurrogates)

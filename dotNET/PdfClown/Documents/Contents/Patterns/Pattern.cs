@@ -24,19 +24,15 @@
 */
 
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Patterns
 {
-    /**
-      <summary>Paint that consists of a repeating graphical figure or a smoothly varying color gradient
-      instead of a simple color [PDF:1.6:4.6].</summary>
-    */
+    /// <summary>Paint that consists of a repeating graphical figure or a smoothly varying color gradient
+    /// instead of a simple color [PDF:1.6:4.6].</summary>
     [PDF(VersionEnum.PDF12)]
     public abstract class Pattern : Color, IPattern
     {
@@ -45,27 +41,25 @@ namespace PdfClown.Documents.Contents.Patterns
         private const int PatternType1 = 1;
         private const int PatternType2 = 2;
         private SKMatrix? matrix;
-        private PdfArray components = new ();
+        private PdfArray components = new();
 
-        /**
-          <summary>Wraps the specified base object into a pattern object.</summary>
-          <param name="baseObject">Base object of a pattern object.</param>
-          <returns>Pattern object corresponding to the base object.</returns>
-        */
+        /// <summary>Wraps the specified base object into a pattern object.</summary>
+        /// <param name = "baseObject" > Base object of a pattern object.</param>
+        /// <returns>Pattern object corresponding to the base object.</returns>
         public static Pattern Wrap(PdfDirectObject baseObject)
         {
             if (baseObject == null)
                 return null;
             if (baseObject.Wrapper is Pattern pattern)
                 return pattern;
-            
+
             var dataObject = baseObject.Resolve();
-            var dictionary = TryGetDictionary(dataObject);
+            var dictionary = dataObject as PdfDictionary;
             int patternType = dictionary.GetInt(PdfName.PatternType);
             switch (patternType)
             {
                 case PatternType1:
-                        return new TilingPattern(baseObject);
+                    return new TilingPattern(baseObject);
                 case PatternType2:
                     return new ShadingPattern(baseObject);
                 default:
@@ -83,18 +77,16 @@ namespace PdfClown.Documents.Contents.Patterns
 
         public override PdfArray Components => components;
 
-        /**
-          <summary>Gets the pattern matrix, a transformation matrix that maps the pattern's
-          internal coordinate system to the default coordinate system of the pattern's
-          parent content stream (the content stream in which the pattern is defined as a resource).</summary>
-          <remarks>The concatenation of the pattern matrix with that of the parent content stream establishes
-          the pattern coordinate space, within which all graphics objects in the pattern are interpreted.</remarks>
-        */
+        /// <summary>Gets the pattern matrix, a transformation matrix that maps the pattern's
+        /// internal coordinate system to the default coordinate system of the pattern's
+        /// parent content stream(the content stream in which the pattern is defined as a resource).</summary>
+        /// <remarks>The concatenation of the pattern matrix with that of the parent content stream establishes
+        /// the pattern coordinate space, within which all graphics objects in the pattern are interpreted.</remarks>
         public SKMatrix Matrix
         {
             //NOTE: Pattern-space-to-user-space matrix is identity [1 0 0 1 0 0] by default.
             //NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
-            //  but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
+            /// but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
             get => matrix ??= Dictionary.Get<PdfArray>(PdfName.Matrix)?.ToSkMatrix() ?? SKMatrix.Identity;
             set => Dictionary[PdfName.Matrix] = value.ToPdfArray();
         }

@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Contents.XObjects
             if (baseObject.Wrapper is XObject xobject)
                 return xobject;
 
-            var subtype = ((PdfStream)baseObject.Resolve()).Header.Get<PdfName>(PdfName.Subtype);
+            var subtype = ((PdfStream)baseObject.Resolve()).Get<PdfName>(PdfName.Subtype);
             if (PdfName.Form.Equals(subtype))
                 return FormXObject.Wrap(baseObject);
             else if (PdfName.Image.Equals(subtype))
@@ -61,7 +61,7 @@ namespace PdfClown.Documents.Contents.XObjects
         protected XObject(PdfDocument context, PdfStream baseDataObject)
             : base(context, baseDataObject)
         {
-            baseDataObject.Header[PdfName.Type] = PdfName.XObject;
+            baseDataObject[PdfName.Type] = PdfName.XObject;
         }
 
         /// <summary>Instantiates an existing external object.</summary>
@@ -76,8 +76,8 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public LayerEntity Layer
         {
-            get => (LayerEntity)PropertyList.Wrap(BaseDataObject.Header[PdfName.OC]);
-            set => BaseDataObject.Header[PdfName.OC] = value != null ? value.Membership.BaseObject : null;
+            get => (LayerEntity)PropertyList.Wrap(BaseDataObject[PdfName.OC]);
+            set => BaseDataObject[PdfName.OC] = value != null ? value.Membership.BaseObject : null;
         }
     }
 }

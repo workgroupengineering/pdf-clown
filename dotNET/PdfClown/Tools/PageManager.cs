@@ -110,8 +110,8 @@ namespace PdfClown.Tools
                 ICollection<PdfDirectObject> values = null;
                 {
                     if (dataObject is PdfStream pdfStream)
-                    { dataObject = pdfStream.Header; }
-                    if (dataObject is PdfDictionary dictionary)
+                    { values = pdfStream.Values; }
+                    else if (dataObject is PdfDictionary dictionary)
                     { values = dictionary.Values; }
                     else if (dataObject is PdfArray array)
                     { values = array; }

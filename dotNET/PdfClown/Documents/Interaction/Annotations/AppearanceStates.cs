@@ -38,16 +38,14 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         public static AppearanceStates Wrap(PdfName statesKey, Appearance appearance)
         {
-            var baseObject = appearance.BaseDataObject[statesKey];
-            return (baseObject?.Wrapper2 as AppearanceStates) ??
-                new AppearanceStates(statesKey, appearance);
+            return new AppearanceStates(statesKey, appearance);
         }
         private Appearance appearance;
 
         private PdfName statesKey;
 
         public AppearanceStates(PdfName statesKey, Appearance appearance)
-            :base(appearance.BaseDataObject[statesKey])
+            : base(appearance.BaseDataObject[statesKey])
         {
             this.appearance = appearance;
             this.statesKey = statesKey;
@@ -85,8 +83,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return ((PdfDictionary)baseDataObject).ContainsKey(key);
         }
 
-        public ICollection<PdfName> Keys => BaseDataObject is PdfDictionary dict ? dict.Keys 
-            : BaseDataObject is PdfStream ? new SingleItemCollection<PdfName>(null) : EmptyCollection<PdfName>.Default;
+        public ICollection<PdfName> Keys => BaseDataObject is PdfStream ? new SingleItemCollection<PdfName>(null)
+            : BaseDataObject is PdfDictionary dict ? dict.Keys : EmptyCollection<PdfName>.Default;
 
         public bool Remove(PdfName key)
         {
@@ -196,8 +194,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 yield return new KeyValuePair<PdfName, FormXObject>(
                   null,
-                  FormXObject.Wrap(BaseObject)
-                  );
+                  FormXObject.Wrap(BaseObject));
             }
             else // Multiple state.
             {
@@ -205,8 +202,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     yield return new KeyValuePair<PdfName, FormXObject>(
                       entry.Key,
-                      FormXObject.Wrap(entry.Value)
-                      );
+                      FormXObject.Wrap(entry.Value));
                 }
             }
         }
@@ -216,14 +212,17 @@ namespace PdfClown.Documents.Interaction.Annotations
         private PdfDictionary EnsureDictionary()
         {
             PdfDataObject baseDataObject = BaseDataObject;
-            if (baseDataObject is not PdfDictionary)
+            if (baseDataObject is PdfStream stream)
             {
-                /*
-                  NOTE: Single states are erased as they have no valid key
-                  to be consistently integrated within the dictionary.
-                */
-                BaseObject = ((PdfDirectObject)(baseDataObject = new PdfDictionary()));
-                appearance.BaseDataObject[statesKey] = (PdfDictionary)baseDataObject;
+                // NOTE: Single states are erased as they have no valid key
+                // to be consistently integrated within the dictionary.
+                BaseObject = (PdfDirectObject)(baseDataObject = new PdfDictionary());
+                appearance.BaseDataObject[statesKey] = (PdfDirectObject)baseDataObject;
+            }
+            else if (baseDataObject == null)
+            {
+                BaseObject = (PdfDirectObject)(baseDataObject = new PdfDictionary());
+                appearance.BaseDataObject[statesKey] = (PdfDirectObject)baseDataObject;
             }
             return (PdfDictionary)baseDataObject;
         }

@@ -82,7 +82,7 @@ namespace PdfClown.UI.Test
                 obj = reference.DataObject as PdfDirectObject;
                 if (reference.DataObject is PdfStream stream)
                 {
-                    foreach (var sub in ExtractDictionary(stream.Header, level + 2))
+                    foreach (var sub in ExtractDictionary(stream, level + 2))
                         yield return sub;
                 }
                 if (obj == null)

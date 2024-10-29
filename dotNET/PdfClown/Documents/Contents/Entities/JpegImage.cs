@@ -29,6 +29,7 @@ using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 using PdfClown.Util.IO;
+using System.Collections.Generic;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Entities
@@ -60,11 +61,11 @@ namespace PdfClown.Documents.Contents.Entities
             return new ImageXObject(
               context,
               new PdfStream(
-                new PdfDictionary(5)
+                new Dictionary<PdfName, PdfDirectObject>(5)
                 {
-                  { PdfName.Width, Width },
-                  { PdfName.Height, Height },
-                  { PdfName.BitsPerComponent, BitsPerComponent },
+                  { PdfName.Width, PdfInteger.Get(Width) },
+                  { PdfName.Height, PdfInteger.Get(Height) },
+                  { PdfName.BitsPerComponent, PdfInteger.Get(BitsPerComponent) },
                   { PdfName.ColorSpace, PdfName.DeviceRGB },
                   { PdfName.Filter, PdfName.DCTDecode }
                },

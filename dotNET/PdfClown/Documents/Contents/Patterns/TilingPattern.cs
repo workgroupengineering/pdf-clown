@@ -126,7 +126,7 @@ namespace PdfClown.Documents.Contents.Patterns
 
         public ContentWrapper Contents => contents ??= new ContentWrapper(BaseObject);
 
-        private PdfDictionary BaseHeader => ((PdfStream)BaseDataObject).Header;
+        private PdfDictionary BaseHeader => (PdfDictionary)BaseDataObject;
 
         public RotationEnum Rotation => RotationEnum.Downward;
 

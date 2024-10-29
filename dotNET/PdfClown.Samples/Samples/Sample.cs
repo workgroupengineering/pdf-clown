@@ -92,15 +92,14 @@ namespace PdfClown.Samples.CLI
           <param name="options">Available options to show to the user.</param>
           <returns>Chosen option key.</returns>
         */
-        protected string PromptChoice(IDictionary<string, string> options)
+        protected string PromptChoice(Dictionary<string, string> options)
         {
             Console.WriteLine();
             foreach (KeyValuePair<string, string> option in options)
             {
                 Console.WriteLine(
                     (option.Key.Equals("") ? "ENTER" : "[" + option.Key + "]")
-                      + " " + option.Value
-                    );
+                      + " " + option.Value);
             }
             Console.Write("Please select: ");
             return Console.ReadLine();
@@ -140,7 +139,7 @@ namespace PdfClown.Samples.CLI
             int pageIndex = page.Index;
             if (pageIndex > 0 && !skip)
             {
-                IDictionary<string, string> options = new Dictionary<string, string>(StringComparer.Ordinal);
+                var options = new Dictionary<string, string>(StringComparer.Ordinal);
                 options[""] = "Scan next page";
                 options["Q"] = "End scanning";
                 if (!PromptChoice(options).Equals(""))

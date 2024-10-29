@@ -108,9 +108,6 @@ namespace PdfClown.Bytes
         /// <param name="data">Source data to copy.</param>
         void Insert(int index, IInputStream data);
 
-        /// <summary>Notifies the dirtiness of the observed buffer.</summary>
-        event EventHandler OnChange;
-
         /// <summary>Replaces the buffer contents with a byte array.</summary>
         /// <param name="index">Location at which the byte array has to be copied.</param>
         /// <param name="data">Byte array to copy.</param>

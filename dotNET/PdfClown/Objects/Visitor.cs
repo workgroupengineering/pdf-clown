@@ -103,7 +103,7 @@ namespace PdfClown.Objects
 
         public virtual PdfObject Visit(PdfStream obj, object data)
         {
-            obj.header.Accept(this, data);
+            obj.Accept(this, data);
             return obj;
         }
 

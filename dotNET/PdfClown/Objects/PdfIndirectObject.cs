@@ -170,7 +170,7 @@ namespace PdfClown.Objects
                 return;
 
             // Remove from its object stream!
-            ObjectStream oldObjectStream = (ObjectStream)file.IndirectObjects[xrefEntry.StreamNumber].DataObject;
+            var oldObjectStream = (ObjectStream)file.IndirectObjects[xrefEntry.StreamNumber].DataObject;
             oldObjectStream.Remove(xrefEntry.Number);
             // Update its xref entry!
             xrefEntry.Usage = XRefEntry.UsageEnum.InUse;
@@ -211,7 +211,7 @@ namespace PdfClown.Objects
                         case XRefEntry.UsageEnum.InUseCompressed:
                             {
                                 // Get the object stream where its data object is stored!
-                                ObjectStream objectStream = (ObjectStream)file.IndirectObjects[xrefEntry.StreamNumber].DataObject;
+                                var objectStream = (ObjectStream)file.IndirectObjects[xrefEntry.StreamNumber].DataObject;
                                 // Get the indirect data object!
                                 dataObject = Include(objectStream[xrefEntry.Number]);
                                 break;

@@ -47,7 +47,7 @@ namespace PdfClown.Documents.Contents.XObjects
             if (baseObject.Wrapper is FormXObject formObject)
                 return formObject;
 
-            var header = ((PdfStream)baseObject.Resolve()).Header;
+            var header = (PdfStream)baseObject.Resolve();
             var subtype = header.Get<PdfName>(PdfName.Subtype);
 
             //NOTE: Sometimes the form stream's header misses the mandatory Subtype entry; therefore, here
@@ -83,7 +83,7 @@ namespace PdfClown.Documents.Contents.XObjects
         public FormXObject(PdfDocument context, SKRect box)
             : base(context)
         {
-            BaseDataObject.Header[PdfName.Subtype] = PdfName.Form;
+            BaseDataObject[PdfName.Subtype] = PdfName.Form;
             Box = box;
         }
 
@@ -95,15 +95,15 @@ namespace PdfClown.Documents.Contents.XObjects
         {
             //NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
             //but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
-            get => matrix ??= BaseDataObject.Header.Get<PdfArray>(PdfName.Matrix)?.ToSkMatrix() ?? SKMatrix.Identity;
+            get => matrix ??= BaseDataObject.Get<PdfArray>(PdfName.Matrix)?.ToSkMatrix() ?? SKMatrix.Identity;
             set
             {
                 matrix = value;
-                BaseDataObject.Header[PdfName.Matrix] = value.ToPdfArray();
+                BaseDataObject[PdfName.Matrix] = value.ToPdfArray();
             }
         }
 
-        public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseDataObject.Header[PdfName.Group]);
+        public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseDataObject[PdfName.Group]);
 
         public override SKSize Size
         {
@@ -114,7 +114,7 @@ namespace PdfClown.Documents.Contents.XObjects
             }
             set
             {
-                var boxObject = BaseDataObject.Header.Get<PdfArray>(PdfName.BBox);
+                var boxObject = BaseDataObject.Get<PdfArray>(PdfName.BBox);
                 boxObject.Set(2, Math.Abs(value.Width) + boxObject.GetFloat(0));
                 boxObject.Set(3, Math.Abs(value.Height) + boxObject.GetFloat(1));
                 box = null;
@@ -123,10 +123,10 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public Rectangle BBox
         {
-            get => Wrap<Rectangle>(BaseDataObject.Header.GetOrCreate<PdfArray>(PdfName.BBox));
+            get => Wrap<Rectangle>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.BBox));
             set
             {
-                BaseDataObject.Header[PdfName.BBox] = value?.BaseObject;
+                BaseDataObject[PdfName.BBox] = value?.BaseObject;
                 box = null;
             }
         }
@@ -149,8 +149,8 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public Resources Resources
         {
-            get => Wrap<Resources>(BaseDataObject.Header.GetOrCreate<PdfDictionary>(PdfName.Resources));
-            set => BaseDataObject.Header[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value);
+            get => Wrap<Resources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Resources));
+            set => BaseDataObject[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value);
         }
 
         public RotationEnum Rotation => RotationEnum.Downward;
@@ -165,10 +165,10 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public AppDataCollection AppData
         {
-            get => AppDataCollection.Wrap(BaseDataObject.Header.GetOrCreate<PdfDictionary>(PdfName.PieceInfo), this);
+            get => AppDataCollection.Wrap(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PieceInfo), this);
         }
 
-        public DateTime? ModificationDate => BaseDataObject.Header.GetNDate(PdfName.LastModified);
+        public DateTime? ModificationDate => BaseDataObject.GetNDate(PdfName.LastModified);
 
         public SKMatrix InitialMatrix { get; internal set; } = SKMatrix.Identity;
 
@@ -219,7 +219,7 @@ namespace PdfClown.Documents.Contents.XObjects
         public void Touch(PdfName appName, DateTime modificationDate)
         {
             GetAppData(appName).ModificationDate = modificationDate;
-            BaseDataObject.Header.Set(PdfName.LastModified, modificationDate);
+            BaseDataObject.Set(PdfName.LastModified, modificationDate);
         }
 
         public ContentObject ToInlineObject(PrimitiveComposer composer)

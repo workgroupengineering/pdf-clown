@@ -27,7 +27,6 @@ using PdfClown.Bytes;
 using PdfClown.Objects;
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace PdfClown.Tokens
@@ -36,7 +35,7 @@ namespace PdfClown.Tokens
     /// <remarks>The purpose of object streams is to allow a greater number of PDF objects
     /// to be compressed, thereby substantially reducing the size of PDF files.
     /// The objects in the stream are referred to as compressed objects.</remarks>
-    public sealed class ObjectStream : PdfStream, IDictionary<int, PdfDataObject>
+    public sealed class ObjectStream : PdfStream
     {
         internal sealed class ObjectEntry
         {
@@ -79,14 +78,14 @@ namespace PdfClown.Tokens
         /// <summary>Compressed objects map.</summary>
         /// <remarks>This map is initially populated with offset values;
         /// when a compressed object is required, its offset is used to retrieve it.</remarks>
-        private IDictionary<int, ObjectEntry> entries;
+        private Dictionary<int, ObjectEntry> objectEntries;
         private FileParser parser;
 
         public ObjectStream()
-            : base(new PdfDictionary() { { PdfName.Type, PdfName.ObjStm } })
+            : base(new Dictionary<PdfName, PdfDirectObject>() { { PdfName.Type, PdfName.ObjStm } })
         { }
 
-        public ObjectStream(PdfDictionary header, IInputStream body)
+        public ObjectStream(Dictionary<PdfName, PdfDirectObject> header, IInputStream body)
             : base(header, body)
         { }
 
@@ -97,13 +96,13 @@ namespace PdfClown.Tokens
         /// a directed acyclic graph.</remarks>
         public ObjectStream BaseStream
         {
-            get => (ObjectStream)Header.Resolve(PdfName.Extends);
-            set => Header[PdfName.Extends] = value.Reference;
+            get => (ObjectStream)Resolve(PdfName.Extends);
+            set => this[PdfName.Extends] = value.Reference;
         }
 
         public override void WriteTo(IOutputStream stream, PdfFile context)
         {
-            if (entries != null)
+            if (objectEntries != null)
             { Flush(stream); }
 
             base.WriteTo(stream, context);
@@ -113,24 +112,28 @@ namespace PdfClown.Tokens
 
         public bool ContainsKey(int key) => Entries.ContainsKey(key);
 
-        public ICollection<int> Keys => Entries.Keys;
+        public ICollection<int> ObjectKeys => Entries.Keys;
 
         public bool Remove(int key) => Entries.Remove(key);
 
         public PdfDataObject this[int key]
         {
-            get => Entries[key]?.DataObject;
+            get => Entries.TryGetValue(key, out var direct)? direct?.DataObject:null;
             set => Entries[key] = new ObjectEntry(value, parser);
         }
 
         public bool TryGetValue(int key, out PdfDataObject value)
         {
-            value = this[key];
-            return (value != null
-              || ContainsKey(key));
+            if (Entries.TryGetValue(key, out var direct))
+            {
+                value = direct?.DataObject;
+                return true;
+            }
+            value = null;
+            return false;
         }
 
-        public ICollection<PdfDataObject> Values
+        public ICollection<PdfDataObject> ObjectValues
         {
             get
             {
@@ -141,32 +144,30 @@ namespace PdfClown.Tokens
             }
         }
 
-        void ICollection<KeyValuePair<int, PdfDataObject>>.Add(KeyValuePair<int, PdfDataObject> entry)
-        {
-            Add(entry.Key, entry.Value);
-        }
+        //void ICollection<KeyValuePair<int, PdfDataObject>>.Add(KeyValuePair<int, PdfDataObject> entry)
+        //{
+        //    Add(entry.Key, entry.Value);
+        //}
 
-        public void Clear()
+        public void ClearObjects()
         {
-            if (entries == null)
-            { entries = new Dictionary<int, ObjectEntry>(); }
+            if (objectEntries == null)
+            { objectEntries = new Dictionary<int, ObjectEntry>(); }
             else
-            { entries.Clear(); }
+            { objectEntries.Clear(); }
         }
 
-        bool ICollection<KeyValuePair<int, PdfDataObject>>.Contains(KeyValuePair<int, PdfDataObject> entry)
-        {
-            return ((ICollection<KeyValuePair<int, PdfDataObject>>)Entries).Contains(entry);
-        }
+        //bool ICollection<KeyValuePair<int, PdfDataObject>>.Contains(KeyValuePair<int, PdfDataObject> entry)
+        //{
+        //    return ((ICollection<KeyValuePair<int, PdfDataObject>>)Entries).Contains(entry);
+        //}
 
         public void CopyTo(KeyValuePair<int, PdfDataObject>[] entries, int index)
         {
             throw new NotImplementedException();
         }
 
-        public int Count => Entries.Count;
-
-        public bool IsReadOnly => false;
+        public int ObjectsCount => Entries.Count;
 
         public bool Remove(KeyValuePair<int, PdfDataObject> entry)
         {
@@ -178,37 +179,37 @@ namespace PdfClown.Tokens
                 return false;
         }
 
-        IEnumerator<KeyValuePair<int, PdfDataObject>> IEnumerable<KeyValuePair<int, PdfDataObject>>.GetEnumerator()
-        {
-            foreach (int key in Keys)
-            { yield return new KeyValuePair<int, PdfDataObject>(key, this[key]); }
-        }
+        //IEnumerator<KeyValuePair<int, PdfDataObject>> IEnumerable<KeyValuePair<int, PdfDataObject>>.GetEnumerator()
+        //{
+        //    foreach (int key in Keys)
+        //    { yield return new KeyValuePair<int, PdfDataObject>(key, this[key]); }
+        //}
 
-        IEnumerator IEnumerable.GetEnumerator()
-        { return ((IEnumerable<KeyValuePair<int, PdfDataObject>>)this).GetEnumerator(); }
+        //IEnumerator IEnumerable.GetEnumerator()
+        //{ return ((IEnumerable<KeyValuePair<int, PdfDataObject>>)this).GetEnumerator(); }
 
-        internal IDictionary<int, ObjectEntry> Entries
+        internal Dictionary<int, ObjectEntry> Entries
         {
             get
             {
-                if (entries == null)
+                if (objectEntries == null)
                 {
-                    entries = new Dictionary<int, ObjectEntry>();
+                    objectEntries = new Dictionary<int, ObjectEntry>();
 
                     var body = GetInputStream();
                     if (body.Length > 0)
                     {
                         parser = new FileParser(body, File);
-                        int baseOffset = Header.GetInt(PdfName.First);
-                        for (int index = 0, length = Header.GetInt(PdfName.N); index < length; index++)
+                        int baseOffset = GetInt(PdfName.First);
+                        for (int index = 0, length = GetInt(PdfName.N); index < length; index++)
                         {
                             int objectNumber = ((PdfInteger)parser.ParsePdfObject(1)).IntValue;
                             int objectOffset = baseOffset + ((PdfInteger)parser.ParsePdfObject(1)).IntValue;
-                            entries[objectNumber] = new ObjectEntry(objectOffset, parser);
+                            objectEntries[objectNumber] = new ObjectEntry(objectOffset, parser);
                         }
                     }
                 }
-                return entries;
+                return objectEntries;
             }
         }
 
@@ -261,9 +262,8 @@ namespace PdfClown.Tokens
 
             // 2. Header.
             {
-                var header = Header;
-                header.Set(PdfName.N, Entries.Count);
-                header.Set(PdfName.First, dataByteOffset);
+                Set(PdfName.N, Entries.Count);
+                Set(PdfName.First, dataByteOffset);
             }
         }
     }

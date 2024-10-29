@@ -109,22 +109,10 @@ namespace PdfClown.Objects
             internal set;
         }
 
-        public IContentContext GetContentContext()
-        {
-            var parent = this;
-            while (parent != null)
-            {
-                if (parent.Wrapper is IContentContext contentContext)
-                    return contentContext;
-                parent = parent.Parent;
-            }
-            return null;
-        }
-
         /// <summary>Creates a shallow copy of this object.</summary>
         public object Clone()
         {
-            PdfObject clone = (PdfObject)MemberwiseClone();
+            var clone = (PdfObject)MemberwiseClone();
             clone.Parent = null;
             return clone;
         }

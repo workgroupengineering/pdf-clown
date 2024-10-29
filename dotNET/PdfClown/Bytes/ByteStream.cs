@@ -39,8 +39,6 @@ namespace PdfClown.Bytes
         /// <summary>Default buffer capacity.</summary>
         private const int DefaultCapacity = 1 << 8;
 
-        public event EventHandler OnChange;
-
         /// <summary>Inner buffer where data are stored.</summary>
         private ArraySegment<byte> data;
 
@@ -502,11 +500,7 @@ namespace PdfClown.Bytes
 
         private void NotifyChange()
         {
-            if (dirty || OnChange == null)
-                return;
-
             dirty = true;
-            OnChange(this, null);
         }
 
         public override void Flush() { }

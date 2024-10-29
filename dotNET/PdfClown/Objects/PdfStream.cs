@@ -28,39 +28,35 @@ using PdfClown.Documents.Files;
 using PdfClown.Tokens;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Objects
 {
     /// <summary>PDF stream object [PDF:1.6:3.2.7].</summary>
-    public class PdfStream : PdfDataObject, IFileResource
+    public class PdfStream : PdfDictionary, IFileResource
     {
         private static readonly byte[] BeginStreamBodyChunk = BaseEncoding.Pdf.Encode(Symbol.LineFeed + Keyword.BeginStream + Symbol.LineFeed);
         private static readonly byte[] EndStreamBodyChunk = BaseEncoding.Pdf.Encode(Symbol.LineFeed + Keyword.EndStream);
 
         internal IInputStream body;
-        internal PdfDictionary header;
-
-        private PdfObject parent;
-        private PdfObjectStatus status;
 
         /// <summary>Indicates whether {@link #body} has already been resolved and therefore contains the
         /// actual stream data.</summary>
         private bool bodyResolved;
         internal EncodeState encoded = EncodeState.None;
 
-        public PdfStream() : this(new PdfDictionary(), new ByteStream())
+        public PdfStream() : this(new(), new ByteStream())
         { }
 
-        public PdfStream(PdfDictionary header) : this(header, new ByteStream())
+        public PdfStream(Dictionary<PdfName, PdfDirectObject> header) : this(header, new ByteStream())
         { }
 
-        public PdfStream(IInputStream body) : this(new PdfDictionary(), body)
+        public PdfStream(IInputStream body) : this(new(), body)
         { }
 
-        public PdfStream(PdfDictionary header, IInputStream body)
-            : base(PdfObjectStatus.Updateable)
+        public PdfStream(Dictionary<PdfName, PdfDirectObject> header, IInputStream body)
+            : base(header)
         {
-            this.header = (PdfDictionary)Include(header);
             SetStream(body);
         }
 
@@ -69,65 +65,33 @@ namespace PdfClown.Objects
 
         public PdfDirectObject Filter
         {
-            get => (PdfDirectObject)(header[PdfName.F] == null
-                  ? header.Resolve(PdfName.Filter)
-                  : header.Resolve(PdfName.FFilter));
-            protected set => header[
-                  header[PdfName.F] == null
+            get => (PdfDirectObject)(this[PdfName.F] == null
+                  ? Resolve(PdfName.Filter)
+                  : Resolve(PdfName.FFilter));
+            protected set => this[
+                  this[PdfName.F] == null
                     ? PdfName.Filter
                     : PdfName.FFilter
                   ] = value;
         }
 
-        /// <summary>Gets the stream header.</summary>
-        public PdfDictionary Header => header;
-
         public PdfDirectObject Parameters
         {
-            get => (PdfDirectObject)(header[PdfName.F] == null
-                  ? header.Resolve(PdfName.DecodeParms)
-                  : header.Resolve(PdfName.FDecodeParms));
-            protected set => header[
-                  header[PdfName.F] == null
+            get => (PdfDirectObject)(this[PdfName.F] == null
+                  ? Resolve(PdfName.DecodeParms)
+                  : Resolve(PdfName.FDecodeParms));
+            protected set => this[
+                  this[PdfName.F] == null
                     ? PdfName.DecodeParms
                     : PdfName.FDecodeParms
                   ] = value;
         }
 
-        public override PdfObject Parent
-        {
-            get => parent;
-            internal set => parent = value;
-        }
-
-        public override PdfObjectStatus Status
-        {
-            get => status;
-            protected internal set => status = value;
-        }
-
         [PDF(VersionEnum.PDF12)]
         public FileSpecification DataFile
         {
-            get => FileSpecification.Wrap(header[PdfName.F]);
+            get => FileSpecification.Wrap(this[PdfName.F]);
             set => SetDataFile(value, false);
-        }
-
-        public override IPdfObjectWrapper Wrapper
-        {
-            get => Header.Wrapper;
-            internal set => Header.Wrapper = value;
-        }
-
-        public override IPdfObjectWrapper Wrapper2
-        {
-            get => Header.Wrapper2;
-            internal set => Header.Wrapper2 = value;
-        }
-        public override IPdfObjectWrapper Wrapper3
-        {
-            get => Header.Wrapper3;
-            internal set => Header.Wrapper3 = value;
         }
 
         public void SetStream(IInputStream value)
@@ -135,16 +99,8 @@ namespace PdfClown.Objects
             if (body == value)
                 return;
             Updateable = false;
-            if (body is IByteStream oldByteStream)
-            {
-                oldByteStream.OnChange -= OnChange;
-            }
             body?.Dispose();
             body = value;
-            if (body is IByteStream byteStream)
-            {
-                byteStream.OnChange += OnChange;
-            }
             Updateable = true;
         }
 
@@ -152,21 +108,24 @@ namespace PdfClown.Objects
         {
             SetStream(value);
             // The stream is free from encodings.
-            header.Updateable = false;
+            Updateable = false;
             Filter = null;
             Parameters = null;
-            header.Updateable = true;
+            Updateable = true;
         }
 
         void OnChange(object sender, EventArgs args) => Update();
 
         /// <summary>Gets the stream body for edit.</summary>
-        
+
         public IByteStream GetOutputStream()
         {
             if (GetInputStreamNoDecode() is IByteStream buffer)
+            {
+                buffer.Dirty = true;
                 return buffer;
-            SetStreamAndRemoveFilters(buffer = new ByteStream());
+            }
+            SetStreamAndRemoveFilters(buffer = new ByteStream() { Dirty = true });
             return buffer;
         }
 
@@ -195,7 +154,7 @@ namespace PdfClown.Objects
 
             if (Filter is PdfDataObject filter) // Stream encoded.
             {
-                SetStreamAndRemoveFilters(body.Decode(filter, Parameters, Header));
+                SetStreamAndRemoveFilters(body.Decode(filter, Parameters, this));
             }
             body.Position = 0;
             return body;
@@ -204,7 +163,7 @@ namespace PdfClown.Objects
         public IInputStream GetExtractedStream()
         {
             var buffer = GetInputStreamNoDecode();
-            buffer = buffer.Decode(Filter, Parameters, Header);
+            buffer = buffer.Decode(Filter, Parameters, this);
             return buffer;
         }
 
@@ -246,8 +205,8 @@ namespace PdfClown.Objects
                     else // Case B (export local to new file).
                     {
                         // Transfer local settings to file!
-                        header[PdfName.FFilter] = header[PdfName.Filter]; header.Remove(PdfName.Filter);
-                        header[PdfName.FDecodeParms] = header[PdfName.DecodeParms]; header.Remove(PdfName.DecodeParms);
+                        this[PdfName.FFilter] = this[PdfName.Filter]; Remove(PdfName.Filter);
+                        this[PdfName.FDecodeParms] = this[PdfName.DecodeParms]; Remove(PdfName.DecodeParms);
 
                         // Ensure local data represents actual data (otherwise it would be substituted by resolved file data)!
                         bodyResolved = true;
@@ -276,10 +235,10 @@ namespace PdfClown.Objects
                         // Transfer old file data to local!
                         GetInputStreamNoDecode(); // Ensures that external data is loaded as-is into the local buffer.
                                                   // Transfer old file settings to local!
-                        header[PdfName.Filter] = header[PdfName.FFilter];
-                        header.Remove(PdfName.FFilter);
-                        header[PdfName.DecodeParms] = header[PdfName.FDecodeParms];
-                        header.Remove(PdfName.FDecodeParms);
+                        this[PdfName.Filter] = this[PdfName.FFilter];
+                        Remove(PdfName.FFilter);
+                        this[PdfName.DecodeParms] = this[PdfName.FDecodeParms];
+                        Remove(PdfName.FDecodeParms);
                     }
                     else // Case F (empty local).
                     {
@@ -296,32 +255,28 @@ namespace PdfClown.Objects
                 else // E (no action).
                 { /* NOOP */ }
             }
-            header[PdfName.F] = dataFileObject;
+            this[PdfName.F] = dataFileObject;
         }
 
         public override PdfObject Swap(PdfObject other)
         {
-            PdfStream otherStream = (PdfStream)other;
-            PdfDictionary otherHeader = otherStream.header;
+            base.Swap(other);
+            var otherStream = (PdfStream)other;
             var otherBody = otherStream.body;
             var otherBodyResolved = otherStream.bodyResolved;
             // Update the other!
-            otherStream.header = header;
             otherStream.body = body;
             otherStream.bodyResolved = bodyResolved;
-            otherStream.Update();
             // Update this one!
-            header = otherHeader;
             body = otherBody;
             bodyResolved = otherBodyResolved;
-            Update();
             return this;
         }
 
         public override void WriteTo(IOutputStream stream, PdfFile context)
         {
             // NOTE: The header is temporarily tweaked to accommodate serialization settings.
-            header.Updateable = false;
+            Updateable = false;
 
             var bodyData = body;
             bool filterApplied = false;
@@ -334,11 +289,11 @@ namespace PdfClown.Objects
                 // that are not PDF-aware, no filter is applied to them [PDF:1.7:10.2.2].
                 if (Filter == null
                    && context.Configuration.StreamFilterEnabled
-                   && !PdfName.Metadata.Equals(header.Get<PdfName>(PdfName.Type))) // Filter needed.
+                   && !PdfName.Metadata.Equals(Get<PdfName>(PdfName.Type))) // Filter needed.
                 {
                     // Apply the filter to the stream!
                     Filter = PdfName.FlateDecode;
-                    bodyData = body.Encode(Bytes.Filters.Filter.Get(PdfName.FlateDecode), null, Header);
+                    bodyData = body.Encode(Bytes.Filters.Filter.Get(PdfName.FlateDecode), null, this);
                     filterApplied = true;
                 }
 
@@ -357,15 +312,15 @@ namespace PdfClown.Objects
             { bodyData = ByteStream.Empty; }
 
             // Set the encoded data length!
-            header.Set(PdfName.Length, bodyData.Length);
+            Set(PdfName.Length, bodyData.Length);
 
             // 1. Header.
-            header.WriteTo(stream, context);
+            base.WriteTo(stream, context);
 
             if (filterApplied)
             {
                 // Restore actual header entries!
-                header.Set(PdfName.Length, (int)body.Length);
+                Set(PdfName.Length, (int)body.Length);
                 Filter = null;
             }
 
@@ -374,7 +329,7 @@ namespace PdfClown.Objects
             stream.Write(bodyData);
             stream.Write(EndStreamBodyChunk);
 
-            header.Updateable = true;
+            Updateable = true;
         }
 
     }

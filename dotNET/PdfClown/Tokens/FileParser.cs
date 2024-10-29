@@ -30,6 +30,7 @@ using PdfClown.Objects;
 using PdfClown.Util.Parsers;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace PdfClown.Tokens
@@ -57,6 +58,47 @@ namespace PdfClown.Tokens
             this.keyStoreInputStream = keyStoreInputStream;
         }
 
+        protected override PdfDictionary CreatePdfDictionary(Dictionary<PdfName, PdfDirectObject> dictionary)
+        {
+            IInputStream stream = Stream;
+            int oldOffset = (int)stream.Position;
+            MoveNext();
+            // Is this dictionary the header of a stream object [PDF:1.6:3.2.7]?
+            if (TokenType == TokenTypeEnum.Keyword
+                && CharsToken.Equals(Keyword.BeginStream, StringComparison.Ordinal))
+            {
+                // Keep track of current position!
+                // NOTE: Indirect reference resolution is an outbound call which affects the stream pointer position,
+                // so we need to recover our current position after it returns.
+                long position = stream.Position;
+                // Get the stream length!
+                int length = dictionary.TryGetValue(PdfName.Length, out var pdfLength) ? (pdfLength?.Resolve() as IPdfNumber)?.IntValue ?? 0 : 0;
+                // Move to the stream data beginning!
+                stream.Seek(position);
+                SkipEOL();
+                ValidateLength(dictionary, stream, ref position, ref length);
+                if (length < 0)
+                    length = 0;
+                // Copy the stream data to the instance!                    
+                var bytes = new StreamSegment(stream, length);
+                stream.Skip(length);
+                MoveNext(); // Postcondition (last token should be 'endstream' keyword).
+                var streamType = dictionary.TryGetValue(PdfName.Type, out var pdfStreamType) ? (PdfName)pdfStreamType?.Resolve() : null;
+                if (PdfName.ObjStm.Equals(streamType)) // Object stream [PDF:1.6:3.4.6].
+                    return new ObjectStream(dictionary, bytes);
+                else if (PdfName.XRef.Equals(streamType)) // Cross-reference stream [PDF:1.6:3.4.7].
+                    return new XRefStream(dictionary, bytes);
+                else // Generic stream.
+                    return new PdfStream(dictionary, bytes);
+            }
+            else // Stand-alone dictionary.
+            {
+                // Restores postcondition (last token should be the dictionary end).
+                stream.Seek(oldOffset);
+            }
+            return base.CreatePdfDictionary(dictionary);
+        }
+
         public override PdfDataObject ParsePdfObject()
         {
             if (TokenType == TokenTypeEnum.Reference)
@@ -65,50 +107,10 @@ namespace PdfClown.Tokens
                 return new PdfReference(reference.ObjectNumber, reference.GenerationNumber, file);
             }
 
-            PdfDataObject pdfObject = base.ParsePdfObject();
-            if (pdfObject is PdfDictionary streamHeader)
-            {
-                IInputStream stream = Stream;
-                int oldOffset = (int)stream.Position;
-                MoveNext();
-                // Is this dictionary the header of a stream object [PDF:1.6:3.2.7]?
-                if (TokenType == TokenTypeEnum.Keyword
-                    && CharsToken.Equals(Keyword.BeginStream, StringComparison.Ordinal))
-                {
-                    // Keep track of current position!
-                    // NOTE: Indirect reference resolution is an outbound call which affects the stream pointer position,
-                    // so we need to recover our current position after it returns.
-                    long position = stream.Position;
-                    // Get the stream length!
-                    int length = streamHeader.GetInt(PdfName.Length, 0);
-                    // Move to the stream data beginning!
-                    stream.Seek(position);
-                    SkipEOL();
-                    ValidateLength(streamHeader, stream, ref position, ref length);
-                    if (length < 0)
-                        length = 0;
-                    // Copy the stream data to the instance!                    
-                    var bytes = new StreamSegment(stream, length);
-                    stream.Skip(length);
-                    MoveNext(); // Postcondition (last token should be 'endstream' keyword).
-                    var streamType = streamHeader.Get<PdfName>(PdfName.Type);
-                    if (PdfName.ObjStm.Equals(streamType)) // Object stream [PDF:1.6:3.4.6].
-                        return new ObjectStream(streamHeader, bytes);
-                    else if (PdfName.XRef.Equals(streamType)) // Cross-reference stream [PDF:1.6:3.4.7].
-                        return new XRefStream(streamHeader, bytes);
-                    else // Generic stream.
-                        return new PdfStream(streamHeader, bytes);
-                }
-                else // Stand-alone dictionary.
-                {
-                    // Restores postcondition (last token should be the dictionary end).
-                    stream.Seek(oldOffset);
-                }
-            }
-            return pdfObject;
+            return base.ParsePdfObject();
         }
 
-        private void ValidateLength(PdfDictionary streamHeader, IInputStream stream, ref long position, ref int length)
+        private void ValidateLength(Dictionary<PdfName, PdfDirectObject> streamHeader, IInputStream stream, ref long position, ref int length)
         {
             position = stream.Position;
             if (length <= 0)
@@ -131,14 +133,14 @@ namespace PdfClown.Tokens
 
         }
 
-        private int RepairStreamLength(PdfDictionary streamHeader, IInputStream stream, long position)
+        private int RepairStreamLength(Dictionary<PdfName, PdfDirectObject> streamHeader, IInputStream stream, long position)
         {
             int length;
             System.Diagnostics.Debug.Write($"warning: Repair Stream Object missing {PdfName.Length} header parameter");
             if (SkipKey(Keyword.EndStream))
             {
                 length = (int)(stream.Position - position);
-                streamHeader.Set(PdfName.Length, length);
+                streamHeader[PdfName.Length] = PdfInteger.Get(length);
             }
             else
             {

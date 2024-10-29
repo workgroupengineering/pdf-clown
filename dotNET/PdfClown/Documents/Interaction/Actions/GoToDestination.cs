@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
 
@@ -32,9 +30,7 @@ using System;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>Abstract 'go to destination' action.</summary>
-    */
+    /// <summary>Abstract 'go to destination' action.</summary>
     [PDF(VersionEnum.PDF11)]
     public abstract class GoToDestination<T> : Action, IGoToAction
       where T : Destination
@@ -46,9 +42,7 @@ namespace PdfClown.Documents.Interaction.Actions
         protected GoToDestination(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the destination to jump to.</summary>
-        */
+        /// <summary>Gets/Sets the destination to jump to.</summary>
         public T Destination
         {
             get => Document.ResolveName<T>(BaseDataObject[PdfName.D]);

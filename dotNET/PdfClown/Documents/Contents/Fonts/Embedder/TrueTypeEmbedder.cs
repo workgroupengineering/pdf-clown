@@ -78,8 +78,8 @@ namespace PdfClown.Documents.Contents.Fonts
                 }
                 iStream.Seek(0);
                 var stream = new PdfStream(new ByteStream(iStream));
-                stream.Header[PdfName.Length] =
-                    stream.Header[PdfName.Length1] = PdfInteger.Get(ttf.OriginalDataSize);
+                stream[PdfName.Length] =
+                    stream[PdfName.Length1] = PdfInteger.Get(ttf.OriginalDataSize);
                 fontDescriptor.FontFile2 = new FontFile(document, stream);
             }
             dict[PdfName.Type] = PdfName.Font;
@@ -104,7 +104,7 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 fontDescriptor = CreateFontDescriptor(ttf);
             }
-            stream.Header.Set(PdfName.Length1, ttf.OriginalDataSize);
+            stream.Set(PdfName.Length1, ttf.OriginalDataSize);
             fontDescriptor.FontFile2 = new FontFile(document, stream);
         }
 

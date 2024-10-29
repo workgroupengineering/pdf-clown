@@ -61,7 +61,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public PdfStream Profile => ((PdfArray)BaseDataObject).Get<PdfStream>(1);
 
-        public PdfName Alternate => Profile?.Header.Get<PdfName>(PdfName.Alternate);
+        public PdfName Alternate => Profile?.Get<PdfName>(PdfName.Alternate);
 
         public ColorSpace AlternateColorSpace
         {
@@ -85,7 +85,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                 return alternate;
             }
         }
-        public int N => Profile?.Header.GetInt(PdfName.N) ?? 0;
+        public int N => Profile?.GetInt(PdfName.N) ?? 0;
 
 
         public SKColorSpace GetSKColorSpace()

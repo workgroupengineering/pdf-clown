@@ -28,6 +28,7 @@ using PdfClown.Objects;
 using PdfClown.Util.Parsers;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Tokens
 {
@@ -131,8 +132,7 @@ namespace PdfClown.Tokens
                     return PdfName.Get(CharsToken.ToString(), true);
                 case TokenTypeEnum.DictionaryBegin:
                     {
-                        var dictionary = new PdfDictionary();
-                        dictionary.Updateable = false;
+                        var dictionary = new Dictionary<PdfName, PdfDirectObject>();
                         while (MoveNext()
                             && TokenType != TokenTypeEnum.DictionaryEnd
                             && ParsePdfObject() is PdfName key
@@ -146,21 +146,18 @@ namespace PdfClown.Tokens
                             }
                             dictionary[key] = (PdfDirectObject)ParsePdfObject();
                         }
-                        dictionary.Updateable = true;
-                        return dictionary;
+                        return CreatePdfDictionary(dictionary);
                     }
                 case TokenTypeEnum.ArrayBegin:
                     {
-                        var array = new PdfArray();
-                        array.Updateable = false;
+                        var array = new List<PdfDirectObject>();
                         while (MoveNextComplex()
                             && TokenType != TokenTypeEnum.ArrayEnd)
                         {
                             // Add the current item to the array!
                             array.Add((PdfDirectObject)ParsePdfObject());
                         }
-                        array.Updateable = true;
-                        return array;
+                        return new PdfArray(array);
                     }
                 case TokenTypeEnum.Date:
                     return PdfDate.Get(BytesToken.ToArray(), DateToken);
@@ -177,6 +174,11 @@ namespace PdfClown.Tokens
                 default:
                     throw new PostScriptParseException($"Unknown type beginning: '{Token}'", this);
             }
+        }
+
+        protected virtual PdfDictionary CreatePdfDictionary(Dictionary<PdfName, PdfDirectObject> dictionary)
+        {
+            return new PdfDictionary(dictionary);
         }
 
         /// <summary>Parses a PDF object after moving to the given token offset.</summary>

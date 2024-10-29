@@ -56,14 +56,26 @@ namespace PdfClown.Objects
         private PdfObject parent;
         private PdfObjectStatus status;
 
-        public PdfArray() : base(PdfObjectStatus.Updateable)
+        public PdfArray()
+             : base(PdfObjectStatus.Updateable)
         {
             items = new List<PdfDirectObject>();
         }
 
-        public PdfArray(int capacity) : base(PdfObjectStatus.Updateable)
+        public PdfArray(int capacity)
+            : base(PdfObjectStatus.Updateable)
+
         {
             items = new List<PdfDirectObject>(capacity);
+        }
+
+        internal PdfArray(List<PdfDirectObject> items) 
+            : base(PdfObjectStatus.Updateable)
+        {
+            this.items = items;
+            foreach (var item in items)
+                if (item != null)
+                    item.Parent = this;
         }
 
         public PdfArray(params PdfDirectObject[] items)

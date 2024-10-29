@@ -23,39 +23,31 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Appearance [PDF:1.6:8.4.4].</summary>
-    */
+    /// <summary>Appearance [PDF:1.6:8.4.4].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class Appearance : PdfObjectWrapper<PdfDictionary>
     {
+        private AppearanceStates down;
+        private AppearanceStates normal;
+        private AppearanceStates roolover;
+
         public Appearance(PdfDocument context) : base(context, new PdfDictionary())
         { }
 
         public Appearance(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the annotation's down appearance.</summary>
-        */
-        public AppearanceStates Down => AppearanceStates.Wrap(PdfName.D, this);
+        /// <summary>Gets the annotation's down appearance.</summary>
+        public AppearanceStates Down => down ??= AppearanceStates.Wrap(PdfName.D, this);
 
-        /**
-          <summary>Gets the annotation's normal appearance.</summary>
-        */
-        public AppearanceStates Normal => AppearanceStates.Wrap(PdfName.N, this);
+        /// <summary>Gets the annotation's normal appearance.</summary>
+        public AppearanceStates Normal => normal ??= AppearanceStates.Wrap(PdfName.N, this);
 
-        /**
-          <summary>Gets the annotation's rollover appearance.</summary>
-        */
-        public AppearanceStates Rollover => AppearanceStates.Wrap(PdfName.R, this);
+        /// <summary>Gets the annotation's rollover appearance.</summary>
+        public AppearanceStates Rollover => roolover ??= AppearanceStates.Wrap(PdfName.R, this);
     }
 }

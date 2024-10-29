@@ -63,10 +63,10 @@ namespace PdfClown.Documents.Contents.Fonts
             var fd = BuildFontDescriptor(type1);
 
             var fontStream = new PdfStream(pfbParser.GetInputStream());
-            fontStream.Header.Set(PdfName.Length, pfbParser.Size);
+            fontStream.Set(PdfName.Length, pfbParser.Size);
             for (int i = 0; i < pfbParser.Lengths.Length; i++)
             {
-                fontStream.Header.Set(PdfName.Get("Length" + (i + 1), true), pfbParser.Lengths[i]);
+                fontStream.Set(PdfName.Get("Length" + (i + 1), true), pfbParser.Lengths[i]);
             }
             fd.FontFile = new FontFile(doc, fontStream);
 

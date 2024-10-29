@@ -531,7 +531,7 @@ namespace PdfClown.Documents.Encryption
                 return;
             }
 
-            var type = stream.Header.Get<PdfName>(PdfName.Type);
+            var type = stream.Get<PdfName>(PdfName.Type);
             if (!decryptMetadata && PdfName.Metadata.Equals(type))
             {
                 stream.encoded = EncodeState.SkipMetadata;
@@ -564,7 +564,7 @@ namespace PdfClown.Documents.Encryption
                 }
             }
 
-            DecryptDictionary(stream.Header, objNum, genNum);
+            DecryptDictionary(stream, objNum, genNum);
             var encryptedStream = (Stream)stream.GetInputStreamNoDecode();
             var output = new ByteStream();
             if (DecryptData(objNum, genNum, encryptedStream, output))

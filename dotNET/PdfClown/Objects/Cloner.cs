@@ -301,8 +301,8 @@ namespace PdfClown.Objects
 
         public override PdfObject Visit(PdfDictionary obj, object data)
         {
-            Filter cloneFilter = MatchFilter(obj);
-            PdfDictionary clone = (PdfDictionary)obj.Clone();
+            var cloneFilter = MatchFilter(obj);
+            var clone = (PdfDictionary)obj.Clone();
             {
                 clone.entries = new Dictionary<PdfName, PdfDirectObject>();
                 foreach (KeyValuePair<PdfName, PdfDirectObject> entry in obj.entries)
@@ -334,11 +334,8 @@ namespace PdfClown.Objects
 
         public override PdfObject Visit(PdfStream obj, object data)
         {
-            PdfStream clone = (PdfStream)obj.Clone();
-            {
-                clone.header = (PdfDictionary)Visit(obj.header, data);
-                clone.SetStream(new ByteStream(obj.GetInputStreamNoDecode()));
-            }
+            PdfStream clone = (PdfStream)Visit((PdfDictionary)obj, data);
+            clone.SetStream(new ByteStream(obj.GetInputStreamNoDecode()));
             return clone;
         }
 

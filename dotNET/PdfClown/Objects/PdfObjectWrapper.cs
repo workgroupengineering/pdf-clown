@@ -42,16 +42,6 @@ namespace PdfClown.Objects
             return wrapper?.BaseObject;
         }
 
-        public static PdfDictionary TryGetDictionary(PdfDataObject baseDataObject)
-        {
-            if (baseDataObject is PdfDictionary dictionary)
-                return dictionary;
-            else if (baseDataObject is PdfStream stream)
-                return stream.Header;
-            else
-                return null;
-        }
-
         public static T Wrap<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(PdfDirectObject baseObject)
             where T : IPdfObjectWrapper
         {
@@ -120,13 +110,7 @@ namespace PdfClown.Objects
             }
         }
 
-        protected virtual PdfDictionary Dictionary =>
-            BaseDataObject switch
-            {
-                PdfDictionary dictionary => dictionary,
-                PdfStream stream => stream.Header,
-                _ => null
-            };
+        protected virtual PdfDictionary Dictionary => BaseDataObject as PdfDictionary;
 
         /// <summary>Removes the object from its document context.</summary>
         /// <remarks>Only indirect objects can be removed through this method; direct objects have to be
