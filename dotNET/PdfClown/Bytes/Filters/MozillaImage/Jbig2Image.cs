@@ -13,19 +13,18 @@
  * limitations under the License.
  */
 using PdfClown.Bytes.Filters.CCITT;
-using PdfClown.Util;
 using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace PdfClown.Bytes.Filters.JBig
-{   
+{
 
     internal class Jbig2Image
     {
         // 7.3 Segment types
-        static readonly string[] SegmentTypes = new string[]{
+        static readonly string[] SegmentTypes = [
            "SymbolDictionary",
             null,
             null,
@@ -89,10 +88,11 @@ namespace PdfClown.Bytes.Filters.JBig
             null,
             null,
             "Extension"
-        };
+        ];
 
-        static readonly List<Point[]> CodingTemplates = new List<Point[]>{
-            new Point[]{
+        static readonly List<Point[]> CodingTemplates =
+        [
+            [
                 new Point(x: -1, y: -2),
                 new Point(x: 0, y: -2),
                 new Point(x: 1, y: -2),
@@ -105,8 +105,8 @@ namespace PdfClown.Bytes.Filters.JBig
                 new Point(x: -3, y: 0),
                 new Point(x: -2, y: 0),
                 new Point(x: -1, y: 0),
-            },
-            new Point[]{
+            ],
+            [
                 new Point(x: -1, y: -2),
                 new Point(x: 0, y: -2),
                 new Point(x: 1, y: -2),
@@ -119,8 +119,8 @@ namespace PdfClown.Bytes.Filters.JBig
                 new Point(x: -3, y: 0),
                 new Point(x: -2, y: 0),
                 new Point(x: -1, y: 0),
-            },
-            new Point[]{
+            ],
+            [
                 new Point(x: -1, y: -2),
                 new Point(x: 0, y: -2),
                 new Point(x: 1, y: -2),
@@ -130,8 +130,8 @@ namespace PdfClown.Bytes.Filters.JBig
                 new Point(x: 1, y: -1),
                 new Point(x: -2, y: 0),
                 new Point(x: -1, y: 0),
-            },
-            new Point[]{
+            ],
+            [
                 new Point(x: -3, y: -1),
                 new Point(x: -2, y: -1),
                 new Point(x: -1, y: -1),
@@ -141,18 +141,18 @@ namespace PdfClown.Bytes.Filters.JBig
                 new Point(x: -3, y: 0),
                 new Point(x: -2, y: 0),
                 new Point(x: -1, y: 0)
-            }
-        };
+            ]
+        ];
 
-        static readonly Refinement[] RefinementTemplates = new Refinement[]
-        {
+        static readonly Refinement[] RefinementTemplates =
+        [
             new Refinement(
-                coding: new Point[]{
+                coding: [
                     new Point(x: 0, y: -1),
                     new Point(x: 1, y: -1),
                     new Point(x: -1, y: 0),
-                },
-                reference: new Point[]{
+                ],
+                reference: [
                     new Point(x: 0, y: -1),
                     new Point(x: 1, y: -1),
                     new Point(x: -1, y: 0),
@@ -161,40 +161,38 @@ namespace PdfClown.Bytes.Filters.JBig
                     new Point(x: -1, y: 1),
                     new Point(x: 0, y: 1),
                     new Point(x: 1, y: 1),
-                }
-                ),
+                ]),
             new Refinement(
-                coding: new Point[]{
+                coding: [
                     new Point(x: -1, y: -1),
                     new Point(x: 0, y: -1),
                     new Point(x: 1, y: -1),
                     new Point(x: -1, y: 0),
-                },
-                reference: new Point[]{
+                ],
+                reference: [
                     new Point(x: 0, y: -1),
                     new Point(x: -1, y: 0),
                     new Point(x: 0, y: 0),
                     new Point(x: 1, y: 0),
                     new Point(x: 0, y: 1),
                     new Point(x: 1, y: 1),
-                }
-                ),
-        };
+                ]),
+        ];
 
         // See 6.2.5.7 Decoding the bitmap.
-        static readonly int[] ReusedContexts = new int[]{
+        static readonly int[] ReusedContexts = [
             0x9b25, // 10011 0110010 0101
             0x0795, // 0011 110010 101
             0x00e5, // 001 11001 01
             0x0195, // 011001 0101
-        };
+        ];
 
-        static readonly int[] RefinementReusedContexts = new int[]{
+        static readonly int[] RefinementReusedContexts = [
             0x0020, // '000' + '0' (coding) + '00010000' + '0' (reference)
             0x0008, // '0000' + '001000'
-        };
+        ];
 
-        static readonly Dictionary<int, HuffmanTable> StandardTablesCache = new Dictionary<int, HuffmanTable>();
+        static readonly Dictionary<int, HuffmanTable> StandardTablesCache = new();
         public static readonly int RegionSegmentInformationFieldLength = 17;
         private int width;
         private int height;

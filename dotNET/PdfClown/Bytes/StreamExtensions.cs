@@ -308,7 +308,7 @@ namespace PdfClown.Bytes
         /// <param name="length">Number of bytes to read.</param>
         public static string ReadString(this IInputStream target, int length) => target.ReadString(length, Charset.ISO88591);
 
-        public static string ReadString(this IInputStream target, int length, System.Text.Encoding encoding)
+        public static string ReadString(this IInputStream target, int length, Encoding encoding)
         {
             var span = target.ReadSpan(length);
             return encoding.GetString(span);

@@ -93,7 +93,6 @@ namespace PdfClown.Bytes
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int ReadByte() => stream.ReadByte();
-        
 
         public int PeekByte()
         {
@@ -121,21 +120,21 @@ namespace PdfClown.Bytes
         public int ReadInt32()
         {
             Span<byte> data = stackalloc byte[sizeof(int)];
-            Read(data);
+            ReadExactly(data);
             return StreamExtensions.ReadInt32(data, byteOrder);
         }
 
         public uint ReadUInt32()
         {
             Span<byte> data = stackalloc byte[sizeof(uint)];
-            Read(data);
+            ReadExactly(data);
             return StreamExtensions.ReadUInt32(data, byteOrder);
         }
 
         public int ReadInt(int length)
         {
             Span<byte> data = stackalloc byte[length];
-            Read(data);
+            ReadExactly(data);
             return StreamExtensions.ReadIntOffset(data, byteOrder);
         }
 
@@ -162,49 +161,49 @@ namespace PdfClown.Bytes
         public short ReadInt16()
         {
             Span<byte> data = stackalloc byte[sizeof(short)];
-            Read(data);
+            ReadExactly(data);
             return StreamExtensions.ReadInt16(data, byteOrder);
         }
 
         public ushort ReadUInt16()
         {
             Span<byte> data = stackalloc byte[sizeof(ushort)];
-            Read(data);
+            ReadExactly(data);
             return StreamExtensions.ReadUInt16(data, byteOrder);
         }
 
         public long ReadInt64()
         {
             Span<byte> data = stackalloc byte[sizeof(long)];
-            Read(data);
+            ReadExactly(data);
             return StreamExtensions.ReadInt64(data, byteOrder);
         }
 
         public ulong ReadUInt64()
         {
             Span<byte> data = stackalloc byte[sizeof(ulong)];
-            Read(data);
+            ReadExactly(data);
             return StreamExtensions.ReadUInt64(data, byteOrder);
         }
 
-        public byte[] ReadBytesAlloc(int length)
+        public Memory<byte> ReadBuffered(int length)
         {
             if (Position + length > Length)
             {
                 length = (int)(Length - Position);
             }
-            var buffer = new byte[length];
-            Read(buffer);
+            var buffer = new ArraySegment<byte>(GetArrayBuffer(), (int)Position, length);
+            Skip(length);
             return buffer;
         }
 
         public Memory<byte> ReadMemory(int length) => stream is IInputStream inputStream 
             ? inputStream.ReadMemory(length) 
-            : ReadBytesAlloc(length);
+            : ReadBuffered(length);
 
         public Span<byte> ReadSpan(int length) => stream is IInputStream inputStream 
             ? inputStream.ReadSpan(length) 
-            : ReadBytesAlloc(length).AsSpan();
+            : ReadBuffered(length).Span;
 
         public string ReadString(int length) => StreamExtensions.ReadString(this, length);
 
@@ -235,8 +234,10 @@ namespace PdfClown.Bytes
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public long Seek(long offset) => Seek(offset, SeekOrigin.Begin);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public long Skip(long offset) => Seek(offset, SeekOrigin.Current);
 
         public void Clear() => stream.SetLength(0);
@@ -279,13 +280,13 @@ namespace PdfClown.Bytes
 
         public virtual byte[] ToArray()
         {
-            var position = Position;
+            var temp = Position;
             byte[] data = new byte[Length];
             {
                 Position = 0;
-                Read(data, 0, data.Length);
+                ReadExactly(data, 0, data.Length);
             }
-            Position = position;
+            Position = temp;
             return data;
         }
 

@@ -17,8 +17,6 @@ using PdfClown.Bytes.Filters.Jpeg;
 using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace PdfClown.Bytes.Filters
 {
@@ -41,7 +39,7 @@ namespace PdfClown.Bytes.Filters
 
             // Checking if values need to be transformed before conversion.
             var decodeObj = imageParams[PdfName.Decode] ?? imageParams[PdfName.D];
-            var decodeArr = decodeObj?.Resolve() as PdfArray;
+            var decodeArr = (PdfArray)decodeObj?.Resolve(PdfName.Decode);
             if (false && decodeArr != null)
             {
                 var decode = decodeArr.ToIntArray();

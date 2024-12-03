@@ -17,7 +17,6 @@ using PdfClown.Bytes.Filters.Jpx;
 using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace PdfClown.Bytes.Filters
 {
