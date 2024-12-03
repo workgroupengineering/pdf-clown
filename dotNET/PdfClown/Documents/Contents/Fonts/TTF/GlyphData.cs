@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
+using SkiaSharp;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    using PdfClown.Bytes;
-    using SkiaSharp;
-    using System.IO;
-
-    /**
-     * A glyph data record in the glyf table.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A glyph data record in the glyf table.
+    /// @author Ben Litchfield
+    /// </summary>
     public class GlyphData
     {
         private short xMin;
@@ -36,15 +34,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private GlyfDescript glyphDescription = null;
         private GlyphRenderer renderer;
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param glyphTable The glyph table this glyph belongs to.
-         * @param data The stream to read the data from.
-         * @param leftSideBearing The left side bearing for this glyph.
-         * @ If there is an error reading the data.
-         */
-        public void InitData(GlyphTable glyphTable, IInputStream data, int leftSideBearing)
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="glyphTable">The glyph table this glyph belongs to.</param>
+        /// <param name="data">The stream to read the data from.</param>
+        /// <param name="leftSideBearing">The left side bearing for this glyph.</param>
+        public void InitData(GlyphTable glyphTable, IInputStream data, int leftSideBearing, int level)
         {
             numberOfContours = data.ReadInt16();
             xMin = data.ReadInt16();
@@ -62,88 +56,55 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             else
             {
                 // create a composite glyph
-                glyphDescription = new GlyfCompositeDescript(data, glyphTable);
+                glyphDescription = new GlyfCompositeDescript(data, glyphTable, level + 1);
             }
         }
 
-        /**
-        * Initialize an empty glyph record.
-        * 
-        * @throws IOException
-        */
+        /// <summary>Initialize an empty glyph record.</summary>
         public void InitEmptyData()
         {
             glyphDescription = new GlyfSimpleDescript();
             boundingBox = SKRect.Empty;
         }
 
-        /**
-         * @return Returns the boundingBox.
-         */
         public SKRect BoundingBox
         {
             get => boundingBox ?? SKRect.Empty;
             set => boundingBox = value;
         }
 
-        /**
-         * @return Returns the numberOfContours.
-         */
         public short NumberOfContours
         {
             get => numberOfContours;
             set => numberOfContours = value;
         }
 
-        /**
-         * Returns the description of the glyph.
-         * @return the glyph description
-         */
         public IGlyphDescription Description
         {
             get => glyphDescription;
         }
 
-        /**
-         * Returns the path of the glyph.
-         * @return the path
-         */
+        /// <summary>Returns the path of the glyph.</summary>
         public SKPath GetPath()
         {
             return (renderer ??= new GlyphRenderer(glyphDescription)).GetPath();
         }
-
-        /**
-         * Returns the xMax value.
-         * @return the XMax value
-         */
+        
         public short XMaximum
         {
             get => xMax;
         }
 
-        /**
-         * Returns the xMin value.
-         * @return the xMin value
-         */
         public short XMinimum
         {
             get => xMin;
         }
 
-        /**
-         * Returns the yMax value.
-         * @return the yMax value
-         */
         public short YMaximum
         {
             get => yMax;
         }
 
-        /**
-         * Returns the yMin value.
-         * @return the yMin value
-         */
         public short YMinimum
         {
             get => yMin;

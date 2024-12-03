@@ -14,24 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System.IO;
 using System.Collections.Generic;
 using PdfClown.Tokens;
 using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
-    /**
-     * A table in a true type font.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A table in a true type font.
+    /// @author Ben Litchfield
+    /// </summary>
     public class NamingTable : TTFTable
     {
-        /**
-         * A tag that identifies this table type.
-         */
+        /// <summary>A tag that identifies this table type.</summary>
         public const string TAG = "name";
 
         private List<NameRecord> nameRecords;
@@ -45,13 +40,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public NamingTable()
         { }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             int formatSelector = data.ReadUInt16();
@@ -60,7 +51,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             nameRecords = new List<NameRecord>(numberOfNameRecords);
             for (int i = 0; i < numberOfNameRecords; i++)
             {
-                NameRecord nr = new NameRecord();
+                var nr = new NameRecord();
                 nr.InitData(ttf, data);
                 nameRecords.Add(nr);
             }
@@ -184,9 +175,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             initialized = true;
         }
 
-        /**
-         * Helper to get English names by best effort.
-         */
+        /// <summary>Helper to get English names by best effort.</summary>
         private string GetEnglishName(int nameId)
         {
             // Unicode, Full, BMP, 1.1, 1.0
@@ -221,15 +210,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                             NameRecord.LANGUGAE_MAC_ENGLISH);
         }
 
-        /**
-         * Returns a name from the table, or null it it does not exist.
-         *
-         * @param nameId Name ID from NameRecord constants.
-         * @param platformId Platform ID from NameRecord constants.
-         * @param encodingId Platform Encoding ID from NameRecord constants.
-         * @param languageId Language ID from NameRecord constants.
-         * @return name, or null
-         */
+        /// <summary>Returns a name from the table, or null it it does not exist.</summary>
+        /// <param name="nameId">Name ID from NameRecord constants.</param>
+        /// <param name="platformId">Platform ID from NameRecord constants.</param>
+        /// <param name="encodingId">Platform Encoding ID from NameRecord constants.</param>
+        /// <param name="languageId">Language ID from NameRecord constants.</param>
+        /// <returns>name, or null</returns>
         public string GetName(int nameId, int platformId, int encodingId, int languageId)
         {
             if (!lookupTable.TryGetValue(nameId, out var platforms))
@@ -248,41 +234,22 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return languages.TryGetValue(languageId, out var text) ? text : null;
         }
 
-        /**
-         * This will get the name records for this naming table.
-         *
-         * @return A list of NameRecord objects.
-         */
+        /// <summary>This will get the name records for this naming table.</summary>
         public List<NameRecord> NameRecords
         {
             get => nameRecords;
         }
 
-        /**
-         * Returns the font family name, in English.
-         *
-         * @return the font family name, in English
-         */
         public string FontFamily
         {
             get => fontFamily;
         }
 
-        /**
-         * Returns the font sub family name, in English.
-         *
-         * @return the font sub family name, in English
-         */
         public string FontSubFamily
         {
             get => fontSubFamily;
         }
 
-        /**
-         * Returns the PostScript name.
-         *
-         * @return the PostScript name
-         */
         public string PostScriptName
         {
             get => psName;

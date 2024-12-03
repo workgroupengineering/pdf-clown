@@ -15,30 +15,22 @@
  * limitations under the License.
  */
 using PdfClown.Bytes;
-using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A vertical header 'vhea' table in a TrueType or OpenType font.
-     *
-     * Supports versions 1.0 and 1.1, for which the only difference is changing
-     * the specification names and descriptions of the ascender, descender,
-     * and lineGap fields to vertTypoAscender, vertTypoDescender, vertTypeLineGap.
-     *
-     * This table is required by the OpenType CJK Font Guidelines for "all
-     * OpenType fonts that are used for vertical writing".
-     * 
-     * This table is specified in both the TrueType and OpenType specifications.
-     * 
-     * @author Glenn Adams
-     * 
-     */
+    /// <summary>
+    /// A vertical header 'vhea' table in a TrueType or OpenType font.
+    /// Supports versions 1.0 and 1.1, for which the only difference is changing
+    /// the specification names and descriptions of the ascender, descender,
+    /// and lineGap fields to vertTypoAscender, vertTypoDescender, vertTypeLineGap.
+    /// This table is required by the OpenType CJK Font Guidelines for "all
+    /// OpenType fonts that are used for vertical writing".
+    /// This table is specified in both the TrueType and OpenType specifications.
+    /// @author Glenn Adams
+    /// </summary>
     public class VerticalHeaderTable : TTFTable
     {
-        /**
-         * A tag that identifies this table type.
-         */
+        /// <summary>A tag that identifies this table type.</summary>
         public const string TAG = "vhea";
 
         private float version;
@@ -62,13 +54,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public VerticalHeaderTable()
         { }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             version = data.Read32Fixed();
@@ -91,137 +79,87 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             initialized = true;
         }
 
-        /**
-         * @return Returns the advanceHeightMax.
-         */
         public int AdvanceHeightMax
         {
             get => advanceHeightMax;
             set => advanceHeightMax = value;
         }
 
-        /**
-         * @return Returns the ascender.
-         */
         public short Ascender
         {
             get => ascender;
         }
 
-        /**
-         * @return Returns the caretSlopeRise.
-         */
         public short CaretSlopeRise
         {
             get => caretSlopeRise;
         }
 
-        /**
-         * @return Returns the caretSlopeRun.
-         */
         public short CaretSlopeRun
         {
             get => caretSlopeRun;
         }
 
-        /**
-         * @return Returns the caretOffset.
-         */
         public short CaretOffset
         {
             get => caretOffset;
         }
 
-        /**
-         * @return Returns the descender.
-         */
         public short Descender
         {
             get => descender;
         }
 
-        /**
-         * @return Returns the lineGap.
-         */
         public short LineGap
         {
             get => lineGap;
         }
 
-        /**
-         * @return Returns the metricDataFormat.
-         */
         public short MetricDataFormat
         {
             get => metricDataFormat;
         }
 
-        /**
-         * @return Returns the minTopSideBearing.
-         */
         public short MinTopSideBearing
         {
             get => minTopSideBearing;
         }
 
-        /**
-         * @return Returns the minBottomSideBearing.
-         */
         public short MinBottomSideBearing
         {
             get => minBottomSideBearing;
         }
 
-        /**
-         * @return Returns the numberOfVMetrics.
-         */
         public int NumberOfVMetrics
         {
             get => numberOfVMetrics;
         }
 
-        /**
-         * @return Returns the reserved1.
-         */
         public short Reserved1
         {
             get => reserved1;
         }
 
-        /**
-         * @return Returns the reserved2.
-         */
         public short Reserved2
         {
             get => reserved2;
         }
 
-        /**
-         * @return Returns the reserved3.
-         */
         public short Reserved3
         {
             get => reserved3;
         }
 
-        /**
-         * @return Returns the reserved4.
-         */
         public short Reserved4
         {
             get => reserved4;
         }
 
-        /**
-         * @return Returns the version.
-         */
         public float Version
         {
             get => version;
         }
-        /**
-         * @return Returns the yMaxExtent.
-         */
+        
         public short YMaxExtent
         {
             get => yMaxExtent;

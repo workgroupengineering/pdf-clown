@@ -19,20 +19,17 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using PdfClown.Documents.Contents.Fonts.TTF.GSUB;
 using System;
-using System.Linq;
 using System.Globalization;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A class for mapping Unicode codepoints to OpenType script tags
-     *
-     * @author Aaron Madlon-Kay
-     *
-     * @see <a href="https://www.microsoft.com/typography/otspec/scripttags.htm">Microsoft Typography:
-     * Script Tags</a>
-     * @see <a href="https://www.unicode.org/reports/tr24/">Unicode Script Property</a>
-     */
+    /// <summary>
+    /// A class for mapping Unicode codepoints to OpenType script tags
+    /// @author Aaron Madlon-Kay
+    /// <see href="https://www.microsoft.com/typography/otspec/scripttags.htm">Microsoft Typography:
+    /// Script Tags</see>
+    /// <see href="https://www.unicode.org/reports/tr24/">Unicode Script Property</see>
+    /// </summary>
     public sealed class OpenTypeScript
     {
         //private static readonly Log LOG = LogFactory.getLog(OpenTypeScript.class);
@@ -41,15 +38,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public static readonly string UNKNOWN = "Unknown";
         public static readonly string TAG_DEFAULT = "DFLT";
 
-        /**
-         * A map associating Unicode scripts with one or more OpenType script tags. Script tags are not
-         * necessarily the same as Unicode scripts. A single Unicode script may correspond to multiple
-         * tags, especially when there has been a revision to the latter (e.g. Bengali -> [bng2, beng]).
-         * When there are multiple tags, they are ordered from newest to oldest.
-         *
-         * @see <a href="https://www.microsoft.com/typography/otspec/scripttags.htm">Microsoft
-         * Typography: Script Tags</a>
-         */
+        /// <summary>
+        /// A map associating Unicode scripts with one or more OpenType script tags. Script tags are not
+        /// necessarily the same as Unicode scripts. A single Unicode script may correspond to multiple
+        /// tags, especially when there has been a revision to the latter (e.g. Bengali -> [bng2, beng]).
+        /// When there are multiple tags, they are ordered from newest to oldest.
+        /// @see <a href="https://www.microsoft.com/typography/otspec/scripttags.htm">Microsoft
+        /// Typography: Script Tags</a>
+        /// </summary>
         private static readonly Dictionary<string, string[]> UNICODE_SCRIPT_TO_OPENTYPE_TAG_MAP;
         private static int[] unicodeRangeStarts;
         private static string[] unicodeRangeScripts;
@@ -230,7 +226,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private static void ParseScriptsFile(Stream inputStream)
         {
-            Dictionary<int[], string> unicodeRanges = new Dictionary<int[], string>(new ArrayComparer<int>());
+            var unicodeRanges = new Dictionary<int[], string>(new ArrayComparer<int>());
             using (var rd = new StreamReader(inputStream))
             {
 
@@ -301,12 +297,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Obtain the Unicode script associated with the given Unicode codepoint.
-         *
-         * @param codePoint
-         * @return A Unicode script string, or {@code #UNKNOWN} if unknown
-         */
+        /// <summary>
+        /// Obtain the Unicode script associated with the given Unicode codepoint.
+        /// </summary>
+        /// <param name="codePoint"></param>
+        /// <returns>A Unicode script string, or {@code #UNKNOWN} if unknown</returns>
         private static string GetUnicodeScript(int codePoint)
         {
             EnsureValidCodePoint(codePoint);
@@ -323,17 +318,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return unicodeRangeScripts[scriptIndex];
         }
 
-        /**
-         * Obtain the OpenType script tags associated with the given Unicode codepoint.
-         *
-         * The result may contain the special value {@code #INHERITED}, which indicates that the
-         * codepoint's script can only be determined by its context.
-         *
-         * Unknown codepoints are mapped to {@code #TAG_DEFAULT}.
-         *
-         * @param codePoint
-         * @return An array of four-char script tags
-         */
+        /// <summary>
+        /// Obtain the OpenType script tags associated with the given Unicode codepoint.
+        /// The result may contain the special value {@code #INHERITED}, which indicates that the
+        /// codepoint's script can only be determined by its context.
+        /// Unknown codepoints are mapped to {@code #TAG_DEFAULT}.
+        /// </summary>
+        /// <param name="codePoint"></param>
+        /// <returns>An array of four-char script tags</returns>
         public static string[] GetScriptTags(int codePoint)
         {
             EnsureValidCodePoint(codePoint);

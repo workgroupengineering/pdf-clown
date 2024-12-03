@@ -17,7 +17,6 @@
  */
 using PdfClown.Bytes;
 using PdfClown.Tokens;
-using PdfClown.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -66,33 +65,15 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             this.source = source;
             return Parse(input);
         }
-        /**
-		 * Parse CFF font using a byte array as input.
-		 * 
-		 * //@param bytes the given byte array
-		 * //@return the parsed CFF fonts
-		 * //@throws IOException If there is an error reading from the stream
-		 */
+
+
+        /// <summary>Parse CFF font using a byte array as input.</summary>
+        /// <param name="input">the given byte array</param>
+        /// <returns>the parsed CFF fonts</returns>
+        /// <exception cref="IOException"></exception>
         public List<CFFFont> Parse(IInputStream input)
         {
-            string firstTag = ReadTagName(input);
-            // try to determine which kind of font we have
-            switch (firstTag)
-            {
-                case TAG_OTTO:
-                    input = CreateTaggedCFFStream(input);
-                    break;
-                case TAG_TTCF:
-                    throw new IOException("True Type Collection fonts are not supported.");
-                case TAG_TTFONLY:
-                    throw new IOException("OpenType fonts containing a true type font are not supported.");
-                default:
-                    input.Position = 0;
-                    break;
-            }
-
-            //@SuppressWarnings("unused")
-            var header = ReadHeader(input);
+            var header = ReadTagAndHeader(input);
             var nameIndex = ReadStringIndexData(input);
             if (nameIndex.Length == 0)
             {
@@ -116,6 +97,27 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 fonts.Add(font);
             }
             return fonts;
+        }
+
+        private Header ReadTagAndHeader(IInputStream input)
+        {
+            string firstTag = ReadTagName(input);
+            // try to determine which kind of font we have
+            switch (firstTag)
+            {
+                case TAG_OTTO:
+                    input = CreateTaggedCFFStream(input);
+                    break;
+                case TAG_TTCF:
+                    throw new IOException("True Type Collection fonts are not supported.");
+                case TAG_TTFONLY:
+                    throw new IOException("OpenType fonts containing a true type font are not supported.");
+                default:
+                    input.Position = 0;
+                    break;
+            }
+
+            return ReadHeader(input);
         }
 
         private IInputStream CreateTaggedCFFStream(IInputStream input)
@@ -296,7 +298,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         {
             if (b0 == 28)
             {
-                return (int)input.ReadInt16();
+                return input.ReadInt16();
             }
             else if (b0 == 29)
             {
@@ -322,9 +324,6 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         * //@param b0  
-         */
         private static float ReadRealNumber(IInputStream input)
         {
             var sb = new StringBuilder();
@@ -609,9 +608,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             matrixDest[5] = (float)(x1 * b2 + y1 * d2 + y2);
         }
 
-        /**
-         * Parse dictionaries specific to a CIDFont.
-         */
+        /// <summary>Parse dictionaries specific to a CIDFont.</summary>
         private void ParseCIDFontDicts(IInputStream input, DictData topDict, CFFCIDFont font, int nrOfcharStrings)
         {
             // In a CIDKeyed Font, the Private dictionary isn't in the Top Dict but in the Font dict
@@ -631,20 +628,13 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 throw new IOException("Font dict index is missing for a CIDKeyed Font");
             }
 
-            List<Dictionary<string, object>> privateDictionaries = new List<Dictionary<string, object>>();
-            List<Dictionary<string, object>> fontDictionaries = new List<Dictionary<string, object>>();
+            var privateDictionaries = new List<Dictionary<string, object>>();
+            var fontDictionaries = new List<Dictionary<string, object>>();
 
             foreach (var bytes in fdIndex)
             {
                 var fontDictInput = new ByteStream(bytes);
                 DictData fontDict = ReadDictData(fontDictInput);
-
-                // read private dict
-                DictData.Entry privateEntry = fontDict.GetEntry("Private");
-                if (privateEntry == null)
-                {
-                    throw new IOException("Font DICT invalid without \"Private\" entry");
-                }
 
                 // font dict
                 Dictionary<string, object> fontDictMap = new Dictionary<string, object>(4, StringComparer.Ordinal);
@@ -654,6 +644,16 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 fontDictMap["FontMatrix"] = fontDict.GetArray("FontMatrix", null);
                 // TODO OD-4 : Add here other keys
                 fontDictionaries.Add(fontDictMap);
+
+                // read private dict
+                DictData.Entry privateEntry = fontDict.GetEntry("Private");
+                if (privateEntry == null)
+                {
+                    // PDFBOX-5843 don't abort here, and don't skip empty bytes entries, because
+                    // getLocalSubrIndex() expects subr at a specific index
+                    privateDictionaries.Add(new());
+                    continue;
+                }
 
                 int privateOffset = (int)privateEntry.GetNumber(1);
                 int privateSize = (int)privateEntry.GetNumber(0);
@@ -671,7 +671,10 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                     privDict[KeySubRS] = ReadIndexData(input);
                 }
             }
-
+            if (privateDictionaries.Count == 0)
+            {
+                throw new IOException("Font DICT invalid without \"Private\" entry");
+            }
             // font-dict (FD) select
             DictData.Entry fdSelectEntry = topDict.GetEntry("FDSelect");
             int fdSelectPos = (int)fdSelectEntry.GetNumber(0);
@@ -689,30 +692,29 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
         private Dictionary<string, object> ReadPrivateDict(DictData privateDict)
         {
-            Dictionary<string, object> privDict = new Dictionary<string, object>(17, StringComparer.Ordinal);
-            privDict["BlueValues"] = privateDict.GetDelta("BlueValues", null);
-            privDict["OtherBlues"] = privateDict.GetDelta("OtherBlues", null);
-            privDict["FamilyBlues"] = privateDict.GetDelta("FamilyBlues", null);
-            privDict["FamilyOtherBlues"] = privateDict.GetDelta("FamilyOtherBlues", null);
-            privDict["BlueScale"] = privateDict.GetNumber("BlueScale", 0.039625f);
-            privDict["BlueShift"] = privateDict.GetNumber("BlueShift", 7);
-            privDict["BlueFuzz"] = privateDict.GetNumber("BlueFuzz", 1);
-            privDict["StdHW"] = privateDict.GetNumber("StdHW", null);
-            privDict["StdVW"] = privateDict.GetNumber("StdVW", null);
-            privDict["StemSnapH"] = privateDict.GetDelta("StemSnapH", null);
-            privDict["StemSnapV"] = privateDict.GetDelta("StemSnapV", null);
-            privDict["ForceBold"] = privateDict.GetBoolean("ForceBold", false);
-            privDict["LanguageGroup"] = privateDict.GetNumber("LanguageGroup", 0);
-            privDict["ExpansionFactor"] = privateDict.GetNumber("ExpansionFactor", 0.06f);
-            privDict["initialRandomSeed"] = privateDict.GetNumber("initialRandomSeed", 0);
-            privDict["defaultWidthX"] = privateDict.GetNumber("defaultWidthX", 0);
-            privDict["nominalWidthX"] = privateDict.GetNumber("nominalWidthX", 0);
-            return privDict;
+            return new Dictionary<string, object>(20, StringComparer.Ordinal)
+            {
+                ["BlueValues"] = privateDict.GetDelta("BlueValues", null),
+                ["OtherBlues"] = privateDict.GetDelta("OtherBlues", null),
+                ["FamilyBlues"] = privateDict.GetDelta("FamilyBlues", null),
+                ["FamilyOtherBlues"] = privateDict.GetDelta("FamilyOtherBlues", null),
+                ["BlueScale"] = privateDict.GetNumber("BlueScale", 0.039625f),
+                ["BlueShift"] = privateDict.GetNumber("BlueShift", 7),
+                ["BlueFuzz"] = privateDict.GetNumber("BlueFuzz", 1),
+                ["StdHW"] = privateDict.GetNumber("StdHW", null),
+                ["StdVW"] = privateDict.GetNumber("StdVW", null),
+                ["StemSnapH"] = privateDict.GetDelta("StemSnapH", null),
+                ["StemSnapV"] = privateDict.GetDelta("StemSnapV", null),
+                ["ForceBold"] = privateDict.GetBoolean("ForceBold", false),
+                ["LanguageGroup"] = privateDict.GetNumber("LanguageGroup", 0),
+                ["ExpansionFactor"] = privateDict.GetNumber("ExpansionFactor", 0.06f),
+                ["initialRandomSeed"] = privateDict.GetNumber("initialRandomSeed", 0),
+                ["defaultWidthX"] = privateDict.GetNumber("defaultWidthX", 0),
+                ["nominalWidthX"] = privateDict.GetNumber("nominalWidthX", 0)
+            };
         }
 
-        /**
-         * Parse dictionaries specific to a Type 1-equivalent font.
-         */
+        /// <summary> Parse dictionaries specific to a Type 1-equivalent font.</summary>
         private void ParseType1Dicts(IInputStream input, DictData topDict, CFFType1Font font, CFFCharset charset)
         {
             // encoding
@@ -937,9 +939,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             };
         }
 
-        /**
-         *  Format 3 FDSelect data.
-         */
+        /// <summary>Format 3 FDSelect data.</summary>
         internal sealed class Format3FDSelect : FDSelect
         {
             internal Range3[] range3;
@@ -979,9 +979,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         * Structure of a Range3 element.
-         */
+        /// <summary>Structure of a Range3 element.</summary>
         internal sealed class Range3
         {
             internal int first;
@@ -993,9 +991,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         *  Format 0 FDSelect.
-         */
+        /// <summary>Format 0 FDSelect.</summary>
         internal class Format0FDSelect : FDSelect
         {
             //@SuppressWarnings("unused")
@@ -1141,7 +1137,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         /// <summary>Inner class holding the DictData of a CFF font.</summary>
         internal class DictData
         {
-            private readonly Dictionary<string, Entry> entries = new Dictionary<string, Entry>(StringComparer.Ordinal);
+            private readonly Dictionary<string, Entry> entries = new(StringComparer.Ordinal);
 
             public void Add(Entry entry)
             {
@@ -1188,7 +1184,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             /// <summary>Inner class holding an operand of a CFF font.</summary>
             internal class Entry
             {
-                internal List<float> operands = new List<float>();
+                internal readonly List<float> operands = new();
                 internal string operatorName = null;
 
                 public List<float> Operands
@@ -1285,9 +1281,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-         * Inner class representing a Format0 encoding. 
-         */
+        /// <summary>Inner class representing a Format0 encoding.</summary>
         internal class Format0Encoding : CFFBuiltInEncoding
         {
             internal int nCodes;
@@ -1329,9 +1323,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-        * An empty charset in a malformed Type1 font.
-        */
+       /// <summary>An empty charset in a malformed Type1 font.</summary>
         private class EmptyCharsetType1 : CFFCharsetType1
         {
             public EmptyCharsetType1()

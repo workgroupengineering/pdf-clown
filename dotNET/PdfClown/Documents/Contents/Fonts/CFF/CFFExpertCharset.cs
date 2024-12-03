@@ -15,20 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-	/**
-	 * This is specialized CFFCharset. It's used if the CharsetId of a font is set to 1.
-	 * 
-	 * @author Villu Ruusmann
-	 */
-	public sealed class CFFExpertCharset : CFFCharsetType1
-	{
-		private CFFExpertCharset()
-		{
+    /// <summary>
+    /// This is specialized CFFCharset.It's used if the CharsetId of a font is set to 1.
+    /// @author Villu Ruusmann
+    /// </summary>
+    public sealed class CFFExpertCharset : CFFCharsetType1
+    {
+        private CFFExpertCharset()
+        {
             int gid = 0;
 
             AddSID(gid++, 0, ".notdef");
@@ -199,11 +195,11 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             AddSID(gid++, 378, "Ydieresissmall");
         }
 
-		public static readonly CFFExpertCharset Instance = new CFFExpertCharset();
+        public static readonly CFFExpertCharset Instance = new();
 
-		static CFFExpertCharset()
-		{
-			
-		}
-	}
+        static CFFExpertCharset()
+        {
+
+        }
+    }
 }

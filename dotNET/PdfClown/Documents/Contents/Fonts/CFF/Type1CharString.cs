@@ -20,16 +20,15 @@ using System;
 using SkiaSharp;
 using System.Diagnostics;
 using System.Linq;
+using PdfClown.Util.Collections;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
 {
-
-    /**
-     * This class represents and renders a Type 1 CharString.
-     *
-     * @author Villu Ruusmann
-     * @author John Hewson
-     */
+    /// <summary>
+    /// This class represents and renders a Type 1 CharString.
+    /// @author Villu Ruusmann
+    /// @author John Hewson
+    /// </summary>
     public class Type1CharString
     {
         private IType1CharStringReader font;
@@ -40,31 +39,25 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         private SKPoint leftSideBearing;
         private SKPoint current;
         private bool isFlex = false;
-        private readonly List<SKPoint> flexPoints = new List<SKPoint>();
-        private readonly List<object> type1Sequence = new List<object>();
+        private readonly List<SKPoint> flexPoints = new();
+        private readonly List<object> type1Sequence = new();
         private int commandCount;
 
-        /**
-         * Constructs a new Type1CharString object.
-         *
-         * @param font Parent Type 1 CharString font.
-         * @param fontName Name of the font.
-         * @param glyphName Name of the glyph.
-         * @param sequence Type 1 char string sequence
-         */
+        /// <summary>Constructs a new Type1CharString object.</summary>
+        /// <param name="font">Parent Type 1 CharString font.</param>
+        /// <param name="fontName">Name of the font.</param>
+        /// <param name="glyphName">Name of the glyph.</param>
+        /// <param name="sequence">Type 1 char string sequence</param>
         public Type1CharString(IType1CharStringReader font, string fontName, string glyphName, List<object> sequence)
             : this(font, fontName, glyphName)
         {
             type1Sequence.AddRange(sequence);
         }
 
-        /**
-         * Constructor for use in subclasses.
-         *
-         * @param font Parent Type 1 CharString font.
-         * @param fontName Name of the font.
-         * @param glyphName Name of the glyph.
-         */
+        /// <summary>Constructor for use in subclasses.</summary>
+        /// <param name="font">Parent Type 1 CharString font.</param>
+        /// <param name="fontName">Name of the font.</param>
+        /// <param name="glyphName">Name of the glyph.</param>
         protected Type1CharString(IType1CharStringReader font, string fontName, string glyphName)
         {
             this.font = font;
@@ -84,19 +77,13 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             get => fontName;
         }
 
-        /**
-         * Returns the bounds of the renderer path.
-         * @return the bounds as SKRect
-         */
+        /// <summary>Returns the bounds of the renderer path.</summary>
         public SKRect Bounds
         {
             get => Path.Bounds;
         }
 
-        /**
-         * Returns the advance width of the glyph.
-         * @return the width
-         */
+        /// <summary>Returns the advance width of the glyph.</summary>
         public int Width
         {
             get
@@ -110,17 +97,13 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
         }
 
-        /// <summary>
-        /// Returns the path of the character.
-        /// </summary>
+        /// <summary>Returns the path of the character.</summary>
         public SKPath Path
         {
             get => path ?? Render();
         }
 
-        /// <summary>
-        /// Renders the Type 1 char string sequence to a GeneralPath.
-        /// </summary>
+        /// <summary>Renders the Type 1 char string sequence to a GeneralPath.</summary>
         /// <returns>path</returns>
         private SKPath Render()
         {
@@ -132,9 +115,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             {
                 if (obj is CharStringCommand command)
                 {
-                    var results = HandleType1Command(numbers, command);
-                    numbers.Clear();
-                    numbers.AddRange(results);
+                    HandleType1Command(numbers, command);
                 }
                 else
                 {
@@ -145,15 +126,16 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         }
 
 
-        private List<float> HandleType1Command(List<float> numbers, CharStringCommand command)
+        private void HandleType1Command(List<float> numbers, CharStringCommand command)
         {
             commandCount++;
             var type1KeyWord = command.Type1KeyWord;
-            if (type1KeyWord == CharStringCommand.COMMAND_UNKNOWN.Type1KeyWord)
+            if (type1KeyWord == null)
             {
                 // indicates an invalid charstring
-                Debug.WriteLine($"warn: Unknown charstring command: {command.Type1KeyWord} in glyph {glyphName} of font {fontName}");
-                return new List<float>();
+                Debug.WriteLine($"warn: Unknown charstring command: {command.Type2KeyWord} in glyph {glyphName} of font {fontName}");
+                numbers.Clear();
+                return;
             }
             switch (type1KeyWord)
             {
@@ -201,25 +183,25 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 case Type1KeyWord.RLINETO:
                     if (numbers.Count >= 2)
                     {
-                        RlineTo(numbers[0], numbers[1]);
+                        RLineTo(numbers[0], numbers[1]);
                     }
                     break;
                 case Type1KeyWord.HLINETO:
                     if (numbers.Count > 0)
                     {
-                        RlineTo(numbers[0], 0);
+                        RLineTo(numbers[0], 0);
                     }
                     break;
                 case Type1KeyWord.VLINETO:
                     if (numbers.Count > 0)
                     {
-                        RlineTo(0, numbers[0]);
+                        RLineTo(0, numbers[0]);
                     }
                     break;
                 case Type1KeyWord.RRCURVETO:
                     if (numbers.Count >= 6)
                     {
-                        RrcurveTo(numbers[0], numbers[1], numbers[2],
+                        RrCurveTo(numbers[0], numbers[1], numbers[2],
                                 numbers[3], numbers[4], numbers[5]);
                     }
                     break;
@@ -245,13 +227,13 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 case Type1KeyWord.VHCURVETO:
                     if (numbers.Count >= 4)
                     {
-                        RrcurveTo(0, numbers[0], numbers[1], numbers[2], numbers[3], 0);
+                        RrCurveTo(0, numbers[0], numbers[1], numbers[2], numbers[3], 0);
                     }
                     break;
                 case Type1KeyWord.HVCURVETO:
                     if (numbers.Count >= 4)
                     {
-                        RrcurveTo(numbers[0], 0, numbers[1], numbers[2], 0, numbers[3]);
+                        RrCurveTo(numbers[0], 0, numbers[1], numbers[2], 0, numbers[3]);
                     }
                     break;
                 case Type1KeyWord.SEAC:
@@ -269,20 +251,17 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 case Type1KeyWord.CALLOTHERSUBR:
                     if (numbers.Count > 0)
                     {
-                        Callothersubr((int)numbers[0]);
+                        CallOtherSubr((int)numbers[0]);
                     }
                     break;
                 case Type1KeyWord.DIV:
                     if (numbers.Count >= 2)
                     {
-                        float b = numbers[numbers.Count - 1];
-                        float a = numbers[numbers.Count - 2];
+                        float b = numbers.RemoveAtValue(numbers.Count - 1);
+                        float a = numbers.RemoveAtValue(numbers.Count - 1);
 
-                        float result = a / b;
-
-                        var list = new List<float>(numbers.Take(numbers.Count - 2));
-                        list.Add(result);
-                        return list;
+                        numbers.Add(a / b);
+                        return;
                     }
                     break;
                 case Type1KeyWord.HSTEM:
@@ -305,23 +284,21 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                     Debug.WriteLine($"warn: Unknown charstring command: {command} in glyph {glyphName} of font {fontName}");
                     break;
             }
-            return new List<float>();
+            numbers.Clear();
         }
 
-        /**
-         * Sets the current absolute point without performing a moveto.
-         * Used only with results from callothersubr
-         */
+        /// <summary>
+        /// Sets the current absolute point without performing a moveto.
+        /// Used only with results from callothersubr
+        /// </summary>
         private void SetCurrentPoint(float x, float y)
         {
             current = new SKPoint(x, y);
         }
 
-        /**
-         * Flex (via OtherSubrs)
-         * @param num OtherSubrs entry number
-         */
-        private void Callothersubr(int num)
+        /// <summary>Flex (via OtherSubrs)</summary>
+        /// <param name="num">OtherSubrs entry number</param>
+        private void CallOtherSubr(int num)
         {
             if (num == 0)
             {
@@ -338,25 +315,26 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 SKPoint reference = flexPoints[0];
                 reference = new SKPoint(current.X + reference.X,
                                       current.Y + reference.Y);
+                flexPoints[0] = reference;
 
                 // first point is relative to reference point
                 SKPoint first = flexPoints[1];
                 first = new SKPoint(reference.X + first.X, reference.Y + first.Y);
-
                 // make the first point relative to the start point
                 first = new SKPoint(first.X - current.X, first.Y - current.Y);
+                flexPoints[1] = first;
 
                 var p1 = flexPoints[1];
                 var p2 = flexPoints[2];
                 var p3 = flexPoints[3];
-                RrcurveTo(p1.X, p1.Y,
+                RrCurveTo(p1.X, p1.Y,
                           p2.X, p2.Y,
                           p3.X, p3.Y);
 
                 var p4 = flexPoints[4];
                 var p5 = flexPoints[5];
                 var p6 = flexPoints[6];
-                RrcurveTo(p4.X, p4.Y,
+                RrCurveTo(p4.X, p4.Y,
                           p5.X, p5.Y,
                           p6.X, p6.Y);
 
@@ -369,14 +347,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
             else
             {
-                // indicates a PDFBox bug
                 Debug.WriteLine($"warn: Invalid callothersubr parameter: {num}");
             }
         }
 
-        /**
-         * Relative moveto.
-         */
+        /// <summary>Relative moveto.</summary>
         private void RmoveTo(float dx, float dy)
         {
             float x = (float)current.X + dx;
@@ -385,10 +360,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             current = new SKPoint(x, y);
         }
 
-        /**
-         * Relative lineto.
-         */
-        private void RlineTo(float dx, float dy)
+        /// <summary>Relative lineto.</summary>
+        private void RLineTo(float dx, float dy)
         {
             float x = (float)current.X + dx;
             float y = (float)current.Y + dy;
@@ -404,10 +377,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             current = new SKPoint(x, y);
         }
 
-        /**
-         * Relative curveto.
-         */
-        private void RrcurveTo(float dx1, float dy1, float dx2, float dy2, float dx3, float dy3)
+        /// <summary>Relative curveto.</summary>
+        private void RrCurveTo(float dx1, float dy1, float dx2, float dy2, float dx3, float dy3)
         {
             float x1 = (float)current.X + dx1;
             float y1 = (float)current.Y + dy1;
@@ -427,9 +398,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             current = new SKPoint(x3, y3);
         }
 
-        /**
-         * Close path.
-         */
+        /// <summary>Close path.</summary>
         private void CloseCharString1Path()
         {
             if (path.PointCount == 0)
@@ -443,12 +412,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             path.MoveTo(current.X, current.Y);
         }
 
-        /**
-         * Standard Encoding Accented Character
-         *
-         * Makes an accented character from two other characters.
-         * @param asb
-         */
+        /// <summary>Standard Encoding Accented Character
+        /// Makes an accented character from two other characters.</summary>        
         private void Seac(float asb, float adx, float ady, float bchar, float achar)
         {
             // base character
@@ -456,15 +421,14 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             try
             {
                 var baseString = font.GetType1CharString(baseName);
-                path.AddPath(baseString.Path);
+                path.AddPath(baseString.Path, SKPathAddMode.Append);
             }
             catch (Exception e)
             {
                 Debug.WriteLine($"warn: invalid seac character in glyph {glyphName} of font {fontName} {e}");
             }
             // accent character
-            string accentName = StandardEncoding.Instance.GetName((int)achar) ?? ".notdef";
-
+            string accentName = StandardEncoding.Instance.GetName((int)achar);
             try
             {
                 if (accentName == glyphName)
@@ -478,7 +442,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 var accentPath = accent.Path;
 
                 var at = SKMatrix.CreateTranslation(leftSideBearing.X + adx - asb, leftSideBearing.Y + ady);
+#if NET9_0_OR_GREATER
+                path.AddPath(accentPath, in at, SKPathAddMode.Append);
+#else
                 path.AddPath(accentPath, ref at, SKPathAddMode.Append);
+#endif
             }
             catch (Exception e)
             {
@@ -486,12 +454,9 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
         }
 
-        /**
-         * Add a command to the type1 sequence.
-         * 
-        * @param numbers the parameters of the command to be added
-        * @param command the command to be added
-        */
+        /// <summary>Add a command to the type1 sequence.</summary>
+        /// <param name="numbers">the parameters of the command to be added</param>
+        /// <param name="command">the command to be added</param>
         protected void AddCommand(List<float> numbers, CharStringCommand command)
         {
             type1Sequence.AddRange(numbers.Cast<object>());

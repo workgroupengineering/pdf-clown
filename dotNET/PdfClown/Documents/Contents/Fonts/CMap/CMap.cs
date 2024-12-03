@@ -66,7 +66,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         /// <summary>Gets the character map extracted from the given encoding object.</summary>
         /// <param name="encodingObject">Encoding object.</param>
-        public static CMap Get(PdfDataObject encodingObject)
+        public static CMap Get(PdfDirectObject encodingObject)
         {
             if (encodingObject == null)
                 return null;

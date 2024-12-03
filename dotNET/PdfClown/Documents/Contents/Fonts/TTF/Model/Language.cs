@@ -17,24 +17,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Model
 {
 
-    /**
-     * Enumerates the languages supported for GSUB operation. In order to support a new language, you
-     * need to add it here and then implement the {@link GsubWorker} for the given language and return
-     * the same from the
-     * {@link GsubWorkerFactory#getGsubWorker(org.apache.fontbox.ttf.CmapLookup, GsubData)}
-     *
-     * @author Palash Ray
-     *
-     */
+    /// <summary>
+    /// Enumerates the languages supported for GSUB operation.In order to support a new language, you
+    /// need to add it here and then implement the { @link GsubWorker } for the given language and return
+    /// the same from the
+    /// {@link GsubWorkerFactory#getGsubWorker(org.apache.fontbox.ttf.CmapLookup, GsubData)}
+    /// @author Palash Ray
+    /// </summary>
     public enum Language
     {
-        CYRILLIC,
         BENGALI,
+        CYRILLIC,
         DEVANAGARI,
         GUJARATI,
         LATIN,
@@ -45,8 +42,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.Model
     {
         private static readonly Dictionary<Language, string[]> langNames = new()
         {
-            { Language.CYRILLIC, new string[] { "cyrl" } },
             { Language.BENGALI, new string[] { "bng2", "beng" } },
+            { Language.CYRILLIC, new string[] { "cyrl" } },
             { Language.DEVANAGARI, new string[] { "dev2", "deva" } },
             { Language.GUJARATI, new string[] { "gjr2", "gujr" } },
             { Language.LATIN, new string[] { "latn" } },

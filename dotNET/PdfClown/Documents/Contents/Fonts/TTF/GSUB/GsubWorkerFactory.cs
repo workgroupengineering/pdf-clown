@@ -16,16 +16,13 @@
  */
 
 using PdfClown.Documents.Contents.Fonts.TTF.Model;
-using System;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
 {
-    /**
-     * Gets a {@link Language} specific instance of a {@link GsubWorker}
-     * 
-     * @author Palash Ray
-     *
-     */
+    /// <summary>
+    /// Gets a {@link Language} specific instance of a {@link GsubWorker}
+    /// @author Palash Ray
+    /// </summary>
     public class GsubWorkerFactory
     {
         public IGsubWorker GetGsubWorker(ICmapLookup cmapLookup, IGsubData gsubData)
@@ -34,6 +31,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             {
                 case Language.BENGALI:
                     return new GsubWorkerForBengali(cmapLookup, gsubData);
+                //case Language.DEVANAGARI:
+                //    return new GsubWorkerForDevanagari(cmapLookup, gsubData);
+                //case Language.GUJARATI:
+                //    return new GsubWorkerForGujarati(cmapLookup, gsubData);
                 case Language.LATIN:
                     return new GsubWorkerForLatin(cmapLookup, gsubData);
                 default:

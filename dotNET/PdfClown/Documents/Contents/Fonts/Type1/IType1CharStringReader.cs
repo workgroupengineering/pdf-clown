@@ -17,23 +17,16 @@
  */
 
 //using org.apache.fontbox.cff.Type1CharString;
-using System.IO;
-
 namespace PdfClown.Documents.Contents.Fonts.Type1
 {
-	/**
-     * Something which can read Type 1 CharStrings, namely Type 1 and CFF fonts.
-     *
-     * @author John Hewson
-     */
-	public interface IType1CharStringReader
-	{
-		/**
-         * Returns the Type 1 CharString for the character with the given name.
-         *
-         * @return Type 1 CharString
-         * @throws IOException if something went wrong
-         */
-		Type1CharString GetType1CharString(string name);
-	}
+    /// <summary>
+    /// Something which can read Type 1 CharStrings, namely Type 1 and CFF fonts.
+    /// @author John Hewson
+    /// </summary>
+    public interface IType1CharStringReader
+    {
+        /// <summary>Returns the Type 1 CharString for the character with the given name.</summary>
+        /// <returns>Type 1 CharString</returns>
+        Type1CharString GetType1CharString(string name);
+    }
 }

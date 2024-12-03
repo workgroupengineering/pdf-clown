@@ -15,16 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using PdfClown.Util;
 using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-    /**
-     * This class represents a CFF operator.
-     * @author Villu Ruusmann
-     */
+    /// <summary>
+    /// This class represents a CFF operator.
+    /// @author Villu Ruusmann
+    /// </summary>
     public sealed class CFFOperator
     {
         private static void Register(int b0, int b1, string name) => Register(CalculateKey(b0, b1), name);
@@ -35,11 +34,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             nameMap[name] = key;
         }
 
-        /**
-		 * Returns the operator corresponding to the given key.
-		 * @param key the given key
-		 * @return the corresponding operator
-		 */
+        /// <summary>Returns the operator corresponding to the given key.</summary>
+        /// <param name="key">the given key</param>
+        /// <returns>the corresponding operator</returns>
         public static string GetOperator(int key)
         {
             return keyMap.TryGetValue(key, out var cFFOperator) ? cFFOperator : null;
@@ -49,22 +46,18 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
 
         private static int CalculateKey(int b0, int b1) => (b0 << 8) | b1;
 
-        /**
-		 * Returns the operator corresponding to the given name.
-		 * @param name the given name
-		 * @return the corresponding operator
-		 */
+        /// <summary>Returns the operator corresponding to the given name.</summary>
+        /// <param name="name">the given name</param>
+        /// <returns>the corresponding operator</returns>
         public static int? GetOperator(string name)
         {
             return nameMap.TryGetValue(name, out var cFFOperator) ? cFFOperator : null;
         }
 
-        /**
-		 * This class is a holder for a key value. It consists of one or two bytes.  
-		 * @author Villu Ruusmann
-		 */
-
-
+        /// <summary>
+        /// @author Villu Ruusmann
+        /// This class is a holder for a key value.It consists of one or two bytes.
+        /// </summary>
         private static Dictionary<int, string> keyMap = new(52);
         private static Dictionary<string, int> nameMap = new(52, StringComparer.Ordinal);
 

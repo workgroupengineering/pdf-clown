@@ -16,35 +16,30 @@
  * limitations under the License.
  */
 using PdfClown.Objects;
-using PdfClown.Util;
 using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-     * This will perform the encoding from a dictionary.
-     *
-     * @author Ben Litchfield
-     */
+    /// <summary>This will perform the encoding from a dictionary.
+    /// @author Ben Litchfield</summary>
     internal class DictionaryEncoding : Encoding
     {
         private readonly PdfDictionary encoding;
         private readonly Encoding baseEncoding;
-        private readonly Dictionary<int, string> differences = new Dictionary<int, string>();
+        private readonly Dictionary<int, string> differences = new();
 
-        /**
-		 * Creates a new DictionaryEncoding for embedding.
-		 *
-		 * @param baseEncoding
-		 * @param differences
-		 */
+		 /// <summary>Creates a new DictionaryEncoding for embedding.</summary>
+         /// <param name="baseEncoding"></param>
+         /// <param name="differences"></param>
         public DictionaryEncoding(PdfName baseEncoding, PdfArray differences)
         {
-            encoding = new PdfDictionary();
-            encoding[PdfName.Name] = PdfName.Encoding;
-            encoding[PdfName.Differences] = differences;
+            encoding = new PdfDictionary
+            {
+                [PdfName.Name] = PdfName.Encoding,
+                [PdfName.Differences] = differences
+            };
             if (baseEncoding != PdfName.StandardEncoding)
             {
                 encoding[PdfName.BaseEncoding] = baseEncoding;
@@ -65,11 +60,8 @@ namespace PdfClown.Documents.Contents.Fonts
             ApplyDifferences();
         }
 
-        /**
-		 * Creates a new DictionaryEncoding for a Type 3 font from a PDF.
-		 *
-		 * @param fontEncoding The Type 3 encoding dictionary.
-		 */
+        /// <summary>Creates a new DictionaryEncoding for a Type 3 font from a PDF.</summary>
+        /// <param name="fontEncoding">The Type 3 encoding dictionary.</param>
         public DictionaryEncoding(PdfDictionary fontEncoding)
         {
             encoding = fontEncoding;
@@ -77,19 +69,20 @@ namespace PdfClown.Documents.Contents.Fonts
             ApplyDifferences();
         }
 
-        /**
-		 * Creates a new DictionaryEncoding from a PDF.
-		 *
-		 * @param fontEncoding The encoding dictionary.
-		 * @param isNonSymbolic True if the font is non-symbolic. False for Type 3 fonts.
-		 * @param builtIn The font's built-in encoding. Null for Type 3 fonts.
-		 */
+        /// <summary>Creates a new DictionaryEncoding from a PDF.</summary>
+        /// <param name="fontEncoding">The encoding dictionary.</param>
+        /// <param name="isNonSymbolic">True if the font is non-symbolic. False for Type 3 fonts.</param>
+        /// <param name="builtIn"></param>
+        /// <exception cref="ArgumentException"></exception>
+        //* @param fontEncoding 
+        //* @param isNonSymbolic 
+        //* @param builtIn The font's built-in encoding. Null for Type 3 fonts.
         public DictionaryEncoding(PdfDictionary fontEncoding, bool isNonSymbolic, Encoding builtIn)
         {
             encoding = fontEncoding;
 
             Encoding baseEncoding = null;
-            var hasBaseEncoding = encoding.Resolve(PdfName.BaseEncoding);
+            var hasBaseEncoding = encoding.Get(PdfName.BaseEncoding);
             if (hasBaseEncoding is PdfName name)
             {
                 baseEncoding = Encoding.Get(name); // null when the name is invalid
@@ -135,7 +128,7 @@ namespace PdfClown.Documents.Contents.Fonts
             int currentIndex = -1;
             for (int i = 0; i < diffArray.Count; i++)
             {
-                var next = diffArray[i];
+                var next = diffArray.Get(i);
                 if (next is IPdfNumber number)
                 {
                     currentIndex = number.IntValue;
@@ -149,17 +142,13 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-		 * Returns the base encoding. Will be null for Type 3 fonts.
-		 */
+        /// <summary>Returns the base encoding. Will be null for Type 3 fonts.</summary>
         public Encoding BaseEncoding
         {
             get => baseEncoding;
         }
 
-        /**
-		 * Returns the Differences array.
-		 */
+        /// <summary>Returns the Differences array.</summary>
         public Dictionary<int, string> Differences
         {
             get => differences;

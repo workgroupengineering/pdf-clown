@@ -16,25 +16,22 @@
  */
 
 using PdfClown.Objects;
-using PdfClown.Util;
 
 using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-     * A font's built-in encoding.
-     *
-     * @author John Hewson
-     */
+    /// <summary>
+    /// A font's built-in encoding.
+    /// @author John Hewson
+    /// </summary>
     internal class BuiltInEncoding : Encoding
     {
-        /**
-         * Constructor.
-         *
-         * @param codeToName the given code to name mapping
-         */
+        public BuiltInEncoding()
+        { }
+
+        /// <param name="codeToName">codeToName the given code to name mapping</param>
         public BuiltInEncoding(Dictionary<int, string> codeToName)
         {
             foreach (var item in codeToName)

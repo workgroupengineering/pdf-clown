@@ -20,321 +20,238 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace PdfClown.Documents.Contents.Fonts.AFM
 {
-
-    /**
-     * This class is used to parse AFM(Adobe Font Metrics) documents.
-     *
-     * @see <A href="http://partners.adobe.com/asn/developer/type/">AFM Documentation</A>
-     *
-     * @author Ben Litchfield
-     * 
-     */
+    /// <summary>
+    /// This class is used to parse AFM(Adobe Font Metrics) documents.
+    /// @see<A href="http://partners.adobe.com/asn/developer/type/">AFM Documentation</A>
+    /// @author Ben Litchfield
+    /// </summary>
     public class AFMParser
     {
-        /**
-         * This is a comment input a AFM file.
-         */
+        /// <summary>This is a comment input a AFM file.</summary>
         public const string COMMENT = "Comment";
-        /**
-         * This is the constant used input the AFM file to start a font metrics item.
-         */
+
+        /// <summary>This is the constant used input the AFM file to start a font metrics item.</summary>
         public const string START_FONT_METRICS = "StartFontMetrics";
-        /**
-         * This is the constant used input the AFM file to end a font metrics item.
-         */
+
+        /// <summary>This is the constant used input the AFM file to end a font metrics item.</summary>
         public const string END_FONT_METRICS = "EndFontMetrics";
-        /**
-         * This is the font name.
-         */
+
+        /// <summary>This is the font name.</summary>
         public const string FONT_NAME = "FontName";
-        /**
-         * This is the full name.
-         */
+
+        /// <summary>This is the full name.</summary>
         public const string FULL_NAME = "FullName";
-        /**
-         * This is the Family name.
-         */
+
+        /// <summary>This is the Family name.</summary>
         public const string FAMILY_NAME = "FamilyName";
-        /**
-         * This is the weight.
-         */
+
+        /// <summary>This is the weight.</summary>
         public const string WEIGHT = "Weight";
-        /**
-         * This is the font bounding box.
-         */
+
+        /// <summary>This is the font bounding box.</summary>
         public const string FONT_BBOX = "FontBBox";
-        /**
-         * This is the version of the font.
-         */
+
+        /// <summary>This is the version of the font.</summary>
         public const string VERSION = "Version";
-        /**
-         * This is the notice.
-         */
+
+        /// <summary>This is the notice.</summary>
         public const string NOTICE = "Notice";
-        /**
-         * This is the encoding scheme.
-         */
+
+        /// <summary>This is the encoding scheme.</summary>
         public const string ENCODING_SCHEME = "EncodingScheme";
-        /**
-         * This is the mapping scheme.
-         */
+
+        /// <summary>This is the mapping scheme.</summary>
         public const string MAPPING_SCHEME = "MappingScheme";
-        /**
-         * This is the escape character.
-         */
+
+        /// <summary>This is the escape character.</summary>
         public const string ESC_CHAR = "EscChar";
-        /**
-         * This is the character set.
-         */
+
+        /// <summary>This is the character set.</summary>
         public const string CHARACTER_SET = "CharacterSet";
-        /**
-         * This is the characters attribute.
-         */
+
+        /// <summary>This is the characters attribute.</summary>
         public const string CHARACTERS = "Characters";
-        /**
-         * This will determine if this is a base font.
-         */
+
+        /// <summary>This will determine if this is a base font.</summary>
         public const string IS_BASE_FONT = "IsBaseFont";
-        /**
-         * This is the V Vector attribute.
-         */
+
+        /// <summary>This is the V Vector attribute.</summary>
         public const string V_VECTOR = "VVector";
-        /**
-         * This will tell if the V is fixed.
-         */
+
+        /// <summary>This will tell if the V is fixed.</summary>
         public const string IS_FIXED_V = "IsFixedV";
-        /**
-         * This is the cap height attribute.
-         */
+
+        /// <summary>This is the cap height attribute.</summary>
         public const string CAP_HEIGHT = "CapHeight";
-        /**
-         * This is the X height.
-         */
+
+        /// <summary>This is the X height.</summary>
         public const string X_HEIGHT = "XHeight";
-        /**
-         * This is ascender attribute.
-         */
+
+        /// <summary>This is ascender attribute.</summary>
         public const string ASCENDER = "Ascender";
-        /**
-         * This is the descender attribute.
-         */
+
+        /// <summary>This is the descender attribute.</summary>
         public const string DESCENDER = "Descender";
 
-        /**
-         * The underline position.
-         */
+        /// <summary>The underline position.</summary>
         public const string UNDERLINE_POSITION = "UnderlinePosition";
-        /**
-         * This is the Underline thickness.
-         */
+
+        /// <summary>This is the Underline thickness.</summary>
         public const string UNDERLINE_THICKNESS = "UnderlineThickness";
-        /**
-         * This is the italic angle.
-         */
+
+        /// <summary>This is the italic angle.</summary>
         public const string ITALIC_ANGLE = "ItalicAngle";
-        /**
-         * This is the char width.
-         */
+
+        /// <summary>This is the char width.</summary>
         public const string CHAR_WIDTH = "CharWidth";
-        /**
-         * This will determine if this is fixed pitch.
-         */
+
+        /// <summary>This will determine if this is fixed pitch.</summary>
         public const string IS_FIXED_PITCH = "IsFixedPitch";
-        /**
-         * This is the start of character metrics.
-         */
+
+        /// <summary>This is the start of character metrics.</summary>
         public const string START_CHAR_METRICS = "StartCharMetrics";
-        /**
-         * This is the end of character metrics.
-         */
+
+        /// <summary>This is the end of character metrics.</summary>
         public const string END_CHAR_METRICS = "EndCharMetrics";
-        /**
-         * The character metrics c value.
-         */
+
+        /// <summary>The character metrics c value.</summary>
         public const string CHARMETRICS_C = "C";
-        /**
-         * The character metrics c value.
-         */
+
+        /// <summary>The character metrics c value.</summary>
         public const string CHARMETRICS_CH = "CH";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_WX = "WX";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_W0X = "W0X";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_W1X = "W1X";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_WY = "WY";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_W0Y = "W0Y";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_W1Y = "W1Y";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_W = "W";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_W0 = "W0";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_W1 = "W1";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_VV = "VV";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_N = "N";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_B = "B";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string CHARMETRICS_L = "L";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string STD_HW = "StdHW";
-        /**
-         * The character metrics value.
-         */
+
+        /// <summary>The character metrics value.</summary>
         public const string STD_VW = "StdVW";
-        /**
-         * This is the start of track kern data.
-         */
+
+        /// <summary>This is the start of track kern data.</summary>
         public const string START_TRACK_KERN = "StartTrackKern";
-        /**
-         * This is the end of track kern data.
-         */
+
+        /// <summary>This is the end of track kern data.</summary>
         public const string END_TRACK_KERN = "EndTrackKern";
-        /**
-         * This is the start of kern data.
-         */
+
+        /// <summary>This is the start of kern data.</summary>
         public const string START_KERN_DATA = "StartKernData";
-        /**
-         * This is the end of kern data.
-         */
+        
+        /// <summary>This is the end of kern data.</summary>
         public const string END_KERN_DATA = "EndKernData";
-        /**
-         * This is the start of kern pairs data.
-         */
+
+        /// <summary>This is the start of kern pairs data.</summary>
         public const string START_KERN_PAIRS = "StartKernPairs";
-        /**
-         * This is the end of kern pairs data.
-         */
+        
+        /// <summary>This is the end of kern pairs data.</summary>
         public const string END_KERN_PAIRS = "EndKernPairs";
-        /**
-         * This is the start of kern pairs data.
-         */
+        
+        /// <summary>This is the start of kern pairs data.</summary>
         public const string START_KERN_PAIRS0 = "StartKernPairs0";
-        /**
-         * This is the start of kern pairs data.
-         */
+        
+        /// <summary>This is the start of kern pairs data.</summary>
         public const string START_KERN_PAIRS1 = "StartKernPairs1";
-        /**
-         * This is the start compisites data section.
-         */
+        
+        /// <summary>This is the start compisites data section.</summary>
         public const string START_COMPOSITES = "StartComposites";
-        /**
-         * This is the end compisites data section.
-         */
+        
+        /// <summary>This is the end compisites data section.</summary>
         public const string END_COMPOSITES = "EndComposites";
-        /**
-         * This is a composite character.
-         */
+        
+        /// <summary>This is a composite character.</summary>
         public const string CC = "CC";
-        /**
-         * This is a composite character part.
-         */
+
+        /// <summary>This is a composite character part.</summary>
         public const string PCC = "PCC";
-        /**
-         * This is a kern pair.
-         */
+        
+        /// <summary>This is a kern pair.</summary>
         public const string KERN_PAIR_KP = "KP";
-        /**
-         * This is a kern pair.
-         */
+
+        /// <summary>This is a kern pair.</summary>
         public const string KERN_PAIR_KPH = "KPH";
-        /**
-         * This is a kern pair.
-         */
+
+        /// <summary>This is a kern pair.</summary>
         public const string KERN_PAIR_KPX = "KPX";
-        /**
-         * This is a kern pair.
-         */
+        
+        /// <summary>This is a kern pair.</summary>
         public const string KERN_PAIR_KPY = "KPY";
 
         private const int BITS_IN_HEX = 16;
 
 
         private readonly Stream input;
+        private static readonly string[] separator = new[] { " ;" };
+        private static readonly char[] spaceSeparator = new char[] { ' ' };
 
-        /**
-         * Constructor.
-         *
-         * @param input The input stream to read the AFM document from.
-         */
+        /// <summary>Constructor.</summary>
+        /// <param name="input">The input stream to read the AFM document from.</param>
         public AFMParser(Stream input)
         {
             this.input = input;
         }
 
-        /**
-         * This will parse the AFM document. The input stream is closed
-         * when the parsing is finished.
-         *
-         * @return the parsed FontMetric
-         * 
-         * @throws IOException If there is an IO error reading the document.
-         */
+        /// <summary>This will parse the AFM document. The input stream is closed
+        /// when the parsing is finished.</summary>
+        /// <returns>the parsed FontMetric</returns>
         public FontMetrics Parse()
         {
             return ParseFontMetric(false);
         }
 
-        /**
-         * This will parse the AFM document. The input stream is closed
-         * when the parsing is finished.
-         *
-         * @param reducedDataset parse a reduced subset of data if set to true
-         * @return the parsed FontMetric
-         * 
-         * @throws IOException If there is an IO error reading the document.
-         */
+        /// <summary>This will parse the AFM document. The input stream is closed
+        /// when the parsing is finished.</summary>
+        /// <param name="reducedDataset">parse a reduced subset of data if set to true</param>
+        /// <returns>the parsed FontMetric</returns>
         public FontMetrics Parse(bool reducedDataset)
         {
             return ParseFontMetric(reducedDataset);
         }
 
-        /**
-         * This will parse a font metrics item.
-         *
-         * @return The parse font metrics item.
-         *
-         * @throws IOException If there is an error reading the AFM file.
-         */
+        /// <summary>This will parse a font metrics item.</summary>
+        /// <param name="reducedDataset">parse a reduced subset of data if set to true</param>
+        /// <returns>The parse font metrics item.</returns>
+        /// <exception cref="IOException">If there is an error reading the AFM file.</exception>
         private FontMetrics ParseFontMetric(bool reducedDataset)
         {
             var fontMetrics = new FontMetrics();
@@ -363,11 +280,13 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
                         fontMetrics.Weight = ReadLine();
                         break;
                     case FONT_BBOX:
-                        var bBox = new SKRect();
-                        bBox.Left = Readfloat();
-                        bBox.Top = Readfloat();
-                        bBox.Right = Readfloat();
-                        bBox.Bottom = Readfloat();
+                        var bBox = new SKRect
+                        {
+                            Left = Readfloat(),
+                            Top = Readfloat(),
+                            Right = Readfloat(),
+                            Bottom = Readfloat()
+                        };
                         fontMetrics.FontBBox = bBox;
                         break;
                     case VERSION:
@@ -495,13 +414,9 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             return charMetricsRead;
         }
 
-        /**
-         * This will parse the kern data.
-         *
-         * @param fontMetrics The metrics class to put the parsed data into.
-         *
-         * @throws IOException If there is an error parsing the data.
-         */
+        /// <summary>This will parse the kern data.</summary>
+        /// <param name="fontMetrics">The metrics class to put the parsed data into.</param>
+        /// <exception cref="IOException">If there is an error parsing the data.</exception>
         private void ParseKernData(FontMetrics fontMetrics)
         {
             string nextCommand;
@@ -569,13 +484,9 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             ReadCommand(END_KERN_PAIRS);
         }
 
-        /**
-         * This will parse a kern pair from the data stream.
-         *
-         * @return The kern pair that was parsed from the stream.
-         *
-         * @throws IOException If there is an error reading from the stream.
-         */
+        /// <summary>This will parse a kern pair from the data stream.</summary>
+        /// <returns>The kern pair that was parsed from the stream.</returns>
+        /// <exception cref="IOException">If there is an error reading from the stream.</exception>
         private KernPair ParseKernPair()
         {
             string cmd = ReadString();
@@ -618,15 +529,10 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             }
         }
 
-        /**
-         * This will convert and angle bracket hex string to a string.
-         *
-         * @param hexstring An angle bracket string.
-         *
-         * @return The bytes of the hex string.
-         *
-         * @throws IOException If the string is input an invalid format.
-         */
+        /// <summary>This will convert and angle bracket hex string to a string.</summary>
+        /// <param name="hexstring">An angle bracket string.</param>
+        /// <returns>The bytes of the hex string.</returns>
+        /// <exception cref="IOException">If the string is input an invalid format.</exception>
         private string HexTostring(string hexstring)
         {
             if (hexstring.Length < 2)
@@ -656,17 +562,13 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             return PdfClown.Tokens.BaseEncoding.Pdf.Decode(data);
         }
 
-        /**
-         * This will parse a composite part from the stream.
-         *
-         * @return The composite.
-         *
-         * @throws IOException If there is an error parsing the composite.
-         */
+        /// <summary>This will parse a composite part from the stream.</summary>
+        /// <returns>The composite.</returns>
+        /// <exception cref="IOException">If there is an error parsing the composite.</exception>
         private Composite ParseComposite()
         {
             string partData = ReadLine();
-            var tokenizer = partData.Split(new[] { " ;" }, StringSplitOptions.None);
+            var tokenizer = partData.Split(separator, StringSplitOptions.None);
 
             int t = 0;
             string cc = tokenizer[t++];
@@ -701,18 +603,14 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             return composite;
         }
 
-        /**
-         * This will parse a single CharMetric object from the stream.
-         *
-         * @return The next char metric input the stream.
-         *
-         * @throws IOException If there is an error reading from the stream.
-         */
+        /// <summary>This will parse a single CharMetric object from the stream.</summary>
+        /// <returns>The next char metric input the stream.</returns>
+        /// <exception cref="IOException">If there is an error reading from the stream.</exception>
         private CharMetric ParseCharMetric()
         {
             var charMetric = new CharMetric();
             string metrics = ReadLine();
-            var metricsTokenizer = metrics.Split(new char[] { ' ' });
+            var metricsTokenizer = metrics.Split(spaceSeparator);
             for (int i = 0; i < metricsTokenizer.Length;)
             {
                 string nextCommand = metricsTokenizer[i++];
@@ -813,15 +711,12 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             return charMetric;
         }
 
-
-
-        /**
-         * This is used to verify that a semicolon is the next token input the stream.
-         *
-         * @param tokenizer The tokenizer to read from.
-         *
-         * @throws IOException If the semicolon is missing.
-         */
+        /// <summary>
+        /// This is used to verify that a semicolon is the next token input the stream.
+        /// </summary>
+        /// <param name="tokenizer">The tokenizer to read from.</param>
+        /// <param name="i"></param>
+        /// <exception cref="IOException">If the semicolon is missing.</exception>
         private void VerifySemicolon(string[] tokenizer, ref int i)
         {
             if (i < tokenizer.Length)
@@ -838,21 +733,15 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             }
         }
 
-        /**
-         * This will read a bool from the stream.
-         *
-         * @return The bool input the stream.
-         */
+        /// <summary>This will read a bool from the stream.</summary>
+        /// <returns>The bool input the stream.</returns>
         private bool ReadBoolean()
         {
             return bool.Parse(ReadString());
         }
 
-        /**
-         * This will read an integer from the stream.
-         *
-         * @return The integer input the stream.
-         */
+        /// <summary>This will read an integer from the stream.</summary>
+        /// <returns>The integer input the stream.</returns>
         private int ReadInt()
         {
             return ParseInt(ReadString());
@@ -875,11 +764,8 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             }
         }
 
-        /**
-         * This will read a float from the stream.
-         *
-         * @return The float input the stream.
-         */
+        /// <summary>This will read a float from the stream.</summary>
+        /// <returns>The float input the stream.</returns>
         private float Readfloat()
         {
             return ParseFloat(ReadString());
@@ -897,11 +783,8 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             }
         }
 
-        /**
-         * This will read until the end of a line.
-         *
-         * @return The string that is read.
-         */
+        /// <summary>This will read until the end of a line.</summary>
+        /// <returns>The string that is read.</returns>
         private string ReadLine()
         {
             //First skip the whitespace
@@ -924,13 +807,10 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             return buf.ToString();
         }
 
-        /**
-         * This will read a string from the input stream and stop at any whitespace.
-         *
-         * @return The string read from the stream.
-         *
-         * @throws IOException If an IO error occurs when reading from the stream.
-         */
+        /// <summary>
+        /// This will read a string from the input stream and stop at any whitespace.
+        /// </summary>
+        /// <returns>The string read from the stream.</returns>
         private string ReadString()
         {
             //First skip the whitespace
@@ -962,29 +842,19 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             }
         }
 
-
-
-        /**
-         * This will determine if the byte is a whitespace character or not.
-         *
-         * @param character The character to test for whitespace.
-         *
-         * @return true If the character is whitespace as defined by the AFM spec.
-         */
-        private bool IsEOL(int character)
+        /// <summary>This will determine if the byte is a whitespace character or not.</summary>
+        /// <param name="character">The character to test for whitespace.</param>
+        /// <returns>true If the character is whitespace as defined by the AFM spec.</returns>
+        private static bool IsEOL(int character)
         {
             return character == 0x0D ||
                    character == 0x0A;
         }
 
-        /**
-         * This will determine if the byte is a whitespace character or not.
-         *
-         * @param character The character to test for whitespace.
-         *
-         * @return true If the character is whitespace as defined by the AFM spec.
-         */
-        private bool IsWhitespace(int character)
+        /// <summary>This will determine if the byte is a whitespace character or not.</summary>
+        /// <param name="character">The character to test for whitespace.</param>
+        /// <returns>true If the character is whitespace as defined by the AFM spec.</returns>
+        private static bool IsWhitespace(int character)
         {
             return character == ' ' ||
                    character == '\t' ||

@@ -24,8 +24,6 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace PdfClown.Bytes
@@ -52,41 +50,27 @@ namespace PdfClown.Bytes
         }
         //TODO Check remove copy{ Array.Copy(data, this.Data = new byte[data.Length], data.Length); }
 
-        public int CompareTo(ByteKey other)
-        {
-            return Data.CompareTo(other.Data);
-        }
+        public int CompareTo(ByteKey other) => Data.CompareTo(other.Data);
 
-        public override bool Equals(object obj)
-        {
-            return obj is ByteKey other
+        public override bool Equals(object obj) => obj is ByteKey other
               && Equals(other);
-        }
 
-        public bool Equals(ByteKey other)
-        {
-            return Data.Equals(other.Data);
-        }
+        public bool Equals(ByteKey other) => Data.Equals(other.Data);
 
-        public override int GetHashCode()
-        {
-            return Data.GetHashCode();
-        }
+        public override int GetHashCode() => Data.GetHashCode();
 
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder("[");
+            var builder = new StringBuilder('[');
+            var bytes = ToArray();
+            foreach (byte datum in bytes)
             {
-                var bytes = ToArray();
-                foreach (byte datum in bytes)
-                {
-                    if (builder.Length > 1)
-                    { builder.Append(","); }
+                if (builder.Length > 1)
+                { builder.Append(','); }
 
-                    builder.Append(datum & 0xFF);
-                }
-                builder.Append("]");
+                builder.Append(datum & 0xFF);
             }
+            builder.Append(']');
             return builder.ToString();
         }
 

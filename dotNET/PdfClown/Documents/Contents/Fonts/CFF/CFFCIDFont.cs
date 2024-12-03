@@ -23,7 +23,6 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-
     /// <summary>
     /// A Type 0 CIDFont represented in a CFF file.Thread safe.
     /// @author Villu Ruusmann
@@ -42,65 +41,36 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         private readonly Dictionary<int, CIDKeyedType2CharString> charStringCache = new Dictionary<int, CIDKeyedType2CharString>();
         private Type2CharStringParser charStringParser = null;
 
-        /**
-		 * Returns the registry value.
-		 * * @return the registry
-		 */
         public string Registry
         {
             get => registry;
             set => registry = value;
         }
 
-        /**
-		 * Returns the ordering value.
-		 *
-		 * @return the ordering
-		 */
         public string Ordering
         {
             get => ordering;
             set => this.ordering = value;
         }
 
-        /**
-		 * Returns the supplement value.
-		 *
-		 * @return the supplement
-		 */
         public int Supplement
         {
             get => supplement;
             set => supplement = value;
         }
 
-        /**
-		 * Returns the font dictionaries.
-		 *
-		 * @return the fontDict
-		 */
         public virtual List<Dictionary<string, object>> FontDicts
         {
             get => fontDictionaries;
             set => fontDictionaries = value;
         }
 
-        /**
-		 * Returns the private dictionary.
-		 *
-		 * @return the privDict
-		 */
         public virtual List<Dictionary<string, object>> PrivDicts
         {
             get => privateDictionaries;
             set => privateDictionaries = value;
         }
 
-        /**
-		 * Returns the fdSelect value.
-		 *
-		 * @return the fdSelect
-		 */
         public virtual FDSelect FdSelect
         {
             get => fdSelect;
@@ -116,33 +86,24 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 : privateDictionaries[fdArrayIndex];
         }
 
-        /**
-		 * Returns the defaultWidthX for the given GID.
-		 *
-		 * @param gid GID
-		 */
+        /// <summary>Returns the defaultWidthX for the given GID.</summary>
+        /// <param name="gid">GID</param>
         protected virtual int GetDefaultWidthX(int gid)
         {
             var privDict = GetPrivateDictionary(gid);
             return privDict == null ? 1000 : privDict.TryGetValue("defaultWidthX", out var defaultWidthX) ? (int)(float)defaultWidthX : 1000;
         }
 
-        /**
-		 * Returns the nominalWidthX for the given GID.
-		 *
-		 * @param gid GID
-		 */
+        /// <summary>Returns the nominalWidthX for the given GID.</summary>
+        /// <param name="gid">GID</param>
         protected virtual int GetNominalWidthX(int gid)
         {
             var privDict = GetPrivateDictionary(gid);
             return privDict == null ? 0 : privDict.TryGetValue("nominalWidthX", out var nominalWidthX) ? (int)(float)nominalWidthX : 0;
         }
 
-        /**
-		 * Returns the LocalSubrIndex for the given GID.
-		 *
-		 * @param gid GID
-		 */
+        /// <summary>Returns the LocalSubrIndex for the given GID.</summary>
+        /// <param name="gid">GID</param>
         private Memory<byte>[] GetLocalSubrIndex(int gid)
         {
             var privDict = GetPrivateDictionary(gid);
@@ -166,7 +127,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 var bytes = gid < charStrings.Length
                     ? charStrings[gid]
                     : charStrings[0];// .notdef
-                var type2seq = Parser.Parse(bytes, globalSubrIndex, GetLocalSubrIndex(gid), cid.ToString());
+                var type2seq = Parser.Parse(bytes, globalSubrIndex, GetLocalSubrIndex(gid));
                 type2 = new CIDKeyedType2CharString(this, Name, cid, gid, type2seq, GetDefaultWidthX(gid), GetNominalWidthX(gid));
                 charStringCache[cid] = type2;
             }
@@ -196,9 +157,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return cid != 0;
         }
 
-        /**
-         * Parses a CID selector of the form \ddddd.
-         */
+        /// <summary>Parses a CID selector of the form \ddddd.</summary>
+        /// <param name="selector"></param>
+        /// <exception cref="ArgumentException"></exception>
         private int SelectorToCID(string selector)
         {
             if (!selector.StartsWith("\\"))

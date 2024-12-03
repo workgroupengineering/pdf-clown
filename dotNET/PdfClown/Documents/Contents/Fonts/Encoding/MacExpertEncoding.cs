@@ -16,16 +16,12 @@
  */
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-     * This is an interface to a text encoder.
-     */
+    /// <summary>This is an interface to a text encoder.</summary>
     internal class MacExpertEncoding : Encoding
     {
-        public static readonly MacExpertEncoding Instance = new MacExpertEncoding();
+        public static readonly MacExpertEncoding Instance = new();
         public MacExpertEncoding()
         {
             Encodings[PdfName.MacExpertEncoding] = this;

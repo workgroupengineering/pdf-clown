@@ -19,21 +19,19 @@ using PdfClown.Documents.Contents.Fonts.AFM;
 using System.Collections.Generic;
 using System.IO;
 using System;
-using System.Linq.Expressions;
 using PdfClown.Bytes;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-     * The "Standard 14" PDF fonts, also known as the "base 14" fonts.
-     * There are 14 font files, but Acrobat uses additional names for compatibility, e.g. Arial.
-     *
-     * @author John Hewson
-     */
+    /// <summary>
+    /// The "Standard 14" PDF fonts, also known as the "base 14" fonts.
+    /// There are 14 font files, but Acrobat uses additional names for compatibility, e.g.Arial.
+    /// @author John Hewson
+    /// </summary>
     public sealed class Standard14Fonts
     {
-        public static readonly Dictionary<FontName, string> FontNames = new()
+        public static readonly Dictionary<FontName, string> FontNames = new(14)
         {
             { FontName.TimesRoman, "Times-Roman" },
             { FontName.TimesBold, "Times-Bold"},
@@ -50,29 +48,29 @@ namespace PdfClown.Documents.Contents.Fonts
             { FontName.Symbol, "Symbol"},
             { FontName.ZapfDingbats,"ZapfDingbats" }
         };
-        /**
-         * Contains all base names and alias names for the known fonts.
-         * For base fonts both the key and the value will be the base name.
-         * For aliases, the key is an alias, and the value is a FontName.
-         * We want a single lookup in the map to find the font both by a base name or an alias.
-         */
+
+        /// <summary>
+        /// Contains all base names and alias names for the known fonts.
+        /// For base fonts both the key and the value will be the base name.
+        /// For aliases, the key is an alias, and the value is a FontName.
+        /// We want a single lookup in the map to find the font both by a base name or an alias.
+        /// </summary>
         private static readonly Dictionary<string, FontName> ALIASES = new(38);
 
-        /**
-         * Contains the font metrics for the standard 14 fonts. 
-         * The key is the font name, value is a FontMetrics instance.
-         * Metrics are loaded into this map on demand, only if needed.
-         * 
-         * @see #getAFM
-         */
-        private static readonly Dictionary<FontName, FontMetrics> FONTS = new();
+        /// <summary>
+        /// Contains the font metrics for the standard 14 fonts.
+        /// The key is the font name, value is a FontMetrics instance.
+        /// Metrics are loaded into this map on demand, only if needed.
+        /// @see #getAFM
+        /// </summary>
+        private static readonly Dictionary<FontName, FontMetrics> FONTS = new(14);
 
-        /**
-         * Contains the mapped fonts for the standard 14 fonts. 
-         * The key is the font name, value is a FontBoxFont instance.
-         * FontBoxFont are loaded into this map on demand, only if needed.
-         */
-        private static readonly Dictionary<FontName, BaseFont> GENERIC_FONTS = new();
+        /// <summary>
+        /// Contains the mapped fonts for the standard 14 fonts. 
+        /// The key is the font name, value is a FontBoxFont instance.
+        /// FontBoxFont are loaded into this map on demand, only if needed.
+        /// </summary>
+        private static readonly Dictionary<FontName, BaseFont> GENERIC_FONTS = new(14);
 
         static Standard14Fonts()
         {
@@ -118,13 +116,13 @@ namespace PdfClown.Documents.Contents.Fonts
         {
         }
 
-        /**
-         * Loads the metrics for the base font specified by name. Metric file must exist in the pdfbox jar under
-         * /org/apache/pdfbox/resources/afm/
-         *
-         * @param fontName one of the standard 14 font names for which to load the metrics.
-         * @throws IOException if no metrics exist for that font.
-         */
+        /// <summary>
+        /// Loads the metrics for the base font specified by name.Metric file must exist in the pdfbox jar under
+        /// /org/apache/pdfbox/resources/afm/
+        /// </summary>
+        /// <param name="fontName">one of the standard 14 font names for which to load the metrics.</param>
+        /// <returns></returns>
+        /// <exception cref="IOException">if no metrics exist for that font.</exception>
         private static FontMetrics LoadMetrics(FontName fontName)
         {
             string resourceName = $"fonts.afm.{FontNames[fontName]}";
@@ -139,26 +137,24 @@ namespace PdfClown.Documents.Contents.Fonts
             return FONTS[fontName] = parser.Parse(true);
         }
 
-        /**
-         * Adds an alias name for a standard font to the map of known aliases to the map of aliases (alias as key, standard
-         * name as value). We want a single lookup in tbaseNamehe map to find the font both by a base name or an alias.
-         *
-         * @param alias an alias for the font
-         * @param baseName  the font name of the Standard 14 font
-         */
+        /// <summary>
+        /// Adds an alias name for a standard font to the map of known aliases to the map of aliases (alias as key, standard
+        /// name as value). We want a single lookup in tbaseNamehe map to find the font both by a base name or an alias.
+        /// </summary>
+        /// <param name="alias">an alias for the font</param>
+        /// <param name="baseName">the font name of the Standard 14 font</param>
         private static void MapName(string alias, FontName baseName)
         {
             ALIASES[alias] = baseName;
         }
 
-        /**
-         * Returns the metrics for font specified by fontName. Loads the font metrics if not already
-         * loaded.
-         *
-         * @param fontName name of font; either a base name or alias
-         * @return the font metrics or null if the name is not one of the known names
-         * @throws IllegalArgumentException if no metrics exist for that font.
-         */
+        /// <summary>
+        /// Returns the metrics for font specified by fontName. Loads the font metrics if not already
+        /// loaded.
+        /// </summary>
+        /// <param name="fontName">name of font; either a base name or alias</param>
+        /// <returns>the font metrics or null if the name is not one of the known names</returns>
+        /// <exception cref="ArgumentException">if no metrics exist for that font.</exception>
         public static FontMetrics GetAFM(string fontName)
         {
             if (fontName == null)
@@ -189,33 +185,28 @@ namespace PdfClown.Documents.Contents.Fonts
             return metrix;
         }
 
-        /**
-         * Returns true if the given font name is one of the known names, including alias.
-         *
-         * @param fontName the name of font, either a base name or alias
-         * @return true if the name is one of the known names
-         */
+        /// <summary>
+        /// Returns true if the given font name is one of the known names, including alias.
+        /// </summary>
+        /// <param name="fontName">the name of font, either a base name or alias</param>
+        /// <returns>true if the name is one of the known names</returns>
         public static bool ContainsName(string fontName)
         {
             return ALIASES.ContainsKey(fontName);
         }
 
-        /**
-         * Returns the set of known font names, including aliases.
-         * 
-         * @return the set of known font names
-         */
+        /// <summary>Returns the set of known font names, including aliases.</summary>
+        /// <returns>the set of known font names</returns>
         public static IReadOnlyCollection<string> GetNames()
         {
             return ALIASES.Keys;
         }
 
-        /**
-         * Returns the base name of the font which the given font name maps to.
-         *
-         * @param fontName name of font, either a base name or an alias
-         * @return the base name or null if this is not one of the known names
-         */
+        /// <summary>
+        /// Returns the base name of the font which the given font name maps to.
+        /// </summary>
+        /// <param name="fontName">name of font, either a base name or an alias</param>
+        /// <returns>the base name or null if this is not one of the known names</returns>
         public static FontName GetMappedFontName(string fontName)
         {
             return ALIASES.TryGetValue(fontName, out var font) ? font : (FontName)(-1);
@@ -226,12 +217,11 @@ namespace PdfClown.Documents.Contents.Fonts
             return ALIASES.TryGetValue(fontName, out var font) ? FontNames[font] : null;
         }
 
-        /**
-         * Returns the mapped font for the specified Standard 14 font. The mapped font is cached.
-         *
-         * @param baseName name of the standard 14 font
-         * @return the mapped font
-         */
+        /// <summary>
+        /// Returns the mapped font for the specified Standard 14 font. The mapped font is cached.
+        /// </summary>
+        /// <param name="baseName">name of the standard 14 font</param>
+        /// <returns>the mapped font</returns>
         private static BaseFont GetMappedFont(FontName baseName)
         {
             if (!GENERIC_FONTS.TryGetValue(baseName, out var box))
@@ -248,16 +238,12 @@ namespace PdfClown.Documents.Contents.Fonts
             return box;
         }
 
-        /**
-         * Returns the path for the character with the given name for the specified Standard 14 font. The mapped font is
-         * cached. The path may differ in different environments as it depends on the mapped font.
-         *
-         * @param baseName name of the standard 14 font
-         * @param glyphName name of glyph
-         * @return the mapped font
-         * 
-         * @throws IOException if the data could not be read
-         */
+        /// <summary>Returns the path for the character with the given name for 
+        /// the specified Standard 14 font. The mapped font is cached. The path 
+        /// may differ in different environments as it depends on the mapped font.</summary>
+        /// <param name="baseName">name of the standard 14 font</param>
+        /// <param name="glyphName">name of glyph</param>
+        /// <returns>the mapped font</returns>
         public static SKPath GetGlyphPath(FontName baseName, string glyphName)
         {
             // copied and adapted from PDType1Font.getNameInFont(string)
@@ -271,7 +257,7 @@ namespace PdfClown.Documents.Contents.Fonts
                         return mappedFont.GetPath(glyphName);
                     }
                     var fonName = FontNames[baseName];
-                    var unicodes = getGlyphList(fonName).ToUnicode(glyphName);
+                    var unicodes = GetGlyphList(fonName).ToUnicode(glyphName);
                     if (unicodes != null && unicodes > 255)
                     {
                         string uniName = unicodes.Value.GetUniNameOfCodePoint();
@@ -296,32 +282,11 @@ namespace PdfClown.Documents.Contents.Fonts
             return null;
         }
 
-        private static GlyphMapping getGlyphList(string baseName)
+        private static GlyphMapping GetGlyphList(string baseName)
         {
             return FontNames[FontName.ZapfDingbats] == baseName
                 ? GlyphMapping.ZapfDingbats
                 : GlyphMapping.Default;
         }
-    }
-    /**
-     * Enum for the names of the 14 standard fonts.
-     */
-    public enum FontName
-    {
-        TimesRoman,
-        TimesBold,
-        TimesItalic,
-        TimesBoldItalic,
-        Helvetica,
-        HelveticaBold,
-        HelveticaOblique,
-        HelveticaBoldOblique,
-        Courier,
-        CourierBold,
-        CourierOblique,
-        CourierBoldOblique,
-        Symbol,
-        ZapfDingbats
-
     }
 }

@@ -14,26 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System.IO;
 using System.Diagnostics;
 using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
-    /**
-     * A 'kern' table in a true type font.
-     *
-     * @author Glenn Adams
-     */
+    /// <summary>
+    /// A 'kern' table in a true type font.
+    /// @author Glenn Adams
+    /// </summary>
     public class KerningTable : TTFTable
     {
-
-        //private static readonly Log LOG = LogFactory.getLog(KerningTable.class);
-
-        /**
-         * Tag to identify this table.
-         */
+        /// <summary>Tag to identify this table.</summary>
         public const string TAG = "kern";
 
         private KerningSubtable[] subtables;
@@ -41,13 +33,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public KerningTable()
         { }
 
-        /**
-         * This will read the required data from the stream.
-         *
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             int version = data.ReadUInt16();
@@ -81,22 +69,18 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             initialized = true;
         }
 
-        /**
-         * Obtain first subtable that supports non-cross-stream horizontal kerning.
-         *
-         * @return first matching subtable or null if none found
-         */
+        /// <summary>Obtain first subtable that supports non-cross-stream horizontal kerning.</summary>
+        /// <returns>first matching subtable or null if none found</returns>
         public KerningSubtable GetHorizontalKerningSubtable()
         {
             return GetHorizontalKerningSubtable(false);
         }
 
-        /**
-         * Obtain first subtable that supports horizontal kerning with specified cross stream.
-         *
-         * @param cross true if requesting cross stream horizontal kerning
-         * @return first matching subtable or null if none found
-         */
+        /// <summary>
+        /// Obtain first subtable that supports horizontal kerning with specified cross stream.
+        /// </summary>
+        /// <param name="cross">cross true if requesting cross stream horizontal kerning</param>
+        /// <returns>first matching subtable or null if none found</returns>
         public KerningSubtable GetHorizontalKerningSubtable(bool cross)
         {
             if (subtables != null)

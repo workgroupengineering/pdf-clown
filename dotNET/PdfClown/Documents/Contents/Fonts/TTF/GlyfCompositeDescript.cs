@@ -16,50 +16,37 @@
    limitations under the License.
 
  */
+
+using System.IO;
+using System.Collections.Generic;
+using System.Diagnostics;
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
-    using System.IO;
-
-
-    using System.Collections.Generic;
-
-
-    using System.Diagnostics;
-    using PdfClown.Bytes;
-
-
-    /**
-     * Glyph description for composite glyphs. Composite glyphs are made up of one
-     * or more simple glyphs, usually with some sort of transformation applied to
-     * each.
-     *
-     * This class is based on code from Apache Batik a subproject of Apache
-     * XMLGraphics. see http://xmlgraphics.apache.org/batik/ for further details.
-     */
+    /// <summary>
+    /// Glyph description for composite glyphs. Composite glyphs are made up of one
+    /// or more simple glyphs, usually with some sort of transformation applied to
+    /// each.
+    /// This class is based on code from Apache Batik a subproject of Apache
+    /// XMLGraphics. see http://xmlgraphics.apache.org/batik/ for further details.
+    /// </summary>
     public class GlyfCompositeDescript : GlyfDescript
     {
-        /**
-         * Log instance.
-         */
-        //private static readonly Log LOG = LogFactory.getLog(GlyfCompositeDescript.class);
 
-        private readonly List<GlyfCompositeComp> components = new List<GlyfCompositeComp>();
-        private readonly Dictionary<int, IGlyphDescription> descriptions = new Dictionary<int, IGlyphDescription>();
+        private readonly List<GlyfCompositeComp> components = new();
+        private readonly Dictionary<int, IGlyphDescription> descriptions = new();
         private GlyphTable glyphTable = null;
         private bool beingResolved = false;
         private bool resolved = false;
         private int pointCount = -1;
         private int contourCount = -1;
 
-        /**
-         * Constructor.
-         * 
-         * @param bais the stream to be read
-         * @param glyphTable the Glyphtable containing all glyphs
-         * @ is thrown if something went wrong
-         */
-        public GlyfCompositeDescript(IInputStream bais, GlyphTable glyphTable)
+        /// <summary>Constructor.</summary>
+        /// <param name="bais">the stream to be read</param>
+        /// <param name="glyphTable">the Glyphtable containing all glyphs</param>
+        /// <param name="level">current level</param>
+        public GlyfCompositeDescript(IInputStream bais, GlyphTable glyphTable, int level)
              : base((short)-1)
         {
             this.glyphTable = glyphTable;
@@ -78,12 +65,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             {
                 ReadInstructions(bais, (bais.ReadUInt16()));
             }
-            InitDescriptions();
+            InitDescriptions(level);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override void Resolve()
         {
             if (resolved)
@@ -116,9 +100,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             beingResolved = false;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override int GetEndPtOfContours(int i)
         {
             GlyfCompositeComp c = GetCompositeCompEndPt(i);
@@ -130,9 +111,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return 0;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override byte GetFlags(int i)
         {
             GlyfCompositeComp c = GetCompositeComp(i);
@@ -144,9 +122,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return 0;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override short GetXCoordinate(int i)
         {
             GlyfCompositeComp c = GetCompositeComp(i);
@@ -160,9 +135,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return 0;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override short GetYCoordinate(int i)
         {
             GlyfCompositeComp c = GetCompositeComp(i);
@@ -176,17 +148,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return 0;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override bool IsComposite
         {
             get => true;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override int PointCount
         {
             get
@@ -212,9 +178,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override int ContourCount
         {
             get
@@ -240,21 +203,16 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Get number of components.
-         * 
-         * @return the number of components
-         */
+        /// <summary>Get number of components.</summary>
         public int ComponentCount
         {
             get => components.Count;
         }
 
-        /**
-     * Gets a view to the composite components.
-     * 
-     * @return unmodifiable list of this composite glyph's {@linkplain GlyfCompositeComp components}
-     */
+        /// <summary>
+        /// Gets a view to the composite components.
+        /// unmodifiable list of this composite glyph's <see cref="GlyfCompositeComp"> components}
+        /// </summary>
         public List<GlyfCompositeComp> Components
         {
             get => components;
@@ -289,14 +247,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return null;
         }
 
-        private void InitDescriptions()
+        private void InitDescriptions(int level)
         {
             foreach (GlyfCompositeComp component in components)
             {
                 try
                 {
                     int index = component.GlyphIndex;
-                    GlyphData glyph = glyphTable.GetGlyph(index);
+                    var glyph = glyphTable.GetGlyph(index, level);
                     if (glyph != null)
                     {
                         descriptions[index] = glyph.Description;

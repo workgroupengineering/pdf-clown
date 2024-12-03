@@ -25,13 +25,9 @@
 
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>Adobe standard Latin-text encoding [PDF:1.6:D].</summary>
-    */
+    /// <summary>Adobe standard Latin-text encoding [PDF:1.6:D].</summary>
     internal sealed class StandardEncoding : Encoding
     {
         public static readonly StandardEncoding Instance = new StandardEncoding();

@@ -19,19 +19,17 @@
 
 using PdfClown.Bytes;
 using PdfClown.Tokens;
-using PdfClown.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
 {
-    /**
-	 * Parser for a pfb-file.
-	 *
-	 * @author Ben Litchfield
-	 * @author Michael Niedermair
-	 */
+    /// <summary>
+    /// Parser for a pfb-file.
+    /// @author Ben Litchfield
+    /// @author Michael Niedermair
+    /// </summary>
     public class PfbParser
     {
         /// the pdf header length.
@@ -61,40 +59,30 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         // 00000000 80 01 8b 15  00 00 25 21  50 53 2d 41  64 6f 62 65  
         //          ......%!PS-Adobe
 
-        /// Create a new object.
-        /// @param filename  the file name
-        /// @throws IOException if an IO-error occurs.
+        /// <summary>Create a new object.</summary>
+        /// <param name="filename">the file name</param>
         public PfbParser(string filename)
         {
             using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             ParsePfb(new ByteStream(fileStream));
         }
 
-        /**
-		 * Create a new object.
-		 * @param in   The input.
-		 * @throws IOException if an IO-error occurs.
-		 */
+        /// <summary>Create a new object.</summary>
+        /// <param name="input">The input.</param>
         public PfbParser(IInputStream input)
         {
             ParsePfb(input);
         }
 
-        /**
-		 * Create a new object.
-		 * @param bytes   The input.
-		 * @throws IOException if an IO-error occurs.
-		 */
+        /// <summary>Create a new object.</summary>
+        /// <param name="bytes">The input.</param>
         public PfbParser(Memory<byte> bytes)
         {
             ParsePfb(bytes);
         }
 
-        /**
-		 * Parse the pfb-array.
-		 * @param pfb   The pfb-Array
-		 * @throws IOException in an IO-error occurs.
-		 */
+        /// <summary>Parse the pfb-array.</summary>
+        /// <param name="pfb">The pfb-Array</param>
         private void ParsePfb(Memory<byte> pfb) => ParsePfb(new ByteStream(pfb));
 
         private void ParsePfb(IInputStream input)
@@ -186,58 +174,34 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 lengths[2] = cleartomarkSegment.Length;
             }
 
-            
+
         }
 
-        /**
-		 * Read the pdf input.
-		 * @param in    The input.
-		 * @return Returns the pdf-array.
-		 * @throws IOException if an IO-error occurs.
-		 */
+        /// <summary>Read the pdf input.</summary>
+        /// <param name="input">The input.</param>
+        /// <returns>the pdf-array.</returns>
         private Memory<byte> ReadPfbInput(ByteStream input) => input.AsMemory();
 
-        /**
-		 * Returns the lengths.
-		 * @return Returns the lengths.
-		 */
         public int[] Lengths => lengths;
 
-        /**
-		 * Returns the pfbdata.
-		 * @return Returns the pfbdata.
-		 */
         public Memory<byte> Pfbdata => pfbdata;
 
-        /**
-		 * Returns the size of the pfb-data.
-		 * @return Returns the size of the pfb-data.
-		 */
+        /// <summary>The size of the pfb-data.</summary>
         public int Size => pfbdata.Length;
 
-        /**
-		 * Returns the pfb data as stream.
-		 * @return Returns the pfb data as stream.
-		 */
-        public Bytes.ByteStream GetInputStream()
+        /// <returns>Returns the pfb data as stream.</returns>
+        public ByteStream GetInputStream()
         {
-            return new Bytes.ByteStream(pfbdata);
+            return new ByteStream(pfbdata);
         }
 
-
-        /**
-		 * Returns the first segment
-		 * @return first segment bytes
-		 */
+        /// <summary>the first segment</summary>
         public Memory<byte> GetSegment1()
         {
             return pfbdata.Slice(0, lengths[0]);
         }
 
-        /**
-		 * Returns the second segment
-		 * @return second segment bytes
-		 */
+        /// <summary>the second segment</summary>
         public Memory<byte> GetSegment2()
         {
             return pfbdata.Slice(lengths[0], lengths[1]);

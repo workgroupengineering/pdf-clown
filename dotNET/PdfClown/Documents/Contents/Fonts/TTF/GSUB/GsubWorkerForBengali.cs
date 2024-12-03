@@ -16,7 +16,6 @@
  */
 
 using PdfClown.Documents.Contents.Fonts.TTF.Model;
-using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,15 +31,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
         private static readonly string INIT_FEATURE = "init";
 
         // This sequence is very important.This has been taken from
-        // <a href ="https://docs.microsoft.com/en-us/typography/script-development/bengali" > https://docs.microsoft.com/en-us/typography/script-development/bengali</a>
-        private static readonly List<string> FEATURES_IN_ORDER = new List<string>{"locl", "nukt", "akhn",
+        // <a href="https://docs.microsoft.com/en-us/typography/script-development/bengali"> https://docs.microsoft.com/en-us/typography/script-development/bengali</a>
+        private static readonly List<string> FEATURES_IN_ORDER = ["locl", "nukt", "akhn",
                 "rphf", "blwf", "pstf", "half", "vatu", "cjct", INIT_FEATURE, "pres", "abvs", "blws",
-                "psts", "haln", "calt" };
+                "psts", "haln", "calt" ];
 
-        private static readonly char[] BEFORE_HALF_CHARS = new char[] { '\u09BF', '\u09C7', '\u09C8' };
-        private static readonly BeforeAndAfterSpanComponent[] BEFORE_AND_AFTER_SPAN_CHARS = new BeforeAndAfterSpanComponent[] {
+        private static readonly char[] BEFORE_HALF_CHARS = ['\u09BF', '\u09C7', '\u09C8'];
+        private static readonly BeforeAndAfterSpanComponent[] BEFORE_AND_AFTER_SPAN_CHARS = [
             new BeforeAndAfterSpanComponent('\u09CB', '\u09C7', '\u09BE'),
-            new BeforeAndAfterSpanComponent('\u09CC', '\u09C7', '\u09D7') };
+            new BeforeAndAfterSpanComponent('\u09CC', '\u09C7', '\u09D7') ];
 
         private readonly ICmapLookup cmapLookup;
         private readonly IGsubData gsubData;
@@ -197,14 +196,13 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
             return result;
         }
 
-        /**
-         * Models characters like O-kar (\u09CB) and OU-kar (\u09CC). Since these 2 characters is
-         * represented by 2 components, one before and one after the Vyanjan Varna on which this is
-         * used, this glyph has to be replaced by these 2 glyphs. For O-kar, it has to be replaced by
-         * E-kar (\u09C7) and AA-kar (\u09BE). For OU-kar, it has be replaced by E-kar (\u09C7) and
-         * \u09D7.
-         *
-         */
+        /// <summary>
+        /// Models characters like O-kar (\u09CB) and OU-kar (\u09CC). Since these 2 characters is
+        /// represented by 2 components, one before and one after the Vyanjan Varna on which this is
+        /// used, this glyph has to be replaced by these 2 glyphs. For O-kar, it has to be replaced by
+        /// E-kar (\u09C7) and AA-kar (\u09BE). For OU-kar, it has be replaced by E-kar (\u09C7) and
+        /// \u09D7.
+        /// </summary>
         private class BeforeAndAfterSpanComponent
         {
             internal readonly char originalCharacter;

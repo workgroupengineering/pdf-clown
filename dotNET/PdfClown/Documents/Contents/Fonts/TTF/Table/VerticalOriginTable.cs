@@ -16,31 +16,23 @@
  */
 using PdfClown.Bytes;
 using System.Collections.Generic;
-using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
 
-    /**
-     * A vertical origin 'VORG' table in an OpenType font.
-     *
-     * The purpose of this table is to improve the efficiency of determining
-     * vertical origins in CFF fonts where absent this information the bounding
-     * box would have to be extracted from CFF charstring data.
-     *
-     * This table is strongly recommended by the OpenType CJK Font Guidelines
-     * for "CFF OpenType fonts that are used for vertical writing".
-     * 
-     * This table is specified only in the OpenType specification (1.3 and later).
-     * 
-     * @author Glenn Adams
-     * 
-     */
+    /// <summary>
+    /// A vertical origin 'VORG' table in an OpenType font.
+    /// The purpose of this table is to improve the efficiency of determining
+    /// vertical origins in CFF fonts where absent this information the bounding
+    /// box would have to be extracted from CFF charstring data.
+    /// This table is strongly recommended by the OpenType CJK Font Guidelines
+    /// for "CFF OpenType fonts that are used for vertical writing".
+    /// This table is specified only in the OpenType specification (1.3 and later).
+    /// @author Glenn Adams
+    /// </summary>
     public class VerticalOriginTable : TTFTable
     {
-        /**
-         * A tag that identifies this table type.
-         */
+        /// <summary>A tag that identifies this table type.</summary>
         public const string TAG = "VORG";
 
         private float version;
@@ -50,13 +42,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public VerticalOriginTable()
         { }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             version = data.Read32Fixed();
@@ -72,31 +60,17 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             initialized = true;
         }
 
-        /**
-         * @return Returns the version.
-         */
         public float Version
         {
             get => version;
         }
 
-        /**
-         * Returns the y-coordinate of the vertical origin for the given GID if known,
-         * or returns the default value if not specified in table data.
-         *
-         * @param gid GID
-         * @return Returns the y-coordinate of the vertical origin.
-         */
-        public int GetOriginY(int gid)
-        {
-            if (origins.TryGetValue(gid, out var origin))
-            {
-                return origin;
-            }
-            else
-            {
-                return defaultVertOriginY;
-            }
-        }
+        /// <summary>
+        /// Returns the y-coordinate of the vertical origin for the given GID if known,
+        /// or returns the default value if not specified in table data.
+        /// </summary>
+        /// <param name="gid">GID</param>
+        /// <returns>the y-coordinate of the vertical origin.</returns>
+        public int GetOriginY(int gid) => origins.TryGetValue(gid, out var origin) ? origin : defaultVertOriginY;
     }
 }

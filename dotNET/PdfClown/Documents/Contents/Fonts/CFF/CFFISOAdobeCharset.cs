@@ -15,16 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-    /**
-     * This is specialized CFFCharset. It's used if the CharsetId of a font is set to 0.
-     * 
-     * @author Villu Ruusmann
-     */
+    /// <summary>This is specialized CFFCharset.It's used if the CharsetId of a font is set to 0.
+    /// @author Villu Ruusmann</summary>
     public sealed class CFFISOAdobeCharset : CFFCharsetType1
     {
 
@@ -262,7 +256,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             AddSID(gid++, 228, "zcaron");
         }
 
-        public static readonly CFFISOAdobeCharset Instance = new CFFISOAdobeCharset();
+        public static readonly CFFISOAdobeCharset Instance = new();
 
         static CFFISOAdobeCharset()
         {

@@ -1,5 +1,4 @@
-/*
- * https://github.com/apache/pdfbox
+﻿/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +15,25 @@
  * limitations under the License.
  */
 
-namespace PdfClown.Documents.Contents.Fonts.CCF
+namespace PdfClown.Documents.Contents.Fonts
 {
-
-    public abstract class FDSelect
+    /// <summary>Enum for the names of the 14 standard fonts.</summary>
+    public enum FontName
     {
+        TimesRoman,
+        TimesBold,
+        TimesItalic,
+        TimesBoldItalic,
+        Helvetica,
+        HelveticaBold,
+        HelveticaOblique,
+        HelveticaBoldOblique,
+        Courier,
+        CourierBold,
+        CourierOblique,
+        CourierBoldOblique,
+        Symbol,
+        ZapfDingbats
 
-        /// <summary>Returns the Font DICT index for the given GID.</summary>
-        public abstract int GetFDIndex(int gid);
     }
 }

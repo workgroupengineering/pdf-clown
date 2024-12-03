@@ -21,120 +21,114 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
 {
-    /**
-	 * This class represents a CharStringCommand.
-	 * 
-	 * @author Villu Ruusmann
-	 */
+    /// <summary>
+    /// This class represents a CharStringCommand.
+    /// @author Villu Ruusmann
+    /// </summary>
     public class CharStringCommand
     {
-        private static readonly Dictionary<KeyWord, CharStringCommand> CHAR_STRING_COMMANDS = new()
+        private static readonly Dictionary<KeyWord, CharStringCommand> CHAR_STRING_COMMANDS = new(64)
         {
-        {KeyWord.HSTEM, new CharStringCommand(KeyWord.HSTEM) },
-        {KeyWord.VSTEM, new CharStringCommand(KeyWord.VSTEM) },
-        {KeyWord.VMOVETO, new CharStringCommand(KeyWord.VMOVETO) },
-        {KeyWord.RLINETO, new CharStringCommand(KeyWord.RLINETO) },
-        {KeyWord.HLINETO, new CharStringCommand(KeyWord.HLINETO) },
-        {KeyWord.VLINETO, new CharStringCommand(KeyWord.VLINETO) },
-        {KeyWord.RRCURVETO, new CharStringCommand(KeyWord.RRCURVETO) },
-        {KeyWord.CLOSEPATH, new CharStringCommand(KeyWord.CLOSEPATH) },
-        {KeyWord.CALLSUBR, new CharStringCommand(KeyWord.CALLSUBR) },
-        {KeyWord.RET, new CharStringCommand(KeyWord.RET) },
-        {KeyWord.ESCAPE, new CharStringCommand(KeyWord.ESCAPE) },
+            { KeyWord.HSTEM, new CharStringCommand(KeyWord.HSTEM) },
+            { KeyWord.VSTEM, new CharStringCommand(KeyWord.VSTEM) },
+            { KeyWord.VMOVETO, new CharStringCommand(KeyWord.VMOVETO) },
+            { KeyWord.RLINETO, new CharStringCommand(KeyWord.RLINETO) },
+            { KeyWord.HLINETO, new CharStringCommand(KeyWord.HLINETO) },
+            { KeyWord.VLINETO, new CharStringCommand(KeyWord.VLINETO) },
+            { KeyWord.RRCURVETO, new CharStringCommand(KeyWord.RRCURVETO) },
+            { KeyWord.CLOSEPATH, new CharStringCommand(KeyWord.CLOSEPATH) },
+            { KeyWord.CALLSUBR, new CharStringCommand(KeyWord.CALLSUBR) },
+            { KeyWord.RET, new CharStringCommand(KeyWord.RET) },
+            { KeyWord.ESCAPE, new CharStringCommand(KeyWord.ESCAPE) },
 
-        {KeyWord.HSBW, new CharStringCommand(KeyWord.HSBW) },
-        {KeyWord.ENDCHAR, new CharStringCommand(KeyWord.ENDCHAR) },
-        {KeyWord.HSTEMHM, new CharStringCommand(KeyWord.HSTEMHM) },
-        {KeyWord.HINTMASK, new CharStringCommand(KeyWord.HINTMASK) },
-        {KeyWord.CNTRMASK, new CharStringCommand(KeyWord.CNTRMASK) },
-        {KeyWord.RMOVETO, new CharStringCommand(KeyWord.RMOVETO) },
-        {KeyWord.HMOVETO, new CharStringCommand(KeyWord.HMOVETO) },
-        {KeyWord.VSTEMHM, new CharStringCommand(KeyWord.VSTEMHM) },
-        {KeyWord.RCURVELINE, new CharStringCommand(KeyWord.RCURVELINE) },
-        {KeyWord.RLINECURVE, new CharStringCommand(KeyWord.RLINECURVE) },
-        {KeyWord.VVCURVETO, new CharStringCommand(KeyWord.VVCURVETO) },
-        {KeyWord.HHCURVETO, new CharStringCommand(KeyWord.HHCURVETO) },
-        {KeyWord.SHORTINT, new CharStringCommand(KeyWord.SHORTINT) },
-        {KeyWord.CALLGSUBR, new CharStringCommand(KeyWord.CALLGSUBR) },
-        {KeyWord.VHCURVETO, new CharStringCommand(KeyWord.VHCURVETO) },
-        {KeyWord.HVCURVETO, new CharStringCommand(KeyWord.HVCURVETO) },
+            { KeyWord.HSBW, new CharStringCommand(KeyWord.HSBW) },
+            { KeyWord.ENDCHAR, new CharStringCommand(KeyWord.ENDCHAR) },
+            { KeyWord.HSTEMHM, new CharStringCommand(KeyWord.HSTEMHM) },
+            { KeyWord.HINTMASK, new CharStringCommand(KeyWord.HINTMASK) },
+            { KeyWord.CNTRMASK, new CharStringCommand(KeyWord.CNTRMASK) },
+            { KeyWord.RMOVETO, new CharStringCommand(KeyWord.RMOVETO) },
+            { KeyWord.HMOVETO, new CharStringCommand(KeyWord.HMOVETO) },
+            { KeyWord.VSTEMHM, new CharStringCommand(KeyWord.VSTEMHM) },
+            { KeyWord.RCURVELINE, new CharStringCommand(KeyWord.RCURVELINE) },
+            { KeyWord.RLINECURVE, new CharStringCommand(KeyWord.RLINECURVE) },
+            { KeyWord.VVCURVETO, new CharStringCommand(KeyWord.VVCURVETO) },
+            { KeyWord.HHCURVETO, new CharStringCommand(KeyWord.HHCURVETO) },
+            { KeyWord.SHORTINT, new CharStringCommand(KeyWord.SHORTINT) },
+            { KeyWord.CALLGSUBR, new CharStringCommand(KeyWord.CALLGSUBR) },
+            { KeyWord.VHCURVETO, new CharStringCommand(KeyWord.VHCURVETO) },
+            { KeyWord.HVCURVETO, new CharStringCommand(KeyWord.HVCURVETO) },
 
-        // two byte commands
-        {KeyWord.DOTSECTION, new CharStringCommand(12, 0) },
-        {KeyWord.VSTEM3, new CharStringCommand(12, 1) },
-        {KeyWord.HSTEM3, new CharStringCommand(12, 2) },
-        {KeyWord.AND, new CharStringCommand(12, 3) },
-        {KeyWord.OR, new CharStringCommand(12, 4) },
-        {KeyWord.NOT, new CharStringCommand(12, 5) },
-        {KeyWord.SEAC, new CharStringCommand(12, 6) },
-        {KeyWord.SBW, new CharStringCommand(12, 7) },
-        {KeyWord.ABS, new CharStringCommand(12, 9) },
-        {KeyWord.ADD, new CharStringCommand(12, 10) },
-        {KeyWord.SUB, new CharStringCommand(12, 11) },
-        {KeyWord.DIV, new CharStringCommand(12, 12) },
-        {KeyWord.NEG, new CharStringCommand(12, 14) },
-        {KeyWord.EQ, new CharStringCommand(12, 15) },
-        {KeyWord.CALLOTHERSUBR, new CharStringCommand(12, 16) },
-        {KeyWord.POP, new CharStringCommand(12, 17) },
-        {KeyWord.DROP, new CharStringCommand(12, 18) },
-        {KeyWord.PUT, new CharStringCommand(12, 20) },
-        {KeyWord.GET, new CharStringCommand(12, 21) },
-        {KeyWord.IFELSE, new CharStringCommand(12, 22) },
-        {KeyWord.RANDOM, new CharStringCommand(12, 23) },
-        {KeyWord.MUL, new CharStringCommand(12, 24) },
-        {KeyWord.SQRT, new CharStringCommand(12, 26) },
-        {KeyWord.DUP, new CharStringCommand(12, 27) },
-        {KeyWord.EXCH, new CharStringCommand(12, 28) },
-        {KeyWord.INDEX, new CharStringCommand(12, 29) },
-        {KeyWord.ROLL, new CharStringCommand(12, 30) },
-        {KeyWord.SETCURRENTPOINT, new CharStringCommand(12, 33) },
-        {KeyWord.HFLEX, new CharStringCommand(12, 34) },
-        {KeyWord.FLEX, new CharStringCommand(12, 35) },
-        {KeyWord.HFLEX1, new CharStringCommand(12, 36) },
-        {KeyWord.FLEX1, new CharStringCommand(12, 37) },
+            // two byte commands
+            { KeyWord.DOTSECTION, new CharStringCommand(KeyWord.DOTSECTION) },
+            { KeyWord.VSTEM3, new CharStringCommand(KeyWord.VSTEM3) },
+            { KeyWord.HSTEM3, new CharStringCommand(KeyWord.HSTEM3) },
+            { KeyWord.AND, new CharStringCommand(KeyWord.AND) },
+            { KeyWord.OR, new CharStringCommand(KeyWord.OR) },
+            { KeyWord.NOT, new CharStringCommand(KeyWord.NOT) },
+            { KeyWord.SEAC, new CharStringCommand(KeyWord.SEAC) },
+            { KeyWord.SBW, new CharStringCommand(KeyWord.SBW) },
+            { KeyWord.ABS, new CharStringCommand(KeyWord.ABS) },
+            { KeyWord.ADD, new CharStringCommand(KeyWord.ADD) },
+            { KeyWord.SUB, new CharStringCommand(KeyWord.SUB) },
+            { KeyWord.DIV, new CharStringCommand(KeyWord.DIV) },
+            { KeyWord.NEG, new CharStringCommand(KeyWord.NEG) },
+            { KeyWord.EQ, new CharStringCommand(KeyWord.EQ) },
+            { KeyWord.CALLOTHERSUBR, new CharStringCommand(KeyWord.CALLOTHERSUBR) },
+            { KeyWord.POP, new CharStringCommand(KeyWord.POP) },
+            { KeyWord.DROP, new CharStringCommand(KeyWord.DROP) },
+            { KeyWord.PUT, new CharStringCommand(KeyWord.PUT) },
+            { KeyWord.GET, new CharStringCommand(KeyWord.GET) },
+            { KeyWord.IFELSE, new CharStringCommand(KeyWord.IFELSE) },
+            { KeyWord.RANDOM, new CharStringCommand(KeyWord.RANDOM) },
+            { KeyWord.MUL, new CharStringCommand(KeyWord.MUL) },
+            { KeyWord.SQRT, new CharStringCommand(KeyWord.SQRT) },
+            { KeyWord.DUP, new CharStringCommand(KeyWord.DUP) },
+            { KeyWord.EXCH, new CharStringCommand(KeyWord.EXCH) },
+            { KeyWord.INDEX, new CharStringCommand(KeyWord.INDEX) },
+            { KeyWord.ROLL, new CharStringCommand(KeyWord.ROLL) },
+            { KeyWord.SETCURRENTPOINT, new CharStringCommand(KeyWord.SETCURRENTPOINT) },
+            { KeyWord.HFLEX, new CharStringCommand(KeyWord.HFLEX) },
+            { KeyWord.FLEX, new CharStringCommand(KeyWord.FLEX) },
+            { KeyWord.HFLEX1, new CharStringCommand(KeyWord.HFLEX1) },
+            { KeyWord.FLEX1, new CharStringCommand(KeyWord.FLEX1) },
         };
 
-        public static readonly CharStringCommand COMMAND_CLOSEPATH = GetInstance(KeyWord.CLOSEPATH);
-        public static readonly CharStringCommand COMMAND_RLINETO = GetInstance(KeyWord.RLINETO);
-        public static readonly CharStringCommand COMMAND_HLINETO = GetInstance(KeyWord.HLINETO);
-        public static readonly CharStringCommand COMMAND_VLINETO = GetInstance(KeyWord.VLINETO);
-        public static readonly CharStringCommand COMMAND_RRCURVETO = GetInstance(KeyWord.RRCURVETO);
-        public static readonly CharStringCommand COMMAND_HSBW = GetInstance(KeyWord.HSBW);
-        public static readonly CharStringCommand COMMAND_CALLOTHERSUBR = GetInstance(KeyWord.CALLOTHERSUBR);
+        public static readonly CharStringCommand CLOSEPATH = GetInstance(KeyWord.CLOSEPATH);
+        public static readonly CharStringCommand RLINETO = GetInstance(KeyWord.RLINETO);
+        public static readonly CharStringCommand HLINETO = GetInstance(KeyWord.HLINETO);
+        public static readonly CharStringCommand VLINETO = GetInstance(KeyWord.VLINETO);
+        public static readonly CharStringCommand RRCURVETO = GetInstance(KeyWord.RRCURVETO);
+        public static readonly CharStringCommand HSBW = GetInstance(KeyWord.HSBW);
+        public static readonly CharStringCommand CALLOTHERSUBR = GetInstance(KeyWord.CALLOTHERSUBR);
 
         private static readonly byte KEY_UNKNOWN = 99;
-        public static readonly CharStringCommand COMMAND_UNKNOWN = new CharStringCommand(KEY_UNKNOWN, 0);
+        public static readonly CharStringCommand UNKNOWN = new CharStringCommand(KEY_UNKNOWN, 0);
 
-        /**
-     * Get an instance of the CharStringCommand represented by the given value.
-     * 
-     * @param b0 value
-     * @return CharStringCommand represented by the given value
-     */
+        /// <summary>
+        /// Get an instance of the CharStringCommand represented by the given value.
+        /// </summary>
+        /// <param name="keyword">value</param>
+        /// <returns>CharStringCommand represented by the given value</returns>
         public static CharStringCommand GetInstance(KeyWord keyword)
         {
-            return CHAR_STRING_COMMANDS.TryGetValue(keyword, out CharStringCommand command) ? command : COMMAND_UNKNOWN;
+            return CHAR_STRING_COMMANDS.TryGetValue(keyword, out CharStringCommand command) ? command : UNKNOWN;
         }
 
         public static CharStringCommand GetInstance(int b0)
         {
-            return CHAR_STRING_COMMANDS.TryGetValue((KeyWord)b0, out CharStringCommand command) ? command : COMMAND_UNKNOWN;
+            return CHAR_STRING_COMMANDS.TryGetValue((KeyWord)b0, out CharStringCommand command) ? command : UNKNOWN;
         }
 
         public static CharStringCommand GetInstance(int b0, int b1)
         {
-            return CHAR_STRING_COMMANDS.TryGetValue((KeyWord)((b0 << 8) | b1), out CharStringCommand command) ? command : COMMAND_UNKNOWN;
+            return CHAR_STRING_COMMANDS.TryGetValue((KeyWord)((b0 << 8) | b1), out CharStringCommand command) ? command : UNKNOWN;
         }
 
         private readonly KeyWord keyWord;
 
-        /**
-     * Get an instance of the CharStringCommand represented by the given array.
-     * 
-     * @param values array of values
-     * 
-     * @return CharStringCommand represented by the given values
-     */
+        /// <summary>Get an instance of the CharStringCommand represented by the given array.</summary>
+        /// <param name="values">array of values</param>
+        /// <returns>CharStringCommand represented by the given values</returns>
         public static CharStringCommand GetInstance(byte[] values)
         {
             if (values.Length == 1)
@@ -145,54 +139,36 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             {
                 return GetInstance(values[0], values[1]);
             }
-            return COMMAND_UNKNOWN;
+            return UNKNOWN;
         }
 
-        /**
-     * Constructor with the CharStringCommand key as value.
-     * 
-     * @param key the key of the char string command
-     */
+        /// <summary>Constructor with the CharStringCommand key as value.</summary>
+        /// <param name="key">the key of the char string command</param>
         private CharStringCommand(KeyWord key)
         {
             keyWord = (KeyWord)((int)key);
         }
 
-        /**
-		 * Constructor with two values.
-		 * 
-		 * @param b0 value1
-		 * @param b1 value2
-		 */
+        /// <summary>Constructor with two values.</summary>
+        /// <param name="b0">value1</param>
+        /// <param name="b1">value2</param>
         private CharStringCommand(int b0, int b1)
         {
             keyWord = (KeyWord)((b0 << 8) | b1);
         }
 
-        /**
-		 * Constructor with an array as values.
-		 * 
-		 * @param values array of values
-		 */
-        private CharStringCommand(int values)
+
+        public Type1KeyWord? Type1KeyWord
         {
-            keyWord = (KeyWord)values;
+            get => Enum.IsDefined((Type1KeyWord)keyWord) ? (Type1KeyWord)keyWord : null;
         }
 
-        public Type1KeyWord Type1KeyWord
+        public Type2KeyWord? Type2KeyWord
         {
-            get => (Type1KeyWord)keyWord;
+            get => Enum.IsDefined((Type2KeyWord)keyWord) ? (Type2KeyWord)keyWord : null;
         }
 
-        public Type2KeyWord Type2KeyWord
-        {
-            get => (Type2KeyWord)keyWord;
-        }
-
-        /**
-		 * {@inheritDoc}
-		 */
-        override public string ToString()
+        public override string ToString()
         {
             string str = Enum.GetName(typeof(KeyWord), keyWord);
             if (str == null)
@@ -202,18 +178,12 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return str + '|';
         }
 
-        /**
-		 * {@inheritDoc}
-		 */
-        override public int GetHashCode()
+        public override int GetHashCode()
         {
             return keyWord.GetHashCode();
         }
 
-        /**
-		 * {@inheritDoc}
-		 */
-        override public bool Equals(object obj)
+        public override bool Equals(object obj)
         {
             if (obj is CharStringCommand that)
             {
@@ -222,117 +192,41 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return false;
         }
 
-        /**
-		 * A map with the Type1 vocabulary.
-		 */
-        public static readonly Dictionary<ByteKey, Type1KeyWord> TYPE1_VOCABULARY = new(26)
-        {
-            { new ByteKey(1), Type1KeyWord.HSTEM },
-            { new ByteKey(3), Type1KeyWord.VSTEM },
-            { new ByteKey(4), Type1KeyWord.VMOVETO },
-            { new ByteKey(5), Type1KeyWord.RLINETO },
-            { new ByteKey(6), Type1KeyWord.HLINETO },
-            { new ByteKey(7), Type1KeyWord.VLINETO },
-            { new ByteKey(8), Type1KeyWord.RRCURVETO },
-            { new ByteKey(9), Type1KeyWord.CLOSEPATH },
-            { new ByteKey(10), Type1KeyWord.CALLSUBR },
-            { new ByteKey(11), Type1KeyWord.RET },
-            { new ByteKey(12), Type1KeyWord.ESCAPE },
-            { new ByteKey(12, 0), Type1KeyWord.DOTSECTION },
-            { new ByteKey(12, 1), Type1KeyWord.VSTEM3 },
-            { new ByteKey(12, 2), Type1KeyWord.HSTEM3 },
-            { new ByteKey(12, 6), Type1KeyWord.SEAC },
-            { new ByteKey(12, 7), Type1KeyWord.SBW },
-            { new ByteKey(12, 12), Type1KeyWord.DIV },
-            { new ByteKey(12, 16), Type1KeyWord.CALLOTHERSUBR },
-            { new ByteKey(12, 17), Type1KeyWord.POP },
-            { new ByteKey(12, 33), Type1KeyWord.SETCURRENTPOINT },
-            { new ByteKey(13), Type1KeyWord.HSBW },
-            { new ByteKey(14), Type1KeyWord.ENDCHAR },
-            { new ByteKey(21), Type1KeyWord.RMOVETO },
-            { new ByteKey(22), Type1KeyWord.HMOVETO },
-            { new ByteKey(30), Type1KeyWord.VHCURVETO },
-            { new ByteKey(31), Type1KeyWord.HVCURVETO },
-        };
-
-        /**
-		 * A map with the Type2 vocabulary.
-		 */
-        public static readonly Dictionary<ByteKey, Type2KeyWord> TYPE2_VOCABULARY = new(50)
-        {
-            { new ByteKey(1), Type2KeyWord.HSTEM},
-            { new ByteKey(3), Type2KeyWord.VSTEM},
-            { new ByteKey(4), Type2KeyWord.VMOVETO},
-            { new ByteKey(5), Type2KeyWord.RLINETO},
-            { new ByteKey(6), Type2KeyWord.HLINETO},
-            { new ByteKey(7), Type2KeyWord.VLINETO},
-            { new ByteKey(8), Type2KeyWord.RRCURVETO},
-            { new ByteKey(10), Type2KeyWord.CALLSUBR},
-            { new ByteKey(11), Type2KeyWord.RET},
-            { new ByteKey(12), Type2KeyWord.ESCAPE},
-            { new ByteKey(12, 3), Type2KeyWord.AND},
-            { new ByteKey(12, 4), Type2KeyWord.OR},
-            { new ByteKey(12, 5), Type2KeyWord.NOT},
-            { new ByteKey(12, 9), Type2KeyWord.ABS},
-            { new ByteKey(12, 10), Type2KeyWord.ADD},
-            { new ByteKey(12, 11), Type2KeyWord.SUB},
-            { new ByteKey(12, 12), Type2KeyWord.DIV},
-            { new ByteKey(12, 14), Type2KeyWord.NEG},
-            { new ByteKey(12, 15), Type2KeyWord.EQ},
-            { new ByteKey(12, 18), Type2KeyWord.DROP},
-            { new ByteKey(12, 20), Type2KeyWord.PUT},
-            { new ByteKey(12, 21), Type2KeyWord.GET},
-            { new ByteKey(12, 22), Type2KeyWord.IFELSE},
-            { new ByteKey(12, 23), Type2KeyWord.RANDOM},
-            { new ByteKey(12, 24), Type2KeyWord.MUL},
-            { new ByteKey(12, 26), Type2KeyWord.SQRT},
-            { new ByteKey(12, 27), Type2KeyWord.DUP},
-            { new ByteKey(12, 28), Type2KeyWord.EXCH},
-            { new ByteKey(12, 29), Type2KeyWord.INDEX},
-            { new ByteKey(12, 30), Type2KeyWord.ROLL},
-            { new ByteKey(12, 34), Type2KeyWord.HFLEX},
-            { new ByteKey(12, 35), Type2KeyWord.FLEX},
-            { new ByteKey(12, 36), Type2KeyWord.HFLEX1},
-            { new ByteKey(12, 37), Type2KeyWord.FLEX1},
-            { new ByteKey(14), Type2KeyWord.ENDCHAR},
-            { new ByteKey(18), Type2KeyWord.HSTEMHM},
-            { new ByteKey(19), Type2KeyWord.HINTMASK},
-            { new ByteKey(20), Type2KeyWord.CNTRMASK},
-            { new ByteKey(21), Type2KeyWord.RMOVETO},
-            { new ByteKey(22), Type2KeyWord.HMOVETO},
-            { new ByteKey(23), Type2KeyWord.VSTEMHM},
-            { new ByteKey(24), Type2KeyWord.RCURVELINE},
-            { new ByteKey(25), Type2KeyWord.RLINECURVE},
-            { new ByteKey(26), Type2KeyWord.VVCURVETO},
-            { new ByteKey(27), Type2KeyWord.HHCURVETO},
-            { new ByteKey(28), Type2KeyWord.SHORTINT},
-            { new ByteKey(29), Type2KeyWord.CALLGSUBR},
-            { new ByteKey(30), Type2KeyWord.VHCURVETO},
-            { new ByteKey(31), Type2KeyWord.HVCURVETO},
-        };
     }
 
-
-    /**
-        * Enum of all valid type1 key words
-        */
+    /// <summary>Enum of all valid type1 key words</summary>
     public enum Type1KeyWord
     {
-        HSTEM = KeyWord.HSTEM, VSTEM = KeyWord.VSTEM, VMOVETO = KeyWord.VMOVETO, RLINETO = KeyWord.RLINETO, //
-        HLINETO = KeyWord.HLINETO, VLINETO = KeyWord.VLINETO, RRCURVETO = KeyWord.RRCURVETO, //
-        CLOSEPATH = KeyWord.CLOSEPATH, CALLSUBR = KeyWord.CALLSUBR, RET = KeyWord.RET, //
-        ESCAPE = KeyWord.ESCAPE, DOTSECTION = KeyWord.DOTSECTION, //
-        VSTEM3 = KeyWord.VSTEM3, HSTEM3 = KeyWord.HSTEM3, SEAC = KeyWord.SEAC, SBW = KeyWord.SBW, //
-        DIV = KeyWord.DIV, CALLOTHERSUBR = KeyWord.CALLOTHERSUBR, POP = KeyWord.POP, //
-        SETCURRENTPOINT = KeyWord.SETCURRENTPOINT, HSBW = KeyWord.HSBW, ENDCHAR = KeyWord.ENDCHAR, //
-        RMOVETO = KeyWord.RMOVETO, HMOVETO = KeyWord.HMOVETO, VHCURVETO = KeyWord.VHCURVETO, //
+        HSTEM = KeyWord.HSTEM,
+        VSTEM = KeyWord.VSTEM,
+        VMOVETO = KeyWord.VMOVETO,
+        RLINETO = KeyWord.RLINETO, //
+        HLINETO = KeyWord.HLINETO,
+        VLINETO = KeyWord.VLINETO,
+        RRCURVETO = KeyWord.RRCURVETO, //
+        CLOSEPATH = KeyWord.CLOSEPATH,
+        CALLSUBR = KeyWord.CALLSUBR,
+        RET = KeyWord.RET, //
+        ESCAPE = KeyWord.ESCAPE,
+        DOTSECTION = KeyWord.DOTSECTION, //
+        VSTEM3 = KeyWord.VSTEM3,
+        HSTEM3 = KeyWord.HSTEM3,
+        SEAC = KeyWord.SEAC,
+        SBW = KeyWord.SBW, //
+        DIV = KeyWord.DIV,
+        CALLOTHERSUBR = KeyWord.CALLOTHERSUBR,
+        POP = KeyWord.POP, //
+        SETCURRENTPOINT = KeyWord.SETCURRENTPOINT,
+        HSBW = KeyWord.HSBW,
+        ENDCHAR = KeyWord.ENDCHAR, //
+        RMOVETO = KeyWord.RMOVETO,
+        HMOVETO = KeyWord.HMOVETO,
+        VHCURVETO = KeyWord.VHCURVETO, //
         HVCURVETO = KeyWord.HVCURVETO
     }
 
 
-    /**
-        * Enum of all valid type2 key words
-        */
+    /// <summary>Enum of all valid type2 key words</summary>
     public enum Type2KeyWord
     {
         HSTEM = KeyWord.HSTEM,
@@ -343,18 +237,32 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         VLINETO = KeyWord.VLINETO,
         RRCURVETO = KeyWord.RRCURVETO,
         CALLSUBR = KeyWord.CALLSUBR, //
-        RET = KeyWord.RET, ESCAPE = KeyWord.ESCAPE, AND = KeyWord.AND, OR = KeyWord.OR, //
+        RET = KeyWord.RET,
+        ESCAPE = KeyWord.ESCAPE,
+        AND = KeyWord.AND,
+        OR = KeyWord.OR, //
         NOT = KeyWord.NOT, ABS = KeyWord.ABS, ADD = KeyWord.ADD, SUB = KeyWord.SUB, //
         DIV = KeyWord.DIV, NEG = KeyWord.NEG, EQ = KeyWord.EQ, DROP = KeyWord.DROP, //
         PUT = KeyWord.PUT, GET = KeyWord.GET, IFELSE = KeyWord.IFELSE, //
         RANDOM = KeyWord.RANDOM, MUL = KeyWord.MUL, SQRT = KeyWord.SQRT, DUP = KeyWord.DUP, //
         EXCH = KeyWord.EXCH, INDEX = KeyWord.INDEX, ROLL = KeyWord.ROLL, //
         HFLEX = KeyWord.HFLEX, FLEX = KeyWord.FLEX, HFLEX1 = KeyWord.HFLEX1, //
-        FLEX1 = KeyWord.FLEX1, ENDCHAR = KeyWord.ENDCHAR, HSTEMHM = KeyWord.HSTEMHM, HINTMASK = KeyWord.HINTMASK, //
-        CNTRMASK = KeyWord.CNTRMASK, RMOVETO = KeyWord.RMOVETO, HMOVETO = KeyWord.HMOVETO, VSTEMHM = KeyWord.VSTEMHM, //
-        RCURVELINE = KeyWord.RCURVELINE, RLINECURVE = KeyWord.RLINECURVE, VVCURVETO = KeyWord.VVCURVETO, //
-        HHCURVETO = KeyWord.HHCURVETO, SHORTINT = KeyWord.SHORTINT, CALLGSUBR = KeyWord.CALLGSUBR, //
-        VHCURVETO = KeyWord.VHCURVETO, HVCURVETO = KeyWord.HVCURVETO
+        FLEX1 = KeyWord.FLEX1,
+        ENDCHAR = KeyWord.ENDCHAR,
+        HSTEMHM = KeyWord.HSTEMHM,
+        HINTMASK = KeyWord.HINTMASK, //
+        CNTRMASK = KeyWord.CNTRMASK,
+        RMOVETO = KeyWord.RMOVETO,
+        HMOVETO = KeyWord.HMOVETO,
+        VSTEMHM = KeyWord.VSTEMHM, //
+        RCURVELINE = KeyWord.RCURVELINE,
+        RLINECURVE = KeyWord.RLINECURVE,
+        VVCURVETO = KeyWord.VVCURVETO, //
+        HHCURVETO = KeyWord.HHCURVETO,
+        SHORTINT = KeyWord.SHORTINT,
+        CALLGSUBR = KeyWord.CALLGSUBR, //
+        VHCURVETO = KeyWord.VHCURVETO,
+        HVCURVETO = KeyWord.HVCURVETO
     }
 
 

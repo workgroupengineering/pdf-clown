@@ -24,18 +24,13 @@ using System;
 using PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB;
 using System.Linq;
 using PdfClown.Bytes;
-using System.Text.RegularExpressions;
-using PdfClown.Documents.Interaction.Annotations;
-using static PdfClown.Documents.Contents.Fonts.CCF.CFFParser.DictData;
-using static PdfClown.Documents.Functions.Type4.RelationalOperators;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A glyph substitution 'GSUB' table in a TrueType or OpenType font.
-     *
-     * @author Aaron Madlon-Kay
-     */
+    /// <summary>
+    /// A glyph substitution 'GSUB' table in a TrueType or OpenType font.
+    /// @author Aaron Madlon-Kay
+    /// </summary>
     public class GlyphSubstitutionTable : TTFTable
     {
         //private static readonly Log LOG = LogFactory.getLog(GlyphSubstitutionTable.class);
@@ -559,13 +554,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Choose from one of the supplied OpenType script tags, depending on what the font supports and potentially on
-         * context.
-         *
-         * @param tags
-         * @return The best OpenType script tag
-         */
+        /// <summary>
+        /// Choose from one of the supplied OpenType script tags, depending on what the font supports and potentially on
+        /// context.
+        /// </summary>
+        /// <param name="tags"></param>
+        /// <returns>The best OpenType script tag</returns>
         private string SelectScriptTag(string[] tags)
         {
             if (tags.Length == 1)
@@ -617,19 +611,16 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return result;
         }
 
-        /**
-         * Get a list of {@code FeatureRecord}s from a collection of {@code LangSysTable}s. Optionally
-         * filter the returned features by supplying a list of allowed feature tags in
-         * {@code enabledFeatures}.
-         *
-         * Note that features listed as required ({@code LangSysTable#requiredFeatureIndex}) will be
-         * included even if not explicitly enabled.
-         *
-         * @param langSysTables The {@code LangSysTable}s indicating {@code FeatureRecord}s to search
-         * for
-         * @param enabledFeatures An optional whitelist of feature tags ({@code null} to allow all)
-         * @return The indicated {@code FeatureRecord}s
-         */
+        /// <summary>
+        /// Get a list of {@code FeatureRecord}s from a collection of {@code LangSysTable}s. Optionally
+        /// filter the returned features by supplying a list of allowed feature tags in
+        /// {@code enabledFeatures}.
+        /// Note that features listed as required ({@code LangSysTable#requiredFeatureIndex}) will be
+        /// included even if not explicitly enabled.
+        /// </summary>
+        /// <param name="langSysTables">The {@code LangSysTable}s indicating {@code FeatureRecord}s to search for</param>
+        /// <param name="enabledFeatures">An optional whitelist of feature tags ({@code null} to allow all)</param>
+        /// <returns>The indicated {@code FeatureRecord}s</returns>
         private List<FeatureRecord> GetFeatureRecords(ICollection<LangSysTable> langSysTables,
                 List<string> enabledFeatures)
         {
@@ -722,19 +713,17 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return gid;
         }
 
-        /**
-         * Apply glyph substitutions to the supplied gid. The applicable substitutions are determined by
-         * the {@code scriptTags} which indicate the language of the gid, and by the
-         * {@code enabledFeatures} which acts as a whitelist.
-         *
-         * To ensure that a single gid isn't mapped to multiple substitutions, subsequent invocations
-         * with the same gid will return the same result as the first, regardless of script or enabled
-         * features.
-         *
-         * @param gid GID
-         * @param scriptTags Script tags applicable to the gid (see {@link OpenTypeScript})
-         * @param enabledFeatures Whitelist of features to apply
-         */
+        /// <summary>
+        /// Apply glyph substitutions to the supplied gid. The applicable substitutions are determined by
+        /// the {@code scriptTags} which indicate the language of the gid, and by the
+        /// {@code enabledFeatures} which acts as a whitelist.
+        /// To ensure that a single gid isn't mapped to multiple substitutions, subsequent invocations
+        /// with the same gid will return the same result as the first, regardless of script or enabled
+        /// features.
+        /// </summary>
+        /// <param name="gid">GID</param>
+        /// <param name="scriptTags">Script tags applicable to the gid (see {@link OpenTypeScript})</param>
+        /// <param name="enabledFeatures">Whitelist of features to apply</param>
         public int GetSubstitution(int gid, string[] scriptTags, List<string> enabledFeatures)
         {
             if (gid == -1)
@@ -761,15 +750,13 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return sgid;
         }
 
-        /**
-         * For a substitute-gid (obtained from {@link #getSubstitution(int, string[], List)}), retrieve
-         * the original gid.
-         *
-         * Only gids previously substituted by this instance can be un-substituted. If you are trying to
-         * unsubstitute before you substitute, something is wrong.
-         *
-         * @param sgid Substitute GID
-         */
+        /// <summary>
+        /// For a substitute-gid (obtained from {@link #getSubstitution(int, string[], List)}), retrieve
+        /// the original gid.
+        /// Only gids previously substituted by this instance can be un-substituted. If you are trying to
+        /// unsubstitute before you substitute, something is wrong.
+        /// </summary>
+        /// <param name="sgid">Substitute GID</param>
         public int GetUnsubstitution(int sgid)
         {
             if (!reverseLookup.TryGetValue(sgid, out int gid))
@@ -781,7 +768,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         }
 
         /// <summary>
-        /// Builds a new {@link GsubData}
+        /// Builds a new <see cref="IGsubData"/>
         /// instance for given script tag.In contrast to neighbour
         /// {@link #GetGsubData()}
         ///   method, this one does not try to find the first supported language and load GSUB data for it.Instead, it fetches

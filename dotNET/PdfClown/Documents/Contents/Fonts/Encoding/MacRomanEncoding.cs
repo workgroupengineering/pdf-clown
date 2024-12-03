@@ -25,16 +25,12 @@
 
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>Mac OS standard latin encoding [PDF:1.6:D].</summary>
-    */
+    /// <summary>Mac OS standard latin encoding [PDF:1.6:D].</summary>
     internal class MacRomanEncoding : Encoding
     {
-        public static readonly MacRomanEncoding Instance = new MacRomanEncoding();
+        public static readonly MacRomanEncoding Instance = new();
         public MacRomanEncoding()
         {
             Encodings[PdfName.MacRomanEncoding] = this;

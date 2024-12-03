@@ -17,30 +17,22 @@
 
 using PdfClown.Bytes;
 using System;
-using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A table in a true type font.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A table in a true type font.
+    /// @author Ben Litchfield
+    /// </summary>
     public class HeaderTable : TTFTable
     {
-        /**
-         * Tag to identify this table.
-         */
+        /// <summary>Tag to identify this table.</summary>
         public const string TAG = "head";
 
-        /**
-         * Bold macStyle flag.
-         */
+        /// <summary>Bold macStyle flag.</summary>
         public static readonly int MAC_STYLE_BOLD = 1;
 
-        /**
-         * Italic macStyle flag.
-         */
+        /// <summary>Italic macStyle flag.</summary>
         public static readonly int MAC_STYLE_ITALIC = 2;
 
         private float version;
@@ -64,13 +56,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public HeaderTable()
         { }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             version = data.Read32Fixed();
@@ -93,153 +81,103 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             initialized = true;
         }
 
-        /**
-         * @return Returns the checkSumAdjustment.
-         */
+        /// <summary>Returns the checkSumAdjustment.</summary>
         public uint CheckSumAdjustment
         {
             get => checkSumAdjustment;
             set => checkSumAdjustment = value;
         }
 
-        /**
-         * @return Returns the created.
-         */
         public DateTime Created
         {
             get => created;
             set => created = value;
         }
 
-        /**
-         * @return Returns the flags.
-         */
         public ushort Flags
         {
             get => flags;
             set => flags = value;
         }
 
-        /**
-         * @return Returns the fontDirectionHint.
-         */
         public short FontDirectionHint
         {
             get => fontDirectionHint;
             set => fontDirectionHint = value;
         }
 
-        /**
-         * @return Returns the fontRevision.
-         */
         public float FontRevision
         {
             get => fontRevision;
             set => fontRevision = value;
         }
 
-        /**
-         * @return Returns the glyphDataFormat.
-         */
         public short GlyphDataFormat
         {
             get => glyphDataFormat;
             set => glyphDataFormat = value;
         }
 
-        /**
-         * @return Returns the indexToLocFormat.
-         */
         public short IndexToLocFormat
         {
             get => indexToLocFormat;
             set => indexToLocFormat = value;
         }
 
-        /**
-         * @return Returns the lowestRecPPEM.
-         */
         public ushort LowestRecPPEM
         {
             get => lowestRecPPEM;
             set => lowestRecPPEM = value;
         }
 
-        /**
-         * @return Returns the macStyle.
-         */
         public ushort MacStyle
         {
             get => macStyle;
             set => macStyle = value;
         }
 
-        /**
-         * @return Returns the magicNumber.
-         */
         public uint MagicNumber
         {
             get => magicNumber;
             set => magicNumber = value;
         }
 
-        /**
-         * @return Returns the modified.
-         */
         public DateTime Modified
         {
             get => modified;
             set => modified = value;
         }
 
-        /**
-         * @return Returns the unitsPerEm.
-         */
         public ushort UnitsPerEm
         {
             get => unitsPerEm;
             set => unitsPerEm = value;
         }
 
-        /**
-         * @return Returns the version.
-         */
         public float Version
         {
             get => version;
             set => version = value;
         }
 
-        /**
-         * @return Returns the xMax.
-         */
         public short XMax
         {
             get => xMax;
             set => xMax = value;
         }
 
-        /**
-         * @return Returns the xMin.
-         */
         public short XMin
         {
             get => xMin;
             set => xMin = value;
         }
 
-        /**
-         * @return Returns the yMax.
-         */
         public short YMax
         {
             get => yMax;
             set => yMax = value;
         }
 
-        /**
-         * @return Returns the yMin.
-         */
         public short YMin
         {
             get => yMin;

@@ -16,56 +16,46 @@
    limitations under the License.
 
  */
+using PdfClown.Bytes;
+using System;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    using PdfClown.Bytes;
-    using System;
-    using System.IO;
 
-    /**
-     * This class is based on code from Apache Batik a subproject of Apache XMLGraphics. see
-     * http://xmlgraphics.apache.org/batik/ for further details.
-     */
+    /// <summary>
+    /// This class is based on code from Apache Batik a subproject of Apache XMLGraphics.
+    /// see  http://xmlgraphics.apache.org/batik/ for further details.
+    /// </summary>
     public class GlyfCompositeComp
     {
 
         // Flags for composite glyphs.
 
-        /**
-         * If set, the arguments are words; otherwise, they are bytes.
-         */
+        /// <summary>If set, the arguments are words; otherwise, they are bytes.</summary>
         public static readonly short ARG_1_AND_2_ARE_WORDS = 0x0001;
-        /**
-         * If set, the arguments are xy values; otherwise they are points.
-         */
+
+        /// <summary>If set, the arguments are xy values; otherwise they are points.</summary>
         public static readonly short ARGS_ARE_XY_VALUES = 0x0002;
-        /**
-         * If set, xy values are rounded to those of the closest grid lines.
-         */
+
+        /// <summary>If set, xy values are rounded to those of the closest grid lines.</summary>
         public static readonly short ROUND_XY_TO_GRID = 0x0004;
-        /**
-         * If set, there is a simple scale; otherwise, scale = 1.0.
-         */
+
+        /// <summary>If set, there is a simple scale; otherwise, scale = 1.0.</summary>
         public static readonly short WE_HAVE_A_SCALE = 0x0008;
-        /**
-         * Indicates at least one more glyph after this one.
-         */
+
+        /// <summary>Indicates at least one more glyph after this one.</summary>
         public static readonly short MORE_COMPONENTS = 0x0020;
-        /**
-         * The x direction will use a different scale from the y direction.
-         */
+
+        /// <summary>The x direction will use a different scale from the y direction.</summary>
         public static readonly short WE_HAVE_AN_X_AND_Y_SCALE = 0x0040;
-        /**
-         * There is a 2 by2 transformation that will be used to scale the component.
-         */
+
+        /// <summary>There is a 2 by2 transformation that will be used to scale the component.</summary>
         public static readonly short WE_HAVE_A_TWO_BY_TWO = 0x0080;
-        /**
-         * Following the last component are instructions for the composite character.
-         */
+
+        /// <summary>Following the last component are instructions for the composite character.</summary>
         public static readonly short WE_HAVE_INSTRUCTIONS = 0x0100;
-        /**
-         * If set, this forces the aw and lsb (and rsb) for the composite to be equal to those from this original glyph.
-         */
+
+        /// <summary>If set, this forces the aw and lsb (and rsb) for the composite to be equal to those from this original glyph.</summary>
         public static readonly short USE_MY_METRICS = 0x0200;
 
         private int firstIndex;
@@ -83,12 +73,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private int point1 = 0;
         private int point2 = 0;
 
-        /**
-         * Constructor.
-         * 
-         * @param bais the stream to be read
-         * @ is thrown if something went wrong
-         */
+        /// <summary>Constructor.</summary>
+        /// <param name="bais">the stream to be read</param>
         public GlyfCompositeComp(IInputStream bais)
         {
             flags = bais.ReadInt16();
@@ -104,8 +90,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             else
             {
                 // otherwise, they are bytes (uint8 or int8).
-                argument1 = (short)bais.ReadSByte();
-                argument2 = (short)bais.ReadSByte();
+                argument1 = bais.ReadSByte();
+                argument2 = bais.ReadSByte();
             }
 
             // Assign the arguments according to the flags
@@ -154,147 +140,82 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Returns the first index.
-         * 
-         * @return the first index.
-         */
         public int FirstIndex
         {
             get => firstIndex;
             set => firstIndex = value;
         }
 
-        /**
-         * Returns the index of the first contour.
-         * 
-         * @return the index of the first contour.
-         */
         public int FirstContour
         {
             get => firstContour;
             set => firstContour = value;
         }
 
-        /**
-         * Returns argument 1.
-         * 
-         * @return argument 1.
-         */
         public short Argument1
         {
             get => argument1;
         }
 
-        /**
-         * Returns argument 2.
-         * 
-         * @return argument 2.
-         */
         public short Argument2
         {
             get => argument2;
         }
 
-        /**
-         * Returns the flags of the glyph.
-         * 
-         * @return the flags.
-         */
         public short Flags
         {
             get => flags;
         }
 
-        /**
-         * Returns the index of the first contour.
-         * 
-         * @return index of the first contour.
-         */
+        /// <summary>Returns the index of the first contour.</summary>
         public int GlyphIndex
         {
             get => glyphIndex;
         }
 
-        /**
-         * Returns the scale-01 value.
-         * 
-         * @return the scale-01 value.
-         */
         public double Scale01
         {
             get => scale01;
         }
 
-        /**
-         * Returns the scale-10 value.
-         * 
-         * @return the scale-10 value.
-         */
         public double Scale10
         {
             get => scale10;
         }
 
-        /**
-         * Returns the x-scaling value.
-         * 
-         * @return the x-scaling value.
-         */
         public double XScale
         {
             get => xscale;
         }
 
-        /**
-         * Returns the y-scaling value.
-         * 
-         * @return the y-scaling value.
-         */
         public double YScale
         {
             get => yscale;
         }
 
-        /**
-         * Returns the x-translation value.
-         * 
-         * @return the x-translation value.
-         */
         public int XTranslate
         {
             get => xtranslate;
         }
 
-        /**
-         * Returns the y-translation value.
-         * 
-         * @return the y-translation value.
-         */
         public int YTranslate
         {
             get => ytranslate;
         }
 
-        /**
-         * Transforms an x-coordinate of a point for this component.
-         * 
-         * @param x The x-coordinate of the point to transform
-         * @param y The y-coordinate of the point to transform
-         * @return The transformed x-coordinate
-         */
+        /// <summary>Transforms an x-coordinate of a point for this component.</summary>
+        /// <param name="x">The x-coordinate of the point to transform</param>
+        /// <param name="y">The y-coordinate of the point to transform</param>
+        /// <returns>The transformed x-coordinate</returns>
         public int ScaleX(int x, int y)
         {
             return (int)Math.Round((float)(x * xscale + y * scale10));
         }
 
-        /**
-         * Transforms a y-coordinate of a point for this component.
-         * 
-         * @param x The x-coordinate of the point to transform
-         * @param y The y-coordinate of the point to transform
-         * @return The transformed y-coordinate
-         */
+        /// <summary>Transforms a y-coordinate of a point for this component.</summary>
+        /// <param name="x">The x-coordinate of the point to transform</param>
+        /// <param name="y">The y-coordinate of the point to transform</param>
+        /// <returns>The transformed y-coordinate</returns>
         public int ScaleY(int x, int y)
         {
             return (int)Math.Round((float)(x * scale01 + y * yscale));

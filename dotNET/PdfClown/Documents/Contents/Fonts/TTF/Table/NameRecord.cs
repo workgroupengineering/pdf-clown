@@ -15,16 +15,14 @@
  * limitations under the License.
  */
 using PdfClown.Bytes;
-using System.IO;
 
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A name record in the name table.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A name record in the name table.
+    /// @author Ben Litchfield
+    /// </summary>
     public class NameRecord
     {
         // platform ids
@@ -175,76 +173,51 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private ushort stringOffset;
         private string text;
 
-        /**
-         * @return Returns the stringLength.
-         */
         public ushort StringLength
         {
             get => stringLength;
             set => stringLength = value;
         }
 
-        /**
-         * @return Returns the stringOffset.
-         */
         public ushort StringOffset
         {
             get => stringOffset;
             set => stringOffset = value;
         }
 
-        /**
-         * @return Returns the languageId.
-         */
         public ushort LanguageId
         {
             get => languageId;
             set => languageId = value;
         }
 
-        /**
-         * @return Returns the nameId.
-         */
         public ushort NameId
         {
             get => nameId;
             set => nameId = value;
         }
 
-        /**
-         * @return Returns the platformEncodingId.
-         */
         public ushort PlatformEncodingId
         {
             get => platformEncodingId;
             set => platformEncodingId = value;
         }
 
-        /**
-         * @return Returns the platformId.
-         */
         public ushort PlatformId
         {
             get => platformId;
             set => platformId = value;
         }
 
-        /**
-         * @return Returns the string.
-         */
         public string Text
         {
             get => text;
             set => text = value;
         }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public void InitData(TrueTypeFont ttf, IInputStream data)
         {
             platformId = data.ReadUInt16();
@@ -255,11 +228,6 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             stringOffset = data.ReadUInt16();
         }
 
-        /**
-         * Return a string representation of this class.
-         * 
-         * @return A string for this class.
-         */
         public override string ToString()
         {
             return

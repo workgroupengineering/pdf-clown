@@ -14,33 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using System.Collections.Generic;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
-    using System.Collections.Generic;
-
-    /**
-     * An interface that abstracts the cid &lt;-&gt; codepoint lookup functionality of cmap.
-     *
-     * @author Aaron Madlon-Kay
-     */
+    /// <summary>
+    /// An interface that abstracts the cid 
+    /// codepoint lookup functionality of cmap.
+    /// @author Aaron Madlon-Kay
+    /// </summary>
     public interface ICmapLookup
     {
-
-        /**
-         * Returns the GlyphId linked with the given character code.
-         *
-         * @param codePointAt the given character code to be mapped
-         * @return glyphId the corresponding glyph id for the given character code
-         */
+        /// <summary>Returns the GlyphId linked with the given character code.</summary>
+        /// <param name="codePointAt">the given character code to be mapped</param>
+        /// <returns>glyphId the corresponding glyph id for the given character code</returns>
         int GetGlyphId(int codePointAt);
 
-        /**
-         * Returns all possible character codes for the given gid, or null if there is none.
-         *
-         * @param gid glyph id
-         * @return a list with all character codes the given gid maps to
-         */
+        /// <summary>Returns all possible character codes for the given gid, or null if there is none.</summary>
+        /// <param name="gid">glyph id</param>
+        /// <returns>a list with all character codes the given gid maps to</returns>
         List<int> GetCharCodes(int gid);
 
     }
