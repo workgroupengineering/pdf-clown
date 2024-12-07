@@ -39,77 +39,77 @@ namespace PdfClown.Documents.Contents.Objects
     {
         private static readonly Dictionary<string, Func<PdfArray, Operation>> cache = new(128, StringComparer.Ordinal)
         {
-            { SaveGraphicsState.OperatorKeyword, (operands) => SaveGraphicsState.Value },
-            { SetFont.OperatorKeyword, (operands) => new SetFont(operands) },
-            { SetStrokeColorBase.OperatorKeyword, (operands) => new SetStrokeColorBase(operands) },
-            { SetStrokeColorExtended.OperatorKeyword, (operands) => new SetStrokeColorExtended(operands) },
-            { SetStrokeColorSpace.OperatorKeyword, (operands) => new SetStrokeColorSpace(operands) },
-            { SetFillColorBase.OperatorKeyword, (operands) => new SetFillColorBase(operands) },
-            { SetFillColorExtended.OperatorKeyword, (operands) => new SetFillColorExtended(operands) },
-            { SetFillColorSpace.OperatorKeyword, (operands) => new SetFillColorSpace(operands) },
-            { SetDeviceGrayStrokeColor.OperatorKeyword, (operands) => new SetDeviceGrayStrokeColor(operands) },
-            { SetDeviceGrayFillColor.OperatorKeyword, (operands) => new SetDeviceGrayFillColor(operands) },
-            { SetDeviceRGBStrokeColor.OperatorKeyword, (operands) => new SetDeviceRGBStrokeColor(operands) },
-            { SetDeviceRGBFillColor.OperatorKeyword, (operands) => new SetDeviceRGBFillColor(operands) },
-            { SetDeviceCMYKStrokeColor.OperatorKeyword, (operands) => new SetDeviceCMYKStrokeColor(operands) },
-            { SetDeviceCMYKFillColor.OperatorKeyword, (operands) => new SetDeviceCMYKFillColor(operands) },
-            { RestoreGraphicsState.OperatorKeyword, (operands) => RestoreGraphicsState.Value },
-            { BeginSubpath.OperatorKeyword, (operands) => new BeginSubpath(operands) },
-            { CloseSubpath.OperatorKeyword, (operands) => CloseSubpath.Value },
-            { PaintPath.CloseStrokeOperatorKeyword, (operands) => PaintPath.CloseStroke },
-            { PaintPath.FillOperatorKeyword, (operands) => PaintPath.Fill },
-            { PaintPath.FillCompatibleOperatorKeyword, (operands) => PaintPath.Fill },
-            { PaintPath.FillEvenOddOperatorKeyword, (operands) => PaintPath.FillEvenOdd },
-            { PaintPath.StrokeOperatorKeyword, (operands) => PaintPath.Stroke },
-            { PaintPath.FillStrokeOperatorKeyword, (operands) => PaintPath.FillStroke },
-            { PaintPath.FillStrokeEvenOddOperatorKeyword, (operands) => PaintPath.FillStrokeEvenOdd },
-            { PaintPath.CloseFillStrokeOperatorKeyword, (operands) => PaintPath.CloseFillStroke },
-            { PaintPath.CloseFillStrokeEvenOddOperatorKeyword, (operands) => PaintPath.CloseFillStrokeEvenOdd },
-            { PaintPath.EndNoOpOperatorKeyword, (operands) => PaintPath.EndNoOp },
-            { ModifyClipPathNonZero.OperatorKeyword, (operands) => ModifyClipPath.NonZero },
-            { ModifyClipPathEvenOdd.OperatorKeyword, (operands) => ModifyClipPath.EvenOdd },
-            { TranslateTextToNextLine.OperatorKeyword, (operands) => TranslateTextToNextLine.Value },
-            { ShowSimpleText.OperatorKeyword, (operands) => new ShowSimpleText(operands) },
-            { ShowTextToNextLineNoSpace.OperatorKeyword, (operands) => new ShowTextToNextLineNoSpace(operands) },
-            { ShowTextToNextLineWithSpace.OperatorKeyword, (operands) => new ShowTextToNextLineWithSpace(operands) },
-            { ShowAdjustedText.OperatorKeyword, (operands) => new ShowAdjustedText(operands) },
-            { TranslateTextRelativeNoLead.OperatorKeyword, (operands) => new TranslateTextRelativeNoLead(operands) },
-            { TranslateTextRelativeWithLead.OperatorKeyword, (operands) => new TranslateTextRelativeWithLead(operands) },
-            { SetTextMatrix.OperatorKeyword, (operands) => new SetTextMatrix(operands) },
-            { ModifyCTM.OperatorKeyword, (operands) => new ModifyCTM(operands) },
-            { PaintXObject.OperatorKeyword, (operands) => new PaintXObject(operands) },
-            { PaintShading.OperatorKeyword, (operands) => new PaintShading(operands) },
-            { SetCharSpace.OperatorKeyword, (operands) => new SetCharSpace(operands) },
-            { SetLineCap.OperatorKeyword, (operands) => new SetLineCap(operands) },
-            { SetLineDash.OperatorKeyword, (operands) => new SetLineDash(operands) },
-            { SetLineJoin.OperatorKeyword, (operands) => new SetLineJoin(operands) },
-            { SetLineWidth.OperatorKeyword, (operands) => new SetLineWidth(operands) },
-            { SetMiterLimit.OperatorKeyword, (operands) => new SetMiterLimit(operands) },
-            { SetTextLead.OperatorKeyword, (operands) => new SetTextLead(operands) },
-            { SetTextRise.OperatorKeyword, (operands) => new SetTextRise(operands) },
-            { SetTextScale.OperatorKeyword, (operands) => new SetTextScale(operands) },
-            { SetTextRenderMode.OperatorKeyword, (operands) => new SetTextRenderMode(operands) },
-            { SetWordSpace.OperatorKeyword, (operands) => new SetWordSpace(operands) },
-            { DrawLine.OperatorKeyword, (operands) => new DrawLine(operands) },
-            { DrawRectangle.OperatorKeyword, (operands) => new DrawRectangle(operands) },
-            { DrawCurve.InitialOperatorKeyword, (operands) => new DrawInitialCurve(operands) },
-            { DrawCurve.FullOperatorKeyword, (operands) => new DrawFullCurve(operands) },
-            { DrawCurve.FinalOperatorKeyword, (operands) => new DrawFinalCurve(operands) },
-            { BeginText.OperatorKeyword, (operands) => BeginText.Value },
-            { EndText.OperatorKeyword, (operands) => EndText.Value },
-            { BeginNamedMarkedContent.SimpleOperatorKeyword, (operands) => new BeginNamedMarkedContent(operands) },
-            { BeginPropertyListMarkedContent.PropertyListOperatorKeyword, (operands) => new BeginPropertyListMarkedContent(operands) },
-            { EndMarkedContent.OperatorKeyword, (operands) => EndMarkedContent.Value },
-            { MarkedNamedContentPoint.OperatorKeyword, (operands) => new MarkedNamedContentPoint(operands) },
-            { MarkedPropertyListContentPoint.OperatorKeyword, (operands) => new MarkedPropertyListContentPoint(operands) },
-            { BeginInlineImage.OperatorKeyword, (operands) => BeginInlineImage.Value },
-            { EndInlineImage.OperatorKeyword, (operands) => EndInlineImage.Value },
-            { ApplyExtGState.OperatorKeyword, (operands) => new ApplyExtGState(operands) },
-            { CharProcWidth.OperatorKeyword, (operands) => new CharProcWidth(operands) },
-            { CharProcBBox.OperatorKeyword, (operands) => new CharProcBBox(operands) },
-            { Flatness.OperatorKeyword, (operands) => new Flatness(operands) },
-            { BeginCompatibilityState.OperatorKeyword, (operands) => BeginCompatibilityState.Value },
-            { EndCompatibilityState.OperatorKeyword, (operands) => EndCompatibilityState.Value },
+            { SaveGraphicsState.OperatorKeyword, static operands => SaveGraphicsState.Value },
+            { SetFont.OperatorKeyword, static operands => new SetFont(operands) },
+            { SetStrokeColorBase.OperatorKeyword, static operands => new SetStrokeColorBase(operands) },
+            { SetStrokeColorExtended.OperatorKeyword, static operands => new SetStrokeColorExtended(operands) },
+            { SetStrokeColorSpace.OperatorKeyword, static operands => new SetStrokeColorSpace(operands) },
+            { SetFillColorBase.OperatorKeyword, static operands => new SetFillColorBase(operands) },
+            { SetFillColorExtended.OperatorKeyword, static operands => new SetFillColorExtended(operands) },
+            { SetFillColorSpace.OperatorKeyword, static operands => new SetFillColorSpace(operands) },
+            { SetGrayStrokeColor.OperatorKeyword, static operands => new SetGrayStrokeColor(operands) },
+            { SetGrayFillColor.OperatorKeyword, static operands => new SetGrayFillColor(operands) },
+            { SetRGBStrokeColor.OperatorKeyword, static operands => new SetRGBStrokeColor(operands) },
+            { SetRGBFillColor.OperatorKeyword, static operands => new SetRGBFillColor(operands) },
+            { SetCMYKStrokeColor.OperatorKeyword, static operands => new SetCMYKStrokeColor(operands) },
+            { SetCMYKFillColor.OperatorKeyword, static operands => new SetCMYKFillColor(operands) },
+            { RestoreGraphicsState.OperatorKeyword, static operands => RestoreGraphicsState.Value },
+            { BeginSubpath.OperatorKeyword, static operands => new BeginSubpath(operands) },
+            { CloseSubpath.OperatorKeyword, static operands => CloseSubpath.Value },
+            { PaintPath.CloseStrokeOperatorKeyword, static operands => PaintPath.CloseStroke },
+            { PaintPath.FillOperatorKeyword, static operands => PaintPath.Fill },
+            { PaintPath.FillCompatibleOperatorKeyword, static operands => PaintPath.Fill },
+            { PaintPath.FillEvenOddOperatorKeyword, static operands => PaintPath.FillEvenOdd },
+            { PaintPath.StrokeOperatorKeyword, static operands => PaintPath.Stroke },
+            { PaintPath.FillStrokeOperatorKeyword, static operands => PaintPath.FillStroke },
+            { PaintPath.FillStrokeEvenOddOperatorKeyword, static operands => PaintPath.FillStrokeEvenOdd },
+            { PaintPath.CloseFillStrokeOperatorKeyword, static operands => PaintPath.CloseFillStroke },
+            { PaintPath.CloseFillStrokeEvenOddOperatorKeyword, static operands => PaintPath.CloseFillStrokeEvenOdd },
+            { PaintPath.EndNoOpOperatorKeyword, static operands => PaintPath.EndNoOp },
+            { ModifyClipPathNonZero.OperatorKeyword, static operands => ModifyClipPath.NonZero },
+            { ModifyClipPathEvenOdd.OperatorKeyword, static operands => ModifyClipPath.EvenOdd },
+            { TranslateTextToNextLine.OperatorKeyword, static operands => TranslateTextToNextLine.Value },
+            { ShowSimpleText.OperatorKeyword, static operands => new ShowSimpleText(operands) },
+            { ShowTextToNextLineNoSpace.OperatorKeyword, static operands => new ShowTextToNextLineNoSpace(operands) },
+            { ShowTextToNextLineWithSpace.OperatorKeyword, static operands => new ShowTextToNextLineWithSpace(operands) },
+            { ShowAdjustedText.OperatorKeyword, static operands => new ShowAdjustedText(operands) },
+            { TranslateTextRelativeNoLead.OperatorKeyword, static operands => new TranslateTextRelativeNoLead(operands) },
+            { TranslateTextRelativeWithLead.OperatorKeyword, static operands => new TranslateTextRelativeWithLead(operands) },
+            { SetTextMatrix.OperatorKeyword, static operands => new SetTextMatrix(operands) },
+            { ModifyCTM.OperatorKeyword, static operands => new ModifyCTM(operands) },
+            { PaintXObject.OperatorKeyword, static operands => new PaintXObject(operands) },
+            { PaintShading.OperatorKeyword, static operands => new PaintShading(operands) },
+            { SetCharSpace.OperatorKeyword, static operands => new SetCharSpace(operands) },
+            { SetLineCap.OperatorKeyword, static operands => new SetLineCap(operands) },
+            { SetLineDash.OperatorKeyword, static operands => new SetLineDash(operands) },
+            { SetLineJoin.OperatorKeyword, static operands => new SetLineJoin(operands) },
+            { SetLineWidth.OperatorKeyword, static operands => new SetLineWidth(operands) },
+            { SetMiterLimit.OperatorKeyword, static operands => new SetMiterLimit(operands) },
+            { SetTextLead.OperatorKeyword, static operands => new SetTextLead(operands) },
+            { SetTextRise.OperatorKeyword, static operands => new SetTextRise(operands) },
+            { SetTextScale.OperatorKeyword, static operands => new SetTextScale(operands) },
+            { SetTextRenderMode.OperatorKeyword, static operands => new SetTextRenderMode(operands) },
+            { SetWordSpace.OperatorKeyword, static operands => new SetWordSpace(operands) },
+            { DrawLine.OperatorKeyword, static operands => new DrawLine(operands) },
+            { DrawRectangle.OperatorKeyword, static operands => new DrawRectangle(operands) },
+            { DrawCurve.InitialOperatorKeyword, static operands => new DrawInitialCurve(operands) },
+            { DrawCurve.FullOperatorKeyword, static operands => new DrawFullCurve(operands) },
+            { DrawCurve.FinalOperatorKeyword, static operands => new DrawFinalCurve(operands) },
+            { BeginText.OperatorKeyword, static operands => BeginText.Value },
+            { EndText.OperatorKeyword, static operands => EndText.Value },
+            { BeginNamedMarkedContent.SimpleOperatorKeyword, static operands => new BeginNamedMarkedContent(operands) },
+            { BeginPropertyListMarkedContent.PropertyListOperatorKeyword, static operands => new BeginPropertyListMarkedContent(operands) },
+            { EndMarkedContent.OperatorKeyword, static operands => EndMarkedContent.Value },
+            { MarkedNamedContentPoint.OperatorKeyword, static operands => new MarkedNamedContentPoint(operands) },
+            { MarkedPropertyListContentPoint.OperatorKeyword, static operands => new MarkedPropertyListContentPoint(operands) },
+            { BeginInlineImage.OperatorKeyword, static operands => BeginInlineImage.Value },
+            { EndInlineImage.OperatorKeyword, static operands => EndInlineImage.Value },
+            { ApplyExtGState.OperatorKeyword, static operands => new ApplyExtGState(operands) },
+            { CharProcWidth.OperatorKeyword, static operands => new CharProcWidth(operands) },
+            { CharProcBBox.OperatorKeyword, static operands => new CharProcBBox(operands) },
+            { Flatness.OperatorKeyword, static operands => new Flatness(operands) },
+            { BeginCompatibilityState.OperatorKeyword, static operands => BeginCompatibilityState.Value },
+            { EndCompatibilityState.OperatorKeyword, static operands => EndCompatibilityState.Value },
         };
 
         /// <summary>Gets an operation.</summary>
@@ -134,16 +134,13 @@ namespace PdfClown.Documents.Contents.Objects
         protected Operation(string @operator, PdfDirectObject operand)
         {
             this.@operator = @operator;
-
-            operands = new PdfArray(1);
-            operands.AddDirect(operand);
+            operands = new PdfArrayImpl(1) { operand };
         }
 
         protected Operation(string @operator, params PdfDirectObject[] operands)
         {
             this.@operator = @operator;
-            this.operands = new PdfArray(operands.Length);
-            this.operands.AddRangeDirect(operands);
+            this.operands = new PdfArrayImpl(operands);
         }
 
         protected Operation(string @operator, PdfArray operands)
@@ -154,7 +151,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public string Operator => @operator;
 
-        public IList<PdfDirectObject> Operands => operands;
+        public PdfArray Operands => operands;
 
         public override string ToString()
         {
@@ -175,7 +172,7 @@ namespace PdfClown.Documents.Contents.Objects
                     if (i > 0)
                     { buffer.Append(',').Append(' '); }
 
-                    buffer.Append(operands[i].ToString());
+                    buffer.Append(operands.Get(i).ToString());
                 }
                 buffer.Append(']');
             }
@@ -190,9 +187,11 @@ namespace PdfClown.Documents.Contents.Objects
         {
             if (operands != null)
             {
-                var fileContext = context.File;
-                foreach (var operand in operands)
-                { operand.WriteTo(stream, fileContext); stream.Write(Chunk.Space); }
+                foreach (var operand in operands.GetItems())
+                {
+                    operand.WriteTo(stream, context); 
+                    stream.Write(Chunk.Space);
+                }
             }
             stream.Write(@operator); stream.Write(Chunk.LineFeed);
         }

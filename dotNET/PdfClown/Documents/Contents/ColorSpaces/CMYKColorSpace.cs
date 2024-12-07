@@ -23,47 +23,38 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
+using System;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     /// <summary>Device Cyan-Magenta-Yellow-Key color space [PDF:1.6:4.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceCMYKColorSpace : DeviceColorSpace
+    public sealed class CMYKColorSpace : DeviceColorSpace
     {
         // NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
         // of the contextual resource dictionary) [PDF:1.6:4.5.7].
-        public static readonly DeviceCMYKColorSpace Default = new(PdfName.DeviceCMYK);
+        public static readonly CMYKColorSpace Default = new(PdfName.DeviceCMYK);
 
-        public static readonly DeviceCMYKColorSpace DefaultShort = new(PdfName.CMYK);
+        public static readonly CMYKColorSpace DefaultShort = new(PdfName.CMYK);
 
-        public DeviceCMYKColorSpace(PdfDocument context) : base(context, PdfName.DeviceCMYK)
+        internal CMYKColorSpace(PdfName baseObject)
+            : base(baseObject)
         { }
-
-        internal DeviceCMYKColorSpace(PdfDirectObject baseObject) : base(baseObject)
-        { }
-
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
 
         public override int ComponentCount => 4;
 
-        public override Color DefaultColor => DeviceCMYKColor.Default;
+        public override Color DefaultColor => CMYKColor.Default;
 
-        public override Color GetColor(PdfArray components, IContentContext context = null)
-            => components == null ? DefaultColor : components.Wrapper as DeviceCMYKColor ?? new DeviceCMYKColor(this, components);
+        public override IColor GetColor(PdfArray components, IContentContext context = null)
+            => components == null ? DefaultColor : new CMYKColor(this, components);
 
-        public override bool IsSpaceColor(Color color)
-        { return color is DeviceCMYKColor; }
+        public override bool IsSpaceColor(IColor color) => color is CMYKColor;
 
-        public override SKColor GetSKColor(Color color, float? alpha = null)
+        public override SKColor GetSKColor(IColor color, float? alpha = null)
         {
-            var cmykColor = (DeviceCMYKColor)color;
+            var cmykColor = (CMYKColor)color;
             return Calculate(cmykColor.C, cmykColor.M, cmykColor.Y, cmykColor.K, alpha);
         }
 

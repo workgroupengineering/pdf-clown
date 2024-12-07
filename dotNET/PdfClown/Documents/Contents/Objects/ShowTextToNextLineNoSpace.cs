@@ -45,8 +45,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected override PdfString TextElement
         {
-            get => (PdfString)operands[0];
-            set => operands[0] = value;
+            get => (PdfString)operands.Get(0);
+            set => operands.SetSimple(0, value);
         }
 
     }

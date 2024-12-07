@@ -25,23 +25,16 @@
 
 using PdfClown.Objects;
 
-using System;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    ///<summary>CIE-based L*a*b* color value [PDF:1.6:4.5.4].</summary>
+    /// <summary>CIE-based L*a*b* color value [PDF:1.6:4.5.4].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class LabColor : LeveledColor
     {
-        /*
-          TODO:colors MUST be instantiated only indirectly by the ColorSpace.getColor method!
-          This method MUST be made internal and its color space MUST be passed as argument!
-        */
+        // TODO:colors MUST be instantiated only indirectly by the ColorSpace.getColor method!
+        // This method MUST be made internal and its color space MUST be passed as argument!
         public LabColor(ColorSpace colorSpace, double l, double a, double b)
-            : this(colorSpace,
-            new PdfArray(3)
-            {
+            : this(colorSpace, new PdfArrayImpl(3){
                   NormalizeComponent(l),//TODO:normalize using the actual color space ranges!!!
                   NormalizeComponent(a),
                   NormalizeComponent(b)
@@ -52,31 +45,25 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             : base(colorSpace, components)
         { }
 
-        ///<summary>Gets/Sets the first component (L*).</summary>
+        /// <summary>Gets/Sets the first component (L*).</summary>
         public float L
         {
             get => this[0];
             set => this[0] = value;
         }
 
-        ///<summary>Gets/Sets the second component (a*).</summary>
+        /// <summary>Gets/Sets the second component (a*).</summary>
         public float A
         {
             get => this[1];
             set => this[1] = value;
         }
 
-        ///<summary>Gets/Sets the third component (b*).</summary>
+        /// <summary>Gets/Sets the third component (b*).</summary>
         public float B
         {
             get => this[2];
             set => this[2] = value;
         }
-
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
-
     }
 }

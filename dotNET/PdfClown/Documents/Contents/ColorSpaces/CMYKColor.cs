@@ -26,7 +26,6 @@
 using PdfClown.Objects;
 
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -34,17 +33,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     /// <remarks>The 'Key' component is renamed 'Black' to avoid semantic
     /// ambiguities.</remarks>
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceCMYKColor : DeviceColor, IEquatable<DeviceCMYKColor>
+    public sealed class CMYKColor : DeviceColor, IEquatable<CMYKColor>
     {
-        public static readonly DeviceCMYKColor Black = new DeviceCMYKColor(0, 0, 0, 1);
-        public static readonly DeviceCMYKColor White = new DeviceCMYKColor(0, 0, 0, 0);
+        public static readonly CMYKColor Black = new CMYKColor(0, 0, 0, 1);
+        public static readonly CMYKColor White = new CMYKColor(0, 0, 0, 0);
 
-        public static readonly DeviceCMYKColor Default = Black;
+        public static readonly CMYKColor Default = Black;
 
-        public DeviceCMYKColor(double c, double m, double y, double k)
-            : this(DeviceCMYKColorSpace.Default,
-                  new PdfArray(4)
-                  {
+        public CMYKColor(double c, double m, double y, double k)
+            : this(CMYKColorSpace.Default, new PdfArrayImpl(4) {
                       NormalizeComponent(c),
                       NormalizeComponent(m),
                       NormalizeComponent(y),
@@ -52,7 +49,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                   })
         { }
 
-        internal DeviceCMYKColor(DeviceColorSpace colorSpace, PdfArray components)
+        internal CMYKColor(DeviceColorSpace colorSpace, PdfArray components)
             : base(colorSpace, components)
         { }
 
@@ -86,12 +83,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override bool IsZero => Equals(White);
 
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals(DeviceCMYKColor other)
+        public bool Equals(CMYKColor other)
         {
             if (other == null)
                 return false;

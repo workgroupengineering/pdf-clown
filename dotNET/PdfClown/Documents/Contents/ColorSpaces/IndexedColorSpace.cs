@@ -23,13 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
+using PdfClown.Bytes;
 using PdfClown.Objects;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
-using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -37,8 +35,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     [PDF(VersionEnum.PDF11)]
     public sealed class IndexedColorSpace : SpecialColorSpace
     {
-        private IDictionary<int, Color> baseColors = new Dictionary<int, Color>();
-        private IDictionary<int, SKColor> baseSKColors = new Dictionary<int, SKColor>();
+        private Dictionary<int, IColor> baseColors = new();
+        private Dictionary<int, SKColor> baseSKColors = new();
         private byte[] baseComponentValues;
         private ColorSpace baseSpace;
         private int? componentCount;
@@ -46,36 +44,30 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         //TODO:IMPL new element constructor!
 
-        internal IndexedColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        internal IndexedColorSpace(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the base color space in which the values in the color table
-          are to be interpreted.</summary>
-        */
-        public ColorSpace BaseSpace => baseSpace ??= ColorSpace.Wrap(((PdfArray)BaseDataObject)[1]);
+        /// <summary>Gets the base color space in which the values in the color table
+        /// are to be interpreted.</summary>
+        public ColorSpace BaseSpace => baseSpace ??= ColorSpace.Wrap(Get(1));
 
         public int BaseSpaceComponentCount => componentCount ??= BaseSpace.ComponentCount;
 
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
-
         public override int ComponentCount => 1;
 
-        public override Color DefaultColor => defaultColor ??= new IndexedColor(this, 0);
+        public override IColor DefaultColor => defaultColor ??= new IndexedColor(this, 0);
 
-        /**
-          <summary>Gets the color corresponding to the specified table index resolved according to
-          the <see cref="BaseSpace">base space</see>.<summary>
-        */
-        public Color GetBaseColor(IndexedColor color)
+        /// <summary>Gets the color corresponding to the specified table index resolved according to
+        /// the<see cref="BaseSpace"> base space</see>.<summary>
+        public IColor GetBaseColor(IndexedColor color)
         {
             int colorIndex = color.Index;
             if (!baseColors.TryGetValue(colorIndex, out var baseColor))
             {
                 ColorSpace baseSpace = BaseSpace;
                 int componentCount = BaseSpaceComponentCount;
-                var components = new PdfArray(componentCount);
+                var components = new PdfArrayImpl(componentCount);
                 {
                     int componentValueIndex = colorIndex * componentCount;
                     byte[] baseComponentValues = BaseComponentValues;
@@ -120,12 +112,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return baseColor;
         }
 
-        public override Color GetColor(PdfArray components, IContentContext context)
-            => components == null ? DefaultColor : components.Wrapper as IndexedColor ?? new IndexedColor(this, components);
+        public override IColor GetColor(PdfArray components, IContentContext context)
+            => components == null ? DefaultColor : new IndexedColor(this, components);
 
-        public override bool IsSpaceColor(Color color) => color is IndexedColor;
+        public override bool IsSpaceColor(IColor color) => color is IndexedColor;
 
-        public override SKColor GetSKColor(Color color, float? alpha = null) => BaseSpace.GetSKColor(GetBaseColor((IndexedColor)color), alpha);
+        public override SKColor GetSKColor(IColor color, float? alpha = null) => BaseSpace.GetSKColor(GetBaseColor((IndexedColor)color), alpha);
 
         public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)
         {
@@ -137,7 +129,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             return color;
         }
 
-        public override SKPaint GetPaint(Color color, SKPaintStyle paintStyle, float? alpha = null, GraphicsState state = null)
+        public override SKPaint GetPaint(IColor color, SKPaintStyle paintStyle, float? alpha = null, GraphicsState state = null)
         {
             return BaseSpace.GetPaint(GetBaseColor((IndexedColor)color), paintStyle, alpha, state);
         }
@@ -149,7 +141,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             {
                 if (baseComponentValues == null)
                 {
-                    var value = ((PdfArray)BaseDataObject).Resolve(3);
+                    var value = Get<PdfDirectObject>(3);
                     if (value is IDataWrapper wrapper)
                     {
                         baseComponentValues = wrapper.GetArrayBuffer();

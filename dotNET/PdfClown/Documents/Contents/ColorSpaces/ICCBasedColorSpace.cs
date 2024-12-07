@@ -26,6 +26,7 @@
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -40,26 +41,23 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private ColorSpace alternate;
         //TODO:IMPL new element constructor!
 
-        internal ICCBasedColorSpace(PdfDirectObject baseObject) : base(baseObject) { }
-
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
+        internal ICCBasedColorSpace(List<PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
 
         public override int ComponentCount => N;
 
-        public override Color DefaultColor => AlternateColorSpace.DefaultColor;
+        public override IColor DefaultColor => AlternateColorSpace.DefaultColor;
 
-        public override Color GetColor(PdfArray components, IContentContext context) => AlternateColorSpace.GetColor(components, context);
+        public override IColor GetColor(PdfArray components, IContentContext context) => AlternateColorSpace.GetColor(components, context);
 
-        public override bool IsSpaceColor(Color color) => AlternateColorSpace.IsSpaceColor(color);
+        public override bool IsSpaceColor(IColor color) => AlternateColorSpace.IsSpaceColor(color);
 
-        public override SKColor GetSKColor(Color color, float? alpha = null) => AlternateColorSpace.GetSKColor(color, alpha);
+        public override SKColor GetSKColor(IColor color, float? alpha = null) => AlternateColorSpace.GetSKColor(color, alpha);
 
         public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null) => AlternateColorSpace.GetSKColor(components, alpha);
 
-        public PdfStream Profile => ((PdfArray)BaseDataObject).Get<PdfStream>(1);
+        public PdfStream Profile => Get<PdfStream>(1);
 
         public PdfName Alternate => Profile?.Get<PdfName>(PdfName.Alternate);
 
@@ -86,7 +84,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
         }
         public int N => Profile?.GetInt(PdfName.N) ?? 0;
-
 
         public SKColorSpace GetSKColorSpace()
         {

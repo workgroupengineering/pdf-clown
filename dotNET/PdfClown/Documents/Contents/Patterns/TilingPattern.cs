@@ -58,8 +58,8 @@ namespace PdfClown.Documents.Contents.Patterns
         { }
 
         /// <summary>Gets the colorized representation of this pattern.</summary>
-        /// <param name = "color" > Color to be applied to the pattern.</param>
-        public ColorizedTilingPattern Colorize(Color color)
+        /// <param name="color"> Color to be applied to the pattern.</param>
+        public ColorizedTilingPattern Colorize(IColor color)
         {
             if (PaintType != TilingPaintTypeEnum.Uncolored)
                 throw new NotSupportedException("Only uncolored tiling patterns can be colorized.");

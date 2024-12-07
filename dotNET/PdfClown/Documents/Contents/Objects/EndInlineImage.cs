@@ -23,13 +23,9 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'End inline image object' operation [PDF:1.6:4.8.6].</summary>
-    */
+    /// <summary>'End inline image object' operation [PDF:1.6:4.8.6].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class EndInlineImage : Operation
     {

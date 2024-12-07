@@ -28,13 +28,12 @@ using PdfClown.Objects;
 namespace PdfClown.Documents.Contents.Objects
 {
     /// <summary>Resource reference.</summary>
-    public interface IResourceReference<TResource>
-        where TResource : PdfObjectWrapper
+    public interface IResourceReference<TResource>        
     {
         /// <summary>Gets the referenced resource.</summary>
-        /// <remarks>Whether a <see cref = "Name" > resource name</see> is available or not, it can be
+        /// <remarks>Whether a <see cref="Name"> resource name</see> is available or not, it can be
         ///   respectively either shared or private.</remarks>
-        /// <param name = "context" > Content context.</param>
+        /// <param name="context"> Content context.</param>
         TResource GetResource(ContentScanner context);
 
         /// <summary>Gets/Sets the resource name.</summary>

@@ -25,19 +25,14 @@
 
 using PdfClown.Objects;
 
-using System;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Separation color value [PDF:1.6:4.5.5].</summary>
-    */
+    /// <summary>Separation color value [PDF:1.6:4.5.5].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class SeparationColor : LeveledColor
     {
         public SeparationColor(ColorSpace colorSpace, double intensity)
-            : this(colorSpace, new PdfArray(1) { intensity })
+            : this(colorSpace, new PdfArrayImpl(1) { intensity })
         //TODO:normalize value (see devicecolor)!
         { }
 
@@ -46,19 +41,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         { }
 
 
-        /**
-          <summary>Gets/Sets the color intensity.</summary>
-        */
+        /// <summary>Gets/Sets the color intensity.</summary>
         public float Intensity
         {
             get => this[0];
             set => this[0] = value;
-        }
-
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
+        }       
 
     }
 }

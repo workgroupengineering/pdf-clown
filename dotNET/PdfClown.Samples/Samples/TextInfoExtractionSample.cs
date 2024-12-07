@@ -17,11 +17,11 @@ namespace PdfClown.Samples.CLI
     {
         private DeviceRGBColor[] textCharBoxColors = new DeviceRGBColor[]
           {
-        new DeviceRGBColor(200 / 255d, 100 / 255d, 100 / 255d),
-        new DeviceRGBColor(100 / 255d, 200 / 255d, 100 / 255d),
-        new DeviceRGBColor(100 / 255d, 100 / 255d, 200 / 255d)
+        new RGBColor(200 / 255d, 100 / 255d, 100 / 255d),
+        new RGBColor(100 / 255d, 200 / 255d, 100 / 255d),
+        new RGBColor(100 / 255d, 100 / 255d, 200 / 255d)
           };
-        private DeviceRGBColor textStringBoxColor = DeviceRGBColor.Black;
+        private RGBColor textStringBoxColor = RGBColor.Black;
 
         public override void Run()
         {

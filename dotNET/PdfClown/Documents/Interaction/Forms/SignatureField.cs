@@ -93,7 +93,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
             composer.BeginLocalState();
             composer.ApplyMatrix(GraphicsState.GetRotationMatrix(box, widget.Page.Rotate));
-            composer.SetFillColor(DeviceRGBColor.Black);
+            composer.SetFillColor(RGBColor.Black);
             composer.SetFont(font, headerFontSize);
             composer.ShowText(string.Join('\n', nameArray),
                 horizontal

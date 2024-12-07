@@ -207,7 +207,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var oldValue = InteriorSKColor;
                 if (oldValue != value)
                 {
-                    InteriorColor = DeviceRGBColor.Get(value);
+                    InteriorColor = RGBColor.Get(value);
                     OnPropertyChanged(oldValue, value);
                 }
             }

@@ -23,35 +23,41 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
+using PdfClown.Bytes;
 using PdfClown.Objects;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Device color space [PDF:1.6:4.5.3].</summary>
-    */
+    /// <summary>Device color space [PDF:1.6:4.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public abstract class DeviceColorSpace : ColorSpace
     {
         public static SKColor CalcSKColor(DeviceColor color, float? alpha = null)
         {
-            if (color is DeviceRGBColor deviceRGB)
-                return DeviceRGBColorSpace.Default.GetSKColor(deviceRGB, alpha);
-            if (color is DeviceCMYKColor deviceCMYK)
-                return DeviceCMYKColorSpace.Default.GetSKColor(deviceCMYK, alpha);
-            if (color is DeviceGrayColor deviceGray)
-                return DeviceGrayColorSpace.Default.GetSKColor(deviceGray, alpha);
+            if (color is RGBColor deviceRGB)
+                return RGBColorSpace.Default.GetSKColor(deviceRGB, alpha);
+            if (color is CMYKColor deviceCMYK)
+                return CMYKColorSpace.Default.GetSKColor(deviceCMYK, alpha);
+            if (color is GrayColor deviceGray)
+                return GrayColorSpace.Default.GetSKColor(deviceGray, alpha);
             return SKColors.Black;
         }
 
         protected DeviceColorSpace(PdfDocument context, PdfName baseDataObject)
-            : base(context, baseDataObject)
+            : base(context, new List<PdfDirectObject>(1) { baseDataObject })
         { }
 
-        protected DeviceColorSpace(PdfDirectObject baseObject)
-            : base(baseObject)
+        protected DeviceColorSpace(PdfName baseObject)
+            : this(null, baseObject)
         { }
+
+        public override PdfDirectObject RefOrSelf => Get(0);
+
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
+        {
+            WriteTo(stream, context, Get(0));
+        }        
     }
 }

@@ -25,20 +25,17 @@
 
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
-using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class SetFillColorExtended : SetFillColor
     {
-        /**
-          <summary>'Set the color to use for nonstroking operations in any color space' operator.</summary>
-        */
+        /// <summary>'Set the color to use for nonstroking operations in any color space' operator.</summary>
         [PDF(VersionEnum.PDF12)]
         public static readonly string OperatorKeyword = "scn";
-        
 
-        public SetFillColorExtended(Color value)
+
+        public SetFillColorExtended(IColor value)
             : base(OperatorKeyword, value)
         { }
 
@@ -46,22 +43,18 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, operands)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-         */
+        /// <param name="operator">Graphics operator.</param>
+        /// <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
         internal SetFillColorExtended(PdfName name)
             : this(name, null)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-          <param name="underlyingColor">Color used to colorize the pattern.</param>
-         */
-        internal SetFillColorExtended(PdfName name, Color underlyingColor)
+        /// <param name="operator"> Graphics operator.</param>
+        /// <param name="name"> Name of the color resource entry(see<see cref="Patterns" />).</param>
+        /// <param name="underlyingColor"> Color used to colorize the pattern.</param>
+        internal SetFillColorExtended(PdfName name, IColor underlyingColor)
             : base(OperatorKeyword, name, underlyingColor)
         { }
-        
+
     }
 }

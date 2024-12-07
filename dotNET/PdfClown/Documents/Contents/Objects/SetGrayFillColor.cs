@@ -28,24 +28,22 @@ using PdfClown.Objects;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /// <summary>'Set the color to use for nonstroking operations in device RGB color space'
+    /// <summary>'Set the color to use for nonstroking operations in device gray color space'
     /// operation [PDF:1.6:4.5.7].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetDeviceRGBFillColor : SetFillColor
+    public sealed class SetGrayFillColor : SetFillColor
     {
-        public static readonly string OperatorKeyword = "rg";
+        public static readonly string OperatorKeyword = "g";
 
-        public SetDeviceRGBFillColor(DeviceRGBColor value)
-            : base(OperatorKeyword, value)
+        public SetGrayFillColor(GrayColor value) : base(OperatorKeyword, value)
         { }
 
-        public SetDeviceRGBFillColor(PdfArray operands)
-            : base(OperatorKeyword, operands)
+        public SetGrayFillColor(PdfArray operands) : base(OperatorKeyword, operands)
         { }
 
         public override void Scan(GraphicsState state)
         {
-            state.FillColorSpace = DeviceRGBColorSpace.Default;
+            state.FillColorSpace = GrayColorSpace.Default;
             base.Scan(state);
         }
     }

@@ -160,8 +160,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             //pathMatrix = pathMatrix.PostConcat(SKMatrix.CreateTranslation(0, bound.Height));
             var composer = new PrimitiveComposer(normalAppearance);
             composer.SetLineWidth(1);
-            composer.SetStrokeColor(DeviceRGBColor.Default);
-            composer.SetFillColor(Color ?? DeviceRGBColor.White);
+            composer.SetStrokeColor(RGBColor.Default);
+            composer.SetFillColor(Color ?? RGBColor.White);
             composer.DrawPath(tempPath);
             composer.FillStroke();
             composer.Flush();

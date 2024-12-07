@@ -23,64 +23,51 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
-using PdfClown.Util;
-
-using System;
 using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Special color space that provides a means for specifying the use of additional colorants
-      or for isolating the control of individual color components of a device color space for
-      a subtractive device [PDF:1.6:4.5.5].</summary>
-      <remarks>When such a space is the current color space, the current color is a single-component value,
-      called a tint, that controls the application of the given colorant or color components only.</remarks>
-    */
+    /// <summary>Special color space that provides a means for specifying the use of additional colorants
+    /// or for isolating the control of individual color components of a device color space for
+    /// a subtractive device[PDF:1.6:4.5.5].</summary>
+    /// <remarks>When such a space is the current color space, the current color is a single-component value,
+    /// called a tint, that controls the application of the given colorant or color components only.</remarks>
     [PDF(VersionEnum.PDF12)]
     public sealed class SeparationColorSpace : SpecialDeviceColorSpace
     {
-        /**
-          <summary>Special colorant name referring collectively to all components available on an output
-          device, including those for the standard process components.</summary>
-          <remarks>When a separation space with this component name is the current color space, painting
-          operators apply tint values to all available components at once.</remarks>
-        */
+        /// <summary>Special colorant name referring collectively to all components available on an output
+        /// device, including those for the standard process components.</summary>
+        /// <remarks>When a separation space with this component name is the current color space, painting
+        /// operators apply tint values to all available components at once.</remarks>
         public static readonly string AllComponentName = PdfName.All.StringValue;
         private List<string> list;
         private SeparationColor defaultColor;
 
         //TODO:IMPL new element constructor!
 
-        internal SeparationColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        internal SeparationColorSpace(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
-
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
 
         public override int ComponentCount => 1;
 
-        /**
-          <summary>Gets the name of the colorant that this separation color space is intended
-          to represent.</summary>
-          <remarks>Special names:
-            <list type="bullet">
-              <item><see cref="AllComponentName">All</see></item>
-              <item><see cref="NoneComponentName">None</see></item>
-            </list>
-          </remarks>
-        */
-        public override IList<string> ComponentNames => list ??= new List<string> { ((PdfArray)BaseDataObject).GetString(1) };
+        /// <summary>Gets the name of the colorant that this separation color space is intended
+        /// to represent.</summary>
+        /// <remarks>Special names:
+        ///  <list type="bullet">
+        ///    <item><see cref="AllComponentName"> All </see></item>
+        ///    <item><see cref="NoneComponentName"> None </see></item>
+        ///  </list>
+        /// </remarks>
+        public override IList<string> ComponentNames => list ??= new List<string> { GetString(1) };
 
         public override Color DefaultColor => defaultColor ??= new SeparationColor(this, 0);
 
         public override Color GetColor(PdfArray components, IContentContext context)
-            => components == null ? DefaultColor : components.Wrapper as SeparationColor ?? new SeparationColor(this, components);
+            => components == null ? DefaultColor : new SeparationColor(this, components);
 
-        public override bool IsSpaceColor(Color color) => color is SeparationColor;
+        public override bool IsSpaceColor(IColor color) => color is SeparationColor;
 
     }
 }

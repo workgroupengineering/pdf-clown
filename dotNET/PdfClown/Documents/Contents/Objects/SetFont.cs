@@ -30,12 +30,12 @@ namespace PdfClown.Documents.Contents.Objects
 {
     /// <summary>'Set the text font' operation [PDF:1.6:5.2].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetFont : Operation, IResourceReference<Font>
+    public sealed class SetFont : Operation, IResourceReference<PdfFont>
     {
         public static readonly string OperatorKeyword = "Tf";
 
         public SetFont(PdfName name, double size)
-            : base(OperatorKeyword, new PdfArray(2) { name, size })
+            : base(OperatorKeyword, new PdfArrayImpl(2) { name, size })
         { }
 
         public SetFont(PdfArray operands)
@@ -52,15 +52,15 @@ namespace PdfClown.Documents.Contents.Objects
         public PdfName Name
         {
             get => operands.Get<PdfName>(0);
-            set => operands[0] = value;
+            set => operands.SetSimple(0, value);
         }
 
-        /// <summary>Gets the <see cref="Font">font</see> resource to be set.</summary>
+        /// <summary>Gets the <see cref="PdfFont">font</see> resource to be set.</summary>
         /// <param name="scanner">Content context.</param>
-        public Font GetResource(ContentScanner scanner)
+        public PdfFont GetResource(ContentScanner scanner)
         {
             var pscanner = scanner;
-            Font font;
+            PdfFont font;
             while ((font = pscanner.Context.Resources.Fonts[Name]) == null
                 && (pscanner = pscanner.ResourceParent) != null)
             { }

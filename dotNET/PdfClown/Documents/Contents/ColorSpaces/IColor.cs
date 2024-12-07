@@ -1,5 +1,5 @@
-/*
-  Copyright 2010 Stefano Chizzolini. http://www.pdfclown.org
+﻿/*
+  Copyright 2006-2011 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,31 +23,14 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
 
-namespace PdfClown.Documents.Contents.Objects
+namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /// <summary>'Set the color to use for stroking operations in device RGB color space'
-    /// operation [PDF:1.6:4.5.7].</summary>
-
-    [PDF(VersionEnum.PDF10)]
-    public sealed class SetDeviceRGBStrokeColor : SetStrokeColor
+    public interface IColor
     {
-        public static readonly string OperatorKeyword = "RG";
-
-        public SetDeviceRGBStrokeColor(DeviceRGBColor value)
-            : base(OperatorKeyword, value)
-        { }
-
-        public SetDeviceRGBStrokeColor(PdfArray operands)
-            : base(OperatorKeyword, operands)
-        { }
-
-        public override void Scan(GraphicsState state)
-        {
-            state.StrokeColorSpace = DeviceRGBColorSpace.Default;
-            base.Scan(state);
-        }
+        ColorSpace ColorSpace { get; }
+        float[] Floats { get; }
+        PdfArray Components { get; }
     }
 }

@@ -23,16 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Marked-content point' operation [PDF:1.6:10.5].</summary>
-    */
+    /// <summary>'Marked-content point' operation [PDF:1.6:10.5].</summary>
     [PDF(VersionEnum.PDF12)]
     public abstract class MarkedContentPoint : ContentMarker
     {
@@ -49,6 +44,6 @@ namespace PdfClown.Documents.Contents.Objects
             : base(@operator, operands)
         { }
 
-        
+
     }
 }

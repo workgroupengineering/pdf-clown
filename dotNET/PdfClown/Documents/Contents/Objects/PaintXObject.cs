@@ -36,7 +36,6 @@ namespace PdfClown.Documents.Contents.Objects
     public sealed class PaintXObject : Operation, IResourceReference<XObject>, IBoxed
     {
         public static readonly string OperatorKeyword = "Do";
-        public static readonly SKPaint ImagePaint = new SKPaint { FilterQuality = SKFilterQuality.Low, BlendMode = SKBlendMode.SrcOver };
 
         public PaintXObject(PdfName name) : base(OperatorKeyword, name)
         { }
@@ -46,8 +45,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         public PdfName Name
         {
-            get => (PdfName)operands[0];
-            set => operands[0] = value;
+            get => (PdfName)operands.Get(0);
+            set => operands.SetSimple(0, value);
         }
 
         /// <summary>Gets the scanner for the contents of the painted external object.</summary>

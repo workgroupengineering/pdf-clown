@@ -136,7 +136,7 @@ namespace PdfClown.Samples.CLI
                 composer.End();
 
                 // Drawing the circle...
-                composer.SetFillColor(DeviceRGBColor.Get(SKColors.Red));
+                composer.SetFillColor(RGBColor.Get(SKColors.Red));
                 composer.DrawEllipse(arcFrame);
                 composer.FillStroke();
             }
@@ -154,7 +154,7 @@ namespace PdfClown.Samples.CLI
                 composer.End();
 
                 // Drawing the ellipse...
-                composer.SetFillColor(DeviceRGBColor.Get(SKColors.Green));
+                composer.SetFillColor(RGBColor.Get(SKColors.Green));
                 composer.DrawEllipse(arcFrame);
                 composer.FillStroke();
             }
@@ -172,7 +172,7 @@ namespace PdfClown.Samples.CLI
                 composer.End();
 
                 // Drawing the ellipse...
-                composer.SetFillColor(DeviceRGBColor.Get(SKColors.Blue));
+                composer.SetFillColor(RGBColor.Get(SKColors.Blue));
                 composer.DrawEllipse(arcFrame);
                 composer.FillStroke();
             }
@@ -307,7 +307,7 @@ namespace PdfClown.Samples.CLI
                     composer.SetLineDash(new LineDash(new float[] { 5 }, 3));
                 }
 
-                composer.SetFillColor(new DeviceRGBColor(1, x / 500d, x / 500d));
+                composer.SetFillColor(new RGBColor(1, x / 500d, x / 500d));
                 composer.DrawRectangle(
                   SKRect.Create(x, 250, 150, 100),
                   radius // NOTE: radius parameter determines the rounded angle size.
@@ -341,7 +341,7 @@ namespace PdfClown.Samples.CLI
 
                 composer.BeginLocalState();
                 composer.SetLineWidth(1);
-                composer.SetStrokeColor(DeviceRGBColor.White);
+                composer.SetStrokeColor(RGBColor.White);
                 composer.SetLineCap(LineCapEnum.Butt);
                 composer.DrawLine(
                   new SKPoint(120, y),
@@ -375,7 +375,7 @@ namespace PdfClown.Samples.CLI
 
                 composer.BeginLocalState();
                 composer.SetLineWidth(1);
-                composer.SetStrokeColor(DeviceRGBColor.White);
+                composer.SetStrokeColor(RGBColor.White);
                 composer.SetLineCap(LineCapEnum.Butt);
                 composer.DrawPolyline(points);
                 composer.Stroke();
@@ -568,7 +568,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            var mainFont = fonts::FontType1.Load(document, fonts::FontName.CourierBold);
+            var mainFont = PdfType1Font.Load(document, FontName.CourierBold);
             int step;
             {
                 XAlignmentEnum[] xAlignments = Enum.GetValues<XAlignmentEnum>();

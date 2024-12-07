@@ -57,10 +57,11 @@ namespace PdfClown.Documents.Contents.Objects
         }
 
         public ModifyCTM(double a, double b, double c, double d, double e, double f)
-            : this(new PdfArray(6) { a, b, c, d, e, f })
+            : this(new PdfArrayImpl(6) { a, b, c, d, e, f })
         { }
 
-        public ModifyCTM(PdfArray operands) : base(OperatorKeyword, operands)
+        public ModifyCTM(PdfArray operands)
+            : base(OperatorKeyword, operands)
         { }
 
         public SKMatrix Value => matrix ??= operands.ToSkMatrix();

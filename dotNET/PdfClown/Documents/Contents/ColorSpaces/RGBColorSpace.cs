@@ -23,49 +23,43 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
 
 using System;
-using System.Collections.Generic;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /// <summary>Device Gray color space [PDF:1.6:4.5.3].</summary>
+    /// <summary>Device Red-Green-Blue color space [PDF:1.6:4.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceGrayColorSpace : DeviceColorSpace
+    public sealed class RGBColorSpace : DeviceColorSpace
     {
         // NOTE: It may be specified directly (i.e. without being defined in the ColorSpace subdictionary
         // of the contextual resource dictionary) [PDF:1.6:4.5.7].
-        public static readonly DeviceGrayColorSpace Default = new(PdfName.DeviceGray);
+        public static readonly RGBColorSpace Default = new(PdfName.DeviceRGB);
 
-        public static readonly DeviceGrayColorSpace DefaultShort = new(PdfName.G);
+        public static readonly RGBColorSpace DefaultShort = new(PdfName.RGB);
 
-        public DeviceGrayColorSpace(PdfDocument context) : base(context, PdfName.DeviceGray)
+        internal RGBColorSpace(PdfName baseObject)
+            : base(baseObject)
         { }
 
-        public DeviceGrayColorSpace(PdfDirectObject baseObject) : base(baseObject)
-        { }
+        public override int ComponentCount => 3;
 
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
+        public override IColor DefaultColor => RGBColor.Default;
 
-        public override int ComponentCount => 1;
+        public override IColor GetColor(PdfArray components, IContentContext context = null)
+            => components == null ? DefaultColor : new RGBColor(this, components);
 
-        public override Color DefaultColor => DeviceGrayColor.Default;
+        public override bool IsSpaceColor(IColor color) => color is RGBColor;
 
-        public override Color GetColor(PdfArray components, IContentContext context = null)
-            => components == null ? DefaultColor : components.Wrapper as DeviceGrayColor ?? new DeviceGrayColor(this, components);
-
-        public override bool IsSpaceColor(Color color)
-        { return color is DeviceGrayColor; }
-
-        public override SKColor GetSKColor(Color color, float? alpha = null)
+        public override SKColor GetSKColor(IColor color, float? alpha = null)
         {
-            var spaceColor = (DeviceGrayColor)color;
-            var g = (byte)Math.Round(spaceColor.G * 255);
-            var skColor = new SKColor(g, g, g);
+            var spaceColor = (RGBColor)color;
+            var skColor = new SKColor(
+               (byte)Math.Round(spaceColor.R * 255),
+               (byte)Math.Round(spaceColor.G * 255),
+               (byte)Math.Round(spaceColor.B * 255));
             if (alpha != null)
             {
                 skColor = skColor.WithAlpha((byte)(alpha.Value * 255));
@@ -75,8 +69,10 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null)
         {
-            var g = (byte)Math.Round(components[0] * 255);
-            var skColor = new SKColor(g, g, g);
+            var skColor = new SKColor(
+                 (byte)Math.Round(components[0] * 255),
+                 (byte)Math.Round(components[1] * 255),
+                 (byte)Math.Round(components[2] * 255));
             if (alpha != null)
             {
                 skColor = skColor.WithAlpha((byte)(alpha.Value * 255));

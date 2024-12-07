@@ -28,24 +28,24 @@ using PdfClown.Objects;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /// <summary>'Set the color to use for nonstroking operations in device CMYK color space'
+    /// <summary>'Set the color to use for stroking operations in device gray color space'
     /// operation [PDF:1.6:4.5.7].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class SetDeviceCMYKFillColor : SetFillColor
+    public sealed class SetGrayStrokeColor : SetStrokeColor
     {
-        public static readonly string OperatorKeyword = "k";
+        public static readonly string OperatorKeyword = "G";
 
-        public SetDeviceCMYKFillColor(DeviceCMYKColor value)
+        public SetGrayStrokeColor(GrayColor value) 
             : base(OperatorKeyword, value)
         { }
 
-        public SetDeviceCMYKFillColor(PdfArray operands)
+        public SetGrayStrokeColor(PdfArray operands) 
             : base(OperatorKeyword, operands)
         { }
 
         public override void Scan(GraphicsState state)
         {
-            state.FillColorSpace = DeviceCMYKColorSpace.Default;
+            state.StrokeColorSpace = GrayColorSpace.Default;
             base.Scan(state);
         }
     }

@@ -29,7 +29,6 @@
  * The default color is `new Float32Array([0, 0, 0])`.
  */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 
@@ -39,10 +38,8 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>CIE-based ABC float-transformation-stage color space, where A, B and C represent the
-      L*, a* and b* components of a CIE 1976 L*a*b* space [PDF:1.6:4.5.4].</summary>
-    */
+    /// <summary>CIE-based ABC float-transformation-stage color space, where A, B and C represent the
+    /// L*, a* and b* components of a CIE 1976 L*a*b* space [PDF:1.6:4.5.4].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class LabColorSpace : CIEBasedColorSpace
     {
@@ -61,7 +58,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         //TODO:IMPL new element constructor!
 
-        internal LabColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        internal LabColorSpace(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         {
             var range = Ranges;// || [-100, 100, -100, 100];
 
@@ -80,9 +78,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             this.YB = BlackPoint[1];
             this.ZB = BlackPoint[2];
         }
-
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
 
         public override int ComponentCount => 3;
 
@@ -136,12 +131,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             }
         }
 
-        public override Color GetColor(PdfArray components, IContentContext context)
-            => components == null ? DefaultColor : components.Wrapper as LabColor ?? new LabColor(this, components);
+        public override IColor GetColor(PdfArray components, IContentContext context)
+            => components == null ? DefaultColor : new LabColor(this, components);
 
-        public override bool IsSpaceColor(Color color) => color is LabColor;
+        public override bool IsSpaceColor(IColor color) => color is LabColor;
 
-        public override SKColor GetSKColor(Color color, float? alpha = null)
+        public override SKColor GetSKColor(IColor color, float? alpha = null)
         {
             var labColor = (LabColor)color;
             return Calculate(labColor.L, labColor.A, labColor.B, null, alpha);

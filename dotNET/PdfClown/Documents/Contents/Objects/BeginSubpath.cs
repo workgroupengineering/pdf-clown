@@ -36,17 +36,14 @@ namespace PdfClown.Documents.Contents.Objects
         public static readonly string OperatorKeyword = "m";
 
         /// <param name="point">Current point.</param>
-        public BeginSubpath(SKPoint point) : this(point.X, point.Y)
+        public BeginSubpath(SKPoint point) 
+            : this(point.X, point.Y)
         { }
 
         /// <param name="pointX">Current point X.</param>
         /// <param name="pointY">Current point Y.</param>
         public BeginSubpath(double pointX, double pointY)
-            : base(OperatorKeyword, new PdfArray
-              {
-                  pointX,
-                  pointY
-              })
+            : base(OperatorKeyword, new PdfArrayImpl { pointX, pointY })
         { }
 
         public BeginSubpath(PdfArray operands) : base(OperatorKeyword, operands)

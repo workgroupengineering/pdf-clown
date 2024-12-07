@@ -34,7 +34,7 @@ namespace PdfClown.Documents.Contents.Objects
     public abstract class TranslateTextRelative : Operation
     {
         public TranslateTextRelative(string @operator, double offsetX, double offsetY)
-            : base(@operator, new PdfArray(2) { offsetX, offsetY })
+            : base(@operator, new PdfArrayImpl(2) { offsetX, offsetY })
         { }
 
         public TranslateTextRelative(string @operator, PdfArray operands)

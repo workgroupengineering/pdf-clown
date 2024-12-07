@@ -23,20 +23,19 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Special color space [PDF:1.6:4.5.5].</summary>
-    */
+    /// <summary>Special color space [PDF:1.6:4.5.5].</summary>
     [PDF(VersionEnum.PDF11)]
     public abstract class SpecialColorSpace : ColorSpace
     {
         //TODO:IMPL new element constructor!
 
-        protected SpecialColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        protected SpecialColorSpace(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
     }
 }

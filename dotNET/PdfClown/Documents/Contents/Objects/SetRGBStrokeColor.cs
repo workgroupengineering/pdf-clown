@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2010 Stefano Chizzolini. http://www.pdfclown.org
+  Copyright 2010 Stefano Chizzolini. http://www.pdfclown.org
 
   Contributors:
     * Stefano Chizzolini (original code developer, http://www.stefanochizzolini.it)
@@ -23,17 +23,31 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Objects;
+
 namespace PdfClown.Documents.Contents.Objects
 {
-    /// <summary>'Begin inline image object' operation [PDF:1.6:4.8.6].</summary>
+    /// <summary>'Set the color to use for stroking operations in device RGB color space'
+    /// operation [PDF:1.6:4.5.7].</summary>
+
     [PDF(VersionEnum.PDF10)]
-    public sealed class BeginInlineImage : Operation
+    public sealed class SetRGBStrokeColor : SetStrokeColor
     {
-        public static readonly string OperatorKeyword = "BI";
+        public static readonly string OperatorKeyword = "RG";
 
-        public static readonly BeginInlineImage Value = new BeginInlineImage();
-
-        private BeginInlineImage() : base(OperatorKeyword)
+        public SetRGBStrokeColor(RGBColor value)
+            : base(OperatorKeyword, value)
         { }
+
+        public SetRGBStrokeColor(PdfArray operands)
+            : base(OperatorKeyword, operands)
+        { }
+
+        public override void Scan(GraphicsState state)
+        {
+            state.StrokeColorSpace = RGBColorSpace.Default;
+            base.Scan(state);
+        }
     }
 }

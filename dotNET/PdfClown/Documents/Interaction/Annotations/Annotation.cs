@@ -277,16 +277,16 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public virtual SKColor SKColor
         {
-            get => color ??= (Color == null
-                ? DeviceRGBColorSpace.CalcSKColor(DeviceRGBColor.Black, Alpha)
+            get => skColor ??= (Color == null
+                ? RGBColorSpace.CalcSKColor(RGBColor.Black, Alpha)
                 : DeviceColorSpace.CalcSKColor(Color, Alpha));
             set
             {
                 var oldValue = SKColor;
                 if (!oldValue.Equals(value))
                 {
-                    color = value;
-                    Color = DeviceRGBColor.Get(value);
+                    skColor = value;
+                    Color = RGBColor.Get(value);
                     Alpha = value.Alpha / 255F;
                     OnPropertyChanged(oldValue, value);
                 }

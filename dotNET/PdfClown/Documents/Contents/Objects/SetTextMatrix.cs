@@ -51,7 +51,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public SetTextMatrix(double a, double b, double c, double d, double e, double f)
             : base(OperatorKeyword,
-                  new PdfArray(6) { a, b, c, d, e, f })
+                  new PdfArrayImpl(6) { a, b, c, d, e, f })
         { }
 
         public SetTextMatrix(PdfArray operands) : base(OperatorKeyword, operands)

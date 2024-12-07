@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects

@@ -56,7 +56,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         private LineStartControlPoint cpStart;
         private LineEndControlPoint cpEnd;
 
-        public Line(PdfPage page, SKPoint startPoint, SKPoint endPoint, string text, DeviceRGBColor color)
+        public Line(PdfPage page, SKPoint startPoint, SKPoint endPoint, string text, RGBColor color)
             : base(page, PdfName.Line, SKRect.Create(startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y), text)
         {
             BaseDataObject[PdfName.L] = new PdfArray(4) { 0F, 0F, 0F, 0F };
@@ -334,10 +334,10 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             var appearence = ResetAppearance(out var matrix);
             var paint = new PrimitiveComposer(appearence);
-            paint.SetStrokeColor(Color ?? DeviceRGBColor.Default);
+            paint.SetStrokeColor(Color ?? RGBColor.Default);
             paint.SetLineWidth(1);
             Border?.Apply(paint);
-            paint.SetFillColor(InteriorColor ?? DeviceRGBColor.Default);
+            paint.SetFillColor(InteriorColor ?? RGBColor.Default);
 
 
             var startPoint = matrix.MapPoint(StartPoint);
@@ -378,7 +378,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     theta -= 2 * Math.PI;
 
                 paint.BeginLocalState();
-                paint.SetFillColor(DeviceRGBColor.Default);
+                paint.SetFillColor(RGBColor.Default);
                 paint.SetFont(fontName, DefaultFontSize);
                 paint.ShowText(Contents, textLocation, XAlignmentEnum.Left,
                     CaptionPosition == LineCaptionPosition.Inline ? YAlignmentEnum.Middle : YAlignmentEnum.Top,

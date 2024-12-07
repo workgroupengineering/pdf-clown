@@ -43,13 +43,14 @@ namespace PdfClown.Documents.Contents.Objects
         private ICollection<PdfName> keys;
 
         // [FIX:0.0.4:2] Null operator.
-        public InlineImageHeader(PdfArray operands) : base(String.Empty, operands)
+        public InlineImageHeader(PdfArray operands) 
+            : base(String.Empty, operands)
         { }
 
         public void Add(PdfName key, PdfDirectObject value)
         {
             if (ContainsKey(key))
-                throw new ArgumentException("Key '" + key + "' already in use.", "key");
+                throw new ArgumentException("Key '" + key + "' already in use.", nameof(key));
 
             this[key] = value;
         }
@@ -67,14 +68,14 @@ namespace PdfClown.Documents.Contents.Objects
 
         public ColorSpace ColorSpace
         {
-            get => ColorSpaces.ColorSpace.Wrap(this[PdfName.CS] ?? this[PdfName.ColorSpace]);
-            set => this[PdfName.CS] = value.BaseObject;
+            get => ColorSpace.Wrap(ColorSpaceObject);
+            set => this[PdfName.CS] = value.RefOrSelf;
         }
 
         public float[] Decode
         {
             get => decode ??= (((PdfArray)this[PdfName.D]) ?? ((PdfArray)this[PdfName.Decode]))?.ToFloatArray();
-            set => this[PdfName.D] = new PdfArray(value.Select(p => PdfInteger.Get((int)p)));
+            set => this[PdfName.D] = new PdfArrayImpl(value.Select(p => PdfInteger.Get((int)p)));
         }
 
         public PdfDirectObject DecodeParms
@@ -119,16 +120,15 @@ namespace PdfClown.Documents.Contents.Objects
             set => this[PdfName.Intent] = PdfName.Get(value);
         }
 
-        public bool ContainsKey(PdfName key)
-        { return GetKeyIndex(key) != null; }
+        public bool ContainsKey(PdfName key) => GetKeyIndex(key) != null;
 
         public ICollection<PdfName> Keys => keys ??= GetKeys();
 
-        private ICollection<PdfName> GetKeys()
+        private List<PdfName> GetKeys()
         {
-            ICollection<PdfName> keys = new List<PdfName>();
+            var keys = new List<PdfName>();
             for (int index = 0, length = operands.Count - 1; index < length; index += 2)
-            { keys.Add((PdfName)operands[index]); }
+            { keys.Add((PdfName)operands.Get(index)); }
 
             return keys;
         }
@@ -146,44 +146,36 @@ namespace PdfClown.Documents.Contents.Objects
 
         public PdfDirectObject this[PdfName key]
         {
-            get
-            {
-                /*
-                  NOTE: This is an intentional violation of the official .NET Framework Class
-                  Library prescription: no exception thrown anytime a key is not found.
-                */
-                int? index = GetKeyIndex(key);
-                if (index == null)
-                    return null;
-
-                return operands[index.Value + 1];
-            }
+            get => GetKeyIndex(key) is int index ? operands.Get(index + 1) : null;
             set
             {
-                int? index = GetKeyIndex(key);
-                if (index == null)
+                if (GetKeyIndex(key) is int index)
                 {
-                    operands.AddDirect(key);
-                    operands.AddDirect(value);
+                    operands.SetSimple(index, key);
+                    operands.SetSimple(index + 1, value);                    
                 }
                 else
                 {
-                    operands.SetDirect(index.Value, key);
-                    operands.SetDirect(index.Value + 1, value);
+                    operands.AddSimple(key);
+                    operands.AddSimple(value);
                 }
             }
         }
 
         public bool TryGetValue(PdfName key, out PdfDirectObject value)
-        { throw new NotImplementedException(); }
+        {
+            var keyIndex = GetKeyIndex(key);
+            value = keyIndex is int index ? operands.Get(index + 1) : null;
+            return keyIndex != null;
+        }
 
         public ICollection<PdfDirectObject> Values
         {
             get
             {
-                ICollection<PdfDirectObject> values = new List<PdfDirectObject>();
+                var values = new List<PdfDirectObject>();
                 for (int index = 1, length = operands.Count - 1; index < length; index += 2)
-                { values.Add(operands[index]); }
+                { values.Add(operands.Get(index)); }
                 return values;
             }
         }
@@ -191,8 +183,7 @@ namespace PdfClown.Documents.Contents.Objects
         void ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Add(KeyValuePair<PdfName, PdfDirectObject> keyValuePair)
         { Add(keyValuePair.Key, keyValuePair.Value); }
 
-        public void Clear()
-        { operands.Clear(); }
+        public void Clear() => operands.Clear();
 
         bool ICollection<KeyValuePair<PdfName, PdfDirectObject>>.Contains(KeyValuePair<PdfName, PdfDirectObject> keyValuePair)
         { return (this[keyValuePair.Key] == keyValuePair.Value); }
@@ -212,9 +203,8 @@ namespace PdfClown.Documents.Contents.Objects
             for (int index = 0, length = operands.Count - 1; index < length; index += 2)
             {
                 yield return new KeyValuePair<PdfName, PdfDirectObject>(
-                  (PdfName)operands[index],
-                  operands[index + 1]
-                  );
+                  (PdfName)operands.Get(index),
+                  operands.Get(index + 1));
             }
         }
 
@@ -225,7 +215,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             for (int index = 0, length = operands.Count - 1; index < length; index += 2)
             {
-                if (operands[index].Equals(key))
+                if (operands.Get(index).Equals(key))
                     return index;
             }
             return null;

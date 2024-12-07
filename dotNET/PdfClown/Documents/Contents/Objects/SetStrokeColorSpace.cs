@@ -45,8 +45,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         public PdfName Name
         {
-            get => operands.Get<PdfName>(0);
-            set => operands[0] = value;
+            get => (PdfName)operands.Get(0);
+            set => operands.SetSimple(0, value);
         }
 
         /// <summary>Gets the <see cref="ColorSpace">color space</see> resource to be set.</summary>
@@ -57,16 +57,8 @@ namespace PdfClown.Documents.Contents.Objects
             // the corresponding color spaces directly; they never refer to resources in the
             // ColorSpace subdictionary [PDF:1.6:4.5.7].
             PdfName name = Name;
-            if (name.Equals(PdfName.DeviceGray))
-                return DeviceGrayColorSpace.Default;
-            else if (name.Equals(PdfName.DeviceRGB))
-                return DeviceRGBColorSpace.Default;
-            else if (name.Equals(PdfName.DeviceCMYK))
-                return DeviceCMYKColorSpace.Default;
-            else if (name.Equals(PdfName.Pattern))
-                return PatternColorSpace.Default;
-            else
-                return context.Context.Resources.ColorSpaces[name];
+            return ColorSpace.GetDefault(name)
+                ?? context.Context.Resources.ColorSpaces[name];
         }
 
         public override void Scan(GraphicsState state)

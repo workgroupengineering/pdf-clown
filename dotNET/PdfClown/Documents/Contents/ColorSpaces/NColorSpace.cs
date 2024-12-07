@@ -23,39 +23,30 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
-using PdfClown.Util;
-
-using System;
 using System.Collections.Generic;
-using SkiaSharp;
 using System.Linq;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Special color space that can contain an arbitrary number of color components [PDF:1.6:4.5.5].</summary>
-    */
+    /// <summary>Special color space that can contain an arbitrary number of color components [PDF:1.6:4.5.5].</summary>
     [PDF(VersionEnum.PDF13)]
-    public sealed class DeviceNColorSpace : SpecialDeviceColorSpace
+    public sealed class NColorSpace : SpecialDeviceColorSpace
     {
         IList<string> componentNames;
         private Color defaultColor;
 
         //TODO:IMPL new element constructor!
 
-        internal DeviceNColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        internal NColorSpace(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
-
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
 
         public override int ComponentCount => ComponentArray.Count;
 
         private PdfArray ComponentArray
         {
-            get => ((PdfArray)BaseDataObject).Get<PdfArray>(1);
+            get => Get<PdfArray>(1);
         }
 
         public override IList<string> ComponentNames => componentNames ??= GetComponentNames();
@@ -65,25 +56,26 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         private IList<string> GetComponentNames()
         {
             var componentNames = new List<string>();
-            foreach (var nameObject in ComponentArray.OfType<IPdfString>())
-            { componentNames.Add(nameObject.StringValue); }
+            foreach (var nameObject in ComponentArray.GetItems().OfType<IPdfString>())
+            {
+                componentNames.Add(nameObject.StringValue);
+            }
 
             return componentNames;
         }
 
         private Color GetDefaultColor()
         {
-            var components = new PdfArray(ComponentCount);
+            var components = new PdfArrayImpl(ComponentCount);
             for (int index = 0, length = components.Capacity; index < length; index++)
             { components.Add(1); }
 
-            return new DeviceNColor(this, components);
+            return new NColor(this, components);
         }
 
-        public override Color GetColor(PdfArray components, IContentContext context) 
-            => components == null ? DefaultColor : components.Wrapper as DeviceNColor ?? new DeviceNColor(this, components);
+        public override IColor GetColor(PdfArray components, IContentContext context)
+            => components == null ? DefaultColor : new NColor(this, components);
 
-        public override bool IsSpaceColor(Color color)
-        { return color is DeviceNColor; }
+        public override bool IsSpaceColor(IColor color) => color is NColor;
     }
 }

@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         /// <summary>Creates a fully-explicit curve.</summary>
         public DrawFullCurve(double pointX, double pointY, double control1X, double control1Y, double control2X, double control2Y)
-            : base(FullOperatorKeyword, new PdfArray(6)
+            : base(FullOperatorKeyword, new PdfArrayImpl(6)
               {
                   control1X, control1Y,
                   control2X, control2Y,

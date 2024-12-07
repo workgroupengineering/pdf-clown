@@ -41,8 +41,8 @@ namespace PdfClown.Samples.CLI
             composer.ShowText("Sticky note annotation:", new SKPoint(35, 35));
             page.Annotations.Add(new StickyNote(page, new SKPoint(50, 50), "Text of the Sticky note annotation")
             {
-                ImageName = ImageNameEnum.Note,
-                Color = DeviceRGBColor.Get(SKColors.Yellow),
+                ImageName = NoteImageEnum.Note,
+                Color = RGBColor.Get(SKColors.Yellow),
                 Popup = new Popup(
                     page,
                     SKRect.Create(200, 25, 200, 75),
@@ -54,8 +54,8 @@ namespace PdfClown.Samples.CLI
             });
             page.Annotations.Add(new StickyNote(page, new SKPoint(80, 50), "Text of the Help sticky note annotation")
             {
-                ImageName = ImageNameEnum.Help,
-                Color = DeviceRGBColor.Get(SKColors.Pink),
+                ImageName = NoteImageEnum.Help,
+                Color = RGBColor.Get(SKColors.Pink),
                 Author = "Stefano",
                 Subject = "Sticky note",
                 Popup = new Popup(
@@ -66,15 +66,15 @@ namespace PdfClown.Samples.CLI
             });
             page.Annotations.Add(new StickyNote(page, new SKPoint(110, 50), "Text of the Comment sticky note annotation")
             {
-                ImageName = ImageNameEnum.Comment,
-                Color = DeviceRGBColor.Get(SKColors.Green),
+                ImageName = NoteImageEnum.Comment,
+                Color = RGBColor.Get(SKColors.Green),
                 Author = "Stefano",
                 Subject = "Sticky note"
             });
             page.Annotations.Add(new StickyNote(page, new SKPoint(140, 50), "Text of the Key sticky note annotation")
             {
-                ImageName = ImageNameEnum.Key,
-                Color = DeviceRGBColor.Get(SKColors.Blue),
+                ImageName = NoteImageEnum.Key,
+                Color = RGBColor.Get(SKColors.Blue),
                 Author = "Stefano",
                 Subject = "Sticky note"
             });
@@ -92,7 +92,7 @@ namespace PdfClown.Samples.CLI
                 Intent = MarkupIntent.FreeTextCallout,
                 LineEndStyle = LineEndStyleEnum.OpenArrow,
                 Border = new Border(1),
-                Color = DeviceRGBColor.Get(SKColors.Yellow)
+                Color = RGBColor.Get(SKColors.Yellow)
             });
 
             // File attachment.
@@ -122,12 +122,12 @@ namespace PdfClown.Samples.CLI
                     new SKPoint(50, 260),
                     new SKPoint(200, 210),
                     "Text of the Arrow line annotation",
-                    DeviceRGBColor.Get(SKColors.Black))
+                    RGBColor.Get(SKColors.Black))
                 {
                     StartStyle = LineEndStyleEnum.Circle,
                     EndStyle = LineEndStyleEnum.ClosedArrow,
                     CaptionVisible = true,
-                    InteriorColor = DeviceRGBColor.Get(SKColors.Green),
+                    InteriorColor = RGBColor.Get(SKColors.Green),
                     Author = "Stefano",
                     Subject = "Arrow line"
                 });
@@ -139,7 +139,7 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(300, 220),
                   new SKPoint(500, 220),
                   "Text of the Dimension line annotation",
-                  DeviceRGBColor.Get(SKColors.Blue))
+                  RGBColor.Get(SKColors.Blue))
                 {
                     LeaderLineLength = -20,
                     LeaderLineExtension = 10,
@@ -168,7 +168,7 @@ namespace PdfClown.Samples.CLI
               page,
               new List<SKPath> { path },
               "Text of the Scribble annotation",
-              DeviceRGBColor.Get(SKColors.Orange))
+              RGBColor.Get(SKColors.Orange))
             {
                 Border = new Border(1, new LineDash(new float[] { 5, 2, 2, 2 })),
                 Author = "Stefano",
@@ -182,7 +182,7 @@ namespace PdfClown.Samples.CLI
               SKRect.Create(50, 370, 100, 30),
               "Text of the Rectangle annotation")
             {
-                Color = DeviceRGBColor.Get(SKColors.Red),
+                Color = RGBColor.Get(SKColors.Red),
                 Border = new Border(1, new LineDash(new float[] { 5 })),
                 Author = "Stefano",
                 Subject = "Rectangle",
@@ -200,8 +200,8 @@ namespace PdfClown.Samples.CLI
               "Text of the Ellipse annotation")
             {
                 BorderEffect = new BorderEffect(BorderEffectType.Cloudy, 1),
-                InteriorColor = DeviceRGBColor.Get(SKColors.Cyan),
-                Color = DeviceRGBColor.Get(SKColors.Black),
+                InteriorColor = RGBColor.Get(SKColors.Cyan),
+                Color = RGBColor.Get(SKColors.Black),
                 Author = "Stefano",
                 Subject = "Ellipse"
             });
@@ -226,20 +226,20 @@ namespace PdfClown.Samples.CLI
                   new SKPoint(210, 570),
                   "This is a squared (and round-cornered) custom stamp",
                   new StampAppearanceBuilder(document, StampAppearanceBuilder.TypeEnum.Squared, "Classified", 150, stampFont)
-                  { Color = DeviceRGBColor.Get(SKColors.Orange) }.Build())
+                  { Color = RGBColor.Get(SKColors.Orange) }.Build())
                 {
                     Rotation = 15,
                     Author = "Stefano",
                     Subject = "Custom stamp"
                 });
 
-                var stampFont2 = FontType0.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "MgOpenCanonicaRegular.ttf"));
+                var stampFont2 = PdfType0Font.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "MgOpenCanonicaRegular.ttf"));
                 page.Annotations.Add(new Stamp(
                   page,
                   new SKPoint(350, 570),
                   "This is a striped custom stamp",
                   new StampAppearanceBuilder(document, StampAppearanceBuilder.TypeEnum.Striped, "Out of stock", 100, stampFont2)
-                  { Color = DeviceRGBColor.Get(SKColors.Gray) }.Build())
+                  { Color = RGBColor.Get(SKColors.Gray) }.Build())
                 {
                     Rotation = 90,
                     Author = "Stefano",
@@ -314,7 +314,7 @@ namespace PdfClown.Samples.CLI
                   "Text of the Highlight annotation 2",
                   TextMarkupType.Highlight)
                 {
-                    Color = DeviceRGBColor.Get(SKColors.Magenta)
+                    Color = RGBColor.Get(SKColors.Magenta)
                 });
 
                 page.Annotations.Add(new TextMarkup(page,
@@ -322,7 +322,7 @@ namespace PdfClown.Samples.CLI
                   "Text of the Highlight annotation 3",
                   TextMarkupType.Highlight)
                 {
-                    Color = DeviceRGBColor.Get(SKColors.Red)
+                    Color = RGBColor.Get(SKColors.Red)
                 });
 
                 page.Annotations.Add(new TextMarkup(page,
@@ -335,7 +335,7 @@ namespace PdfClown.Samples.CLI
                   "Text of the Squiggly annotation 2",
                   TextMarkupType.Squiggly)
                 {
-                    Color = DeviceRGBColor.Get(SKColors.Orange)
+                    Color = RGBColor.Get(SKColors.Orange)
                 });
 
                 page.Annotations.Add(new TextMarkup(page,
@@ -343,7 +343,7 @@ namespace PdfClown.Samples.CLI
                   "Text of the Squiggly annotation 3",
                   TextMarkupType.Squiggly)
                 {
-                    Color = DeviceRGBColor.Get(SKColors.Pink)
+                    Color = RGBColor.Get(SKColors.Pink)
                 });
 
                 page.Annotations.Add(new TextMarkup(page,
@@ -355,7 +355,7 @@ namespace PdfClown.Samples.CLI
                   "Text of the Underline annotation 2",
                   TextMarkupType.Underline)
                 {
-                    Color = DeviceRGBColor.Get(SKColors.Orange)
+                    Color = RGBColor.Get(SKColors.Orange)
                 });
 
                 page.Annotations.Add(new TextMarkup(page,
@@ -363,7 +363,7 @@ namespace PdfClown.Samples.CLI
                   "Text of the Underline annotation 3",
                   TextMarkupType.Underline)
                 {
-                    Color = DeviceRGBColor.Get(SKColors.Green)
+                    Color = RGBColor.Get(SKColors.Green)
                 });
 
                 page.Annotations.Add(new TextMarkup(page,
@@ -376,7 +376,7 @@ namespace PdfClown.Samples.CLI
                     "Text of the StrikeOut annotation 2",
                     TextMarkupType.StrikeOut)
                 {
-                    Color = DeviceRGBColor.Get(SKColors.Orange)
+                    Color = RGBColor.Get(SKColors.Orange)
                 });
 
                 page.Annotations.Add(new TextMarkup(page,
@@ -384,7 +384,7 @@ namespace PdfClown.Samples.CLI
                     "Text of the StrikeOut annotation 3",
                     TextMarkupType.StrikeOut)
                 {
-                    Color = DeviceRGBColor.Get(SKColors.Green)
+                    Color = RGBColor.Get(SKColors.Green)
                 });
 
                 composer.End();

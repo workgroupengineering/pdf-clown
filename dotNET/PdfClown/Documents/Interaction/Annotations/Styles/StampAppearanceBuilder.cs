@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
 
         private static readonly Length DefaultBorderRadius = new Length(.05, Length.UnitModeEnum.Relative);
         private static readonly Length DefaultBorderWidth = new Length(.025, Length.UnitModeEnum.Relative);
-        private static readonly Color DefaultColor = DeviceRGBColor.Get(SKColors.Red);
+        private static readonly Color DefaultColor = RGBColor.Get(SKColors.Red);
 
         private bool borderDoubled = true;
         private Length borderRadius = DefaultBorderRadius;

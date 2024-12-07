@@ -36,6 +36,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Interaction.Actions;
 
 namespace PdfClown.Documents.Contents.Composition
 {
@@ -592,7 +593,7 @@ namespace PdfClown.Documents.Contents.Composition
 
         /// <summary>Sets the nonstroking color value [PDF:1.6:4.5.7].</summary>
         /// <seealso cref="SetStrokeColor(Color)"/>
-        public void SetFillColor(Color value)
+        public void SetFillColor(IColor value)
         {
             if (!State.FillColorSpace.IsSpaceColor(value))
             {
@@ -614,7 +615,7 @@ namespace PdfClown.Documents.Contents.Composition
                 var mapping = FontMappers.Instance.GetTrueTypeFont(name.StringValue, null);
                 if (mapping?.Font != null)
                 {
-                    var fallbackFont = FontType0.Load(Scanner.Context.Resources.Document, mapping.Font, false);
+                    var fallbackFont = PdfType0Font.Load(Scanner.Context.Resources.Document, mapping.Font, false);
                     SetFont(fallbackFont, size, name);
                     return;
                 }
@@ -629,7 +630,7 @@ namespace PdfClown.Documents.Contents.Composition
         /// behavior, use <see cref="SetFont(PdfName,double)"/>.</remarks>
         /// <param name="value">Font.</param>
         /// <param name="size">Scaling factor (points).</param>
-        public void SetFont(Font value, double size, PdfName defaultName = null) => SetFont_(GetResourceName(value, defaultName), size);
+        public void SetFont(PdfFont value, double size, PdfName defaultName = null) => SetFont_(GetResourceName(value, defaultName), size);
 
         /// <summary>Sets the line cap style [PDF:1.6:4.3.2].</summary>
         public void SetLineCap(LineCapEnum value) => Add(new SetLineCap(value));
@@ -673,7 +674,7 @@ namespace PdfClown.Documents.Contents.Composition
 
         /// <summary>Sets the stroking color value [PDF:1.6:4.5.7].</summary>
         /// <seealso cref="SetFillColor(Color)"/>
-        public void SetStrokeColor(Color value)
+        public void SetStrokeColor(IColor value)
         {
             if (!State.StrokeColorSpace.IsSpaceColor(value))
             {
@@ -712,7 +713,7 @@ namespace PdfClown.Documents.Contents.Composition
         /// <param name="action">Action to apply when the link is activated.</param>
         /// <returns>Link.</returns>
         /// <exception cref="EncodeException"/>
-        public Link ShowText(string value, Interaction.Actions.Action action) => ShowText(value, new SKPoint(0, 0), action);
+        public Link ShowText(string value, PdfAction action) => ShowText(value, new SKPoint(0, 0), action);
 
         /// <summary>Shows the specified text on the page at the specified location [PDF:1.6:5.3.2].
         /// </summary>
@@ -729,7 +730,7 @@ namespace PdfClown.Documents.Contents.Composition
         /// <param name="action">Action to apply when the link is activated.</param>
         /// <returns>Link.</returns>
         /// <exception cref="EncodeException"/>
-        public Link ShowText(string value, SKPoint location, Interaction.Actions.Action action) => ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0, action);
+        public Link ShowText(string value, SKPoint location, PdfAction action) => ShowText(value, location, XAlignmentEnum.Left, YAlignmentEnum.Top, 0, action);
 
         /// <summary>Shows the specified text on the page at the specified location [PDF:1.6:5.3.2].
         /// </summary>
@@ -769,7 +770,7 @@ namespace PdfClown.Documents.Contents.Composition
                 // encodings aren't properly handled by recent implementations like pdf.js, therefore
                 // composite fonts are always treated as multi-byte encodings which require explicit word
                 // spacing adjustment.
-                double wordSpaceAdjust = font is FontType0 ? -state.WordSpace * 1000 * state.Scale / fontSize : 0;
+                double wordSpaceAdjust = font is PdfType0Font ? -state.WordSpace * 1000 * state.Scale / fontSize : 0;
 
                 // Vertical alignment.
                 double y;
@@ -862,7 +863,7 @@ namespace PdfClown.Documents.Contents.Composition
         /// <param name="action">Action to apply when the link is activated.</param>
         /// <returns>Link.</returns>
         /// <exception cref="EncodeException"/>
-        public Link ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation, Interaction.Actions.Action action)
+        public Link ShowText(string value, SKPoint location, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment, double rotation, PdfAction action)
         {
             IContentContext contentContext = Scanner.Context;
             if (contentContext is not PdfPage page)
@@ -935,37 +936,19 @@ namespace PdfClown.Documents.Contents.Composition
             double scaleX, scaleY;
             scaleX = size.Value.Width / (xObjectSize.Width * matrix.ScaleX);
             scaleY = size.Value.Height / (xObjectSize.Height * matrix.ScaleY);
-
             // Alignment.
-            float locationOffsetX, locationOffsetY;
-            switch (xAlignment)
+            var locationOffsetX = xAlignment switch
             {
-                case XAlignmentEnum.Left:
-                    locationOffsetX = 0;
-                    break;
-                case XAlignmentEnum.Right:
-                    locationOffsetX = size.Value.Width;
-                    break;
-                case XAlignmentEnum.Center:
-                case XAlignmentEnum.Justify:
-                default:
-                    locationOffsetX = size.Value.Width / 2;
-                    break;
-            }
-            switch (yAlignment)
+                XAlignmentEnum.Left => 0,
+                XAlignmentEnum.Right => size.Value.Width,
+                _ => size.Value.Width / 2,
+            };
+            var locationOffsetY = yAlignment switch
             {
-                case YAlignmentEnum.Top:
-                    locationOffsetY = size.Value.Height;
-                    break;
-                case YAlignmentEnum.Bottom:
-                    locationOffsetY = 0;
-                    break;
-                case YAlignmentEnum.Middle:
-                default:
-                    locationOffsetY = size.Value.Height / 2;
-                    break;
-            }
-
+                YAlignmentEnum.Top => size.Value.Height,
+                YAlignmentEnum.Bottom => 0,
+                _ => size.Value.Height / 2,
+            };
             BeginLocalState();
             try
             {
@@ -976,8 +959,7 @@ namespace PdfClown.Documents.Contents.Composition
                   scaleX, 0, 0,
                   scaleY,
                   -locationOffsetX,
-                  -locationOffsetY
-                  );
+                  -locationOffsetY);
                 ShowXObject(name);
             }
             finally
@@ -1117,36 +1099,38 @@ namespace PdfClown.Documents.Contents.Composition
             return null;
         }
 
-        private PdfName GetResourceName<T>(T value, PdfName defaultName = null) where T : PdfObjectWrapper
+        private PdfName GetResourceName<T>(T value, PdfName defaultName = null)
+            where T : IPdfDataObject
         {
-            if (value is DeviceGrayColorSpace)
+            if (value is GrayColorSpace)
                 return PdfName.DeviceGray;
-            else if (value is DeviceRGBColorSpace)
+            else if (value is RGBColorSpace)
                 return PdfName.DeviceRGB;
-            else if (value is DeviceCMYKColorSpace)
+            else if (value is CMYKColorSpace)
                 return PdfName.DeviceCMYK;
             else
             {
                 // Ensuring that the resource exists within the context resources...
-                var resourceItemsObject = ((PdfObjectWrapper<PdfDictionary>)Scanner.Context.Resources.Get(value.GetType())).BaseDataObject;
+                var biDict = Scanner.Context.Resources.Get(value.GetType());
+                // var resourceItemsObject = ((PdfObjectWrapper<PdfDictionary>)biDict).BaseDataObject;
                 // Get the key associated to the resource!
-                var name = resourceItemsObject.GetKey(value.BaseObject);
+                var name = biDict.GetKey(value) as PdfName;
                 // No key found?
                 if (name == null)
                 {
                     if (defaultName == null)
                     {
                         // Insert the resource within the collection!
-                        int resourceIndex = resourceItemsObject.Count;
+                        int resourceIndex = biDict.Count;
                         do
                         { name = PdfName.Get($"Res{(++resourceIndex)}", true); }
-                        while (resourceItemsObject.ContainsKey(name));
+                        while (biDict.ContainsKey(name));
                     }
                     else
                     {
                         name = defaultName;
                     }
-                    resourceItemsObject[name] = value.BaseObject;
+                    biDict[name] = value;
                 }
                 return name;
             }

@@ -24,69 +24,63 @@
 */
 
 using PdfClown.Objects;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
+using System;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    ///<summary>Device Red-Green-Blue color value [PDF:1.6:4.5.3].</summary>
+    /// <summary>Device Red-Green-Blue color value [PDF:1.6:4.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceRGBColor : DeviceColor, IEquatable<DeviceRGBColor>
+    public sealed class RGBColor : DeviceColor, IEquatable<RGBColor>
     {
-        public static readonly DeviceRGBColor Black = Get(SKColors.Black);
-        public static readonly DeviceRGBColor White = Get(SKColors.White);
-        public static readonly DeviceRGBColor Red = Get(SKColors.Red);
-        public static readonly DeviceRGBColor Green = Get(SKColors.Green);
-        public static readonly DeviceRGBColor Blue = Get(SKColors.Blue);
-        public static readonly DeviceRGBColor Cyan = Get(SKColors.Cyan);
-        public static readonly DeviceRGBColor Magenta = Get(SKColors.Magenta);
-        public static readonly DeviceRGBColor Yellow = Get(SKColors.Yellow);
-        public static readonly DeviceRGBColor OrangeRed = Get(SKColors.OrangeRed);
+        public static readonly RGBColor Black = Get(SKColors.Black);
+        public static readonly RGBColor White = Get(SKColors.White);
+        public static readonly RGBColor Red = Get(SKColors.Red);
+        public static readonly RGBColor Green = Get(SKColors.Green);
+        public static readonly RGBColor Blue = Get(SKColors.Blue);
+        public static readonly RGBColor Cyan = Get(SKColors.Cyan);
+        public static readonly RGBColor Magenta = Get(SKColors.Magenta);
+        public static readonly RGBColor Yellow = Get(SKColors.Yellow);
+        public static readonly RGBColor OrangeRed = Get(SKColors.OrangeRed);
 
-        public static readonly DeviceRGBColor Default = Black;
+        public static readonly RGBColor Default = Black;
 
-        /**
-          <summary>Gets the color corresponding to the specified system color.</summary>
-          <param name="color">System color to convert.</param>
-        */
-        public static DeviceRGBColor Get(SKColor? color)
+        /// <summary>Gets the color corresponding to the specified system color.</summary>
+        /// <param name="color">System color to convert.</param>
+        public static RGBColor Get(SKColor? color)
         {
             return (color.HasValue
-              ? new DeviceRGBColor(color.Value.Red / 255d, color.Value.Green / 255d, color.Value.Blue / 255d)
+              ? new RGBColor(color.Value.Red / 255d, color.Value.Green / 255d, color.Value.Blue / 255d)
               : Default);
         }
 
-        public DeviceRGBColor(double r, double g, double b)
-            : this(DeviceRGBColorSpace.Default,
-                  new PdfArray(3)
-            {
+        public RGBColor(double r, double g, double b)
+            : this(RGBColorSpace.Default, new PdfArrayImpl(3) {
                 NormalizeComponent(r),
                 NormalizeComponent(g),
                 NormalizeComponent(b)
             })
         { }
 
-        internal DeviceRGBColor(DeviceColorSpace colorSpace, PdfArray components)
+        internal RGBColor(DeviceColorSpace colorSpace, PdfArray components)
             : base(colorSpace, components)
         { }
 
-        ///<summary>Gets/Sets the red component.</summary>
+        /// <summary>Gets/Sets the red component.</summary>
         public float R
         {
             get => this[0];
             set => this[0] = value;
         }
 
-        ///<summary>Gets/Sets the green component.</summary>
+        /// <summary>Gets/Sets the green component.</summary>
         public float G
         {
             get => this[1];
             set => this[1] = value;
         }
 
-        ///<summary>Gets/Sets the blue component.</summary>
+        /// <summary>Gets/Sets the blue component.</summary>
         public float B
         {
             get => this[2];
@@ -95,12 +89,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override bool IsZero => Equals(Black);
 
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals(DeviceRGBColor other)
+        public bool Equals(RGBColor other)
         {
             if (other == null)
                 return false;

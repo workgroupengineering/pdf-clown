@@ -23,73 +23,53 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 using SkiaSharp;
-using System;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Append a cubic Bezier curve to the current path' operation [PDF:1.6:4.4.1].</summary>
-      <remarks>Such curves are defined by four points:
-      the two endpoints (the current point and the final point)
-      and two control points (the first control point, associated to the current point,
-      and the second control point, associated to the final point).</remarks>
-    */
+    /// <summary>'Append a cubic Bezier curve to the current path' operation [PDF:1.6:4.4.1].</summary>
+    /// <remarks>Such curves are defined by four points:
+    /// the two endpoints (the current point and the final point)
+    /// and two control points (the first control point, associated to the current point,
+    /// and the second control point, associated to the final point).</remarks>
     [PDF(VersionEnum.PDF10)]
     public abstract class DrawCurve : Operation
     {
-        /**
-          <summary>Specifies only the second control point
-          (the first control point coincides with the initial point of the curve).</summary>
-        */
+        /// <summary>Specifies only the second control point
+        /// (the first control point coincides with the initial point of the curve).</summary>
         public static readonly string InitialOperatorKeyword = "v";
-        /**
-          <summary>Specifies both control points explicitly.</summary>
-        */
+        /// <summary>Specifies both control points explicitly.</summary>
         public static readonly string FullOperatorKeyword = "c";
-        /**
-          <summary>Specifies only the first control point
-          (the second control point coincides with the final point of the curve).</summary>
-        */
+        /// <summary>Specifies only the first control point
+        /// (the second control point coincides with the final point of the curve).</summary>
         public static readonly string FinalOperatorKeyword = "y";
 
-        /**
-          <summary>Creates a partially-explicit curve.</summary>
-          <param name="point">Final endpoint.</param>
-          <param name="control">Explicit control point.</param>
-          <param name="operator">Operator (either <code>InitialOperator</code> or <code>FinalOperator</code>).
-          It defines how to interpret the <code>control</code> parameter.</param>
-        */
+        /// <summary>Creates a partially-explicit curve.</summary>
+        /// <param name="point">Final endpoint.</param>
+        /// <param name="control">Explicit control point.</param>
+        /// <param name="operator">Operator (either <code>InitialOperator</code> or <code>FinalOperator</code>).
+        /// It defines how to interpret the <code>control</code> parameter.</param>
+
         public DrawCurve(string @operator, SKPoint point, SKPoint control)
-            : base(@operator, new PdfArray(4)
+            : base(@operator, new PdfArrayImpl(4)
               {
                   control.X, control.Y,
-                  point.X, point.Y   
+                  point.X, point.Y
               })
         { }
 
         public DrawCurve(string @operator, PdfArray operands) : base(@operator, operands)
         { }
 
-        /**
-          <summary>Gets/Sets the first control point.</summary>
-        */
+        /// <summary>Gets/Sets the first control point.</summary>
         public abstract SKPoint Control1 { get; set; }
 
-        /**
-          <summary>Gets/Sets the second control point.</summary>
-        */
+        /// <summary>Gets/Sets the second control point.</summary>
         public abstract SKPoint Control2 { get; set; }
 
-        /**
-          <summary>Gets/Sets the final endpoint.</summary>
-        */
+        /// <summary>Gets/Sets the final endpoint.</summary>
         public abstract SKPoint Point { get; set; }
 
-       
     }
 }

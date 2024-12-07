@@ -23,22 +23,18 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Objects;
 
 namespace PdfClown.Documents.Interaction.Forms.Styles
 {
-    /**
-      <summary>Abstract field appearance style.</summary>
-      <remarks>It automates the definition of field appearance, applying a common look.</remarks>
-    */
+    /// <summary>Abstract field appearance style.</summary>
+    /// <remarks>It automates the definition of field appearance, applying a common look.</remarks>
     public abstract class FieldStyle
     {
-        private Color backColor = DeviceRGBColor.White;
+        private Color backColor = RGBColor.White;
         private char checkSymbol = (char)52;
         private double fontSize = 10;
-        private Color foreColor = DeviceRGBColor.Black;
+        private Color foreColor = RGBColor.Black;
         private bool graphicsVisibile = false;
         private char radioSymbol = (char)108;
 

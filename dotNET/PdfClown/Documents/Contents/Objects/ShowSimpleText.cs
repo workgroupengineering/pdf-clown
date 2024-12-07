@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
@@ -46,14 +45,14 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override Memory<byte> TextBytes
         {
-            get => ((PdfString)operands[0]).RawValue;
-            set => operands[0] = new PdfByteString(value);
+            get => operands.Get<PdfString>(0).RawValue;
+            set => operands.SetSimple(0, new PdfByteString(value));
         }
 
         public override IEnumerable<PdfDirectObject> TextElements
         {
-            get => operands;
-            set => operands[0] = value.FirstOrDefault();
+            get => (PdfArrayImpl)operands;
+            set => operands.SetSimple(0, value.FirstOrDefault());
         }
     }
 }

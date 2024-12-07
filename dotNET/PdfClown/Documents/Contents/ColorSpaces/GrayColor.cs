@@ -24,35 +24,33 @@
 */
 
 using PdfClown.Objects;
-
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     /// <summary>Device Gray color value [PDF:1.6:4.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class DeviceGrayColor : DeviceColor, IEquatable<DeviceGrayColor>
+    public sealed class GrayColor : DeviceColor, IEquatable<GrayColor>
     {
-        public static readonly DeviceGrayColor Black = new DeviceGrayColor(0);
-        public static readonly DeviceGrayColor White = new DeviceGrayColor(1);
+        public static readonly GrayColor Black = new GrayColor(0);
+        public static readonly GrayColor White = new GrayColor(1);
 
-        public static readonly DeviceGrayColor Default = Black;
+        public static readonly GrayColor Default = Black;
 
         /// <summary>Gets the color corresponding to the specified components.</summary>
         /// <param name="components">Color components to convert.</param>
-        public static new DeviceGrayColor Get(PdfArray components)
+        public static new GrayColor Get(PdfArray components)
         {
             return components != null
-                ? components.Wrapper is DeviceGrayColor color ? color : new DeviceGrayColor(DeviceGrayColorSpace.Default, components)
+                ? new GrayColor(GrayColorSpace.Default, components)
                 : Default;
         }
 
-        public DeviceGrayColor(float g)
-            : this(DeviceGrayColorSpace.Default, new PdfArray(1) { NormalizeComponent(g) })
+        public GrayColor(float g)
+            : this(GrayColorSpace.Default, new PdfArrayImpl(1) { NormalizeComponent(g) })
         { }
 
-        internal DeviceGrayColor(DeviceColorSpace colorSpace, PdfArray components)
+        internal GrayColor(DeviceColorSpace colorSpace, PdfArray components)
             : base(colorSpace, components)
         { }
 
@@ -66,12 +64,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public override bool IsZero => Equals(Black);
 
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Equals(DeviceGrayColor other)
+        public bool Equals(GrayColor other)
         {
             if (other == null)
                 return false;

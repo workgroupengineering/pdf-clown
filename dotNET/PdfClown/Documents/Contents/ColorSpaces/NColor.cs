@@ -25,28 +25,19 @@
 
 using PdfClown.Objects;
 
-using System;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>DeviceN color value [PDF:1.6:4.5.5].</summary>
-    */
+    /// <summary>DeviceN color value [PDF:1.6:4.5.5].</summary>
     [PDF(VersionEnum.PDF13)]
-    public sealed class DeviceNColor : LeveledColor
+    public sealed class NColor : LeveledColor
     {
         // TODO:normalize parameters!
-        public DeviceNColor(ColorSpace colorSpace, params double[] components) : this(colorSpace, new PdfArray(components))
+        public NColor(ColorSpace colorSpace, params double[] components)
+            : this(colorSpace, new PdfArrayImpl(components))
         { }
 
-        internal DeviceNColor(ColorSpace colorSpace, PdfArray components)//TODO:colorspace?
+        internal NColor(ColorSpace colorSpace, PdfArray components)
             : base(colorSpace, components)
-        { }
-
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
+        { }        
     }
 }

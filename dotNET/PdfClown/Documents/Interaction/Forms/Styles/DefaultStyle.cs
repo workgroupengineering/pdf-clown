@@ -38,7 +38,9 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
     public sealed class DefaultStyle : FieldStyle
     {
         public DefaultStyle()
-        { BackColor = new DeviceRGBColor(.9, .9, .9); }
+        {
+            BackColor = new RGBColor(.9, .9, .9);
+        }
 
         public override void Apply(Field field)
         {

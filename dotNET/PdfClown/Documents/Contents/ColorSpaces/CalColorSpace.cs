@@ -23,8 +23,8 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -34,7 +34,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
     {
         //TODO:IMPL new element constructor!
 
-        protected CalColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        protected CalColorSpace(List<PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets the gamma of this color space.</summary>

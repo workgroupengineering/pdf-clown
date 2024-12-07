@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Objects;
 
 namespace PdfClown.Documents.Contents.Objects
 {

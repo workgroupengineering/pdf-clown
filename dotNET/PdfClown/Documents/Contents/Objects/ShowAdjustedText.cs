@@ -43,7 +43,7 @@ namespace PdfClown.Documents.Contents.Objects
         ///    If the element is a byte array (encoded text), this operator shows the text glyphs.
         ///    If it is a number (glyph adjustment), the operator adjusts the next glyph position by that amount.</param>
         public ShowAdjustedText(List<PdfDirectObject> value)
-            : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
+            : base(OperatorKeyword, (PdfDirectObject)new PdfArrayImpl())
         { TextElements = value; }
 
         internal ShowAdjustedText(PdfArray operands)
@@ -73,7 +73,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public override IEnumerable<PdfDirectObject> TextElements
         {
-            get => operands.Get<PdfArray>(0);
+            get => operands.Get<PdfArrayImpl>(0);
             set
             {
                 var elements = operands.Get<PdfArray>(0);

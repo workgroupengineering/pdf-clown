@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Contents.Objects
             : base(@operator, operands)
         { }
 
-        protected SetStrokeColor(string @operator, Color value)
+        protected SetStrokeColor(string @operator, IColor value)
             : base(@operator, value.Components)
         { }
 
@@ -50,10 +50,10 @@ namespace PdfClown.Documents.Contents.Objects
         /// <param name="operator">Graphics operator.</param>
         /// <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
         /// <param name="underlyingColor">Color used to colorize the pattern.</param>
-        protected SetStrokeColor(string @operator, PdfName name, Color underlyingColor)
-            : base(@operator, new PdfArray(underlyingColor?.Components ?? Enumerable.Empty<PdfDirectObject>()))
+        protected SetStrokeColor(string @operator, PdfName name, IColor underlyingColor)
+            : base(@operator, underlyingColor?.Components ?? new PdfArrayImpl())
         {
-            operands.AddDirect(name);
+            operands.AddSimple(name);
         }
 
         public override void Scan(GraphicsState state)

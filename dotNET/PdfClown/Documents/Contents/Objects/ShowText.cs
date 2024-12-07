@@ -128,7 +128,9 @@ namespace PdfClown.Documents.Contents.Objects
                 {
                     var textBuilder = new StringBuilder();
                     foreach (TextChar textChar in chars)
-                    { textBuilder.Append(textChar.Value); }
+                    {
+                        textBuilder.Append(textChar.Value);
+                    }
                     text = textBuilder.ToString();
                 }
                 return text;
@@ -180,7 +182,7 @@ namespace PdfClown.Documents.Contents.Objects
         {
             //TODO: I really dislike this solution -- it's a temporary hack until the event-driven
             //parsing mechanism is implemented...
-            Font font = state.Font ?? state.Scanner.Contents.Document?.LatestFont;
+            PdfFont font = state.Font ?? state.Scanner.Contents.Document?.LatestFont;
             if (font == null)
                 return;
             state.Scanner.Canvas?.Save();
@@ -191,9 +193,9 @@ namespace PdfClown.Documents.Contents.Objects
             state.ApplyClipPath();
         }
 
-        private SKMatrix DrawHorizontal(Font font, GraphicsState state, IScanner textScanner)
+        private SKMatrix DrawHorizontal(PdfFont font, GraphicsState state, IScanner textScanner)
         {
-            bool wordSpaceSupported = !(font is FontType0);
+            bool wordSpaceSupported = !(font is PdfType0Font);
 
             var fontSize = state.FontSize;
             var horizontalScaling = state.Scale;
@@ -257,7 +259,11 @@ namespace PdfClown.Documents.Contents.Objects
                             var path = font.DrawChar(canvas, fill, stroke, textChar, code);
                             if (clip != null && path != null)
                             {
+#if NET9_0_OR_GREATER
+                                clip.AddPath(path, in trm);
+#else
                                 clip.AddPath(path, ref trm);
+#endif
                             }
                         }
 
@@ -295,9 +301,9 @@ namespace PdfClown.Documents.Contents.Objects
             return tm;
         }
 
-        private SKMatrix DrawHorizontalCalcQuad(Font font, GraphicsState state, IScanner textScanner)
+        private SKMatrix DrawHorizontalCalcQuad(PdfFont font, GraphicsState state, IScanner textScanner)
         {
-            bool wordSpaceSupported = !(font is FontType0);
+            bool wordSpaceSupported = !(font is PdfType0Font);
 
             var fontSize = state.FontSize;
             var horizontalScaling = state.Scale;
@@ -314,7 +320,7 @@ namespace PdfClown.Documents.Contents.Objects
                 fontSize * horizontalScaling, 0f, 0f,
                 0f, fontSize, state.Rise,
                 0f, 0f, 1f).PreConcat(font.FontMatrix);
-            
+
             var clip = state.GetClipPath();
             using var fill = canvas != null && state.RenderModeFill ? state.CreateFillPaint() : null;
             using var stroke = canvas != null && state.RenderModeStroke ? state.CreateStrokePaint() : null;
@@ -388,9 +394,9 @@ namespace PdfClown.Documents.Contents.Objects
             return tm;
         }
 
-        private SKMatrix DrawVertical(Font font, GraphicsState state, IScanner textScanner)
+        private SKMatrix DrawVertical(PdfFont font, GraphicsState state, IScanner textScanner)
         {
-            bool wordSpaceSupported = !(font is FontType0);
+            bool wordSpaceSupported = !(font is PdfType0Font);
 
             var fontSize = state.FontSize;
             var horizontalScaling = state.Scale;
@@ -490,12 +496,12 @@ namespace PdfClown.Documents.Contents.Objects
             return tm;
         }
 
-        private float GetVerticalWidth(Font font, int code)
+        private float GetVerticalWidth(PdfFont font, int code)
         {
-            var ttf = font is FontTrueType ftt
+            var ttf = font is PdfTrueTypeFont ftt
                 ? ftt.TrueTypeFont
-                : font is FontType0 ft0
-                    ? ft0.DescendantFont is FontCIDType2 fCID2
+                : font is PdfType0Font ft0
+                    ? ft0.DescendantFont is PdfCIDFontType2Wrapper fCID2
                         ? fCID2.TrueTypeFont
                         : null
                     : null;

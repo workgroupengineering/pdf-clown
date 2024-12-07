@@ -445,7 +445,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             //else if (fontSize != 0)
             //    list.Add(new SetFont(PdfName.Get(fontName), fontSize));
             if (color is SKColor colorValue)
-                daOperation.Add(new SetDeviceRGBFillColor(DeviceRGBColor.Get(colorValue)));
+                daOperation.Add(new SetRGBFillColor(RGBColor.Get(colorValue)));
             return daOperation;
         }
 
@@ -476,8 +476,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                     path.AddRect(textBounds);
 
                     composer.BeginLocalState();
-                    composer.SetStrokeColor(DeviceRGBColor.Default);
-                    composer.SetFillColor(Color ?? DeviceRGBColor.White);
+                    composer.SetStrokeColor(RGBColor.Default);
+                    composer.SetFillColor(Color ?? RGBColor.White);
 
                     using var tpath = ApplyBorderAndEffect(composer, path);
 
@@ -489,8 +489,8 @@ namespace PdfClown.Documents.Interaction.Annotations
                 if (Intent == MarkupIntent.FreeTextCallout && Line != null)
                 {
                     composer.BeginLocalState();
-                    composer.SetStrokeColor(DeviceRGBColor.Default);
-                    composer.SetFillColor(Color ?? DeviceRGBColor.White);
+                    composer.SetStrokeColor(RGBColor.Default);
+                    composer.SetFillColor(Color ?? RGBColor.White);
                     ApplyBorder(composer);
 
                     var startPoint = matrix.MapPoint(Line.Start);
@@ -551,7 +551,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     }
                     if (!isFillColorSet)
                     {
-                        composer.SetFillColor(DeviceRGBColor.Default);
+                        composer.SetFillColor(RGBColor.Default);
                     }
 
                     block.ShowText(Contents);

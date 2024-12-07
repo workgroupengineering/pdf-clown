@@ -23,10 +23,7 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {

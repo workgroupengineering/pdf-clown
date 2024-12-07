@@ -23,19 +23,15 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'End text object' operation [PDF:1.6:5.3].</summary>
-    */
+    /// <summary>'End text object' operation [PDF:1.6:5.3].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class EndText : Operation
     {
         public static readonly string OperatorKeyword = "ET";
 
-        public static readonly EndText Value = new EndText();
+        public static readonly EndText Value = new();
 
         private EndText() : base(OperatorKeyword)
         { }

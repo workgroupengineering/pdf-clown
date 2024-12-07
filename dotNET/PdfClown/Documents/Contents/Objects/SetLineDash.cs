@@ -23,11 +23,7 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
@@ -37,10 +33,12 @@ namespace PdfClown.Documents.Contents.Objects
     {
         public static readonly string OperatorKeyword = "d";
 
-        public SetLineDash(LineDash lineDash) : base(OperatorKeyword, (PdfDirectObject)new PdfArray())
+        public SetLineDash(LineDash lineDash) 
+            : base(OperatorKeyword, (PdfDirectObject)new PdfArrayImpl())
         { Value = lineDash; }
 
-        public SetLineDash(PdfArray operands) : base(OperatorKeyword, operands)
+        public SetLineDash(PdfArray operands) 
+            : base(OperatorKeyword, operands)
         { }
 
         public LineDash Value
@@ -51,7 +49,7 @@ namespace PdfClown.Documents.Contents.Objects
                 operands.Clear();
                 // 1. Dash array.
                 var dashArray = value.DashArray;
-                var baseDashArray = new PdfArray(dashArray);
+                var baseDashArray = new PdfArrayImpl(dashArray);
                 operands.Add(baseDashArray);
                 // 2. Dash phase.
                 operands.Add(value.DashPhase);

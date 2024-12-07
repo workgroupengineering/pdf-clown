@@ -30,7 +30,7 @@ namespace PdfClown.Samples.CLI
     */
     public class ComplexTypesettingSample : Sample
     {
-        private static readonly colorSpaces::Color TextColor_Highlight = new colorSpaces::DeviceRGBColor(255 / 255d, 50 / 255d, 50 / 255d);
+        private static readonly IColor TextColor_Highlight = new RGBColor(255 / 255d, 50 / 255d, 50 / 255d);
 
         public override void Run()
         {

@@ -25,30 +25,29 @@
 
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Objects;
 
 namespace PdfClown.Documents.Contents.Scanner
 {
     /// <summary>Text style.</summary>
     public sealed class TextStyle
     {
-        private readonly Color fillColor;
+        private readonly IColor fillColor;
         private readonly ColorSpace fillColorSpace;
-        private readonly Font font;
+        private readonly PdfFont font;
         private readonly float fontSize;
         private readonly TextRenderModeEnum renderMode;
         private readonly float scaleX;
         private readonly float scaleY;
-        private readonly Color strokeColor;
+        private readonly IColor strokeColor;
         private readonly ColorSpace strokeColorSpace;
 
         public TextStyle(
-          Font font,
+          PdfFont font,
           float fontSize,
           TextRenderModeEnum renderMode,
-          Color strokeColor,
+          IColor strokeColor,
           ColorSpace strokeColorSpace,
-          Color fillColor,
+          IColor fillColor,
           ColorSpace fillColorSpace,
           float scaleX,
           float scaleY)
@@ -64,11 +63,11 @@ namespace PdfClown.Documents.Contents.Scanner
             this.scaleY = scaleY;
         }
 
-        public Color FillColor => fillColor;
+        public IColor FillColor => fillColor;
 
         public ColorSpace FillColorSpace => fillColorSpace;
 
-        public Font Font => font;
+        public PdfFont Font => font;
 
         public float FontSize => fontSize;
 
@@ -80,7 +79,7 @@ namespace PdfClown.Documents.Contents.Scanner
 
         public float ScaleY => scaleY;
 
-        public Color StrokeColor => strokeColor;
+        public IColor StrokeColor => strokeColor;
 
         public ColorSpace StrokeColorSpace => strokeColorSpace;
     }

@@ -191,7 +191,7 @@ namespace PdfClown.Samples.CLI
 
                 composer.BeginLayer(actionLayer);
                 composer.BeginLocalState();
-                composer.SetFillColor(colors::DeviceRGBColor.Get(SKColors.Blue));
+                composer.SetFillColor(RGBColor.Get(SKColors.Blue));
                 composer.ShowText(
                   "Layer state action:\n * deselect \"" + simpleLayer1.Title + "\"\n   and \"" + radioLayer2.Title + "\"\n * toggle \"" + parentLayer.Title + "\"",
                   new SKPoint(400, 200),
@@ -234,7 +234,7 @@ namespace PdfClown.Samples.CLI
 
                 composer.BeginLayer(printOnlyLayer);
                 composer.BeginLocalState();
-                composer.SetFillColor(colors::DeviceRGBColor.Get(SKColors.Red));
+                composer.SetFillColor(RGBColor.Get(SKColors.Red));
                 composer.ShowText(printOnlyLayer.Title, new SKPoint(25, 300), XAlignmentEnum.Left, YAlignmentEnum.Top, 90);
                 composer.End();
                 composer.End();

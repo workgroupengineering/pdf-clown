@@ -189,19 +189,13 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => ToMarkupTypeEnum(BaseDataObject.GetString(PdfName.Subtype));
             set
             {
-                BaseDataObject[PdfName.Subtype] = ToCode(value);
-                switch (value)
+                this[PdfName.Subtype] = ToCode(value);
+                Color = value switch
                 {
-                    case TextMarkupType.Highlight:
-                        Color = new DeviceRGBColor(1, 1, 0);
-                        break;
-                    case TextMarkupType.Squiggly:
-                        Color = new DeviceRGBColor(1, 0, 0);
-                        break;
-                    default:
-                        Color = new DeviceRGBColor(0, 0, 0);
-                        break;
-                }
+                    TextMarkupType.Highlight => new RGBColor(1, 1, 0),
+                    TextMarkupType.Squiggly => new RGBColor(1, 0, 0),
+                    _ => new RGBColor(0, 0, 0),
+                };
             }
         }
 
@@ -258,7 +252,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                             }
 
                             composer.ApplyState(defaultExtGState);
-                            composer.SetFillColor(Color ?? DeviceRGBColor.OrangeRed);
+                            composer.SetFillColor(Color ?? RGBColor.OrangeRed);
                             {
                                 foreach (Quad markup in PageMarkupBoxes)
                                 {
@@ -287,7 +281,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         break;
                     case TextMarkupType.Squiggly:
                         {
-                            composer.SetStrokeColor(Color ?? DeviceRGBColor.OrangeRed);
+                            composer.SetStrokeColor(Color ?? RGBColor.OrangeRed);
                             composer.SetLineCap(LineCapEnum.Round);
                             composer.SetLineJoin(LineJoinEnum.Round);
                             {
@@ -330,7 +324,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     case TextMarkupType.StrikeOut:
                     case TextMarkupType.Underline:
                         {
-                            composer.SetStrokeColor(Color ?? DeviceRGBColor.OrangeRed);
+                            composer.SetStrokeColor(Color ?? RGBColor.OrangeRed);
                             {
                                 float lineYRatio = 0;
                                 switch (markupType)

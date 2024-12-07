@@ -23,15 +23,11 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Functions;
 using PdfClown.Objects;
-using PdfClown.Util;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
-using System.Linq;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -48,21 +44,22 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         //TODO:IMPL new element constructor!
 
-        internal SpecialDeviceColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        internal SpecialDeviceColorSpace(List<PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets the alternate color space used in case any of the <see cref="ComponentNames">component names</see>
         /// in the color space do not correspond to a component available on the device.</summary>
-        public ColorSpace AlternateSpace => alternate ??= ColorSpace.Wrap(((PdfArray)BaseDataObject)[2]);
+        public ColorSpace AlternateSpace => alternate ??= ColorSpace.Wrap(Get(2));
 
         /// <summary>Gets the names of the color components.</summary>
         public abstract IList<string> ComponentNames { get; }
 
         /// <summary>Gets the function to transform a tint value into color component values
         /// in the <see cref="AlternateSpace">alternate color space</see>.</summary>
-        public Function TintFunction => function ??= Function.Wrap(((PdfArray)BaseDataObject)[3]);
+        public Function TintFunction => function ??= Function.Wrap(Get(3));
 
-        public override SKColor GetSKColor(Color color, float? alpha)
+        public override SKColor GetSKColor(IColor color, float? alpha)
         {
             return GetSKColor(color.Floats, alpha);
         }
