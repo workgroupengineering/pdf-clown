@@ -29,28 +29,24 @@ using System.Text.RegularExpressions;
 
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Page format.</summary>
-      <remarks>This utility provides an easy access to the dimension of common page formats.</remarks>
-    */
-    public sealed class PageFormat
+    /// <summary>Page format.</summary>
+    ///  <remarks>This utility provides an easy access to the dimension of common page formats.</remarks>
+    public sealed partial class PageFormat
     {
-        /**
-          <summary>Paper size.</summary>
-          <remarks>
-            References:
-            <list type="bullet">
-              <item>{ 'A' digit+ }: [ISO 216] "A" series: Paper and boards, trimmed sizes.</item>
-              <item>{ 'B' digit+ }: [ISO 216] "B" series: Posters, wall charts and similar items.</item>
-              <item>{ 'C' digit+ }: [ISO 269] "C" series: Envelopes or folders suitable for A-Size
-              stationery.</item>
-              <item>{ 'Ansi' letter }: [ANSI/ASME Y14.1] ANSI series: US engineering drawing series.</item>
-              <item>{ 'Arch' letter }: Architectural series.</item>
-              <item>{ "Letter", "Legal", "Executive", "Statement", "Tabloid" }: Traditional north-american
-              sizes.</item>
-            </list>
-          </remarks>
-        */
+        /// <summary>Paper size.</summary>
+        /// <remarks>
+        ///   References:
+        ///   <list type="bullet">
+        ///     <item>{ 'A' digit+ }: [ISO 216] "A" series: Paper and boards, trimmed sizes.</item>
+        ///     <item>{ 'B' digit+ }: [ISO 216] "B" series: Posters, wall charts and similar items.</item>
+        ///     <item>{ 'C' digit+ }: [ISO 269] "C" series: Envelopes or folders suitable for A-Size
+        ///     stationery.</item>
+        ///     <item>{ 'Ansi' letter }: [ANSI/ASME Y14.1] ANSI series: US engineering drawing series.</item>
+        ///     <item>{ 'Arch' letter }: Architectural series.</item>
+        ///     <item>{ "Letter", "Legal", "Executive", "Statement", "Tabloid" }: Traditional north-american
+        ///     sizes.</item>
+        ///   </list>
+        /// </remarks>
         public enum SizeEnum
         {
             A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10,
@@ -65,9 +61,7 @@ namespace PdfClown.Documents
             AnsiA, AnsiB, AnsiC, AnsiD, AnsiE
         };
 
-        /**
-          <summary>Page orientation.</summary>
-        */
+        /// <summary>Page orientation.</summary>
         public enum OrientationEnum
         {
             Portrait,
@@ -77,32 +71,25 @@ namespace PdfClown.Documents
         private static readonly string IsoSeriesSize_A = "A";
         private static readonly string IsoSeriesSize_B = "B";
         private static readonly string IsoSeriesSize_C = "C";
-
-        private static readonly Regex IsoSeriesSizePattern = new Regex(
-          "(["
-            + IsoSeriesSize_A
-            + IsoSeriesSize_B
-            + IsoSeriesSize_C
-            + "])([\\d]+)");
-
-        /**
-          <summary>Gets the default page size.</summary>
-          <remarks>The returned dimension corresponds to the widely-established ISO A4 standard paper
-          format, portrait orientation.</remarks>
-        */
+#if NET7_0_OR_GREATER
+        [GeneratedRegex("([ABC])([\\d]+)", RegexOptions.CultureInvariant)]
+        private static partial Regex GetIsoSeriesSizePattern();
+#else
+        private static readonly Regex isoSeriesSizePattern = new Regex("([ABC])([\\d]+)", RegexOptions.Compiled);
+        private static Regex GetIsoSeriesSizePattern() => isoSeriesSizePattern;
+#endif
+        /// <summary>Gets the default page size.</summary>
+        /// <remarks>The returned dimension corresponds to the widely-established ISO A4 standard paper
+        /// format, portrait orientation.</remarks>
         public static SKSize GetSize() => GetSize(SizeEnum.A4);
 
-        /**
-          <summary>Gets the page size of the given format, portrait orientation.</summary>
-          <param name="size">Page size.</param>
-        */
+        /// <summary>Gets the page size of the given format, portrait orientation.</summary>
+        /// <param name="size">Page size.</param>
         public static SKSize GetSize(SizeEnum size) => GetSize(size, OrientationEnum.Portrait);
 
-        /**
-          <summary>Gets the page size of the given format and orientation.</summary>
-          <param name="size">Page size.</param>
-          <param name="orientation">Page orientation.</param>
-        */
+        /// <summary>Gets the page size of the given format and orientation.</summary>
+        /// <param name="size">Page size.</param>
+        /// <param name="orientation">Page orientation.</param>
         public static SKSize GetSize(SizeEnum size, OrientationEnum orientation)
         {
             int width, height = 0;
@@ -110,7 +97,7 @@ namespace PdfClown.Documents
             // Size.
             {
                 string sizeName = size.ToString();
-                Match match = IsoSeriesSizePattern.Match(sizeName);
+                Match match = GetIsoSeriesSizePattern().Match(sizeName);
                 // Is it an ISO standard size?
                 if (match.Success)
                 {

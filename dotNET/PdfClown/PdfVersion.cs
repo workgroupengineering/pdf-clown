@@ -35,9 +35,15 @@ namespace PdfClown
 {
     /// <summary>Generic PDF version number [PDF:1.6:H.1].</summary>
     /// <seealso cref="VersionEnum"/>
-    public sealed class PdfVersion : IVersion
+    public sealed partial class PdfVersion : IVersion
     {
-        private static readonly Regex versionPattern = new Regex("^(\\d+)\\.(\\d+)$");
+#if NET7_0_OR_GREATER
+        [GeneratedRegex("^(\\d+)\\.(\\d+)$", RegexOptions.CultureInvariant)]
+        private static partial Regex GetVersionPattern();
+#else
+        private static readonly Regex versionPattern = new Regex("^(\\d+)\\.(\\d+)$", RegexOptions.Compiled);
+        private static Regex GetVersionPattern() => versionPattern;
+#endif
         private static readonly Dictionary<string, PdfVersion> versions = new(8, StringComparer.Ordinal);
         private static readonly Dictionary<VersionEnum, PdfVersion> versionEnums = new(8)
         {
@@ -57,6 +63,7 @@ namespace PdfClown
 
         public static PdfVersion Get(string version)
         {
+            var versionPattern = GetVersionPattern();
             if (!versions.ContainsKey(version))
             {
                 Match versionMatch = versionPattern.Match(version);
@@ -82,8 +89,7 @@ namespace PdfClown
 
         public int Minor => minor;
 
-        public override string ToString()
-        { return VersionUtils.ToString(this); }
+        public override string ToString() => VersionUtils.ToString(this);
 
         public IList<int> Numbers => new List<int> { major, minor };
 
