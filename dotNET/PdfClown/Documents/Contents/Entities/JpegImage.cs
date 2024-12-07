@@ -28,7 +28,6 @@ using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
-using PdfClown.Util.IO;
 using System.Collections.Generic;
 using System.IO;
 
@@ -76,7 +75,7 @@ namespace PdfClown.Documents.Contents.Entities
         {
             // NOTE: Big-endian data expected.
             Stream stream = Stream;
-            BigEndianBinaryReader streamReader = new BigEndianBinaryReader(stream);
+            var streamReader = new StreamContainer(stream);
 
             int index = 4;
             stream.Seek(index, SeekOrigin.Begin);
@@ -86,7 +85,7 @@ namespace PdfClown.Documents.Contents.Entities
                 index += streamReader.ReadUInt16();
                 stream.Seek(index, SeekOrigin.Begin);
 
-                stream.Read(markerBytes, 0, 2);
+                stream.ReadExactly(markerBytes, 0, 2);
                 index += 2;
 
                 // Frame header?
