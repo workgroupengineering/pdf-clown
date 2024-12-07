@@ -94,23 +94,21 @@ namespace PdfClown.Documents.Contents.Objects
                     {
                         var imageMatrix = imageObject.Matrix;
                         imageMatrix.ScaleY *= -1;
-                        imageMatrix = imageMatrix.PreConcat(SKMatrix.CreateTranslation(0, -size.Height));
+#if NET9_0_OR_GREATER
+                        canvas.Concat(in imageMatrix);
+#else
                         canvas.Concat(ref imageMatrix);
+#endif
 
                         if (imageObject.ImageMask)
                         {
-                            using (var paint = state.CreateFillPaint())
-                            {
-                                canvas.DrawBitmap(image, 0, 0, paint);
-                            }
+                            using var paint = state.CreateFillPaint();
+                            canvas.DrawImage(image, 0, -size.Height, paint);
                         }
                         else
                         {
-                            using (var paint = state.CreateFillPaint())
-                            {
-                                paint.FilterQuality = SKFilterQuality.Medium;
-                                canvas.DrawBitmap(image, 0, 0, paint);
-                            }
+                            using var paint = state.CreateFillPaint();
+                            canvas.DrawImage(image, 0, -size.Height, paint);
                         }
                     }
                 }

@@ -96,15 +96,15 @@ namespace PdfClown.Documents.Contents.XObjects
             set => throw new NotSupportedException();
         }
 
-        public SKBitmap Load(GraphicsState state)
+        public SKImage Load(GraphicsState state)
         {
-            if (Document.Cache.TryGetValue((PdfReference)BaseObject, out var existingBitmap))
+            if (Document.Cache.TryGetValue(Reference, out var existingBitmap))
             {
-                return (SKBitmap)existingBitmap;
+                return (SKImage)existingBitmap;
             }
 
-            SKBitmap image = BitmapLoader.Load(this, state);
-            Document.Cache[(PdfReference)BaseObject] = image;
+            var image = BitmapLoader.Load(this, state);
+            Document.Cache[Reference] = image;
             return image;
         }
 

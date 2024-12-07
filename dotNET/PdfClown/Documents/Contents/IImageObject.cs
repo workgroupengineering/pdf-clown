@@ -20,6 +20,6 @@ namespace PdfClown.Documents.Contents
         PdfArray Matte { get; }
         IDictionary<PdfName, PdfDirectObject> Header { get; }
         float[] Decode { get; }
-        SKBitmap Load(GraphicsState state);
+        SKImage Load(GraphicsState state);
     }
 }

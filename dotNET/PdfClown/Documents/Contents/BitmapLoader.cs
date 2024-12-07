@@ -12,7 +12,7 @@ namespace PdfClown.Documents.Contents
 {
     public class BitmapLoader
     {
-        public static SKBitmap Load(IImageObject imageObject, GraphicsState state)
+        public static SKImage Load(IImageObject imageObject, GraphicsState state)
         {
             var data = imageObject.Data;
             var filter = imageObject.Filter;
@@ -21,14 +21,14 @@ namespace PdfClown.Documents.Contents
                 var parameterArray = imageObject.Parameters as PdfArray;
                 for (int i = 0; i < filterArray.Count; i++)
                 {
-                    var filterItem = (PdfName)filterArray[i];
+                    var filterItem = filterArray.Get<PdfName>(i);
                     var parameterItem = parameterArray?.TryGet(i);
                     var temp = ExtractImage(imageObject, data, filterItem, parameterItem, imageObject.Header);
                     if (temp is IByteStream tempBuffer)
                     {
                         data = tempBuffer;
                     }
-                    else if (temp is SKBitmap tempImage)
+                    else if (temp is SKImage tempImage)
                     {
                         return tempImage;
                     }
@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Contents
                 {
                     data = tempBuffer;
                 }
-                else if (temp is SKBitmap tempImage)
+                else if (temp is SKImage tempImage)
                 {
                     return tempImage;
                 }
@@ -71,7 +71,10 @@ namespace PdfClown.Documents.Contents
                 && imageObject.SMask == null
                 && imageObject.ColorSpace?.ComponentCount != 4)
             {
-                return SKBitmap.Decode(data.GetArrayBuffer());
+                var array = data.GetArrayBuffer();
+                var pinnedArray = GCHandle.Alloc(array, GCHandleType.Pinned);
+                using var skData = SKData.Create(pinnedArray.AddrOfPinnedObject(), (int)data.Length, (addr, ctx) => pinnedArray.Free());
+                return SKImage.FromEncodedData(skData);
             }
             //    if (imageObject.SMask != null)
             //    {
@@ -108,7 +111,7 @@ namespace PdfClown.Documents.Contents
 
         private GraphicsState state;
         private IImageObject image;
-        private ColorSpace colorSpace = ColorSpace.Wrap(PdfName.DeviceGray);
+        private ColorSpace colorSpace = GrayColorSpace.Default;
         private ICCBasedColorSpace iccColorSpace;
         private int bitsPerComponent;
         private PdfArray matte;
@@ -177,11 +180,11 @@ namespace PdfClown.Documents.Contents
                     var bitPerColor = (buffer.Length * 8) / width / height;
                     var sizeComponentCount = bitPerColor / bitsPerComponent;
                     if (sizeComponentCount < 3)
-                        colorSpace = DeviceGrayColorSpace.Default;
+                        colorSpace = GrayColorSpace.Default;
                     else if (sizeComponentCount == 3)
-                        colorSpace = DeviceRGBColorSpace.Default;
+                        colorSpace = RGBColorSpace.Default;
                     else
-                        colorSpace = DeviceCMYKColorSpace.Default;
+                        colorSpace = CMYKColorSpace.Default;
                 }
 
                 componentsCount = colorSpace.ComponentCount;
@@ -202,7 +205,7 @@ namespace PdfClown.Documents.Contents
             }
             // calculate row padding
             padding = 0;
-            rowBits = (int)width * componentsCount * bitsPerComponent;
+            rowBits = width * componentsCount * bitsPerComponent;
             rowBytes = rowBits / 8;
             if (rowBits % 8 > 0)
             {
@@ -335,7 +338,7 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        public SKBitmap Load()
+        public SKImage Load()
         {
             if (isMask)
             {
@@ -351,7 +354,7 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        unsafe public SKBitmap LoadRgbImage()
+        unsafe public SKImage LoadRgbImage()
         {
             fixed (byte* buffer = this.buffer.Span)
             {
@@ -399,16 +402,12 @@ namespace PdfClown.Documents.Contents
 
                 // get a pointer to the buffer, and give it to the bitmap
                 var handler = GCHandle.Alloc(raster, GCHandleType.Pinned);
-                var ptr = handler.AddrOfPinnedObject();
 
-                var bitmap = new SKBitmap();
-                bitmap.InstallPixels(info, ptr, info.RowBytes, (addr, ctx) => handler.Free(), null);
-
-                return bitmap;
+                return SKImage.FromPixels(new SKPixmap(info, handler.AddrOfPinnedObject(), info.RowBytes), (addr, ctx) => handler.Free());
             }
         }
 
-        unsafe public SKBitmap LoadGray()
+        unsafe public SKImage LoadGray()
         {
             fixed (byte* buffer = this.buffer.Span)
             {
@@ -434,23 +433,12 @@ namespace PdfClown.Documents.Contents
                 }
 
                 // get a pointer to the buffer, and give it to the bitmap
-                var ptr = GCHandle.Alloc(raster, GCHandleType.Pinned);
-                var bitmap = new SKBitmap();
-                bitmap.InstallPixels(info, ptr.AddrOfPinnedObject(), info.RowBytes, (addr, ctx) => ptr.Free(), null);
-
-                return bitmap;
+                var handler = GCHandle.Alloc(raster, GCHandleType.Pinned);
+                return SKImage.FromPixels(new SKPixmap(info, handler.AddrOfPinnedObject(), info.RowBytes), (addr, ctx) => handler.Free());
             }
         }
 
-        public SKMask LoadSKMask()
-        {
-            //Bug https://bugs.chromium.org/p/skia/issues/detail?id=6847
-            var format = bitsPerComponent == 1 ? SKMaskFormat.BW : SKMaskFormat.A8;
-            var skMask = SKMask.Create(buffer.Span, SKRectI.Create(0, 0, width, height), (uint)rowBytes, format);
-            return skMask;
-        }
-
-        unsafe public SKBitmap LoadMask()
+        unsafe public SKImage LoadMask()
         {
             fixed (byte* buffer = this.buffer.Span)
             {
@@ -493,11 +481,8 @@ namespace PdfClown.Documents.Contents
                 }
 
                 // get a pointer to the buffer, and give it to the bitmap
-                var ptr = GCHandle.Alloc(raster, GCHandleType.Pinned);
-                var bitmap = new SKBitmap();
-                bitmap.InstallPixels(info, ptr.AddrOfPinnedObject(), info.RowBytes, (addr, ctx) => ptr.Free(), null);
-
-                return bitmap;
+                var handler = GCHandle.Alloc(raster, GCHandleType.Pinned);
+                return SKImage.FromPixels(new SKPixmap(info, handler.AddrOfPinnedObject(), info.RowBytes), (addr, ctx) => handler.Free());                
             }
         }
 
@@ -522,7 +507,7 @@ namespace PdfClown.Documents.Contents
 
         private static bool IsPng(byte[] buf)
         {
-            return (buf[0] == 137 && buf[1] == 80 && buf[2] == 78 && buf[3] == (byte)71); //png
+            return (buf[0] == 137 && buf[1] == 80 && buf[2] == 78 && buf[3] == 71); //png
         }
 
         private static bool IsJPEG(byte[] buf)
