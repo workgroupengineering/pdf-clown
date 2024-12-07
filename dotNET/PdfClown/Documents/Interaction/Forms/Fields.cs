@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 
 using System;
@@ -36,20 +37,25 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class Fields : PdfObjectWrapper<PdfArray>, IDictionary<string, Field>, IEnumerable<Field>
     {
-        private Dictionary<string, Field> cache;
-        public Fields(PdfDocument context) : base(context, new PdfArray())
+        private Dictionary<string, Field> nameCache;
+        private readonly Dictionary<PdfReference, Field> refCache = new();
+
+        public Fields(PdfDocument context) 
+            : base(context, new PdfArrayImpl())
         { }
 
-        public Fields(PdfDirectObject baseObject) : base(baseObject)
+        public Fields(PdfDirectObject baseObject) 
+            : base(baseObject)
         { }
 
-        private Dictionary<string, Field> Cache => cache ??= RefreshCache();
+        internal Dictionary<string, Field> NameCache => nameCache ??= RefreshCache();
+        internal Dictionary<PdfReference, Field> RefCache => refCache;
 
-        public ICollection<string> Keys => Cache.Keys;
+        public ICollection<string> Keys => NameCache.Keys;
 
-        public ICollection<Field> Values => Cache.Values;
+        public ICollection<Field> Values => NameCache.Values;
 
-        public int Count => Cache.Count;
+        public int Count => NameCache.Count;
 
         public bool IsReadOnly => false;
 
@@ -63,7 +69,7 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             var cache = new Dictionary<string, Field>();
 
-            foreach (var field in RetrieveValues(BaseDataObject))
+            foreach (var field in RetrieveValues(DataObject))
             {
                 cache[field.FullName] = field;
             }
@@ -74,54 +80,57 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public void Add(string key, Field value)
         {
-            Cache[key] = value;
+            NameCache[key] = value;
+            RefCache[(PdfReference)value.RefOrSelf] = value;
             var fieldObjects = GetHolderArray(value);
-            fieldObjects.Add(value.BaseObject);
+            fieldObjects.Add(value.RefOrSelf);
         }
 
-        public bool ContainsKey(string key) => Cache.ContainsKey(key);
+        public bool ContainsKey(string key) => NameCache.ContainsKey(key);
 
-        public bool Remove(string key) => Cache.Remove(key, out var field) && RemoveFromArray(field);
+        public bool Remove(string key) => NameCache.Remove(key, out var field) && RemoveFromArray(field);
 
-        public bool Remove(string key, out Field field) => Cache.Remove(key, out field) && RemoveFromArray(field);
+        public bool Remove(string key, out Field field) => NameCache.Remove(key, out field) && RemoveFromArray(field);
 
         public bool Remove(Field field)
         {
-            Cache.Remove(field.FullName);
+            NameCache.Remove(field.FullName);
             return RemoveFromArray(field);
         }
 
         private bool RemoveFromArray(Field field)
         {
             var fieldObjects = GetHolderArray(field);
-            return fieldObjects?.Remove(field.BaseObject) ?? false;
+            return fieldObjects?.Remove(field.RefOrSelf) ?? false;
         }
 
         private PdfArray GetHolderArray(Field field)
         {
             PdfArray fieldObjects;
             {
-                var fieldParentReference = field.BaseDataObject.Get<PdfReference>(PdfName.Parent);
+                var fieldParentReference = field.DataObject.Get(PdfName.Parent);
                 if (fieldParentReference == null)
-                { fieldObjects = BaseDataObject; }
+                { fieldObjects = DataObject; }
                 else
-                { fieldObjects = ((PdfDictionary)fieldParentReference.DataObject).Get<PdfArray>(PdfName.Kids); }
+                { fieldObjects = ((PdfDictionary)fieldParentReference.Resolve(null)).Get<PdfArray>(PdfName.Kids); }
             }
 
             return fieldObjects;
         }
 
-        public bool TryGetValue(string key, out Field value) => Cache.TryGetValue(key, out value);
+        public bool TryGetValue(string key, out Field value) => NameCache.TryGetValue(key, out value);
+
+        public bool TryGetValue(PdfReference key, out Field value) => RefCache.TryGetValue(key, out value);
 
         void ICollection<KeyValuePair<string, Field>>.Add(KeyValuePair<string, Field> entry) => Add(entry.Key, entry.Value);
 
         public void Clear()
         {
-            Cache.Clear();
-            BaseDataObject.Clear();
+            NameCache.Clear();
+            DataObject.Clear();
         }
 
-        bool ICollection<KeyValuePair<string, Field>>.Contains(KeyValuePair<string, Field> entry) => Cache.Contains(entry);
+        bool ICollection<KeyValuePair<string, Field>>.Contains(KeyValuePair<string, Field> entry) => NameCache.Contains(entry);
 
         public void CopyTo(KeyValuePair<string, Field>[] entries, int index)
         {
@@ -133,7 +142,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public bool Remove(KeyValuePair<string, Field> entry) => throw new NotImplementedException();
 
-        public Dictionary<string, Field>.Enumerator GetEnumerator() => Cache.GetEnumerator();
+        public Dictionary<string, Field>.Enumerator GetEnumerator() => NameCache.GetEnumerator();
 
         IEnumerator<KeyValuePair<string, Field>> IEnumerable<KeyValuePair<string, Field>>.GetEnumerator() => GetEnumerator();
 
@@ -148,20 +157,32 @@ namespace PdfClown.Documents.Interaction.Forms
             return list;
         }
 
+        public Field Wrap(PdfReference reference)
+        {
+            if (reference == null)
+                return null;
+            if (TryGetValue(reference, out var field))
+                return field;
+            return RefCache[reference] = Field.Wrap(reference);
+        }
+
         private void RetrieveValues(PdfArray fieldObjects, IList<Field> values)
         {
-            foreach (var fieldReference in fieldObjects.OfType<PdfReference>())
+            foreach (var fieldReference in fieldObjects.GetItems().OfType<PdfReference>())
             {
-                var kidReferences = ((PdfDictionary)fieldReference.DataObject).Get<PdfArray>(PdfName.Kids);
-                PdfDictionary kidObject = kidReferences == null ? null : (PdfDictionary)((PdfReference)kidReferences[0]).DataObject;
+                var kidReferences = ((PdfDictionary)fieldReference.Resolve(null)).Get<PdfArray>(PdfName.Kids);
+                var kidObject = kidReferences?.Get<PdfDictionary>(0);
                 // Terminal field?
                 if (kidObject == null // Merged single widget annotation.
                   || (!kidObject.ContainsKey(PdfName.FT) // Multiple widget annotations.
-                    && kidObject.ContainsKey(PdfName.Subtype)
-                    && PdfName.Widget.Equals(kidObject.Get<PdfName>(PdfName.Subtype))))
-                { values.Add(Field.Wrap(fieldReference)); }
+                    && kidObject is Widget))
+                {
+                    values.Add(Wrap(fieldReference));
+                }
                 else // Non-terminal field.
-                { RetrieveValues(kidReferences, values); }
+                {
+                    RetrieveValues(kidReferences, values);
+                }
             }
         }
     }

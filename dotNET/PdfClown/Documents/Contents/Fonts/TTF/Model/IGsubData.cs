@@ -19,20 +19,16 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Model
 {
-    /// <summary>
-    /// Model for data from the GSUB tables
-    /// @author Palash Ray
-    /// </summary>
+    /// <summary>Model for data from the GSUB tables
+    /// @author Palash Ray</summary>
     public interface IGsubData
     {
         Language Language { get; }
 
-        /// <summary>
-        /// The name of the script that is active
-        /// A {@link Language}
+        /// <summary>The name of the script that is active
+        /// A <see cref="Language"/>
         /// can have more than one script that is supported.However, at any given
-        /// point, only one of the many scripts are active.
-        /// </summary>
+        /// point, only one of the many scripts are active.</summary>
         string ActiveScriptName { get; }
 
         ICollection<string> SupportedFeatures { get; }

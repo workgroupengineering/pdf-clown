@@ -34,34 +34,25 @@ namespace PdfClown.Documents.Interaction.Annotations
 {
     /// <summary>Border characteristics [PDF:1.6:8.4.3].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class Border : PdfObjectWrapper<PdfDictionary>, IEquatable<Border>
+    public sealed class Border : PdfDictionary, IEquatable<Border>
     {
-        private static readonly LineDash DefaultLineDash = new LineDash(new float[] { 3, 1 });
+        private static readonly LineDash DefaultLineDash = new(new float[] { 3, 1 });
         private static readonly BorderStyleType DefaultStyle = BorderStyleType.Solid;
         private static readonly double DefaultWidth = 1;
 
-        private static readonly Dictionary<BorderStyleType, PdfName> StyleEnumCodes;
-        private LineDash lineDash;
-
-        static Border()
+        private static readonly Dictionary<BorderStyleType, PdfName> StyleEnumCodes = new()
         {
-            StyleEnumCodes = new Dictionary<BorderStyleType, PdfName>
-            {
-                [BorderStyleType.Solid] = PdfName.S,
-                [BorderStyleType.Dashed] = PdfName.D,
-                [BorderStyleType.Beveled] = PdfName.B,
-                [BorderStyleType.Inset] = PdfName.I,
-                [BorderStyleType.Underline] = PdfName.U
-            };
-        }
-
-        //public static Border Wrap(PdfDirectObject baseObject)
-        //{
-        //    return baseObject?.Wrapper as Border ?? new Border(baseObject);
-        //}
+            [BorderStyleType.Solid] = PdfName.S,
+            [BorderStyleType.Dashed] = PdfName.D,
+            [BorderStyleType.Beveled] = PdfName.B,
+            [BorderStyleType.Inset] = PdfName.I,
+            [BorderStyleType.Underline] = PdfName.U
+        };
+        private LineDash lineDash;
+        
 
         /// <summary>Gets the code corresponding to the given value.</summary>
-        private static PdfName ToCode(BorderStyleType value)
+        private static PdfName GetName(BorderStyleType value)
         {
             return StyleEnumCodes[value];
         }
@@ -78,52 +69,65 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             return DefaultStyle;
         }
-
-        /// <summary>Creates a non-reusable instance.</summary>
-        public Border(double width) : this(null, width)
+        
+        public Border()
+            : this(1D)
         { }
 
         /// <summary>Creates a non-reusable instance.</summary>
-        public Border(double width, BorderStyleType style) : this(null, width, style)
+        public Border(double width) 
+            : this(null, width)
         { }
 
         /// <summary>Creates a non-reusable instance.</summary>
-        public Border(double width, LineDash pattern) : this(null, width, pattern)
+        public Border(double width, BorderStyleType style) 
+            : this(null, width, style)
+        { }
+
+        /// <summary>Creates a non-reusable instance.</summary>
+        public Border(double width, LineDash pattern) 
+            : this(null, width, pattern)
         { }
 
         /// <summary>Creates a reusable instance.</summary>
-        public Border(PdfDocument context, double width) : this(context, width, DefaultStyle, null)
+        public Border(PdfDocument context, double width) 
+            : this(context, width, DefaultStyle, null)
         { }
 
         /// <summary>Creates a reusable instance.</summary>
-        public Border(PdfDocument context, double width, BorderStyleType style) : this(context, width, style, null)
+        public Border(PdfDocument context, double width, BorderStyleType style) 
+            : this(context, width, style, null)
         { }
 
         /// <summary>Creates a reusable instance.</summary>
-        public Border(PdfDocument context, double width, LineDash pattern) : this(context, width, BorderStyleType.Dashed, pattern)
+        public Border(PdfDocument context, double width, LineDash pattern) 
+            : this(context, width, BorderStyleType.Dashed, pattern)
         { }
 
         private Border(PdfDocument context, double width, BorderStyleType style, LineDash pattern)
-            : base(context, new PdfDictionary(4) { { PdfName.Type, PdfName.Border } })
+            : base(context, new Dictionary<PdfName, PdfDirectObject>(4) {
+                { PdfName.Type, PdfName.Border }
+            })
         {
             Width = width;
             Style = style;
             Pattern = pattern;
         }
 
-        public Border(PdfDirectObject baseObject) : base(baseObject)
+        internal Border(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the dash pattern used in case of dashed border.</summary>
         public LineDash Pattern
         {
-            get => lineDash ??= (BaseDataObject.Resolve(PdfName.D) is PdfArray dashObject ? LineDash.Get(dashObject, null) : DefaultLineDash);
+            get => lineDash ??= (Get<PdfArray>(PdfName.D) is PdfArray dashObject ? LineDash.Get(dashObject, null) : DefaultLineDash);
             set
             {
                 if (Pattern != value)
                 {
                     lineDash = value;
-                    BaseDataObject[PdfName.D] = value != null ? new PdfArray(value.DashArray) : null;
+                    this[PdfName.D] = value != null ? new PdfArrayImpl(value.DashArray) : null;
                 }
             }
         }
@@ -131,15 +135,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <summary>Gets/Sets the border style.</summary>
         public BorderStyleType Style
         {
-            get => ToStyleEnum(BaseDataObject.GetString(PdfName.S));
-            set => BaseDataObject[PdfName.S] = value != DefaultStyle ? ToCode(value) : null;
+            get => ToStyleEnum(GetString(PdfName.S));
+            set => this[PdfName.S] = value != DefaultStyle ? GetName(value) : null;
         }
 
         /// <summary>Gets/Sets the border width in points.</summary>
         public double Width
         {
-            get => BaseDataObject.GetDouble(PdfName.W, DefaultWidth);
-            set => BaseDataObject.Set(PdfName.W, value);
+            get => GetDouble(PdfName.W, DefaultWidth);
+            set => Set(PdfName.W, value);
         }
 
         public void Apply(SKPaint paint, BorderEffect borderEffect)

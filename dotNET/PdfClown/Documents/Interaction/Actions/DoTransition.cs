@@ -23,39 +23,30 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Control drawing during a sequence of actions' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Control drawing during a sequence of actions' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class DoTransition : Action
+    public sealed class DoTransition : PdfAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public DoTransition(PdfDocument context, Transition transition)
             : base(context, PdfName.Trans)
         { Transition = transition; }
 
-        internal DoTransition(PdfDirectObject baseObject)
+        internal DoTransition(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the transition effect to be used for the update of the display.</summary>
-        */
+        /// <summary>Gets/Sets the transition effect to be used for the update of the display.</summary>
         public Transition Transition
         {
-            get => Wrap<Transition>(BaseDataObject[PdfName.Trans]);
-            set => BaseDataObject[PdfName.Trans] = value.BaseObject;
+            get => Get<Transition>(PdfName.Trans);
+            set => Set(PdfName.Trans, value);
         }
 
         public override string GetDisplayName() => "Do Transition";

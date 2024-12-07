@@ -19,7 +19,6 @@ using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Cms;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
-
 using Org.BouncyCastle.Cms;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Digests;
@@ -29,6 +28,7 @@ using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using PdfClown.Bytes;
+using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.IO;
 using System;
@@ -39,12 +39,11 @@ using System.Text;
 
 namespace PdfClown.Documents.Encryption
 {
-    /**
-     * This class implements the public key security handler described in the PDF specification.
-     *
-     * @see PublicKeyProtectionPolicy to see how to protect document with this security handler.
-     * @author Benoit Guillon
-     */
+    /// <summary>
+    /// This class implements the public key security handler described in the PDF specification.
+    /// <see cref="PublicKeyProtectionPolicy"> to see how to protect document with this security handler.
+    /// @author Benoit Guillon
+    /// </summary>
     // Just Translated, TODO Check & Debug
     public sealed class PublicKeySecurityHandler : SecurityHandler<PublicKeyProtectionPolicy>
     {
@@ -55,39 +54,25 @@ namespace PdfClown.Documents.Encryption
         private static readonly string SUBFILTER5 = "adbe.pkcs7.s5";
         private static readonly byte[] foreBytes = new byte[] { 0xff, 0xff, 0xff, 0xff };
 
-        /**
-		 * Constructor.
-		 */
         public PublicKeySecurityHandler()
-        {
-        }
+        { }
 
-        /**
-		 * Constructor used for encryption.
-		 *
-		 * @param p The protection policy.
-		 */
+        /// <summary>Constructor used for encryption.</summary>
+        /// <param name="policy">The protection policy.</param>
         public PublicKeySecurityHandler(PublicKeyProtectionPolicy policy)
             : base(policy)
         {
             KeyLength = policy.EncryptionKeyLength;
         }
 
-        /**
-		 * Prepares everything to decrypt the document.
-		 *
-		 * @param encryption encryption dictionary, can be retrieved via
-		 * {@link Document#getEncryption()}
-		 * @param documentIDArray document id which is returned via
-		 * {@link org.apache.pdfbox.cos.COSDocument#getDocumentID()} (not used by
-		 * this handler)
-		 * @param decryptionMaterial Information used to decrypt the document.
-		 *
-		 * @throws IOException If there is an error accessing data. If verbose mode
-		 * is enabled, the exception message will provide more details why the
-		 * match wasn't successful.
-		 */
-        public override void PrepareForDecryption(PdfEncryption encryption, PdfArray documentIDArray, DecryptionMaterial decryptionMaterial)
+        /// <summary>Prepares everything to decrypt the document.</summary>
+        /// <param name="encryption">encryption dictionary, can be retrieved via <see cref="PdfDocument.Encryption"> </param>
+        /// <param name="identifier">document id which is returned via <see cref="PdfDocument.ID"> (not used by this handler)</param>
+        /// <param name="decryptionMaterial">Information used to decrypt the document.</param>
+        /// <exception cref="IOException">If there is an error accessing data. If verbose mode
+        /// is enabled, the exception message will provide more details why the
+        /// match wasn't successful.</exception>
+        public override void PrepareForDecryption(PdfEncryption encryption, Identifier identifier, DecryptionMaterial decryptionMaterial)
         {
             if (!(decryptionMaterial is PublicKeyDecryptionMaterial material))
             {
@@ -95,8 +80,7 @@ namespace PdfClown.Documents.Encryption
                         "Provided decryption material is not compatible with the document");
             }
 
-
-            var defaultCryptFilterDictionary = encryption.DefaultCryptFilterDictionary;
+            var defaultCryptFilterDictionary = encryption.DefaultCryptFilter;
             if (defaultCryptFilterDictionary != null && defaultCryptFilterDictionary.Length != 0)
             {
                 KeyLength = (short)defaultCryptFilterDictionary.Length;
@@ -126,8 +110,8 @@ namespace PdfClown.Documents.Encryption
                 byte[] envelopedData = null;
 
                 // the bytes of each recipient in the recipients array
-                var array = encryption.BaseDataObject.Get<PdfArray>(PdfName.Recipients)
-                    ?? defaultCryptFilterDictionary?.BaseDataObject.Get<PdfArray>(PdfName.Recipients)
+                var array = encryption.Get<PdfArray>(PdfName.Recipients)
+                    ?? defaultCryptFilterDictionary.Recipients
                     ?? throw new IOException("/Recipients entry is missing in encryption dictionary");
 
                 Memory<byte>[] recipientFieldsBytes = new Memory<byte>[array.Count];
@@ -137,7 +121,7 @@ namespace PdfClown.Documents.Encryption
                 var extraInfo = new StringBuilder();
                 for (int i = 0; i < array.Count; i++)
                 {
-                    var recipientFieldString = (PdfString)array.Resolve(i);
+                    var recipientFieldString = array.Get<PdfString>(i);
                     var recipientBytes = recipientFieldString.RawValue;
                     var stream = new ByteStream(recipientBytes);
                     var data = new CmsEnvelopedData(stream);
@@ -276,21 +260,17 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        /**
-		 * Prepare the document for encryption.
-		 *
-		 * @param doc The document that will be encrypted.
-		 *
-		 * @throws IOException If there is an error while encrypting.
-		 */
+        /// <summary>Prepare the document for encryption.</summary>
+        /// <param name="doc">The document that will be encrypted.</param>
+        /// <exception cref="IOException">If there is an error while encrypting.</exception>
         public override void PrepareDocumentForEncryption(PdfDocument doc)
         {
             try
             {
-                PdfEncryption dictionary = doc.File.Encryption;
+                PdfEncryption dictionary = doc.Encryption;
                 if (dictionary == null)
                 {
-                    dictionary = new PdfEncryption(doc.File);
+                    dictionary = new PdfEncryption(doc);
                 }
 
                 dictionary.Filter = FILTER;
@@ -365,7 +345,7 @@ namespace PdfClown.Documents.Encryption
                 this.EncryptionKey = new byte[KeyLength / 8];
                 Array.Copy(mdResult, 0, this.EncryptionKey, 0, KeyLength / 8);
 
-                doc.File.Encryption = dictionary;
+                doc.Encryption = dictionary;
             }
             catch (Exception e)
             {
@@ -375,14 +355,14 @@ namespace PdfClown.Documents.Encryption
 
         private void PrepareEncryptionDictAES(PdfEncryption encryptionDictionary, PdfName aesVName, byte[][] recipients)
         {
-            var cryptFilterDictionary = new PdfCryptFilterDictionary(encryptionDictionary.File)
+            var cryptFilterDictionary = new PdfCryptFilter()
             {
                 CryptFilterMethod = aesVName,
                 Length = KeyLength,
-                Recipients = new PdfArray(recipients)
+                Recipients = new PdfArrayImpl(recipients)
             };
             //array.setDirect(true);
-            encryptionDictionary.DefaultCryptFilterDictionary = cryptFilterDictionary;
+            encryptionDictionary.DefaultCryptFilter = cryptFilterDictionary;
             encryptionDictionary.StreamFilterName = PdfName.DefaultCryptFilter;
             encryptionDictionary.StringFilterName = PdfName.DefaultCryptFilter;
             //cryptFilterDictionary.getCOSObject().setDirect(true);
@@ -433,7 +413,7 @@ namespace PdfClown.Documents.Encryption
             CipherKeyGenerator keygen;
             IBufferedCipher cipher;
             try
-            {                
+            {
                 apg = new Pkcs12ParametersGenerator(new Sha1Digest());//TODO Check
                 keygen = GeneratorUtilities.GetKeyGenerator(algorithm);
                 cipher = CipherUtilities.GetCipher(algorithm);

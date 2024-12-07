@@ -179,8 +179,13 @@ namespace PdfClown.Util.Math
 
         public Quad Transform(ref SKMatrix matrix)
         {
+#if NET9_0_OR_GREATER
+            Span<SKPoint> points = stackalloc SKPoint[4] { point0, point1, point2, point3 };
+            matrix.MapPoints(points, points);
+#else
             var points = new SKPoint[4] { point0, point1, point2, point3 };
             matrix.MapPoints(points, points);
+#endif
             point0 = points[0];
             point1 = points[1];
             point2 = points[2];

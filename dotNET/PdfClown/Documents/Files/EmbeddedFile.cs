@@ -27,13 +27,14 @@ using PdfClown.Bytes;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace PdfClown.Documents.Files
 {
     /// <summary>Embedded file [PDF:1.6:3.10.3].</summary>
     [PDF(VersionEnum.PDF13)]
-    public sealed class EmbeddedFile : PdfObjectWrapper<PdfStream>
+    public sealed class EmbeddedFile : PdfStream
     {
         /// <summary>Creates a new embedded file inside the document.</summary>
         /// <param name="context">Document context.</param>
@@ -41,26 +42,25 @@ namespace PdfClown.Documents.Files
         public static EmbeddedFile Get(PdfDocument context, string path)
         {
             using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            return new EmbeddedFile(context, new StreamContainer(fileStream));
+            return new EmbeddedFile(context, new ByteStream(fileStream));
         }
 
         /// <summary>Creates a new embedded file inside the document.</summary>
         /// <param name="context">Document context.</param>
         /// <param name="stream">File stream to embed.</param>
-        public static EmbeddedFile Get(PdfDocument context, IInputStream stream)
-        {
-            return new EmbeddedFile(context, stream);
-        }
-
-
-        private EmbeddedFile(PdfDocument context, IInputStream stream) : base(
-            context,
-            new PdfStream(
-              new (1) { { PdfName.Type, PdfName.EmbeddedFile } },
-              new ByteStream(stream)))
+        public EmbeddedFile(PdfDocument context, IInputStream stream)
+            : base(context, new(1) { 
+                { PdfName.Type, PdfName.EmbeddedFile },
+                { PdfName.Length, PdfInteger.Get(stream.Length) }
+            }, stream)
         { }
 
-        public EmbeddedFile(PdfDirectObject baseObject) : base(baseObject)
+        internal EmbeddedFile(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        internal EmbeddedFile(Dictionary<PdfName, PdfDirectObject> baseObject, IInputStream stream)
+            : base(baseObject, stream)
         { }
 
         /// <summary>Gets/Sets the creation date of this file.</summary>
@@ -71,13 +71,13 @@ namespace PdfClown.Documents.Files
         }
 
         /// <summary>Gets the data contained within this file.</summary>
-        public IInputStream Data => BaseDataObject.GetInputStream();
+        public IInputStream Data => GetInputStream();
 
         /// <summary>Gets/Sets the MIME media type name of this file [RFC 2046].</summary>
         public string MimeType
         {
-            get => Header.GetString(PdfName.Subtype);
-            set => Header.SetName(PdfName.Subtype, value);
+            get => GetString(PdfName.Subtype);
+            set => SetName(PdfName.Subtype, value);
         }
 
         /// <summary>Gets/Sets the modification date of this file.</summary>
@@ -95,8 +95,7 @@ namespace PdfClown.Documents.Files
         }
 
         /// <summary>Gets the file parameters.</summary>
-        private PdfDictionary Params => Header.Resolve<PdfDictionary>(PdfName.Params);
+        private PdfDictionary Params => GetOrCreate<PdfDictionary>(PdfName.Params);
 
-        private PdfDictionary Header => BaseDataObject;
     }
 }

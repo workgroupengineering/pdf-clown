@@ -24,193 +24,19 @@
 */
 
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
-
-using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
+
     /// <summary>Appearance characteristics [PDF:1.6:8.4.5].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class AppearanceCharacteristics : PdfObjectWrapper<PdfDictionary>
+    public sealed class AppearanceCharacteristics : PdfDictionary
     {
-        /// <summary>Icon fit [PDF:1.6:8.6.6].</summary>
-        public class IconFitObject : PdfObjectWrapper2<PdfDictionary>
-        {
-            /// <summary>Scaling mode [PDF:1.6:8.6.6].</summary>
-            public enum ScaleModeEnum
-            {
-                /// <summary>Always scale.</summary>
-                Always,
-                /// <summary>Scale only when the icon is bigger than the annotation box.</summary>
-                Bigger,
-                /// <summary>Scale only when the icon is smaller than the annotation box.</summary>
-                Smaller,
-                /// <summary>Never scale.</summary>
-                Never
-            };
-
-            /// <summary>Scaling type [PDF:1.6:8.6.6].</summary>
-            public enum ScaleTypeEnum
-            {
-                /// <summary>Scale the icon to fill the annotation box exactly,
-                /// without regard to its original aspect ratio.</summary>
-                Anamorphic,
-                /// <summary>Scale the icon to fit the width or height of the annotation box,
-                /// while maintaining the icon's original aspect ratio.</summary>
-                Proportional
-            };
-
-            private static readonly Dictionary<ScaleModeEnum, PdfName> ScaleModeEnumCodes;
-            private static readonly Dictionary<ScaleTypeEnum, PdfName> ScaleTypeEnumCodes;
-
-            static IconFitObject()
-            {
-                ScaleModeEnumCodes = new Dictionary<ScaleModeEnum, PdfName>
-                {
-                    [ScaleModeEnum.Always] = PdfName.A,
-                    [ScaleModeEnum.Bigger] = PdfName.B,
-                    [ScaleModeEnum.Smaller] = PdfName.S,
-                    [ScaleModeEnum.Never] = PdfName.N
-                };
-
-                ScaleTypeEnumCodes = new Dictionary<ScaleTypeEnum, PdfName>
-                {
-                    [ScaleTypeEnum.Anamorphic] = PdfName.A,
-                    [ScaleTypeEnum.Proportional] = PdfName.P
-                };
-            }
-
-            /// <summary>Gets the code corresponding to the given value.</summary>
-            private static PdfName ToCode(ScaleModeEnum value) => ScaleModeEnumCodes[value];
-
-            /// <summary>Gets the code corresponding to the given value.</summary>
-            private static PdfName ToCode(ScaleTypeEnum value) => ScaleTypeEnumCodes[value];
-
-            /// <summary>Gets the scaling mode corresponding to the given value.</summary>
-            private static ScaleModeEnum ToScaleModeEnum(IPdfString value)
-            {
-                if (value == null)
-                    return ScaleModeEnum.Always;
-                foreach (KeyValuePair<ScaleModeEnum, PdfName> scaleMode in ScaleModeEnumCodes)
-                {
-                    if (string.Equals(scaleMode.Value.StringValue, value.StringValue, StringComparison.Ordinal))
-                        return scaleMode.Key;
-                }
-                return ScaleModeEnum.Always;
-            }
-
-            /// <summary>Gets the scaling type corresponding to the given value.</summary>
-            private static ScaleTypeEnum ToScaleTypeEnum(IPdfString value)
-            {
-                if (value == null)
-                    return ScaleTypeEnum.Proportional;
-                foreach (KeyValuePair<ScaleTypeEnum, PdfName> scaleType in ScaleTypeEnumCodes)
-                {
-                    if (string.Equals(scaleType.Value.StringValue, value.StringValue, StringComparison.Ordinal))
-                        return scaleType.Key;
-                }
-                return ScaleTypeEnum.Proportional;
-            }
-
-            public IconFitObject(PdfDocument context) : base(context, new PdfDictionary())
-            { }
-
-            public IconFitObject(PdfDirectObject baseObject) : base(baseObject)
-            { }
-
-            /// <summary>Gets/Sets whether not to take into consideration the line width of the border.</summary>
-            public bool BorderExcluded
-            {
-                get => BaseDataObject.GetBool(PdfName.FB);
-                set => BaseDataObject.Set(PdfName.FB, value);
-            }
-
-            /// <summary>Gets/Sets the circumstances under which the icon should be scaled inside the annotation box.</summary>
-            public ScaleModeEnum ScaleMode
-            {
-                get => ToScaleModeEnum((IPdfString)BaseDataObject[PdfName.SW]);
-                set => BaseDataObject[PdfName.SW] = ToCode(value);
-            }
-
-            /// <summary>Gets/Sets the type of scaling to use.</summary>
-            public ScaleTypeEnum ScaleType
-            {
-                get => ToScaleTypeEnum((IPdfString)BaseDataObject[PdfName.S]);
-                set => BaseDataObject[PdfName.S] = ToCode(value);
-            }
-
-            public PdfArray Alignment
-            {
-                get => BaseDataObject.Get<PdfArray>(PdfName.A);
-                set => BaseDataObject[PdfName.A] = value;
-            }
-
-            /// <summary>Gets/Sets the horizontal alignment of the icon inside the annotation box.</summary>
-            public XAlignmentEnum XAlignment
-            {
-                get
-                {
-                    return (int)Math.Round((Alignment?.GetDouble(0, 0.5D) ?? 0.5D) / .5) switch
-                    {
-                        0 => XAlignmentEnum.Left,
-                        2 => XAlignmentEnum.Right,
-                        _ => XAlignmentEnum.Center,
-                    };
-                }
-                set
-                {
-                    PdfArray alignmentObject = Alignment;
-                    if (alignmentObject == null)
-                    {
-                        Alignment = alignmentObject = new PdfArray(2) { 0.5D, 0.5D };
-                    }
-
-                    double objectValue;
-                    switch (value)
-                    {
-                        case XAlignmentEnum.Left: objectValue = 0; break;
-                        case XAlignmentEnum.Right: objectValue = 1; break;
-                        default: objectValue = 0.5; break;
-                    }
-                    alignmentObject.Set(0, objectValue);
-                }
-            }
-
-            /// <summary>Gets/Sets the vertical alignment of the icon inside the annotation box.</summary>
-            public YAlignmentEnum YAlignment
-            {
-                get
-                {
-                    return (int)Math.Round((Alignment?.GetDouble(1, 0.5D) ?? 0.5D) / .5) switch
-                    {
-                        0 => YAlignmentEnum.Bottom,
-                        2 => YAlignmentEnum.Top,
-                        _ => YAlignmentEnum.Middle,
-                    };
-                }
-                set
-                {
-                    PdfArray alignmentObject = Alignment;
-                    if (alignmentObject == null)
-                    {
-                        Alignment = alignmentObject = new PdfArray(2) { 0.5D, 0.5D };
-                    }
-
-                    double objectValue;
-                    switch (value)
-                    {
-                        case YAlignmentEnum.Bottom: objectValue = 0; break;
-                        case YAlignmentEnum.Top: objectValue = 1; break;
-                        default: objectValue = 0.5; break;
-                    }
-                    alignmentObject.Set(1, objectValue);
-                }
-            }
-        }
+        private DeviceColor backgroundColor;
+        private DeviceColor borderColor;
 
         /// <summary>Annotation orientation [PDF:1.6:8.4.5].</summary>
         public enum OrientationEnum
@@ -225,10 +51,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             Right = 270
         };
 
-        public AppearanceCharacteristics(PdfDocument context) : base(context, new PdfDictionary())
+        public AppearanceCharacteristics()
+            : this((PdfDocument)null)
         { }
 
-        public AppearanceCharacteristics(PdfDirectObject baseObject) : base(baseObject)
+        public AppearanceCharacteristics(PdfDocument context)
+            : base(context, new())
+        { }
+
+        internal AppearanceCharacteristics(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the widget annotation's alternate (down) caption,
@@ -236,8 +68,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// (Pushbutton fields only).</summary>
         public string AlternateCaption
         {
-            get => BaseDataObject.GetString(PdfName.AC);
-            set => BaseDataObject.SetText(PdfName.AC, value);
+            get => GetString(PdfName.AC);
+            set => SetText(PdfName.AC, value);
         }
 
         /// <summary>Gets/Sets the widget annotation's alternate (down) icon definition,
@@ -245,29 +77,29 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// (Pushbutton fields only).</summary>
         public FormXObject AlternateIcon
         {
-            get => FormXObject.Wrap(BaseDataObject[PdfName.IX]);
-            set => BaseDataObject[PdfName.IX] = value.BaseObject;
+            get => Get<FormXObject>(PdfName.IX);
+            set => this[PdfName.IX] = value.RefOrSelf;
         }
 
         /// <summary>Gets/Sets the widget annotation's background color.</summary>
         public DeviceColor BackgroundColor
         {
-            get => GetColor(PdfName.BG);
-            set => SetColor(PdfName.BG, value);
+            get => backgroundColor ??= GetColor(PdfName.BG);
+            set => SetColor(PdfName.BG, backgroundColor = value);
         }
 
         /// <summary>Gets/Sets the widget annotation's border color.</summary>
         public DeviceColor BorderColor
         {
-            get => GetColor(PdfName.BC);
-            set => SetColor(PdfName.BC, value);
+            get => borderColor ??= GetColor(PdfName.BC);
+            set => SetColor(PdfName.BC, borderColor = value);
         }
 
         /// <summary>Gets/Sets the position of the caption relative to its icon (Pushbutton fields only).</summary>
         public AppearanceCaptionPosition CaptionPosition
         {
-            get => (AppearanceCaptionPosition)BaseDataObject.GetInt(PdfName.TP);
-            set => BaseDataObject.Set(PdfName.TP, (int)value);
+            get => (AppearanceCaptionPosition)GetInt(PdfName.TP);
+            set => Set(PdfName.TP, (int)value);
         }
 
         /// <summary>Gets/Sets the icon fit specifying how to display the widget annotation's icon
@@ -276,31 +108,31 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// (normal, rollover, and alternate).</summary>
         public IconFitObject IconFit
         {
-            get => Wrap2<IconFitObject>(BaseDataObject[PdfName.IF]);
-            set => BaseDataObject[PdfName.IF] = PdfObjectWrapper.GetBaseObject(value);
+            get => Get<IconFitObject>(PdfName.IF);
+            set => Set(PdfName.IF, value);
         }
 
         /// <summary>Gets/Sets the widget annotation's normal caption,
         /// displayed when it is not interacting with the user (Button fields only).</summary>
         public string NormalCaption
         {
-            get => BaseDataObject.GetString(PdfName.CA);
-            set => BaseDataObject.SetText(PdfName.CA, value);
+            get => GetString(PdfName.CA);
+            set => SetText(PdfName.CA, value);
         }
 
         /// <summary>Gets/Sets the widget annotation's normal icon definition,
         /// displayed when it is not interacting with the user (Pushbutton fields only).</summary>
         public FormXObject NormalIcon
         {
-            get => FormXObject.Wrap(BaseDataObject[PdfName.I]);
-            set => BaseDataObject[PdfName.I] = PdfObjectWrapper.GetBaseObject(value);
+            get => Get<FormXObject>(PdfName.I);
+            set => this[PdfName.I] = value?.RefOrSelf;
         }
 
         /// <summary>Gets/Sets the widget annotation's orientation.</summary>
         public OrientationEnum Orientation
         {
-            get => (OrientationEnum)BaseDataObject.GetInt(PdfName.R);
-            set => BaseDataObject.Set(PdfName.R, (int)value);
+            get => (OrientationEnum)GetInt(PdfName.R);
+            set => Set(PdfName.R, (int)value);
         }
 
         /// <summary>Gets/Sets the widget annotation's rollover caption,
@@ -308,8 +140,8 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// without pressing the mouse button (Pushbutton fields only).</summary>
         public string RolloverCaption
         {
-            get => BaseDataObject.GetString(PdfName.RC);
-            set => BaseDataObject.SetText(PdfName.RC, value);
+            get => GetString(PdfName.RC);
+            set => SetText(PdfName.RC, value);
         }
 
         /// <summary>Gets/Sets the widget annotation's rollover icon definition,
@@ -317,13 +149,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// without pressing the mouse button (Pushbutton fields only).</summary>
         public FormXObject RolloverIcon
         {
-            get => FormXObject.Wrap(BaseDataObject[PdfName.RI]);
-            set => BaseDataObject[PdfName.RI] = PdfObjectWrapper.GetBaseObject(value);
+            get => Get<FormXObject>(PdfName.RI);
+            set => Set(PdfName.RI, value);
         }
 
-        private DeviceColor GetColor(PdfName key) => DeviceColor.Get(BaseDataObject.Get<PdfArray>(key));
+        private DeviceColor GetColor(PdfName key) => DeviceColor.Get(Get<PdfArray>(key));
 
-        private void SetColor(PdfName key, DeviceColor value) => BaseDataObject[key] = PdfObjectWrapper.GetBaseObject(value);
+        private void SetColor(PdfName key, DeviceColor value) => Set(key, value);
     }
 
     /// <summary>Caption position relative to its icon [PDF:1.6:8.4.5].</summary>

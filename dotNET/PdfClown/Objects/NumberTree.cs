@@ -23,21 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Files;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Number tree [PDF:1.7:3.8.6].</summary>
-    */
+    /// <summary>Number tree [PDF:1.7:3.8.6].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class NumberTree<TValue> : Tree<PdfInteger, TValue>
-      where TValue : PdfObjectWrapper
+      where TValue : IPdfDataObject
     {
         protected NumberTree(PdfDocument context) : base(context)
         { }

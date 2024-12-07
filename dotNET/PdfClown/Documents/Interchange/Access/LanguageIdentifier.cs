@@ -33,7 +33,7 @@ namespace PdfClown.Documents.Interchange.Access
     /// <remarks>
     ///   <para>Language identifiers can be based on codes defined by the International Organization for
     ///   Standardization in ISO 639 (language code) and ISO 3166 (country code) or registered with the
-    ///   Internet Assigned Numbers Authority(<a href = "http://iana.org" > IANA </ a >), or they can include
+    ///   Internet Assigned Numbers Authority(<a href="http://iana.org"> IANA </a>), or they can include
     ///   codes created for private use.</para>
     ///   <para>A language identifier consists of a primary code optionally followed by one or more
     ///   subcodes(each preceded by a hyphen).</para>
@@ -47,13 +47,11 @@ namespace PdfClown.Documents.Interchange.Access
         {
             if (baseObject == null)
                 return null;
-            if (baseObject.Wrapper is LanguageIdentifier identifier)
-                return identifier;
             
-            if (baseObject.Resolve() is PdfTextString)
+            if (baseObject.Resolve(PdfName.Lang) is PdfTextString)
                 return new LanguageIdentifier(baseObject);
             else
-                throw new ArgumentException("It doesn't represent a valid language identifier object.", "baseObject");
+                throw new ArgumentException("It doesn't represent a valid language identifier object.", nameof(baseObject));
         }
 
         public LanguageIdentifier(string code) : base(new PdfTextString(code))
@@ -62,6 +60,6 @@ namespace PdfClown.Documents.Interchange.Access
         public LanguageIdentifier(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public override string ToString() => BaseDataObject.StringValue;
+        public override string ToString() => DataObject.StringValue;
     }
 }

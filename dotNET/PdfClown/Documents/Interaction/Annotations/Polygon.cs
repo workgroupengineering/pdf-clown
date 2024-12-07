@@ -25,6 +25,7 @@
 
 using PdfClown.Objects;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -39,7 +40,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             base.ClosePath = true;
         }
 
-        public Polygon(PdfDirectObject baseObject)
+        public Polygon(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         {
             base.ClosePath = true;

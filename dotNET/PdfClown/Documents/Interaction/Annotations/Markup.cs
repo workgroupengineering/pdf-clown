@@ -29,6 +29,7 @@ using PdfClown.Objects;
 using PdfClown.Util;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -37,13 +38,77 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF11)]
     public abstract class Markup : Annotation
     {
+        private static readonly BiDictionary<ReplyTypeEnum, string> replyTypeCodes = new()
+        {
+            [ReplyTypeEnum.Thread] = PdfName.R.StringValue,
+            [ReplyTypeEnum.Group] = PdfName.Group.StringValue
+        };
+
+        private static readonly BiDictionary<MarkupIntent, string> intentCodes = new()
+        {
+            [MarkupIntent.Text] = PdfName.Text.StringValue,
+            [MarkupIntent.FreeText] = PdfName.FreeText.StringValue,
+            [MarkupIntent.FreeTextCallout] = PdfName.FreeTextCallout.StringValue,
+            [MarkupIntent.FreeTextTypeWriter] = PdfName.FreeTextTypeWriter.StringValue,
+
+            [MarkupIntent.Line] = PdfName.Line.StringValue,
+            [MarkupIntent.LineArrow] = PdfName.LineArrow.StringValue,
+            [MarkupIntent.LineDimension] = PdfName.LineDimension.StringValue,
+
+            [MarkupIntent.Polygon] = PdfName.Polygon.StringValue,
+            [MarkupIntent.PolygonCloud] = PdfName.PolygonCloud.StringValue,
+            [MarkupIntent.PolygonDimension] = PdfName.PolygonDimension.StringValue,
+            [MarkupIntent.PolyLine] = PdfName.PolyLine.StringValue,
+            [MarkupIntent.PolyLineDimension] = PdfName.PolyLineDimension.StringValue
+        };
+
+        private static readonly BiDictionary<MarkupState, string> stateCodes = new()
+        {
+            [MarkupState.None] = PdfName.None.StringValue,
+            [MarkupState.Unmarked] = PdfName.Unmarked.StringValue,
+            [MarkupState.Accepted] = PdfName.Accepted.StringValue,
+            [MarkupState.Rejected] = PdfName.Rejected.StringValue,
+            [MarkupState.Cancelled] = PdfName.Cancelled.StringValue,
+            [MarkupState.Completed] = PdfName.Completed.StringValue,
+        };
+
+        private static readonly BiDictionary<MarkupStateModel, string> stateModelCodes = new()
+        {
+            [MarkupStateModel.Marked] = PdfName.Marked.StringValue,
+            [MarkupStateModel.Review] = PdfName.Review.StringValue
+        };
+
+        public static MarkupStateModel? GetStateModel(IPdfString name) => name == null ? null : GetStateModel(name.StringValue);
+
+        public static MarkupStateModel? GetStateModel(string name) => name == null ? null : stateModelCodes.GetKey(name);
+
+        public static string GetCode(MarkupStateModel? intent) => intent == null ? null : stateModelCodes[intent.Value];
+
+        public static MarkupState? GetMarkupState(IPdfString name) => name == null ? null : GetMarkupState(name.StringValue);
+
+        public static MarkupState? GetMarkupState(string name) => name == null ? null : stateCodes.GetKey(name);
+
+        public static string GetMarkupStateCode(MarkupState? intent) => intent == null ? null : stateCodes[intent.Value];
+
+        public static MarkupIntent? GetMarkupIntent(string name) => name == null ? null : intentCodes.GetKey(name);
+
+        public static PdfName GetName(MarkupIntent? intent) => intent == null ? null : PdfName.Get(intentCodes[intent.Value], true);
+
+        public static ReplyTypeEnum? GetReplyType(string name) => name == null ? ReplyTypeEnum.Thread : replyTypeCodes.GetKey(name);
+
+        public static PdfName GetName(ReplyTypeEnum? replyType) => replyType == null ? null : PdfName.Get(replyTypeCodes[replyType.Value], true);
+
+        private BorderEffect borderEffect;
+        private Annotation replyTo;
+        private DeviceColor interColor;
+
         protected Markup(PdfPage page, PdfName subtype, SKRect box, string text)
             : base(page, subtype, box, text)
         {
             CreationDate = DateTime.Now;
         }
 
-        protected Markup(PdfDirectObject baseObject)
+        protected Markup(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
@@ -53,13 +118,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF11)]
         public override string Author
         {
-            get => BaseDataObject.GetString(PdfName.T);
+            get => GetString(PdfName.T);
             set
             {
                 var oldValue = Author;
                 if (!string.Equals(oldValue, value, StringComparison.Ordinal))
                 {
-                    BaseDataObject.SetText(PdfName.T, value);
+                    SetText(PdfName.T, value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -69,13 +134,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public override DateTime? CreationDate
         {
-            get => BaseDataObject.GetNDate(PdfName.CreationDate);
+            get => GetNDate(PdfName.CreationDate);
             set
             {
                 var oldValue = CreationDate;
                 if (oldValue != PdfDate.Trimm(value))
                 {
-                    BaseDataObject.Set(PdfName.CreationDate, value);
+                    Set(PdfName.CreationDate, value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -88,13 +153,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public virtual Annotation ReplyTo
         {
-            get => Annotation.Wrap(BaseDataObject[PdfName.IRT]);
+            get => replyTo ??= Get<Annotation>(PdfName.IRT);
             set
             {
                 var oldValue = ReplyTo;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.IRT] = PdfObjectWrapper.GetBaseObject(value);
+                    Set(PdfName.IRT, replyTo = value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -106,7 +171,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF13)]
         public virtual Popup Popup
         {
-            get => (Popup)Annotation.Wrap(BaseDataObject[PdfName.Popup]);
+            get => Get<Popup>(PdfName.Popup);
             set
             {
                 var oldValue = Popup;
@@ -116,7 +181,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     {
                         value.Parent = this;
                     }
-                    BaseDataObject[PdfName.Popup] = value.BaseObject;
+                    Set(PdfName.Popup, value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -127,13 +192,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF16)]
         public virtual ReplyTypeEnum? ReplyType
         {
-            get => ReplyTypeEnumExtension.Get(BaseDataObject.GetString(PdfName.RT));
+            get => GetReplyType(GetString(PdfName.RT));
             set
             {
                 var oldValue = ReplyType;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.RT] = value.GetCode();
+                    this[PdfName.RT] = GetName(value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -142,13 +207,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public string RichContents
         {
-            get => BaseDataObject.GetString(PdfName.RC);
+            get => GetString(PdfName.RC);
             set
             {
                 var oldValue = RichContents;
                 if (!string.Equals(oldValue, value, StringComparison.Ordinal))
                 {
-                    BaseDataObject.SetText(PdfName.RC, value);
+                    SetText(PdfName.RC, value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -156,13 +221,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public string DefaultStyle
         {
-            get => BaseDataObject.GetString(PdfName.DS);
+            get => GetString(PdfName.DS);
             set
             {
                 var oldValue = DefaultStyle;
                 if (!string.Equals(oldValue, value, StringComparison.Ordinal))
                 {
-                    BaseDataObject.SetText(PdfName.DS, value);
+                    SetText(PdfName.DS, value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -172,13 +237,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF16)]
         public MarkupIntent? Intent
         {
-            get => MarkupIntentExtension.Get(BaseDataObject.GetString(PdfName.IT));
+            get => GetMarkupIntent(GetString(PdfName.IT));
             set
             {
                 var oldValue = Intent;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.IT] = MarkupIntentExtension.GetCode(value.Value);
+                    this[PdfName.IT] = GetName(value.Value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -187,13 +252,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <summary>Gets/Sets the color with which to fill the interior of following markups: Line Ending, Circle, Square.</summary>
         public DeviceColor InteriorColor
         {
-            get => DeviceColor.Get(BaseDataObject.Get<PdfArray>(PdfName.IC));
+            get => interColor ??= DeviceColor.Get(Get<PdfArray>(PdfName.IC));
             set
             {
                 var oldValue = InteriorColor;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.IC] = (PdfArray)value?.BaseDataObject;
+                    this[PdfName.IC] = (PdfArray)value?.DataObject;
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -217,13 +282,15 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public BorderEffect BorderEffect
         {
-            get => Wrap<BorderEffect>(BaseDataObject[PdfName.BE]);
+            get => borderEffect ??= Get(PdfName.BE) is PdfDirectObject be
+                ? new BorderEffect(be)
+                : null;
             set
             {
                 var oldValue = BorderEffect;
                 if (!(oldValue?.Equals(value) ?? value == null))
                 {
-                    BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
+                    this[PdfName.BE] = (borderEffect = value)?.RefOrSelf;
                     QueueRefreshAppearance();
                     OnPropertyChanged(oldValue, value);
                 }
@@ -282,30 +349,4 @@ namespace PdfClown.Documents.Interaction.Annotations
         Group
     }
 
-    internal static class ReplyTypeEnumExtension
-    {
-        private static readonly BiDictionary<ReplyTypeEnum, string> codes;
-
-        static ReplyTypeEnumExtension()
-        {
-            codes = new BiDictionary<ReplyTypeEnum, string>
-            {
-                [ReplyTypeEnum.Thread] = PdfName.R.StringValue,
-                [ReplyTypeEnum.Group] = PdfName.Group.StringValue
-            };
-        }
-
-        public static ReplyTypeEnum? Get(string name)
-        {
-            if (name == null)
-                return ReplyTypeEnum.Thread;
-
-            return codes.GetKey(name);
-        }
-
-        public static PdfName GetCode(this ReplyTypeEnum? replyType)
-        {
-            return replyType == null ? null : PdfName.Get(codes[replyType.Value], true);
-        }
-    }
 }

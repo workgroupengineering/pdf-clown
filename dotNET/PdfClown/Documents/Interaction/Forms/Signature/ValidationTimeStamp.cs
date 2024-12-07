@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
+using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Cms;
 using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Cms;
-using Org.BouncyCastle.Tsp;
-using System.Numerics;
-using System;
 using Org.BouncyCastle.Crypto.Digests;
+using Org.BouncyCastle.Tsp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;

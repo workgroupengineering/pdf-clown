@@ -36,49 +36,49 @@ namespace PdfClown.Tokens
     {
         private static readonly byte[] BOFChunk = BaseEncoding.Pdf.Encode(Keyword.BOF);
         private static readonly byte[] EOFChunk = BaseEncoding.Pdf.Encode(Symbol.LineFeed + Keyword.EOF + Symbol.CarriageReturn + Symbol.LineFeed);
-        private static readonly byte[] HeaderBinaryHintChunk = new byte[] { (byte)Symbol.LineFeed, (byte)Symbol.Percent, (byte)0x80, (byte)0x80, (byte)0x80, (byte)0x80, (byte)Symbol.LineFeed }; // NOTE: Arbitrary binary characters (code >= 128) for ensuring proper behavior of file transfer applications [PDF:1.6:3.4.1].
+        private static readonly byte[] HeaderBinaryHintChunk = new byte[] { (byte)Symbol.LineFeed, (byte)Symbol.Percent, 0x80, 0x80, 0x80, 0x80, (byte)Symbol.LineFeed }; // NOTE: Arbitrary binary characters (code >= 128) for ensuring proper behavior of file transfer applications [PDF:1.6:3.4.1].
         private static readonly byte[] StartXRefChunk = BaseEncoding.Pdf.Encode(Keyword.StartXRef + Symbol.LineFeed);
 
         /// <summary>Gets a new writer instance for the specified file.</summary>
-        /// <param name="file">File to serialize.</param>
+        /// <param name="document">File to serialize.</param>
         /// <param name="stream">Target stream.</param>
-        public static Writer Get(PdfFile file, IOutputStream stream)
+        public static Writer Get(PdfDocument document, IOutputStream stream)
         {
             // Which cross-reference table mode?
-            switch (file.Configuration.XRefMode)
+            switch (document.Configuration.XRefMode)
             {
                 case XRefModeEnum.Plain:
-                    return new PlainWriter(file, stream);
+                    return new PlainWriter(document, stream);
                 case XRefModeEnum.Compressed:
-                    return new CompressedWriter(file, stream);
+                    return new CompressedWriter(document, stream);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        protected readonly PdfFile file;
+        protected readonly PdfDocument document;
         protected readonly IOutputStream stream;
 
-        protected Writer(PdfFile file, IOutputStream stream)
+        protected Writer(PdfDocument document, IOutputStream stream)
         {
-            this.file = file;
+            this.document = document;
             this.stream = stream;
         }
 
         /// <summary>Gets the file to serialize.</summary>
-        public PdfFile File => file;
+        public PdfDocument Document => document;
 
         /// <summary>Gets the target stream.</summary>
         public IOutputStream Stream => stream;
 
-        /// <summary>Serializes the <see cref="File">file</see> to the <see cref="Stream">target stream</see>.</summary>
+        /// <summary>Serializes the <see cref="Document">file</see> to the <see cref="Stream">target stream</see>.</summary>
         /// <param name="mode">Serialization mode.</param>
         public void Write(SerializationModeEnum mode)
         {
             switch (mode)
             {
                 case SerializationModeEnum.Incremental:
-                    if (file.Reader == null)
+                    if (document.Reader == null)
                         goto case SerializationModeEnum.Standard;
 
                     WriteIncremental();
@@ -97,9 +97,7 @@ namespace PdfClown.Tokens
         protected void UpdateTrailer(PdfDictionary trailer, IOutputStream stream)
         {
             // File identifier update.
-            FileIdentifier identifier = PdfObjectWrapper.Wrap<FileIdentifier>(trailer[PdfName.ID]);
-            if (identifier == null)
-            { trailer[PdfName.ID] = (identifier = new FileIdentifier()).BaseObject; }
+            var identifier = trailer.GetOrCreate<Identifier>(PdfName.ID);            
             identifier.Update(this);
         }
 
@@ -107,7 +105,7 @@ namespace PdfClown.Tokens
         protected void WriteHeader()
         {
             stream.Write(BOFChunk);
-            stream.Write(file.Document.Version.ToString()); // NOTE: Document version represents the actual (possibly-overridden) file version.
+            stream.Write(document.Catalog.Version.ToString()); // NOTE: Document version represents the actual (possibly-overridden) file version.
             stream.Write(HeaderBinaryHintChunk);
         }
 

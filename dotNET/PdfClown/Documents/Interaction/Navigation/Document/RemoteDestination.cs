@@ -26,6 +26,7 @@
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
@@ -41,19 +42,20 @@ namespace PdfClown.Documents.Interaction.Navigation
             : base(context, pageIndex, mode, location, zoom)
         { }
 
-        internal RemoteDestination(PdfDirectObject baseObject) : base(baseObject)
+        internal RemoteDestination(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the index of the target page.</summary>
         public override object Page
         {
-            get => BaseDataObject.GetInt(0);
+            get => GetInt(0);
             set
             {
                 if (value is not int intValue)
                     throw new ArgumentException("It MUST be an integer number.");
 
-                BaseDataObject[0] = PdfInteger.Get(intValue);
+                Set(0, intValue);
             }
         }
     }

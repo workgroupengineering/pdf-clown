@@ -28,7 +28,6 @@ using PdfClown.Objects;
 using PdfClown.Util.Parsers;
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -49,16 +48,17 @@ namespace PdfClown.Tokens
 
         /// <summary>Gets the number of bytes needed to store the specified value.</summary>
         /// <param name="maxValue">Maximum storable value.</param>
-        private static int GetFieldSize(int maxValue)
-        { return (int)Math.Ceiling(Math.Log(maxValue) / ByteBaseLog); }
+        private static int GetFieldSize(int maxValue) => (int)Math.Ceiling(Math.Log(maxValue) / ByteBaseLog);
 
 
         private Dictionary<int, XRefEntry> refEntries;
 
-        public XRefStream(PdfFile file)
-            : this(new() { { PdfName.Type, PdfName.XRef } }, new ByteStream())
+        public XRefStream(PdfDocument document)
+            : this(new() { 
+                { PdfName.Type, PdfName.XRef } 
+            }, new ByteStream())
         {
-            foreach (var entry in file.Trailer)
+            foreach (var entry in document.Trailer)
             {
                 PdfName key = entry.Key;
                 if (key.Equals(PdfName.Root)
@@ -68,12 +68,15 @@ namespace PdfClown.Tokens
             }
         }
 
-        public XRefStream(Dictionary<PdfName, PdfDirectObject> header, IInputStream body)
+        internal XRefStream(Dictionary<PdfName, PdfDirectObject> header)
+            : base(header)
+        { }
+
+        internal XRefStream(Dictionary<PdfName, PdfDirectObject> header, IInputStream body)
             : base(header, body)
         { }
 
-        public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
         /// <summary>Gets the byte offset from the beginning of the file
         /// to the beginning of the previous cross-reference stream.</summary>
@@ -83,7 +86,7 @@ namespace PdfClown.Tokens
             get => GetInt(PdfName.Prev, -1);
         }
 
-        public override void WriteTo(IOutputStream stream, PdfFile context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             if (refEntries != null)
             { Flush(stream); }
@@ -91,24 +94,15 @@ namespace PdfClown.Tokens
             base.WriteTo(stream, context);
         }
 
-        public void Add(int key, XRefEntry value)
-        {
-            Entries.Add(key, value);
-        }
+        public void Add(int key, XRefEntry value) => Entries.Add(key, value);
 
-        public bool ContainsKey(int key)
-        {
-            return Entries.ContainsKey(key);
-        }
+        public bool ContainsKey(int key) => Entries.ContainsKey(key);
 
         public ICollection<int> RefKeys => Entries.Keys;
 
         public ICollection<XRefEntry> RefValues => Entries.Values;
 
-        public bool Remove(int key)
-        {
-            return Entries.Remove(key);
-        }
+        public bool Remove(int key) => Entries.Remove(key);
 
         public XRefEntry this[int key]
         {
@@ -189,7 +183,7 @@ namespace PdfClown.Tokens
             {
                 int size = GetInt(PdfName.Size);
                 int[] entryFieldSizes = Get<PdfArray>(PdfName.W).ToIntArray();
-                var subsectionBounds = Get<PdfArray>(PdfName.Index) ?? new PdfArray(2) { 0, size };
+                var subsectionBounds = Get<PdfArrayImpl>(PdfName.Index) ?? new PdfArrayImpl(2) { 0, size };
                 body.ByteOrder = ByteOrderEnum.BigEndian;
                 body.Seek(0);
 
@@ -239,7 +233,7 @@ namespace PdfClown.Tokens
         private void Flush(IOutputStream stream)
         {
             // 1. Body.
-            var indexArray = new PdfArray();
+            var indexArray = new PdfArrayImpl();
             int[] entryFieldSizes = new int[]
               {
                   EntryField0Size,
@@ -293,8 +287,8 @@ namespace PdfClown.Tokens
             // 2. Header.
             {
                 this[PdfName.Index] = indexArray;
-                this.Set(PdfName.Size, File.IndirectObjects.Count + 1);
-                this[PdfName.W] = new PdfArray(3)
+                this.Set(PdfName.Size, Document.IndirectObjects.Count + 1);
+                this[PdfName.W] = new PdfArrayImpl(3)
                 {
                   entryFieldSizes[0],
                   entryFieldSizes[1],

@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 using PdfClown.Objects;
-using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts
@@ -25,39 +24,38 @@ namespace PdfClown.Documents.Contents.Fonts
     /// Represents a CIDSystemInfo.
     /// @author John Hewson
     /// </summary>
-    public sealed class CIDSystemInfo : PdfObjectWrapper<PdfDictionary>
+    public sealed class CIDSystemInfo : PdfDictionary
     {
 
-        public CIDSystemInfo(PdfDocument document, string registry, string ordering, int supplement)
-            : base(document, new PdfDictionary(3)
+        public CIDSystemInfo(PdfDocument context, string registry, string ordering, int supplement)
+            : base(context, new(3)
                 {
-                    { PdfName.Registry, registry },
-                    { PdfName.Ordering, ordering },
-                    { PdfName.Supplement, supplement }
+                    { PdfName.Registry, PdfString.Get(registry) },
+                    { PdfName.Ordering, PdfString.Get(ordering) },
+                    { PdfName.Supplement, PdfInteger.Get(supplement) }
                 })
-        {
-        }
+        { }
 
-        public CIDSystemInfo(PdfDirectObject dictionary) : base(dictionary)
-        {
-        }
+        internal CIDSystemInfo(Dictionary<PdfName, PdfDirectObject> dictionary) 
+            : base(dictionary)
+        { }
 
         public string Registry
         {
-            get => Dictionary.GetString(PdfName.Registry);
-            set => Dictionary.Set(PdfName.Registry, value);
+            get => GetString(PdfName.Registry);
+            set => Set(PdfName.Registry, value);
         }
 
         public string Ordering
         {
-            get => Dictionary.GetString(PdfName.Ordering);
-            set => Dictionary.Set(PdfName.Ordering, value);
+            get => GetString(PdfName.Ordering);
+            set => Set(PdfName.Ordering, value);
         }
 
         public int Supplement
         {
-            get => Dictionary.GetInt(PdfName.Supplement, 0);
-            set => Dictionary.Set(PdfName.Supplement, value);
+            get => GetInt(PdfName.Supplement, 0);
+            set => Set(PdfName.Supplement, value);
         }
 
         public override string ToString()

@@ -42,15 +42,16 @@ namespace PdfClown.Documents.Functions
 
         //TODO:implement function creation!
 
-        internal Type3Function(PdfDirectObject baseObject) : base(baseObject)
+        internal Type3Function(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets the <see cref="Domains">domain</see> partition bounds whose resulting intervals
         /// are respectively applied to each <see cref="Functions">function</see>.</summary>
         public float[] Bounds
         {
-            get => bounds ??= Dictionary.Get<PdfArray>(PdfName.Bounds).ToFloatArray();
-            set => Dictionary[PdfName.Bounds] = new PdfArray(bounds = value);
+            get => bounds ??= Get<PdfArray>(PdfName.Bounds).ToFloatArray();
+            set => SetDirect(PdfName.Bounds, new PdfArrayImpl(bounds = value));
         }
 
         /// <summary>Gets the mapping of each <see cref="Bounds">subdomain</see> into the domain
@@ -59,7 +60,7 @@ namespace PdfClown.Documents.Functions
 
         /// <summary>Gets the 1-input functions making up this stitching function.</summary>
         /// <remarks>The output dimensionality of all functions must be the same.</remarks>
-        public Functions Functions => Functions.Wrap(Dictionary[PdfName.Functions]);
+        public Functions Functions => Get<Functions>(PdfName.Functions);
 
         public override ReadOnlySpan<float> Calculate(ReadOnlySpan<float> input)
         {

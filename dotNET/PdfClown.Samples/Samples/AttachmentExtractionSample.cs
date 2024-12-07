@@ -1,8 +1,6 @@
 using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Files;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -11,43 +9,41 @@ using System.IO;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to extract attachments from a PDF document.</summary>
-    */
+    /// <summary>This sample demonstrates how to extract attachments from a PDF document.</summary>
     public class AttachmentExtractionSample : Sample
     {
         public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                var document = file.Document;
+                var catalog = document.Catalog;
 
                 // 2. Extracting attachments...
                 // 2.1. Embedded files (document level).
-                foreach (KeyValuePair<PdfString, FileSpecification> entry in document.Names.EmbeddedFiles)
+                foreach (KeyValuePair<PdfString, FileSpecification> entry in catalog.Names.EmbeddedFiles)
                 { EvaluateDataFile(entry.Value); }
 
                 // 2.2. File attachments (page level).
-                foreach (var page in document.Pages)
+                foreach (var page in catalog.Pages)
                 {
                     foreach (Annotation annotation in page.Annotations)
                     {
-                        if (annotation is FileAttachment)
-                        { EvaluateDataFile(((FileAttachment)annotation).DataFile); }
+                        if (annotation is FileAttachment attachments)
+                        { EvaluateDataFile(attachments.DataFile); }
                     }
                 }
             }
         }
 
-        private void EvaluateDataFile(FileSpecification dataFile)
+        private void EvaluateDataFile(IFileSpecification dataFile)
         {
-            if (dataFile is FullFileSpecification)
+            if (dataFile is FileSpecification)
             {
-                EmbeddedFile embeddedFile = ((FullFileSpecification)dataFile).EmbeddedFile;
+                var embeddedFile = ((FileSpecification)dataFile).EmbeddedFile;
                 if (embeddedFile != null)
-                { ExportAttachment(embeddedFile.Data, dataFile.Path); }
+                { ExportAttachment(embeddedFile.Data, dataFile.FilePath); }
             }
         }
 
@@ -62,7 +58,7 @@ namespace PdfClown.Samples.CLI
 
             try
             {
-                BinaryWriter writer = new BinaryWriter(outputStream);
+                var writer = new BinaryWriter(outputStream);
                 writer.Write(data.ToArray());
                 writer.Close();
                 outputStream.Close();

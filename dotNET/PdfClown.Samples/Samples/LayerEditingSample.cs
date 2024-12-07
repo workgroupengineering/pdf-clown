@@ -1,33 +1,23 @@
 using PdfClown.Documents;
-using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Layers;
-using PdfClown.Documents.Contents.Objects;
-using PdfClown.Files;
-using PdfClown.Objects;
 
 using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to edit existing layers.</summary>
-    */
-    public class LayerEditingSample
-      : Sample
+    /// <summary>This sample demonstrates how to edit existing layers.</summary>
+    public class LayerEditingSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
-
                 // 2. Get the layer definition!
-                LayerDefinition layerDefinition = document.Layer;
-                if (!layerDefinition.Exists())
+                LayerDefinition layerDefinition = document.Catalog.Layers;
+                if (layerDefinition.Virtual)
                 { Console.WriteLine("\nNo layer definition available."); }
                 else
                 {
@@ -94,8 +84,8 @@ namespace PdfClown.Samples.CLI
                         if ("Q".Equals(choice))
                             break;
                     }
-                    if (file.Updated)
-                    { Serialize(file, "Layer editing", "removing layers", "layers, optional content"); }
+                    if (document.Updated)
+                    { Serialize(document, "Layer editing", "removing layers", "layers, optional content"); }
                 }
             }
         }

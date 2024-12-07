@@ -33,8 +33,10 @@ namespace PdfClown.Documents.Interaction.Actions
 {
     /// <summary>'Launch an application' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class Launch : Action
+    public sealed class Launch : PdfAction
     {
+        private IPdfDataObject target;
+
         /// <summary>Windows-specific launch parameters [PDF:1.6:8.5.3].</summary>
         public class WinTarget : PdfObjectWrapper<PdfDictionary>
         {
@@ -98,30 +100,30 @@ namespace PdfClown.Documents.Interaction.Actions
             /// <summary>Gets/Sets the default directory.</summary>
             public string DefaultDirectory
             {
-                get => BaseDataObject.GetString(PdfName.D);
-                set => BaseDataObject.Set(PdfName.D, value);
+                get => DataObject.GetString(PdfName.D);
+                set => DataObject.Set(PdfName.D, value);
             }
 
             /// <summary>Gets/Sets the file name of the application to be launched
             /// or the document to be opened or printed.</summary>
             public string FileName
             {
-                get => BaseDataObject.GetString(PdfName.F);
-                set => BaseDataObject.Set(PdfName.F, value);
+                get => DataObject.GetString(PdfName.F);
+                set => DataObject.Set(PdfName.F, value);
             }
 
             /// <summary>Gets/Sets the operation to perform.</summary>
             public OperationEnum Operation
             {
-                get => ToOperationEnum((IPdfString)BaseDataObject[PdfName.O]);
-                set => BaseDataObject[PdfName.O] = ToCode(value);
+                get => ToOperationEnum(DataObject.Get<IPdfString>(PdfName.O));
+                set => DataObject[PdfName.O] = ToCode(value);
             }
 
             /// <summary>Gets/Sets the parameter string to be passed to the application.</summary>
             public string ParameterString
             {
-                get => BaseDataObject.GetString(PdfName.P);
-                set => BaseDataObject[PdfName.P] = new PdfString(value);
+                get => DataObject.GetString(PdfName.P);
+                set => DataObject[PdfName.P] = new PdfString(value);
             }
         }
 
@@ -129,10 +131,12 @@ namespace PdfClown.Documents.Interaction.Actions
         /// <param name="context">Document context.</param>
         /// <param name="target">Either a <see cref="FileSpecification"/> or a <see cref="WinTarget"/>
         /// representing either an application or a document.</param>
-        public Launch(PdfDocument context, PdfObjectWrapper target) : base(context, PdfName.Launch)
+        public Launch(PdfDocument context, IPdfDataObject target) 
+            : base(context, PdfName.Launch)
         { Target = target; }
 
-        internal Launch(PdfDirectObject baseObject) : base(baseObject)
+        internal Launch(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the action options.</summary>
@@ -141,41 +145,37 @@ namespace PdfClown.Documents.Interaction.Actions
             get
             {
                 OptionsEnum options = 0;
-                if (BaseDataObject.GetBool(PdfName.NewWindow))
+                if (GetBool(PdfName.NewWindow))
                 { options |= OptionsEnum.NewWindow; }
                 return options;
             }
             set
             {
                 if ((value & OptionsEnum.NewWindow) == OptionsEnum.NewWindow)
-                { BaseDataObject[PdfName.NewWindow] = PdfBoolean.True; }
+                { this[PdfName.NewWindow] = PdfBoolean.True; }
                 else if ((value & OptionsEnum.SameWindow) == OptionsEnum.SameWindow)
-                { BaseDataObject[PdfName.NewWindow] = PdfBoolean.False; }
+                { this[PdfName.NewWindow] = PdfBoolean.False; }
                 else
-                { BaseDataObject.Remove(PdfName.NewWindow); } // NOTE: Forcing the absence of this entry ensures that the viewer application should behave in accordance with the current user preference.
+                { this.Remove(PdfName.NewWindow); } // NOTE: Forcing the absence of this entry ensures that the viewer application should behave in accordance with the current user preference.
             }
         }
 
         /// <summary>Gets/Sets the application to be launched or the document to be opened or printed.
         /// </summary>
-        public PdfObjectWrapper Target
+        public IPdfDataObject Target
         {
-            get
-            {
-                PdfDirectObject targetObject;
-                if ((targetObject = BaseDataObject[PdfName.F]) != null)
-                    return FileSpecification.Wrap(targetObject);
-                else if ((targetObject = BaseDataObject[PdfName.Win]) != null)
-                    return Wrap<WinTarget>(targetObject);
-                else
-                    return null;
-            }
+            get => target ??= Get(PdfName.F) is PdfDirectObject file
+                    ? IFileSpecification.Wrap(file)
+                    : Get(PdfName.Win) is PdfDirectObject win
+                        ? new WinTarget(win)
+                        : null;
             set
             {
-                if (value is FileSpecification specification)
-                { BaseDataObject[PdfName.F] = specification.BaseObject; }
+                target = value;
+                if (value is IFileSpecification specification)
+                { Set(PdfName.F, specification.RefOrSelf); }
                 else if (value is WinTarget winTarget)
-                { BaseDataObject[PdfName.Win] = winTarget.BaseObject; }
+                { Set(PdfName.Win, winTarget); }
                 else
                 { throw new ArgumentException("MUST be either FileSpecification or WinTarget"); }
             }
@@ -183,8 +183,8 @@ namespace PdfClown.Documents.Interaction.Actions
 
         public override string GetDisplayName()
         {
-            return "Launch " + (Target is FileSpecification fileSpec 
-                ? fileSpec.Path
+            return "Launch " + (Target is FileSpecification fileSpec
+                ? fileSpec.FilePath
                 : Target is WinTarget winTarget
                     ? $"{winTarget.Operation} {winTarget.ParameterString} {winTarget.FileName}"
                     : string.Empty);

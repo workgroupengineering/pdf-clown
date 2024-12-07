@@ -24,86 +24,62 @@
 */
 
 using PdfClown.Objects;
-
-using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents
 {
     /// <summary>Page elements.</summary>
-    public abstract class PageElements<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TItem> 
-        : Array<TItem>
-        where TItem : PdfObjectWrapper<PdfDictionary>
+    public abstract class PageElements<TItem> : PdfArray<TItem>
+        where TItem : PdfDictionary
     {
         private PdfPage page;
 
-        public PageElements(PdfDirectObject baseObject, PdfPage page)
+        protected PageElements(PdfDocument document)
+            : base(document)
+        { }
+
+        protected PageElements(List<PdfDirectObject> baseObject)
             : base(baseObject)
-        {
-            this.page = page;
-        }
-
-        public PageElements(IEntryWrapper<TItem> itemWrapper, PdfDirectObject baseObject, PdfPage page)
-            : base(itemWrapper, baseObject)
-        {
-            this.page = page;
-        }
-
-        public override void Add(TItem item)
-        {
-            LinkPage(item);
-            base.Add(item);
-        }
-
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override void Insert(int index, TItem item)
-        {
-            LinkPage(item);
-            base.Insert(index, item);
-        }
+        { }
 
         /// <summary>Gets the page associated to these elements.</summary>
-        public PdfPage Page => page;
-
-        public override void RemoveAt(int index)
+        public PdfPage Page
         {
-            TItem @object = this[index];
-            base.RemoveAt(index);
-            UnlinkPage(@object);
+            get => page;
+            set => page = value;
         }
 
-        public override bool Remove(TItem item)
+        protected override TItem CheckIn(TItem item)
         {
-            if (!base.Remove(item))
-                return false;
+            LinkPage(item);
+            return base.CheckIn(item);
+        }
 
+        protected override TItem CheckOut(TItem item)
+        {
             UnlinkPage(item);
-            return true;
+            return base.CheckOut(item);
         }
 
-        protected internal virtual void LinkPage(TItem item)
+        protected internal void LinkPage(TItem item)
         {
             // Link the element to its page!
-            item.BaseDataObject[PdfName.P] = page.BaseObject;
+            item[PdfName.P] = page.Reference;
         }
 
-        protected internal virtual void LinkPageNoUpdate(TItem item)
+        protected internal void LinkPageNoUpdate(TItem item)
         {
             // Link the element to its page!
-            var temp = item.BaseDataObject.Updateable;
-            item.BaseDataObject.Updateable = false;
-            item.BaseDataObject[PdfName.P] = page.BaseObject;
-            item.BaseDataObject.Updateable = temp;
+            var temp = item.Updateable;
+            item.Updateable = false;
+            LinkPage(item);
+            item.Updateable = temp;
         }
 
-        protected virtual void UnlinkPage(TItem item)
+        protected void UnlinkPage(TItem item)
         {
             // Unlink the element from its page!
-            item?.BaseDataObject.Remove(PdfName.P);
+            item?.Remove(PdfName.P);
         }
     }
 }

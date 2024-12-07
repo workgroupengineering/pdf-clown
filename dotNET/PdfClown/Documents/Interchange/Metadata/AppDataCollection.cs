@@ -26,29 +26,33 @@
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interchange.Metadata
 {
     /// <summary>A page-piece dictionary used to hold private application data [PDF:1.7:10.4].</summary>
     [PDF(VersionEnum.PDF13)]
-    public sealed class AppDataCollection : Dictionary<AppData>
+    public sealed class AppDataCollection : PdfDictionary<AppData>
     {
-        public static AppDataCollection Wrap(PdfDirectObject baseObject, IAppDataHolder holder) => baseObject != null
-                ? baseObject.Wrapper as AppDataCollection ?? new AppDataCollection(baseObject, holder)
-                : null;
-
         private IAppDataHolder holder;
 
-        internal AppDataCollection(PdfDirectObject baseObject, IAppDataHolder holder) : base(baseObject)
-        { this.holder = holder; }
+        public AppDataCollection()
+            : base(new Dictionary<PdfName, PdfDirectObject>())
+        { }
+
+        internal AppDataCollection(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        public override PdfName ModifyTypeKey(PdfName key) => PdfName.AppData;
 
         public AppData Ensure(PdfName key)
         {
             AppData appData = this[key];
             if (appData == null)
             {
-                BaseDataObject[key] = (appData = new AppData(Document)).BaseObject;
-                holder.Touch(key);
+                Set(key, appData = new AppData(Document));
+                holder?.Touch(key);
             }
             return appData;
         }
@@ -61,7 +65,13 @@ namespace PdfClown.Documents.Interchange.Metadata
 
         public override void Add(PdfName key, AppData value) => throw new NotSupportedException();
 
-
+        internal AppDataCollection WithHolder(IAppDataHolder holder)
+        {
+            this.holder = holder;
+            return this;
+        }
     }
+
+
 }
 

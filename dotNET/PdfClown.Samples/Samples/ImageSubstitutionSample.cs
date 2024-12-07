@@ -1,9 +1,6 @@
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Entities;
 using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -12,33 +9,25 @@ using System.Linq;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to replace images appearing in a PDF document's pages
-      through their resource names.</summary>
-    */
-    public class ImageSubstitutionSample
-      : Sample
+    /// <summary>This sample demonstrates how to replace images appearing in a PDF document's pages
+    /// through their resource names.</summary>
+    public class ImageSubstitutionSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
-
                 // 2. Replace the images!
                 ReplaceImages(document);
 
                 // 3. Serialize the PDF file!
-                Serialize(file, "Image substitution", "substituting a document's images", "image replacement");
+                Serialize(document, "Image substitution", "substituting a document's images", "image replacement");
             }
         }
 
-        private void ReplaceImages(
-          PdfDocument document
-          )
+        private void ReplaceImages(PdfDocument document)
         {
             // Get the image used to replace existing ones!
             Image image = Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")); // Image is an abstract entity, as it still has to be included into the pdf document.
@@ -48,7 +37,7 @@ namespace PdfClown.Samples.CLI
             foreach (var page in document.Pages)
             {
                 Resources resources = page.Resources;
-                XObjectResources xObjects = resources.XObjects;
+                var xObjects = resources.XObjects;
                 if (xObjects == null)
                     continue;
 

@@ -34,7 +34,7 @@ namespace PdfClown.Documents.Functions
 {
     /// <summary>Function [PDF:1.6:3.9].</summary>
     [PDF(VersionEnum.PDF12)]
-    public abstract class Function : PdfObjectWrapper<PdfDataObject>
+    public abstract class Function : PdfStream
     {
         /// <summary>Default intervals callback.</summary>
 
@@ -52,39 +52,33 @@ namespace PdfClown.Documents.Functions
         {
             if (baseObject == null)
                 return null;
-            if (baseObject.Wrapper is Function function)
-                return function;
-
-            var dataObject = baseObject.Resolve();
-
-            if (dataObject is PdfName dataName
-                && PdfName.Identity.Equals(dataName))
+            if (baseObject is PdfName dataName
+                && (PdfName.Identity.Equals(dataName)
+                || PdfName.Default.Equals(dataName)))
             {
                 return TypeIdentityFunction.Instance;
             }
-
-            var dictionary = dataObject as PdfDictionary;
-            int functionType = dictionary.GetInt(PdfName.FunctionType);
-            switch (functionType)
-            {
-                case FunctionType0:
-                    return new Type0Function(baseObject);
-                case FunctionType2:
-                    return new Type2Function(baseObject);
-                case FunctionType3:
-                    return new Type3Function(baseObject);
-                case FunctionType4:
-                    return new Type4Function(baseObject);
-                default:
-                    throw new NotSupportedException("Function type " + functionType + " unknown.");
-            }
+            return (Function)baseObject.Resolve(PdfName.Function);
         }
 
-        protected Function(PdfDocument context, PdfDataObject baseDataObject)
+        internal static Function Create(Dictionary<PdfName, PdfDirectObject> dictionary)
+        {
+            int functionType = dictionary.GetInt(PdfName.FunctionType);
+            return functionType switch
+            {
+                FunctionType0 => new Type0Function(dictionary),
+                FunctionType2 => new Type2Function(dictionary),
+                FunctionType3 => new Type3Function(dictionary),
+                FunctionType4 => new Type4Function(dictionary),
+                _ => throw new NotSupportedException("Function type " + functionType + " unknown."),
+            };
+        }
+
+        protected Function(PdfDocument context, Dictionary<PdfName, PdfDirectObject> baseDataObject)
             : base(context, baseDataObject)
         { }
 
-        protected Function(PdfDirectObject baseObject)
+        protected Function(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
@@ -98,7 +92,7 @@ namespace PdfClown.Documents.Functions
         /// <param name="inputs">Input values.</param>
         public IList<PdfDirectObject> Calculate(IList<PdfDirectObject> inputs)
         {
-            IList<PdfDirectObject> outputs = new List<PdfDirectObject>();
+            var outputs = new List<PdfDirectObject>();
             {
                 float[] inputValues = new float[inputs.Count];
                 for (int index = 0, length = inputValues.Length; index < length; index++)
@@ -130,7 +124,7 @@ namespace PdfClown.Documents.Functions
         protected IList<Interval<T>> GetIntervals<T>(PdfName key, DefaultIntervalsCallback<T> defaultIntervalsCallback)
             where T : struct, IComparable<T>
         {
-            return Dictionary.Get<PdfArray>(key).GetIntervals(defaultIntervalsCallback);
+            return Get<PdfArray>(key).GetIntervals(defaultIntervalsCallback);
         }
 
         //https://stackoverflow.com/questions/12838007/c-sharp-linear-interpolation
@@ -143,17 +137,14 @@ namespace PdfClown.Documents.Functions
             return y0 + (x - x0) * ((y1 - y0) / (x1 - x0));
         }
 
-        static public float Exponential(float c0, float c1, float inputN) => c0 + inputN * (c1 - c0);
+        public static float Exponential(float c0, float c1, float inputN) => c0 + inputN * (c1 - c0);
 
         /// <summary>Clip the given input value to the given range.</summary>
         /// <param name="x">the input value</param>
         /// <param name="rangeMin">the min value of the range</param>
         /// <param name="rangeMax">max value of the range</param>
         /// <returns>the clipped value</returns>
-        protected float ClipToRange(float x, float rangeMin, float rangeMax)
-        {
-            return Math.Min(Math.Max(x, rangeMin), rangeMax);
-        }
+        protected static float ClipToRange(float x, float rangeMin, float rangeMax) => Math.Min(Math.Max(x, rangeMin), rangeMax);
 
         /// <summary>Clip the given input values to the ranges.</summary>
         /// <param name="inputValues">the input values</param>
@@ -161,7 +152,7 @@ namespace PdfClown.Documents.Functions
 
         protected void ClipToDomain(Span<float> inputValues) => ClipToRange(inputValues, Domains);
 
-        private void ClipToRange(Span<float> inputValues, IList<Interval<float>> rangesArray)
+        private static void ClipToRange(Span<float> inputValues, IList<Interval<float>> rangesArray)
         {
             if (rangesArray != null && rangesArray.Count > 0)
             {

@@ -23,29 +23,22 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Reset selected interactive form fields to their default values' action
-      [PDF:1.6:8.6.4].</summary>
-    */
+    /// <summary>'Reset selected interactive form fields to their default values' action
+    /// [PDF:1.6:8.6.4].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class ResetForm : Action
+    public sealed class ResetForm : PdfAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public ResetForm(PdfDocument context)
             : base(context, PdfName.ResetForm)
         { }
 
-        internal ResetForm(PdfDirectObject baseObject)
+        internal ResetForm(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 

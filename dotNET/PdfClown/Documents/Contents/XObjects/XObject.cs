@@ -23,49 +23,52 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Layers;
 using PdfClown.Objects;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
     /// <summary>External graphics object whose contents are defined by a self-contained content stream,
     /// separate from the content stream in which it is used [PDF:1.6:4.7].</summary>
     [PDF(VersionEnum.PDF10)]
-    public abstract class XObject : PdfObjectWrapper<PdfStream>, ILayerable
+    public abstract class XObject : PdfStream, ILayerable
     {
-        /// <summary>Wraps an external object reference into an external object.</summary>
-        /// <param name="baseObject">External object base object.</param>
-        /// <returns>External object associated to the reference.</returns>
-        public static XObject Wrap(PdfDirectObject baseObject)
+        internal static PdfDictionary Create(Dictionary<PdfName, PdfDirectObject> dictionary)
         {
-            if (baseObject == null)
-                return null;
-            if (baseObject.Wrapper is XObject xobject)
-                return xobject;
-
-            var subtype = ((PdfStream)baseObject.Resolve()).Get<PdfName>(PdfName.Subtype);
-            if (PdfName.Form.Equals(subtype))
-                return FormXObject.Wrap(baseObject);
-            else if (PdfName.Image.Equals(subtype))
-                return new ImageXObject(baseObject);
-            else
-                return null;
+            var subtype = dictionary.Get<PdfName>(PdfName.Subtype);
+            if (PdfName.Image.Equals(subtype))
+                return new ImageXObject(dictionary);
+            else if (subtype == null && dictionary.ContainsKey(PdfName.FormType))
+            {
+                //NOTE: Sometimes the form stream's header misses the mandatory Subtype entry; therefore, here
+                //we force integrity for convenience (otherwise, content resource allocation may fail, for
+                //example in case of Acroform flattening).
+                dictionary[PdfName.Subtype] = PdfName.Form;
+            }
+            return new FormXObject(dictionary);
         }
 
         /// <summary>Creates a new external object inside the document.</summary>
-        protected XObject(PdfDocument context) : this(context, new PdfStream())
+        protected XObject(PdfDocument context)
+            : this(context, new(), new ByteStream())
         { }
 
         /// <summary>Creates a new external object inside the document.</summary>
-        protected XObject(PdfDocument context, PdfStream baseDataObject)
-            : base(context, baseDataObject)
+        protected XObject(PdfDocument context, Dictionary<PdfName, PdfDirectObject> baseDataObject, IInputStream inputStream)
+            : base(context, baseDataObject, inputStream)
         {
             baseDataObject[PdfName.Type] = PdfName.XObject;
         }
 
-        /// <summary>Instantiates an existing external object.</summary>
-        public XObject(PdfDirectObject baseObject) : base(baseObject)
+        protected XObject(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        protected XObject(Dictionary<PdfName, PdfDirectObject> baseObject, IInputStream inputStream)
+            : base(baseObject, inputStream)
         { }
 
         /// <summary>Gets/Sets the mapping from external-object space to user space.</summary>
@@ -76,8 +79,8 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public LayerEntity Layer
         {
-            get => (LayerEntity)PropertyList.Wrap(BaseDataObject[PdfName.OC]);
-            set => BaseDataObject[PdfName.OC] = value != null ? value.Membership.BaseObject : null;
+            get => Get<LayerEntity>(PdfName.OC);
+            set => Set(PdfName.OC, value?.Membership);
         }
     }
 }

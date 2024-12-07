@@ -24,102 +24,72 @@
 */
 
 using PdfClown.Tokens;
+using System.Collections.Generic;
 
 namespace PdfClown.Objects
 {
     /// <summary>Visitor object.</summary>
     public class Visitor : IVisitor
     {
-        public virtual PdfObject Visit(ObjectStream obj, object data)
-        {
-            foreach (PdfDataObject value in obj.Values)
-            { value.Accept(this, data); }
-            return obj;
-        }
-
-        public virtual PdfObject Visit(PdfArray obj, object data)
-        {
-            foreach (var item in obj)
-            {
-                if (item != null)
-                { item.Accept(this, data); }
-            }
-            return obj;
-        }
-
-        public virtual PdfObject Visit(PdfBoolean obj, object data)
-        {
-            return obj;
-        }
-
-        public PdfObject Visit(PdfDataObject obj, object data)
-        {
-            return obj.Accept(this, data);
-        }
-
-        public virtual PdfObject Visit(PdfDate obj, object data)
-        {
-            return obj;
-        }
-
-        public virtual PdfObject Visit(PdfDictionary obj, object data)
+        public virtual PdfObject Visit(ObjectStream obj, PdfName parentKey, object data)
         {
             foreach (PdfDirectObject value in obj.Values)
+            { value.Accept(this, parentKey, data); }
+            return obj;
+        }
+
+        public virtual PdfObject Visit(PdfArray obj, PdfName parentKey, object data)
+        {
+            foreach (var item in obj.GetItems())
             {
-                if (value != null)
-                { value.Accept(this, data); }
+                item?.Accept(this, parentKey, data);
             }
             return obj;
         }
 
-        public virtual PdfObject Visit(PdfIndirectObject obj, object data)
+        public virtual PdfObject Visit(PdfBoolean obj, PdfName parentKey, object data) => obj;
+
+        public PdfObject Visit(PdfDirectObject obj, PdfName parentKey, object data) => obj.Accept(this, parentKey, data);
+
+        public virtual PdfObject Visit(PdfDate obj, PdfName parentKey, object data) => obj;
+
+        public virtual PdfObject Visit(PdfDictionary obj, PdfName parentKey, object data)
         {
-            PdfDataObject dataObject = obj.DataObject;
-            if (dataObject != null)
-            { dataObject.Accept(this, data); }
+            foreach (KeyValuePair<PdfName, PdfDirectObject> entry in obj)
+            {
+                entry.Value?.Accept(this, entry.Key, data);
+            }
             return obj;
         }
 
-        public virtual PdfObject Visit(PdfInteger obj, object data)
+        public virtual PdfObject Visit(PdfIndirectObject obj, PdfName parentKey, object data)
         {
+            obj.GetDataObject(parentKey).Accept(this, parentKey, data);
             return obj;
         }
 
-        public virtual PdfObject Visit(PdfName obj, object data)
+        public virtual PdfObject Visit(PdfInteger obj, PdfName parentKey, object data) => obj;
+
+        public virtual PdfObject Visit(PdfName obj, PdfName parentKey, object data) => obj;
+
+        public virtual PdfObject Visit(PdfReal obj, PdfName parentKey, object data) => obj;
+
+        public virtual PdfObject Visit(PdfReference obj, PdfName parentKey, object data)
         {
+            obj.IndirectObject.Accept(this, parentKey, data);
             return obj;
         }
 
-        public virtual PdfObject Visit(PdfReal obj, object data)
+        public virtual PdfObject Visit(PdfStream obj, PdfName parentKey, object data)
         {
+            obj.Accept(this, parentKey, data);
             return obj;
         }
 
-        public virtual PdfObject Visit(PdfReference obj, object data)
-        {
-            obj.IndirectObject.Accept(this, data);
-            return obj;
-        }
+        public virtual PdfObject Visit(PdfString obj, PdfName parentKey, object data) => obj;
 
-        public virtual PdfObject Visit(PdfStream obj, object data)
-        {
-            obj.Accept(this, data);
-            return obj;
-        }
+        public virtual PdfObject Visit(PdfTextString obj, PdfName parentKey, object data) => obj;
 
-        public virtual PdfObject Visit(PdfString obj, object data)
-        {
-            return obj;
-        }
-
-        public virtual PdfObject Visit(PdfTextString obj, object data)
-        {
-            return obj;
-        }
-
-        public virtual PdfObject Visit(XRefStream obj, object data)
-        {
-            return obj;
-        }
+        public virtual PdfObject Visit(XRefStream obj, PdfName parentKey, object data) => obj;
     }
 }

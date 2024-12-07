@@ -81,23 +81,24 @@ namespace PdfClown.Documents.Interaction.Annotations
             TypeName = CustomTypeName;
         }
 
-        public Stamp(PdfDirectObject baseObject) : base(baseObject)
+        public Stamp(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the type name of this stamp.</summary>
         /// <remarks>To ensure predictable rendering of the <see cref="StandardStampEnum">standard stamp
-        /// types</see> across the systems, <see cref="PdfDocument.Configuration.StampPath"/> must be defined
+        /// types</see> across the systems, <see cref="PdfCatalog.Configuration.StampPath"/> must be defined
         /// so as to embed the corresponding templates.</remarks>
         public string TypeName
         {
-            get => BaseDataObject.GetString(PdfName.Name, DefaultType.GetName().StringValue);
+            get => GetString(PdfName.Name, DefaultType.GetName().StringValue);
             set
             {
                 var oldValue = TypeName;
                 if (!string.Equals(oldValue, value, StringComparison.Ordinal))
                 {
                     var typeNameObject = PdfName.Get(value);
-                    BaseDataObject[PdfName.Name] = (typeNameObject != null && !typeNameObject.Equals(DefaultType.GetName()) ? typeNameObject : null);
+                    this[PdfName.Name] = (typeNameObject != null && !typeNameObject.Equals(DefaultType.GetName()) ? typeNameObject : null);
                     QueueRefreshAppearance();
                     OnPropertyChanged(oldValue, value);
                 }
@@ -107,13 +108,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <summary>Gets/Sets the rotation applied to the stamp.</summary>
         public int Rotation
         {
-            get => BaseDataObject.GetInt(PdfName.Rotate, 0);
+            get => GetInt(PdfName.Rotate, 0);
             set
             {
                 var oldValue = Rotation;
                 if (oldValue != value)
                 {
-                    BaseDataObject.Set(PdfName.Rotate, value != 0 ? value : null);
+                    Set(PdfName.Rotate, value != 0 ? value : null);
 
                     FormXObject appearance = Appearance.Normal[null];
                     // Custom appearance?
@@ -121,14 +122,14 @@ namespace PdfClown.Documents.Interaction.Annotations
                     {
                         // NOTE: Custom appearances are responsible of their proper rotation.
                         // NOTE: Rotation must preserve the original scale factor.
-                        SKRect oldBox = Box;
-                        SKRect unscaledOldBox = appearance.Matrix.MapRect(appearance.Box);
-                        SKSize scale = new SKSize(oldBox.Width / unscaledOldBox.Width, oldBox.Height / unscaledOldBox.Height);
+                        var oldBox = Box;
+                        var unscaledOldBox = appearance.Matrix.MapRect(appearance.Box);
+                        var scale = new SKSize(oldBox.Width / unscaledOldBox.Width, oldBox.Height / unscaledOldBox.Height);
 
-                        SKMatrix matrix = SKMatrix.CreateRotationDegrees(value);
+                        var matrix = SKMatrix.CreateRotationDegrees(value);
                         appearance.Matrix = matrix;
 
-                        SKRect appearanceBox = appearance.Box;
+                        var appearanceBox = appearance.Box;
                         appearanceBox = SKRect.Create(0, 0, appearanceBox.Width * scale.Width, appearanceBox.Height * scale.Height);
                         Box = appearance.Matrix.MapRect(appearanceBox).Align(oldBox.Center(), new SKPoint(0, 0));
                     }
@@ -145,7 +146,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             if (standardType.HasValue)
             {
                 // NOTE: Standard stamp types leverage predefined appearances.
-                Appearance.Normal[null] = normalAppearance = Document.Configuration.GetStamp(standardType.Value);
+                Appearance.Normal[null] = normalAppearance = Document.CatalogConfiguration.GetStamp(standardType.Value);
             }
             return normalAppearance;
         }

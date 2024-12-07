@@ -18,14 +18,13 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Content creation.
             Populate(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Annotations", "inserting annotations", "annotations, creation, attachment, sticky notes, callout notes, rubber stamps, markup, highlighting");
+            Serialize(document, "Annotations", "inserting annotations", "annotations, creation, attachment, sticky notes, callout notes, rubber stamps, markup, highlighting");
         }
 
         private void Populate(PdfDocument document)
@@ -34,7 +33,7 @@ namespace PdfClown.Samples.CLI
             document.Pages.Add(page);
 
             var composer = new PrimitiveComposer(page);
-            var font = FontType1.Load(document, FontName.CourierBold);
+            var font = PdfType1Font.Load(document, FontName.CourierBold);
             composer.SetFont(font, 12);
 
             // Sticky note.
@@ -83,12 +82,10 @@ namespace PdfClown.Samples.CLI
             composer.ShowText("Callout note annotation:", new SKPoint(35, 85));
             page.Annotations.Add(new FreeText(page, SKRect.Create(250, 90, 150, 70), "Text of the Callout note annotation")
             {
-                Line = new FreeText.CalloutLine(
-                    page,
+                Line = new FreeText.CalloutLine(page,
                     new SKPoint(100, 100),
                     new SKPoint(150, 125),
-                    new SKPoint(250, 125)
-                    ),
+                    new SKPoint(250, 125)),
                 Intent = MarkupIntent.FreeTextCallout,
                 LineEndStyle = LineEndStyleEnum.OpenArrow,
                 Border = new Border(1),
@@ -97,11 +94,10 @@ namespace PdfClown.Samples.CLI
 
             // File attachment.
             composer.ShowText("File attachment annotation:", new SKPoint(35, 135));
-            page.Annotations.Add(new FileAttachment(
-              page,
+            page.Annotations.Add(new FileAttachment(page,
               SKRect.Create(50, 150, 15, 20),
               "Text of the File attachment annotation",
-              FileSpecification.Get(
+              IFileSpecification.Get(
                 EmbeddedFile.Get(document, GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")),
                 "happyGNU.jpg"))
             {
@@ -209,7 +205,7 @@ namespace PdfClown.Samples.CLI
             // Rubber stamp.
             composer.ShowText("Rubber stamp annotations:", new SKPoint(35, 505));
             {
-                var stampFont = FontType0.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
+                var stampFont = PdfType0Font.Load(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
                 page.Annotations.Add(new Stamp(
                   page,
                   new SKPoint(75, 570),
@@ -256,7 +252,7 @@ namespace PdfClown.Samples.CLI
                   "/opt/Adobe/Reader9/Reader/intellinux/plug_ins/Annotations/Stamps/ENU") or to the
                   collection included in this distribution (std-stamps.pdf).
                 */
-                document.Configuration.StampPath = GetResourcePath("../../pkg/templates/std-stamps.pdf");
+                document.CatalogConfiguration.StampPath = GetResourcePath("../../pkg/templates/std-stamps.pdf");
 
                 // Add a standard stamp, rotating it 15 degrees counterclockwise!
                 page.Annotations.Add(new Stamp(

@@ -37,10 +37,14 @@ namespace PdfClown.Documents.Interaction.Forms
             : base(PdfName.Btn, name, widget)
         { }
 
-        protected ButtonField(PdfDirectObject baseObject) 
+        protected ButtonField(PdfDirectObject baseObject)
             : base(baseObject)
         { }
 
-        public override object Value => PdfSimpleObject<object>.GetValue(GetInheritableAttribute(PdfName.V));
+        public override object Value
+        {
+            get => PdfSimpleObject<object>.GetValue(DataObject.GetInheritableAttribute(PdfName.V));
+            set => DataObject.Set(PdfName.V, PdfString.Get(value));
+        }
     }
 }

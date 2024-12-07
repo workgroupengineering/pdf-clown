@@ -16,12 +16,11 @@ namespace PdfClown.Samples.CLI
             {
                 // 1. Opening the PDF file...
                 string filePath = PromptFileChoice("Please select a PDF file");
-                using (var file = new PdfFile(filePath))
+                using (var document = new PdfDocument(filePath))
                 {
-                    PdfDocument document = file.Document;
 
                     // 2. Defining the page labels...
-                    PageLabels pageLabels = document.PageLabels;
+                    PageLabels pageLabels = document.Catalog.PageLabels;
                     pageLabels.Clear();
                     /*
                       NOTE: This sample applies labels to arbitrary page ranges: no sensible connection with their
@@ -35,16 +34,16 @@ namespace PdfClown.Samples.CLI
                     { pageLabels[PdfInteger.Get(6)] = new PageLabel(document, "Contents ", PageLabel.NumberStyleEnum.ArabicNumber, 0); }
 
                     // 3. Serialize the PDF file!
-                    outputFilePath = Serialize(file, "Page labelling", "labelling a document's pages", "page labels");
+                    outputFilePath = Serialize(document, "Page labelling", "labelling a document's pages", "page labels");
                 }
             }
 
             {
-                using (var file = new PdfFile(outputFilePath))
+                using (var document = new PdfDocument(outputFilePath))
                 {
-                    foreach (KeyValuePair<PdfInteger, PageLabel> entry in file.Document.PageLabels)
+                    foreach (KeyValuePair<PdfInteger, PageLabel> entry in document.Catalog.PageLabels)
                     {
-                        Console.WriteLine("Page label " + entry.Value.BaseObject);
+                        Console.WriteLine("Page label " + entry.Value.RefOrSelf);
                         Console.WriteLine("    Initial page: " + (entry.Key.IntValue + 1));
                         Console.WriteLine("    Prefix: " + (entry.Value.Prefix));
                         Console.WriteLine("    Number style: " + (entry.Value.NumberStyle));

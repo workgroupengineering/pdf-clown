@@ -14,14 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System.ComponentModel.Design.Serialization;
 
 namespace PdfClown.Documents.Functions.Type4
 {
-    /**
-     * Provides the conditional operators such as "if" and "ifelse".
-     *
-     */
+    /// <summary>Provides the conditional operators such as "if" and "ifelse".</summary>
     internal class ConditionalOperators
     {
 
@@ -30,7 +26,7 @@ namespace PdfClown.Documents.Functions.Type4
             // Private constructor.
         }
 
-        /** Implements the "if" operator. */
+        /// <summary>Implements the "if" operator.</summary>
         internal sealed class If : Operator
         {
             public override void Execute(ExecutionContext context)
@@ -45,7 +41,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "ifelse" operator. */
+        /// <summary>Implements the "ifelse" operator.</summary>
         internal sealed class IfElse : Operator
         {
 

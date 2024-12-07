@@ -17,15 +17,13 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
-
                 // 2. Stamp the document!
                 Stamp(document);
 
                 // 3. Serialize the PDF file!
-                Serialize(file, "Page numbering", "numbering a document's pages", "page numbering");
+                Serialize(document, "Page numbering", "numbering a document's pages", "page numbering");
             }
         }
 
@@ -36,8 +34,8 @@ namespace PdfClown.Samples.CLI
             var stamper = new PageStamper();
 
             // 2. Numbering each page...
-            var font = FontType1.Load(document, FontName.CourierBold);
-            var redColor = DeviceRGBColor.Get(SKColors.Red);
+            var font = PdfType1Font.Load(document, FontName.CourierBold);
+            var redColor = RGBColor.Get(SKColors.Red);
             int margin = 32;
             foreach (var page in document.Pages)
             {

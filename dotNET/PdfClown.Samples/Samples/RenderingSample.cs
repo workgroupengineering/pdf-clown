@@ -1,11 +1,5 @@
-using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Tools;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
-using System.Drawing.Imaging;
 
 namespace PdfClown.Samples.CLI
 {
@@ -20,9 +14,8 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                var document = file.Document;
                 var pages = document.Pages;
 
                 // 2. Page rasterization.

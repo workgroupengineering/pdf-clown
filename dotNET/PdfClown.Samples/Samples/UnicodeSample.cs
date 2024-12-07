@@ -2,7 +2,7 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
 using SkiaSharp;
 using System.IO;
-using fonts = PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Samples.CLI
 {
@@ -14,14 +14,13 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. Instantiate a new PDF file!
-            var file = new PdfFile();
-            var document = file.Document;
-
+            var document = new PdfDocument();
+            
             // 2. Insert the contents into the document!
             Populate(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Unicode", "using Unicode fonts", "Unicode");
+            Serialize(document, "Unicode", "using Unicode fonts", "Unicode");
         }
 
         /// <summary>Populates a PDF file with contents.</summary>
@@ -39,7 +38,7 @@ namespace PdfClown.Samples.CLI
 
             // 3. Inserting contents...
             // Define the font to use!
-            fonts::Font font = fonts::Font.Get(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "GenR102.TTF"));
+            var font = PdfFont.Get(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "GenR102.TTF"));
             // Define the paragraph break size!
             var breakSize = new SKSize(0, 5);
             // Define the text to show!

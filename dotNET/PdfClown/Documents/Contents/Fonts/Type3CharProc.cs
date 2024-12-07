@@ -29,38 +29,32 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-
     /// <summary>
     /// A Type 3 character procedure.This is a standalone PDF content stream.
     /// @author John Hewson
     /// </summary>
-    public sealed class Type3CharProc : PdfObjectWrapper<PdfStream>, IContentContext
+    public sealed class Type3CharProc : PdfStream, IContentContext
     {
-        public static Type3CharProc Wrap(PdfDirectObject baseObject, FontType3 font)
-        {
-            if (baseObject == null)
-                return null;
-            if (baseObject.Wrapper is Type3CharProc charProc)
-                return charProc;
-            return new Type3CharProc(font, baseObject);
-        }
-
-        private readonly FontType3 font;
+        private PdfType3Font font;
         private SKPicture picture;
         private ContentWrapper contents;
+        private Resources resources;
 
-        public Type3CharProc(FontType3 font, PdfDirectObject charStream)
+        public Type3CharProc(PdfDocument document)
+            : base(document, new Dictionary<PdfName, PdfDirectObject>())
+        { }
+
+        internal Type3CharProc(Dictionary<PdfName, PdfDirectObject> charStream)
             : base(charStream)
-        {
-            this.font = font;
-        }
+        { }
 
-        public FontType3 Font
+        public PdfType3Font Font
         {
             get => font;
+            set => font = value;
         }
 
-        public ContentWrapper Contents => contents ??= new ContentWrapper(BaseObject);
+        public ContentWrapper Contents => contents ??= new ContentWrapper(RefOrSelf);
 
         IList<ContentObject> ICompositeObject.Contents => Contents;
 
@@ -71,17 +65,19 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public Resources Resources
         {
-            get
+            get => resources ??= GetResources();
+        }
+
+        private Resources GetResources()
+        {
+            if (Get<Resources>(PdfName.Resources) is Resources resourceDictionary)
             {
-                if (BaseDataObject.Resolve(PdfName.Resources) is PdfDictionary resourceDictionary)
-                {
-                    // PDFBOX-5294
-                    Debug.WriteLine("warn: Using resources dictionary found in charproc entry");
-                    Debug.WriteLine("warn: This should have been in the font or in the page dictionary");
-                    return Wrap<Resources>(resourceDictionary);
-                }
-                return font.Resources;
+                // PDFBOX-5294
+                Debug.WriteLine("warn: Using resources dictionary found in charproc entry");
+                Debug.WriteLine("warn: This should have been in the font or in the page dictionary");
+                return resourceDictionary;
             }
+            return font.Resources;
         }
 
         public SKRect FontBBox
@@ -89,13 +85,10 @@ namespace PdfClown.Documents.Contents.Fonts
             get => font.FontBBox;
         }
 
-        /**
-		 * Calculate the bounding box of this glyph. This will work only if the first operator in the
-		 * stream is d1.
-		 *
-		 * @return the bounding box of this glyph, or null if the first operator is not d1.
-		 * @throws IOException If an io error occurs while parsing the stream.
-		 */
+        /// <summary>
+        /// Calculate the bounding box of this glyph.This will work only if the first operator in the
+        /// stream is d1.
+        /// </summary>
         public SKRect Box
         {
             get => GlyphBox ?? FontBBox;
@@ -106,9 +99,9 @@ namespace PdfClown.Documents.Contents.Fonts
             get => Contents.OfType<CharProcBBox>().FirstOrDefault()?.BBox;
         }
 
-		 /// <summary>
-         /// Get the width from a type3 charproc stream.
-         /// </summary>
+        /// <summary>
+        /// Get the width from a type3 charproc stream.
+        /// </summary>
         public float? Width
         {
             get => (float?)(Contents.OfType<CharProcWidth>().FirstOrDefault()?.WX ?? Contents.OfType<CharProcBBox>().FirstOrDefault()?.WX);
@@ -148,29 +141,14 @@ namespace PdfClown.Documents.Contents.Fonts
             scanner.Scan();
         }
 
-        public AppData GetAppData(PdfName appName)
-        {
-            throw new NotSupportedException();
-        }
+        public AppData GetAppData(PdfName appName) => throw new NotSupportedException();
 
-        public void Touch(PdfName appName)
-        {
-            throw new NotSupportedException();
-        }
+        public void Touch(PdfName appName) => throw new NotSupportedException();
 
-        public void Touch(PdfName appName, DateTime modificationDate)
-        {
-            throw new NotSupportedException();
-        }
+        public void Touch(PdfName appName, DateTime modificationDate) => throw new NotSupportedException();
 
-        public ContentObject ToInlineObject(PrimitiveComposer composer)
-        {
-            throw new NotImplementedException();
-        }
+        public ContentObject ToInlineObject(PrimitiveComposer composer) => throw new NotImplementedException();
 
-        public XObject ToXObject(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
+        public XObject ToXObject(PdfDocument context) => throw new NotImplementedException();
     }
 }

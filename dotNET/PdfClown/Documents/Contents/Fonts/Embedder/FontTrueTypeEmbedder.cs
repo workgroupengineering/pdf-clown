@@ -23,27 +23,21 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-
-    /**
-     * Embedded PDTrueTypeFont builder. Helper class to populate a PDTrueTypeFont from a TTF.
-     *
-     * @author John Hewson
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// Embedded PDTrueTypeFont builder. Helper class to populate a PDTrueTypeFont from a TTF.
+    /// @author John Hewson
+    /// @author Ben Litchfield
+    /// </summary>
     internal sealed class FontTrueTypeEmbedder : TrueTypeEmbedder
     {
         private readonly Encoding fontEncoding;
 
-        /**
-		 * Creates a new TrueType font embedder for the given TTF as a PDTrueTypeFont.
-		 *
-		 * @param document The parent document
-		 * @param dict Font dictionary
-		 * @param ttfStream TTF stream
-		 * @param encoding The PostScript encoding vector to be used for embedding.
-		 * @throws IOException if the TTF could not be read
-		 */
-        public FontTrueTypeEmbedder(PdfDocument document, PdfDictionary dict, TrueTypeFont ttf, Encoding encoding)
+        /// <summary>Creates a new TrueType font embedder for the given TTF as a PDTrueTypeFont.</summary>
+        /// <param name="document">The parent document</param>
+        /// <param name="dict">Font dictionary</param>
+        /// <param name="ttf">TTF stream</param>
+        /// <param name="encoding">The PostScript encoding vector to be used for embedding.</param>
+        public FontTrueTypeEmbedder(PdfDocument document, PdfFont dict, TrueTypeFont ttf, Encoding encoding)
             : base(document, dict, ttf, false)
         {
             dict[PdfName.Subtype] = PdfName.TrueType;
@@ -55,7 +49,7 @@ namespace PdfClown.Documents.Contents.Fonts
             fontDescriptor.Flags |= FlagsEnum.Nonsymbolic;
 
             // add the font descriptor
-            dict[PdfName.FontDescriptor] = fontDescriptor.BaseObject;
+            dict[PdfName.FontDescriptor] = fontDescriptor.RefOrSelf;
 
             // set the glyph widths
             SetWidths(dict, glyphList);
@@ -97,7 +91,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
             font.Set(PdfName.FirstChar, firstChar);
             font.Set(PdfName.LastChar, lastChar);
-            font[PdfName.Widths] = new PdfArray(widths);
+            font[PdfName.Widths] = new PdfArrayImpl(widths);
         }
 
         /// <summary>Returns the font's encoding.</summary>

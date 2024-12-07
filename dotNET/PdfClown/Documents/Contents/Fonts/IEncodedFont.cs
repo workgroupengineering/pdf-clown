@@ -15,21 +15,15 @@
  * limitations under the License.
  */
 
-using System;
-
-
 namespace PdfClown.Documents.Contents.Fonts
 {
-	/**
-     * A PostScript font which uses an encoding vector.
-     *
-     * @author John Hewson
-     */
-	public interface IEncodedFont
-	{
-		/**
-         * Returns the PostScript Encoding vector for the font.
-         */
-		Encoding Encoding { get; }
-	}
+    /// <summary>
+    /// A PostScript font which uses an encoding vector.
+    /// @author John Hewson
+    /// </summary>
+    public interface IEncodedFont
+    {
+        /// <summary>Returns the PostScript Encoding vector for the font.</summary>
+        Encoding Encoding { get; }
+    }
 }

@@ -29,14 +29,40 @@ using PdfClown.Objects;
 using PdfClown.Util;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
     /// <summary>Media clip data [PDF:1.7:9.1.3].</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class MediaClipData
-      : MediaClip
+    public sealed class MediaClipData : MediaClip
     {
+        internal static readonly BiDictionary<TempFilePermissionEnum, PdfString> permissinCodes = new()
+        {
+            [TempFilePermissionEnum.Never] = new PdfString("TEMPNEVER"),
+            [TempFilePermissionEnum.ContentExtraction] = new PdfString("TEMPEXTRACT"),
+            [TempFilePermissionEnum.Accessibility] = new PdfString("TEMPACCESS"),
+            [TempFilePermissionEnum.Always] = new PdfString("TEMPALWAYS")
+        };
+
+        internal static TempFilePermissionEnum? GetPermissin(PdfString code)
+        {
+            if (code == null)
+                return null;
+
+            TempFilePermissionEnum? tempFilePermission = permissinCodes.GetKey(code);
+            if (!tempFilePermission.HasValue)
+                throw new NotSupportedException("Operation unknown: " + code);
+
+            return tempFilePermission;
+        }
+
+        internal static PdfString GetCode(TempFilePermissionEnum tempFilePermission) => permissinCodes[tempFilePermission];
+
+        private IPdfDataObject data;
+        private Viability preferences;
+        private Viability requirements;
+
         /// <summary>Circumstance under which it is acceptable to write a temporary file in order to play
         /// a media clip.</summary>
         public enum TempFilePermissionEnum
@@ -64,106 +90,71 @@ namespace PdfClown.Documents.Multimedia
             {
                 get
                 {
-                    var baseURLObject = BaseDataObject.GetString(PdfName.BU);
+                    var baseURLObject = DataObject.GetString(PdfName.BU);
                     return baseURLObject != null ? new Uri(baseURLObject) : null;
                 }
-                set => BaseDataObject.Set(PdfName.BU, value?.ToString());
+                set => DataObject.Set(PdfName.BU, value?.ToString());
             }
         }
 
-        public MediaClipData(PdfObjectWrapper data, string mimeType) : base(data.Document, PdfName.MCD)
+        public MediaClipData(IPdfDataObject data, string mimeType)
+            : base(data.RefOrSelf.Document, PdfName.MCD)
         {
             Data = data;
             MimeType = mimeType;
             TempFilePermission = TempFilePermissionEnum.Always;
         }
 
-        public MediaClipData(PdfDirectObject baseObject) : base(baseObject)
+        internal MediaClipData(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
-        public override PdfObjectWrapper Data
+        public override IPdfDataObject Data
         {
-            get
-            {
-                PdfDirectObject dataObject = BaseDataObject[PdfName.D];
-                if (dataObject == null)
-                    return null;
-
-                if (dataObject.Resolve() is PdfStream)
-                    return FormXObject.Wrap(dataObject);
-                else
-                    return FileSpecification.Wrap(dataObject);
-            }
-            set => BaseDataObject[PdfName.D] = PdfObjectWrapper.GetBaseObject(value);
+            get => data ??= Get(PdfName.D) is PdfDirectObject dataObject
+                    ? dataObject.Resolve(PdfName.D) is FormXObject formX
+                        ? formX
+                        : IFileSpecification.Wrap(dataObject)
+                    : null;
+            set => Set(PdfName.D, (data = value).RefOrSelf);
         }
 
         /// <summary>Gets/Sets the MIME type of data [RFC 2045].</summary>
         public string MimeType
         {
-            get => BaseDataObject.GetString(PdfName.CT);
-            set => BaseDataObject.Set(PdfName.CT, value);
+            get => GetString(PdfName.CT);
+            set => Set(PdfName.CT, value);
         }
 
         /// <summary>Gets/Sets the player rules for playing this media.</summary>
         public MediaPlayers Players
         {
-            get => Wrap<MediaPlayers>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PL));
-            set => BaseDataObject[PdfName.PL] = PdfObjectWrapper.GetBaseObject(value);
+            get => GetOrCreate<MediaPlayers>(PdfName.PL);
+            set => Set(PdfName.PL, value);
         }
 
         /// <summary>Gets/Sets the preferred options the renderer should attempt to honor without affecting its
         /// viability.</summary>
         public Viability Preferences
         {
-            get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.BE));
-            set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
+            get => preferences ??= new(GetOrCreate<PdfDictionary>(PdfName.BE));
+            set => Set(PdfName.BE, preferences = value);
         }
 
         /// <summary>Gets/Sets the minimum requirements the renderer must honor in order to be considered viable.
         /// </summary>
         public Viability Requirements
         {
-            get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MH));
-            set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
+            get => requirements ??= new(GetOrCreate<PdfDictionary>(PdfName.MH));
+            set => Set(PdfName.MH, requirements = value);
         }
 
         /// <summary>Gets/Sets the circumstance under which it is acceptable to write a temporary file in order
         /// to play this media clip.</summary>
         public TempFilePermissionEnum? TempFilePermission
         {
-            get => TempFilePermissionEnumExtension.Get((PdfString)BaseDataObject.Resolve<PdfDictionary>(PdfName.P)[PdfName.TF]);
-            set => BaseDataObject.Resolve<PdfDictionary>(PdfName.P)[PdfName.TF] = (value.HasValue ? value.Value.GetCode() : null);
+            get => GetPermissin(GetOrCreate<PdfDictionary>(PdfName.P).Get<PdfString>(PdfName.TF));
+            set => GetOrCreate<PdfDictionary>(PdfName.P)[PdfName.TF] = (value.HasValue ? GetCode(value.Value) : null);
         }
-    }
-
-    internal static class TempFilePermissionEnumExtension
-    {
-        private static readonly BiDictionary<MediaClipData.TempFilePermissionEnum, PdfString> codes;
-
-        static TempFilePermissionEnumExtension()
-        {
-            codes = new BiDictionary<MediaClipData.TempFilePermissionEnum, PdfString>
-            {
-                [MediaClipData.TempFilePermissionEnum.Never] = new PdfString("TEMPNEVER"),
-                [MediaClipData.TempFilePermissionEnum.ContentExtraction] = new PdfString("TEMPEXTRACT"),
-                [MediaClipData.TempFilePermissionEnum.Accessibility] = new PdfString("TEMPACCESS"),
-                [MediaClipData.TempFilePermissionEnum.Always] = new PdfString("TEMPALWAYS")
-            };
-        }
-
-        public static MediaClipData.TempFilePermissionEnum? Get(PdfString code)
-        {
-            if (code == null)
-                return null;
-
-            MediaClipData.TempFilePermissionEnum? tempFilePermission = codes.GetKey(code);
-            if (!tempFilePermission.HasValue)
-                throw new NotSupportedException("Operation unknown: " + code);
-
-            return tempFilePermission;
-        }
-
-        public static PdfString GetCode(this MediaClipData.TempFilePermissionEnum tempFilePermission)
-        { return codes[tempFilePermission]; }
-    }
+    }    
 }

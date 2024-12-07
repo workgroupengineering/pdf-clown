@@ -45,17 +45,17 @@ namespace PdfClown.Objects
         { }
 
         private PdfBoolean(bool value)
-        { RawValue = value; }
+        {
+            RawValue = value;
+        }
 
-        public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
         public bool BooleanValue => RawValue;
 
         public override int CompareTo(PdfDirectObject obj)
         { throw new NotImplementedException(); }
 
-        public override void WriteTo(IOutputStream stream, PdfFile context)
-        { stream.Write(RawValue ? Keyword.True : Keyword.False); }
+        public override void WriteTo(IOutputStream stream, PdfDocument context) => stream.Write(RawValue ? Keyword.True : Keyword.False);
     }
 }

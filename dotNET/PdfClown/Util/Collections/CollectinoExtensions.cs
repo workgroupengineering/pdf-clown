@@ -26,6 +26,7 @@
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace PdfClown.Util.Collections
@@ -69,6 +70,13 @@ namespace PdfClown.Util.Collections
             var item = list[index];
             list.RemoveAt(index);
             return item;
+        }
+
+        public static T RemoveAtValue<T>(this IList list, int index)
+        {
+            var item = list[index];
+            list.RemoveAt(index);
+            return (T)item;
         }
 
         public static void Fill<T>(this T[] list, int offset, int length, T value)
@@ -145,29 +153,24 @@ namespace PdfClown.Util.Collections
             }
             return intervals;
         }
-
-
     }
 
-    public static class BytesExtension
-    {
-
-
-        public static byte[] CopyOfRange(this byte[] src, int start, int end)
-        {
-            var len = end - start;
-            var dest = new byte[len];
-            Array.Copy(src, start, dest, 0, len);
-            return dest;
-        }
-
-        public static byte[] CopyOfRange(this ReadOnlySpan<byte> src, int start, int end)
-        {
-            var len = end - start;
-            var dest = new byte[len];
-            src.Slice(start, len).CopyTo(dest);
-            return dest;
-        }
-    }
+    //public static class BytesExtension
+    //{
+    //    public static byte[] CopyOfRange(this byte[] src, int start, int end)
+    //    {
+    //        var len = end - start;
+    //        var dest = new byte[len];
+    //        Array.Copy(src, start, dest, 0, len);
+    //        return dest;
+    //    }
+    //    public static byte[] CopyOfRange(this ReadOnlySpan<byte> src, int start, int end)
+    //    {
+    //        var len = end - start;
+    //        var dest = new byte[len];
+    //        src.Slice(start, len).CopyTo(dest);
+    //        return dest;
+    //    }
+    //}
 }
 

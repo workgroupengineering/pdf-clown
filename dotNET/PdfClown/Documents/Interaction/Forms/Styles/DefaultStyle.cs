@@ -65,24 +65,23 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(CheckBox field)
         {
-            PdfDocument document = field.Document;
+            var document = field.Document;
             foreach (Widget widget in field.Widgets)
             {
                 {
-                    PdfDictionary widgetDataObject = widget.BaseDataObject;
-                    widgetDataObject.Set(PdfName.DA, "/ZaDb 0 Tf 0 0 0 rg");
-                    widgetDataObject[PdfName.MK] = new PdfDictionary(3)
+                    widget.Set(PdfName.DA, "/ZaDb 0 Tf 0 0 0 rg");
+                    widget.AppearanceCharacteristics = new AppearanceCharacteristics()
                     {
-                        { PdfName.BG, new PdfArray(3) { 0.9412, 0.9412, 0.9412 } },
-                        { PdfName.BC, new PdfArray(3) { 0, 0, 0 } },
-                        { PdfName.CA, "4" },
+                        BackgroundColor = new RGBColor(0.9412, 0.9412, 0.9412),
+                        BorderColor = RGBColor.Black,
+                        NormalCaption = "4",
                     };
-                    widgetDataObject[PdfName.BS] = new PdfDictionary(2)
+                    widget.Border = new Border()
                     {
-                        { PdfName.W, 0.8 },
-                        { PdfName.S, PdfName.S },
+                        Width = 0.8D,
+                        Style = BorderStyleType.Solid,
                     };
-                    widgetDataObject[PdfName.H] = PdfName.P;
+                    widget.HighlightMode = Widget.HighlightModeEnum.Push;
                 }
 
                 var appearance = widget.Appearance;
@@ -100,7 +99,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 float lineWidth = 1;
                 SKRect frame = SKRect.Create(lineWidth / 2, lineWidth / 2, size.Width - lineWidth, size.Height - lineWidth);
                 {
-                    PrimitiveComposer composer = new PrimitiveComposer(onState);
+                    var composer = new PrimitiveComposer(onState);
 
                     if (GraphicsVisibile)
                     {
@@ -116,7 +115,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(FontType1.Load(document, FontName.ZapfDingbats), size.Height * 0.8);
+                    composer.SetFont(PdfType1Font.Load(document, FontName.ZapfDingbats), size.Height * 0.8);
                     blockComposer.ShowText(new String(new char[] { CheckSymbol }));
                     blockComposer.End();
 
@@ -128,7 +127,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 {
                     if (GraphicsVisibile)
                     {
-                        PrimitiveComposer composer = new PrimitiveComposer(offState);
+                        var composer = new PrimitiveComposer(offState);
 
                         composer.BeginLocalState();
                         composer.SetLineWidth(lineWidth);
@@ -146,29 +145,28 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(RadioButton field)
         {
-            PdfDocument document = field.Document;
+            var document = field.Document;
             foreach (Widget widget in field.Widgets)
             {
                 {
-                    PdfDictionary widgetDataObject = widget.BaseDataObject;
-                    widgetDataObject.Set(PdfName.DA, "/ZaDb 0 Tf 0 0 0 rg");
-                    widgetDataObject[PdfName.MK] = new PdfDictionary(3)
+                    widget.Set(PdfName.DA, "/ZaDb 0 Tf 0 0 0 rg");
+                    widget.AppearanceCharacteristics = new AppearanceCharacteristics
                     {
-                        { PdfName.BG, new PdfArray(3) { 0.9412, 0.9412, 0.9412 } },
-                        { PdfName.BC, new PdfArray(3) { 0, 0, 0 } },
-                        { PdfName.CA, new PdfString("l") },
+                        BackgroundColor = new RGBColor(0.9412, 0.9412, 0.9412),
+                        BorderColor = RGBColor.Black,
+                        NormalCaption = "l",
                     };
-                    widgetDataObject[PdfName.BS] = new PdfDictionary(2)
+                    widget.Border = new Border
                     {
-                        { PdfName.W, 0.8 },
-                        { PdfName.S, PdfName.S },
-                        { PdfName.H, PdfName.P }
+                        Width = 0.8,
+                        Style = BorderStyleType.Solid,
                     };
+                    widget.HighlightMode = Widget.HighlightModeEnum.Push;
                 }
 
-                Appearance appearance = widget.Appearance;
-                AppearanceStates normalAppearance = appearance.Normal;
-                FormXObject onState = normalAppearance[PdfName.Get(widget.Value)];
+                var appearance = widget.Appearance;
+                var normalAppearance = appearance.Normal;
+                var onState = normalAppearance[PdfName.Get(widget.Value)];
 
                 //TODO:verify!!!
                 //   appearance.getRollover()[new PdfName(...),onState);
@@ -196,7 +194,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(FontType1.Load(document, FontName.ZapfDingbats), size.Height * 0.8);
+                    composer.SetFont(PdfType1Font.Load(document, FontName.ZapfDingbats), size.Height * 0.8);
                     blockComposer.ShowText(new String(new char[] { RadioSymbol }));
                     blockComposer.End();
 
@@ -226,15 +224,14 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(PushButton field)
         {
-            PdfDocument document = field.Document;
-            Widget widget = field.Widgets[0];
+            var document = field.Document;
+            var widget = field.Widgets[0];
 
-            Appearance appearance = widget.Appearance;
-            FormXObject normalAppearanceState;
+            var appearance = widget.Appearance;
+            SKSize size = widget.Box.Size;
+            var normalAppearanceState = new FormXObject(document, size);
             {
-                SKSize size = widget.Box.Size;
-                normalAppearanceState = new FormXObject(document, size);
-                PrimitiveComposer composer = new PrimitiveComposer(normalAppearanceState);
+                var composer = new PrimitiveComposer(normalAppearanceState);
 
                 float lineWidth = 1;
                 SKRect frame = SKRect.Create(lineWidth / 2, lineWidth / 2, size.Width - lineWidth, size.Height - lineWidth);
@@ -249,13 +246,12 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     composer.End();
                 }
 
-                string title = (string)field.Value;
-                if (title != null)
+                if (field.Value is string title)
                 {
                     var blockComposer = new BlockComposer(composer);
                     blockComposer.Begin(frame, XAlignmentEnum.Center, YAlignmentEnum.Middle);
                     composer.SetFillColor(ForeColor);
-                    composer.SetFont(FontType1.Load(document, FontName.HelveticaBold), size.Height * 0.5);
+                    composer.SetFont(PdfType1Font.Load(document, FontName.HelveticaBold), size.Height * 0.5);
                     blockComposer.ShowText(title);
                     blockComposer.End();
                 }
@@ -274,7 +270,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             var appearance = widget.Appearance;
             widget.DefaultAppearence = "/Helv " + FontSize + " Tf 0 0 0 rg";
 
-            FormXObject normalAppearanceState = new FormXObject(document, size);
+            var normalAppearanceState = new FormXObject(document, size);
             {
                 var composer = new PrimitiveComposer(normalAppearanceState);
 
@@ -292,9 +288,9 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(FontType1.Load(document, FontName.CourierBold), 20);
+                composer.SetFont(PdfType1Font.Load(document, FontName.CourierBold), 20);
                 composer.ShowText(
-                  (string)signatureName,
+                  signatureName,
                   new SKPoint(0, size.Height / 2),
                   XAlignmentEnum.Left,
                   YAlignmentEnum.Middle,
@@ -308,16 +304,15 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(TextField field)
         {
-            PdfDocument document = field.Document;
+            var document = field.Document;
             Widget widget = field.Widgets[0];
 
             Appearance appearance = widget.Appearance;
-            widget.BaseDataObject.Set(PdfName.DA, "/Helv " + FontSize + " Tf 0 0 0 rg");
+            widget.Set(PdfName.DA, "/Helv " + FontSize + " Tf 0 0 0 rg");
 
-            FormXObject normalAppearanceState;
+            SKSize size = widget.Box.Size;
+            var normalAppearanceState = new FormXObject(document, size);
             {
-                SKSize size = widget.Box.Size;
-                normalAppearanceState = new FormXObject(document, size);
                 var composer = new PrimitiveComposer(normalAppearanceState);
 
                 float lineWidth = 1;
@@ -334,7 +329,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(FontType1.Load(document, FontName.Helvetica), FontSize);
+                composer.SetFont(PdfType1Font.Load(document, FontName.Helvetica), FontSize);
                 composer.ShowText(
                   (string)field.Value,
                   new SKPoint(0, size.Height / 2),
@@ -354,12 +349,11 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
             var widget = field.Widgets[0];
 
             var appearance = widget.Appearance;
-            widget.BaseDataObject.Set(PdfName.DA, "/Helv " + FontSize + " Tf 0 0 0 rg");
+            widget.Set(PdfName.DA, "/Helv " + FontSize + " Tf 0 0 0 rg");
 
-            FormXObject normalAppearanceState;
+            SKSize size = widget.Box.Size;
+            var normalAppearanceState = new FormXObject(document, size);
             {
-                SKSize size = widget.Box.Size;
-                normalAppearanceState = new FormXObject(document, size);
                 var composer = new PrimitiveComposer(normalAppearanceState);
 
                 float lineWidth = 1;
@@ -376,7 +370,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                 }
 
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(FontType1.Load(document, FontName.Helvetica), FontSize);
+                composer.SetFont(PdfType1Font.Load(document, FontName.Helvetica), FontSize);
                 composer.ShowText(
                   (string)field.Value,
                   new SKPoint(0, size.Height / 2),
@@ -392,24 +386,20 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
 
         private void Apply(ListBox field)
         {
-            PdfDocument document = field.Document;
+            var document = field.Document;
             Widget widget = field.Widgets[0];
 
+            widget.DefaultAppearence = "/Helv " + FontSize + " Tf 0 0 0 rg";
+            widget.AppearanceCharacteristics = new AppearanceCharacteristics()
+            {
+                BackgroundColor = new RGBColor(.9, .9, .9),
+                BorderColor = RGBColor.Black,
+            };
             Appearance appearance = widget.Appearance;
-            {
-                PdfDictionary widgetDataObject = widget.BaseDataObject;
-                widgetDataObject.Set(PdfName.DA, "/Helv " + FontSize + " Tf 0 0 0 rg");
-                widgetDataObject[PdfName.MK] = new PdfDictionary()
-                {
-                    { PdfName.BG,new PdfArray(3) { .9, .9, .9 } },
-                    { PdfName.BC,new PdfArray(3) { 0, 0, 0 } }
-                };
-            }
 
-            FormXObject normalAppearanceState;
+            SKSize size = widget.Box.Size;
+            var normalAppearanceState = new FormXObject(document, size);
             {
-                SKSize size = widget.Box.Size;
-                normalAppearanceState = new FormXObject(document, size);
                 var composer = new PrimitiveComposer(normalAppearanceState);
 
                 float lineWidth = 1;
@@ -432,7 +422,7 @@ namespace PdfClown.Documents.Interaction.Forms.Styles
                     composer.Clip(); // Ensures that the visible content is clipped within the rounded frame.
                 }
                 composer.BeginMarkedContent(PdfName.Tx);
-                composer.SetFont(FontType1.Load(document, FontName.Helvetica), FontSize);
+                composer.SetFont(PdfType1Font.Load(document, FontName.Helvetica), FontSize);
                 double y = 3;
                 foreach (ChoiceItem item in field.Items)
                 {

@@ -104,12 +104,12 @@ namespace PdfClown.Documents.Functions.Type4
             throw new NotImplementedException();
         }
 
-        public override void WriteTo(IOutputStream stream, PdfFile context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             throw new NotImplementedException();
         }
 
-        public override PdfObject Accept(IVisitor visitor, object data)
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data)
         {
             throw new NotImplementedException();
         }

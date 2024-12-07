@@ -85,7 +85,7 @@ namespace PdfClown.Tools
             }
         }
 
-        public List<ITextString> Strings => strings ??= new List<ITextString>();
+        public List<ITextString> Strings => strings ??= new();
 
         public void Add(ITextString textString)
         {

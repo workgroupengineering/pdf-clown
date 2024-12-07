@@ -18,14 +18,13 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. Creating the document...
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Applying links...
             BuildLinks(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Link annotations", "applying link annotations", "links, creation");
+            Serialize(document, "Link annotations", "applying link annotations", "links, creation");
         }
 
         private void BuildLinks(PdfDocument document)
@@ -37,7 +36,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
             var blockComposer = new BlockComposer(composer);
 
-            var font = FontType1.Load(document, FontName.CourierBold);
+            var font = PdfType1Font.Load(document, FontName.CourierBold);
 
             // 2.1. Goto-URI link.
             {
@@ -67,7 +66,7 @@ namespace PdfClown.Samples.CLI
                 var fileAttachmentName = "attachedSamplePDF";
                 var fileName = System.IO.Path.GetFileName(filePath);
                 page.Annotations.Add(new FileAttachment(page, SKRect.Create(0, -20, 10, 10), "File attachment annotation",
-                    FileSpecification.Get(EmbeddedFile.Get(document, filePath), fileName))
+                    IFileSpecification.Get(EmbeddedFile.Get(document, filePath), fileName))
                 {
                     Name = fileAttachmentName,
                     AttachmentName = FileAttachmentImageType.PaperClip
@@ -118,7 +117,7 @@ namespace PdfClown.Samples.CLI
 
                 composer.BeginLocalState();
                 composer.SetFont(font, 10);
-                composer.SetFillColor(DeviceRGBColor.Get(SKColors.Blue));
+                composer.SetFillColor(RGBColor.Get(SKColors.Blue));
                 composer.ShowText(
                   "PDF Clown Project's repository at SourceForge.net",
                   new SKPoint(240, 265),

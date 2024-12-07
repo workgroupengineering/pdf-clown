@@ -41,6 +41,8 @@ namespace PdfClown.Tokens
         protected BaseParser(Memory<byte> data) : base(data)
         { }
 
+        public PdfName GPKey { get; private set; }
+
         public override bool MoveNext()
         {
             bool moved;
@@ -121,73 +123,79 @@ namespace PdfClown.Tokens
             return moved;
         }
 
+        //public virtual PdfDirectObject ParsePdfObject() => ParsePdfObject(typeof(PdfDirectObject));
+
         // <summary>Parses the current PDF object [PDF:1.6:3.2].</summary>
-        public virtual PdfDataObject ParsePdfObject()
+        public virtual PdfDirectObject ParsePdfObject(PdfName parentKey = null)
         {
-            switch (TokenType)
+            return TokenType switch
             {
-                case TokenTypeEnum.Integer:
-                    return PdfInteger.Get(IntegerToken);
-                case TokenTypeEnum.Name:
-                    return PdfName.Get(CharsToken.ToString(), true);
-                case TokenTypeEnum.DictionaryBegin:
-                    {
-                        var dictionary = new Dictionary<PdfName, PdfDirectObject>();
-                        while (MoveNext()
-                            && TokenType != TokenTypeEnum.DictionaryEnd
-                            && ParsePdfObject() is PdfName key
-                            && MoveNextComplex()
-                            && TokenType != TokenTypeEnum.DictionaryEnd)
-                        {
-                            // Add the current entry to the dictionary!
-                            if (dictionary.ContainsKey(key))
-                            {
-                                key = PdfName.Get(key.StringValue + "Dublicat", true);
-                            }
-                            dictionary[key] = (PdfDirectObject)ParsePdfObject();
-                        }
-                        return CreatePdfDictionary(dictionary);
-                    }
-                case TokenTypeEnum.ArrayBegin:
-                    {
-                        var array = new List<PdfDirectObject>();
-                        while (MoveNextComplex()
-                            && TokenType != TokenTypeEnum.ArrayEnd)
-                        {
-                            // Add the current item to the array!
-                            array.Add((PdfDirectObject)ParsePdfObject());
-                        }
-                        return new PdfArray(array);
-                    }
-                case TokenTypeEnum.Date:
-                    return PdfDate.Get(BytesToken.ToArray(), DateToken);
-                case TokenTypeEnum.Literal:
-                    return new PdfTextString(BytesToken.ToArray(), PdfString.SerializationModeEnum.Literal);
-                case TokenTypeEnum.Hex:
-                    return new PdfTextString(BytesToken.ToArray(), PdfString.SerializationModeEnum.Hex);
-                case TokenTypeEnum.Real:
-                    return PdfReal.Get(RealToken);
-                case TokenTypeEnum.Boolean:
-                    return PdfBoolean.Get(BooleanToken);
-                case TokenTypeEnum.Null:
-                    return null;
-                default:
-                    throw new PostScriptParseException($"Unknown type beginning: '{Token}'", this);
-            }
+                TokenTypeEnum.Integer => PdfInteger.Get(IntegerToken),
+                TokenTypeEnum.Name => PdfName.Get(CharsToken.ToString(), true),
+                TokenTypeEnum.DictionaryBegin => ParsePdfDictionary(parentKey),
+                TokenTypeEnum.ArrayBegin => ParsePdfArray(parentKey),
+                TokenTypeEnum.Date => PdfDate.Get(BytesToken.ToArray(), DateToken),
+                TokenTypeEnum.Literal => new PdfTextString(BytesToken.ToArray(), PdfString.SerializationModeEnum.Literal),
+                TokenTypeEnum.Hex => new PdfTextString(BytesToken.ToArray(), PdfString.SerializationModeEnum.Hex),
+                TokenTypeEnum.Real => PdfReal.Get(RealToken),
+                TokenTypeEnum.Boolean => PdfBoolean.Get(BooleanToken),
+                TokenTypeEnum.Null => null,
+                _ => throw new PostScriptParseException($"Unknown type beginning: '{Token}'", this),
+            };
         }
 
-        protected virtual PdfDictionary CreatePdfDictionary(Dictionary<PdfName, PdfDirectObject> dictionary)
+        protected virtual PdfArray CreatePdfArray(List<PdfDirectObject> array, PdfName parentKey, PdfName gPKey) => new PdfArrayImpl(array);
+
+        protected virtual PdfDictionary CreatePdfDictionary(Dictionary<PdfName, PdfDirectObject> dictionary, PdfName parentKey, PdfName temp) => new PdfDictionary(dictionary);
+
+        private PdfArray ParsePdfArray(PdfName parentKey)
         {
-            return new PdfDictionary(dictionary);
+            var temp = GPKey;
+            GPKey = parentKey;
+            var array = new List<PdfDirectObject>();
+            while (MoveNextComplex()
+                && TokenType != TokenTypeEnum.ArrayEnd)
+            {
+                if (TokenType == TokenTypeEnum.Keyword)
+                    continue;
+                // Add the current item to the array!
+                array.Add(ParsePdfObject());
+            }
+            var result = CreatePdfArray(array, parentKey, temp);
+            GPKey = temp;
+            return result;
+        }
+
+        private PdfDictionary ParsePdfDictionary(PdfName parentKey)
+        {
+            var temp = GPKey;
+            GPKey = parentKey;
+            var dictionary = new Dictionary<PdfName, PdfDirectObject>();
+            while (MoveNext()
+                && TokenType != TokenTypeEnum.DictionaryEnd
+                && ParsePdfObject() is PdfName key
+                && MoveNextComplex()
+                && TokenType != TokenTypeEnum.DictionaryEnd)
+            {
+                // Add the current entry to the dictionary!
+                if (dictionary.ContainsKey(key))
+                {
+                    key = PdfName.Get(key.StringValue + "Dublicat", true);
+                }
+                dictionary[key] = ParsePdfObject(key);
+            }
+            var result = CreatePdfDictionary(dictionary, parentKey, temp);
+            GPKey = temp;
+            return result;
         }
 
         /// <summary>Parses a PDF object after moving to the given token offset.</summary>
         /// <param name="offset">Number of tokens to skip before reaching the intended one.</param>
         /// <seealso cref="ParsePdfObject()"/>
-        public PdfDataObject ParsePdfObject(int offset)
+        public PdfDirectObject ParseNextPdfObject(PdfName parentKey)  
         {
-            MoveNext(offset);
-            return ParsePdfObject();
+            MoveNext();
+            return ParsePdfObject(parentKey);
         }
     }
 }

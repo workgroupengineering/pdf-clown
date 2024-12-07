@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Contents.Entities
             return composer.Add(
               new GraphicsInlineImage(
                 new InlineImageHeader(
-                  new PdfArray
+                  new PdfArrayImpl
                   {
                       PdfName.W, Width,
                       PdfName.H, Height,
@@ -59,16 +59,15 @@ namespace PdfClown.Documents.Contents.Entities
         {
             return new ImageXObject(
               context,
-              new PdfStream(
-                new Dictionary<PdfName, PdfDirectObject>(5)
-                {
+              new Dictionary<PdfName, PdfDirectObject>(5)
+              {
                   { PdfName.Width, PdfInteger.Get(Width) },
                   { PdfName.Height, PdfInteger.Get(Height) },
                   { PdfName.BitsPerComponent, PdfInteger.Get(BitsPerComponent) },
                   { PdfName.ColorSpace, PdfName.DeviceRGB },
                   { PdfName.Filter, PdfName.DCTDecode }
-               },
-                new ByteStream(Stream)));
+              },
+              new ByteStream(Stream));
         }
 
         private void Load()

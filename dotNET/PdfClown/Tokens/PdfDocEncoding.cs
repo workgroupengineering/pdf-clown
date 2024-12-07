@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Util;
-using System;
 
 namespace PdfClown.Tokens
 {
@@ -80,7 +79,7 @@ namespace PdfClown.Tokens
             public override int GetKey(char value)
             {
                 return IsIdentity(value)
-                  ? (int)value
+                  ? value
                   : base.GetKey(value);
             }
 

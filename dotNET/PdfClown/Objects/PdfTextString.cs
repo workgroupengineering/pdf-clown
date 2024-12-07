@@ -26,8 +26,6 @@
 using PdfClown.Tokens;
 
 using System;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace PdfClown.Objects
 {
@@ -42,13 +40,10 @@ namespace PdfClown.Objects
           NOTE: Text strings are string objects encoded in either PdfDocEncoding (superset of the ISO
           Latin 1 encoding [PDF:1.6:D]) or 16-bit big-endian Unicode character encoding (see [UCS:4]).
         */
-        public static readonly new PdfTextString Default = new PdfTextString("");
+        public static readonly new PdfTextString Default = new(string.Empty);
 
-        /**
-          <summary>Gets the object equivalent to the given value.</summary>
-        */
-        public static new PdfTextString Get(string value)
-        { return value != null ? new PdfTextString(value) : null; }
+        /// <summary>Gets the object equivalent to the given value.</summary>
+        public static new PdfTextString Get(string value) => value != null ? new PdfTextString(value) : null;
 
         private bool unicoded;
 
@@ -60,8 +55,7 @@ namespace PdfClown.Objects
             : base(value, serializationMode)
         { }
 
-        public override PdfObject Accept(IVisitor visitor, object data)
-        { return visitor.Visit(this, data); }
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
         public override Memory<byte> RawValue
         {
@@ -103,7 +97,7 @@ namespace PdfClown.Objects
                                 valueBytes = new byte[Charset.UTF16BE.GetByteCount(stringValue) + 2];
                                 Charset.UTF16BE.GetBytes(stringValue, 0, stringValue.Length, valueBytes, 2);
                                 // Prepending UTF marker...
-                                valueBytes[0] = (byte)254; valueBytes[1] = (byte)255;
+                                valueBytes[0] = 254; valueBytes[1] = 255;
                             }
                             RawValue = valueBytes;
                         }

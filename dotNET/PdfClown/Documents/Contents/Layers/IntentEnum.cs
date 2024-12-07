@@ -44,17 +44,12 @@ namespace PdfClown.Documents.Contents.Layers
 
     public static class IntentEnumExtension
     {
-        private static readonly BiDictionary<IntentEnum, PdfName> codes;
-
-        static IntentEnumExtension()
+        private static readonly BiDictionary<IntentEnum, PdfName> codes = new()
         {
-            codes = new BiDictionary<IntentEnum, PdfName>
-            {
-                [IntentEnum.View] = PdfName.View,
-                [IntentEnum.Design] = PdfName.Design,
-                [IntentEnum.All] = PdfName.All
-            };
-        }
+            [IntentEnum.View] = PdfName.View,
+            [IntentEnum.Design] = PdfName.Design,
+            [IntentEnum.All] = PdfName.All
+        };
 
         public static IntentEnum Get(PdfName name)
         {

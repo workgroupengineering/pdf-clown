@@ -13,12 +13,10 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                var document = file.Document;
-
                 // 2. Applying the visual transitions...
-                Transition.StyleEnum[] transitionStyles = (Transition.StyleEnum[])Enum.GetValues(typeof(Transition.StyleEnum));
+                var transitionStyles = (Transition.StyleEnum[])Enum.GetValues(typeof(Transition.StyleEnum));
                 int transitionStylesLength = transitionStyles.Length;
                 Random random = new Random();
                 foreach (var page in document.Pages)
@@ -27,14 +25,14 @@ namespace PdfClown.Samples.CLI
                     page.Transition = new Transition(
                       document,
                       transitionStyles[random.Next(transitionStylesLength)], // NOTE: Random selection of the transition is done here just for demonstrative purposes; in real world, you would obviously choose only the appropriate enumeration constant among those available.
-                      .5 // Transition duration (half a second).
-                      );
+                      .5);// Transition duration (half a second).
+
                     // Set the display time of the page on presentation!
                     page.Duration = 2; // Page display duration (2 seconds).
                 }
 
                 // 3. Serialize the PDF file!
-                Serialize(file, "Transition", "applying visual transitions to pages", "page transition");
+                Serialize(document, "Transition", "applying visual transitions to pages", "page transition");
             }
         }
     }

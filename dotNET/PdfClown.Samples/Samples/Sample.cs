@@ -1,8 +1,5 @@
-using PdfClown.Bytes;
 using PdfClown.Documents;
-using PdfClown.Documents.Interaction;
 using PdfClown.Documents.Interchange.Metadata;
-using PdfClown.Documents.Interaction.Viewer;
 using PdfClown.Files;
 
 using System;
@@ -11,9 +8,7 @@ using System.IO;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>Abstract sample.</summary>
-    */
+    /// <summary>Abstract sample.</summary>
     public abstract class Sample
     {
         private string inputPath;
@@ -21,63 +16,33 @@ namespace PdfClown.Samples.CLI
 
         private bool quit;
 
-        /**
-          <summary>Gets whether the sample was exited before its completion.</summary>
-        */
-        public bool IsQuit()
-        { return quit; }
+        /// <summary>Gets whether the sample was exited before its completion.</summary>
+        public bool IsQuit() => quit;
 
-        /**
-          <summary>Executes the sample.</summary>
-          <returns>Whether the sample has been completed.</returns>
-        */
+        /// <summary>Executes the sample.</summary>
+        /// <returns>Whether the sample has been completed.</returns>
         public abstract void Run();
 
-        protected string GetIndentation(int level)
-        {
-            return new String(' ', level);
-        }
+        protected string GetIndentation(int level) => new string(' ', level);
 
-        /**
-          <summary>Gets the path used to serialize output files.</summary>
-          <param name="fileName">Relative output file path.</param>
-        */
-        protected string GetOutputPath(string fileName)
-        {
-            return fileName != null ? Path.Combine(outputPath, fileName) : outputPath;
-        }
+        /// <summary>Gets the path used to serialize output files.</summary>
+        /// <param name="fileName">Relative output file path.</param>
+        protected string GetOutputPath(string fileName) => fileName != null ? Path.Combine(outputPath, fileName) : outputPath;
 
-        /**
-          <summary>Gets the path to a sample resource.</summary>
-          <param name="resourceName">Relative resource path.</param>
-        */
-        protected string GetResourcePath(string resourceName)
-        {
-            return Path.Combine(inputPath, resourceName);
-        }
+        /// <summary>Gets the path to a sample resource.</summary>
+        /// <param name="resourceName">Relative resource path.</param>
+        protected string GetResourcePath(string resourceName) => Path.Combine(inputPath, resourceName);
 
-        /**
-          <summary>Gets the path used to serialize output files.</summary>
-        */
-        protected string OutputPath
-        {
-            get { return GetOutputPath(null); }
-        }
+        /// <summary>Gets the path used to serialize output files.</summary>
+        protected string OutputPath => GetOutputPath(null);
 
-        /**
-          <summary>Prompts a message to the user.</summary>
-          <param name="message">Text to show.</param>
-        */
-        protected void Prompt(string message)
-        {
-            Utils.Prompt(message);
-        }
+        /// <summary>Prompts a message to the user.</summary>
+        /// <param name="message">Text to show.</param>
+        protected void Prompt(string message) => Utils.Prompt(message);
 
-        /**
-          <summary>Gets the user's choice from the given request.</summary>
-          <param name="message">Description of the request to show to the user.</param>
-          <returns>User choice.</returns>
-        */
+        /// <summary>Gets the user's choice from the given request.</summary>
+        /// <param name="message">Description of the request to show to the user.</param>
+        /// <returns>User choice.</returns>
         protected string PromptChoice(string message)
         {
             Console.Write(message);
@@ -87,11 +52,9 @@ namespace PdfClown.Samples.CLI
             { return null; }
         }
 
-        /**
-          <summary>Gets the user's choice from the given options.</summary>
-          <param name="options">Available options to show to the user.</param>
-          <returns>Chosen option key.</returns>
-        */
+        /// <summary>Gets the user's choice from the given options.</summary>
+        /// <param name="options">Available options to show to the user.</param>
+        /// <returns>Chosen option key.</returns>
         protected string PromptChoice(Dictionary<string, string> options)
         {
             Console.WriteLine();
@@ -115,25 +78,23 @@ namespace PdfClown.Samples.CLI
 
             // Display files!
             for (int index = 0; index < filePaths.Length; index++)
-            { Console.WriteLine("[{0}] {1}", index, System.IO.Path.GetFileName(filePaths[index])); }
+            { Console.WriteLine("[{0}] {1}", index, Path.GetFileName(filePaths[index])); }
 
             while (true)
             {
                 // Get the user's choice!
                 Console.Write(inputDescription + ": ");
                 try
-                { return filePaths[Int32.Parse(Console.ReadLine())]; }
+                { return filePaths[int.Parse(Console.ReadLine())]; }
                 catch
                 {/* NOOP */}
             }
         }
 
-        /**
-          <summary>Prompts the user for advancing to the next page.</summary>
-          <param name="page">Next page.</param>
-          <param name="skip">Whether the prompt has to be skipped.</param>
-          <returns>Whether to advance.</returns>
-        */
+        /// <summary>Prompts the user for advancing to the next page.</summary>
+        /// <param name="page">Next page.</param>
+        /// <param name="skip">Whether the prompt has to be skipped.</param>
+        /// <returns>Whether to advance.</returns>
         protected bool PromptNextPage(PdfPage page, bool skip)
         {
             int pageIndex = page.Index;
@@ -150,29 +111,25 @@ namespace PdfClown.Samples.CLI
             return true;
         }
 
-        /**
-          <summary>Prompts the user for a page index to select.</summary>
-          <param name="inputDescription">Message prompted to the user.</param>
-          <param name="pageCount">Page count.</param>
-          <returns>Selected page index.</returns>
-        */
+        /// <summary>Prompts the user for a page index to select.</summary>
+        /// <param name="inputDescription">Message prompted to the user.</param>
+        /// <param name="pageCount">Page count.</param>
+        /// <returns>Selected page index.</returns>
         protected int PromptPageChoice(string inputDescription, int pageCount)
         {
             return PromptPageChoice(inputDescription, 0, pageCount);
         }
 
-        /**
-          <summary>Prompts the user for a page index to select.</summary>
-          <param name="inputDescription">Message prompted to the user.</param>
-          <param name="startIndex">First page index, inclusive.</param>
-          <param name="endIndex">Last page index, exclusive.</param>
-          <returns>Selected page index.</returns>
-        */
+        /// <summary>Prompts the user for a page index to select.</summary>
+        /// <param name="inputDescription">Message prompted to the user.</param>
+        /// <param name="startIndex">First page index, inclusive.</param>
+        /// <param name="endIndex">Last page index, exclusive.</param>
+        /// <returns>Selected page index.</returns>
         protected int PromptPageChoice(string inputDescription, int startIndex, int endIndex)
         {
             int pageIndex;
             try
-            { pageIndex = Int32.Parse(PromptChoice(inputDescription + " [" + (startIndex + 1) + "-" + endIndex + "]: ")) - 1; }
+            { pageIndex = int.Parse(PromptChoice(inputDescription + " [" + (startIndex + 1) + "-" + endIndex + "]: ")) - 1; }
             catch
             { pageIndex = startIndex; }
             if (pageIndex < startIndex)
@@ -183,125 +140,91 @@ namespace PdfClown.Samples.CLI
             return pageIndex;
         }
 
-        /**
-          <summary>Indicates that the sample was exited before its completion.</summary>
-        */
+        /// <summary>Indicates that the sample was exited before its completion.</summary>
         protected void Quit()
         {
             quit = true;
         }
 
-        /**
-          <summary>Serializes the given PDF Clown file object.</summary>
-          <param name="file">PDF file to serialize.</param>
-          <returns>Serialization path.</returns>
-        */
-        protected string Serialize(PdfFile file)
-        {
-            return Serialize(file, null, null, null);
-        }
+        /// <summary>Serializes the given PDF Clown file object.</summary>
+        /// <param name="document">PDF file to serialize.</param>
+        /// <returns>Serialization path.</returns>
+        protected string Serialize(PdfDocument document) => Serialize(document, null, null, null);
 
-        /**
-          <summary>Serializes the given PDF Clown file object.</summary>
-          <param name="file">PDF file to serialize.</param>
-          <param name="serializationMode">Serialization mode.</param>
-          <returns>Serialization path.</returns>
-        */
-        protected string Serialize(PdfFile file, SerializationModeEnum? serializationMode)
-        {
-            return Serialize(file, serializationMode, null, null, null);
-        }
+        /// <summary>Serializes the given PDF Clown file object.</summary>
+        /// <param name="document">PDF file to serialize.</param>
+        /// <param name="serializationMode">Serialization mode.</param>
+        /// <returns>Serialization path.</returns>
+        protected string Serialize(PdfDocument document, SerializationModeEnum? serializationMode) 
+            => Serialize(document, serializationMode, null, null, null);
 
-        /**
-          <summary>Serializes the given PDF Clown file object.</summary>
-          <param name="file">PDF file to serialize.</param>
-          <param name="fileName">Output file name.</param>
-          <returns>Serialization path.</returns>
-        */
-        protected string Serialize(PdfFile file, string fileName)
-        {
-            return Serialize(file, fileName, null, null);
-        }
+        /// <summary>Serializes the given PDF Clown file object.</summary>
+        /// <param name="document">PDF file to serialize.</param>
+        /// <param name="fileName">Output file name.</param>
+        /// <returns>Serialization path.</returns>
+        protected string Serialize(PdfDocument document, string fileName) 
+            => Serialize(document, fileName, null, null);
 
-        /**
-          <summary>Serializes the given PDF Clown file object.</summary>
-          <param name="file">PDF file to serialize.</param>
-          <param name="fileName">Output file name.</param>
-          <param name="serializationMode">Serialization mode.</param>
-          <returns>Serialization path.</returns>
-        */
-        protected string Serialize(PdfFile file, string fileName, SerializationModeEnum? serializationMode)
-        {
-            return Serialize(file, fileName, serializationMode, null, null, null);
-        }
+        /// <summary>Serializes the given PDF Clown file object.</summary>
+        /// <param name="document">PDF file to serialize.</param>
+        /// <param name="fileName">Output file name.</param>
+        /// <param name="serializationMode">Serialization mode.</param>
+        /// <returns>Serialization path.</returns>
+        protected string Serialize(PdfDocument document, string fileName, SerializationModeEnum? serializationMode)
+            => Serialize(document, fileName, serializationMode, null, null, null);
 
-        /**
-          <summary>Serializes the given PDF Clown file object.</summary>
-          <param name="file">PDF file to serialize.</param>
-          <param name="title">Document title.</param>
-          <param name="subject">Document subject.</param>
-          <param name="keywords">Document keywords.</param>
-          <returns>Serialization path.</returns>
-        */
-        protected string Serialize(PdfFile file, string title, string subject, string keywords)
-        {
-            return Serialize(file, null, title, subject, keywords);
-        }
+        /// <summary>Serializes the given PDF Clown file object.</summary>
+        /// <param name="document">PDF file to serialize.</param>
+        /// <param name="title">Document title.</param>
+        /// <param name="subject">Document subject.</param>
+        /// <param name="keywords">Document keywords.</param>
+        /// <returns>Serialization path.</returns>
+        protected string Serialize(PdfDocument document, string title, string subject, string keywords) 
+            => Serialize(document, null, title, subject, keywords);
 
-        /**
-          <summary>Serializes the given PDF Clown file object.</summary>
-          <param name="file">PDF file to serialize.</param>
-          <param name="serializationMode">Serialization mode.</param>
-          <param name="title">Document title.</param>
-          <param name="subject">Document subject.</param>
-          <param name="keywords">Document keywords.</param>
-          <returns>Serialization path.</returns>
-        */
-        protected string Serialize(PdfFile file, SerializationModeEnum? serializationMode, string title, string subject, string keywords)
-        {
-            return Serialize(file, GetType().Name, serializationMode, title, subject, keywords);
-        }
+        /// <summary>Serializes the given PDF Clown file object.</summary>
+        /// <param name="document">PDF file to serialize.</param>
+        /// <param name="serializationMode">Serialization mode.</param>
+        /// <param name="title">Document title.</param>
+        /// <param name="subject">Document subject.</param>
+        /// <param name="keywords">Document keywords.</param>
+        /// <returns>Serialization path.</returns>
+        protected string Serialize(PdfDocument document, SerializationModeEnum? serializationMode, string title, string subject, string keywords) 
+            => Serialize(document, GetType().Name, serializationMode, title, subject, keywords);
 
-        /**
-          <summary>Serializes the given PDF Clown file object.</summary>
-          <param name="file">PDF file to serialize.</param>
-          <param name="fileName">Output file name.</param>
-          <param name="serializationMode">Serialization mode.</param>
-          <param name="title">Document title.</param>
-          <param name="subject">Document subject.</param>
-          <param name="keywords">Document keywords.</param>
-          <returns>Serialization path.</returns>
-        */
-        protected string Serialize(PdfFile file, string fileName, SerializationModeEnum? serializationMode, string title, string subject, string keywords)
+        /// <summary>serializes the given pdf clown file object.</summary>
+        /// <param name="document">pdf file to serialize.</param>
+        /// <param name="filename">output file name.</param>
+        /// <param name="serializationmode">serialization mode.</param>
+        /// <param name="title">document title.</param>
+        /// <param name="subject">document subject.</param>
+        /// <param name="keywords">document keywords.</param>
+        /// <returns>serialization path.</returns>
+        protected string Serialize(PdfDocument document, string fileName, SerializationModeEnum? serializationMode, string title, string subject, string keywords)
         {
-            ApplyDocumentSettings(file.Document, title, subject, keywords);
+            ApplyDocumentSettings(document, title, subject, keywords);
 
             Console.WriteLine();
 
             if (!serializationMode.HasValue)
             {
-                if (file.Reader == null) // New file.
+                if (document.Reader == null) // New file.
                 { serializationMode = SerializationModeEnum.Standard; }
                 else // Existing file.
                 {
                     Console.WriteLine("[0] Standard serialization");
                     Console.WriteLine("[1] Incremental update");
                     Console.Write("Please select a serialization mode: ");
-                    try
-                    { serializationMode = (SerializationModeEnum)Int32.Parse(Console.ReadLine()); }
-                    catch
-                    { serializationMode = SerializationModeEnum.Standard; }
+                    serializationMode = (SerializationModeEnum)(int.TryParse(Console.ReadLine(), out var sInt) ? sInt : 0);
                 }
             }
 
             string outputFilePath = outputPath + fileName + "." + serializationMode + ".pdf";
 
             // Save the file!
-            /*
-              NOTE: You can also save to a generic target stream (see Save() method overloads).
-            */
+            // NOTE: You can also save to a generic target stream (see Save() method overloads).
             try
-            { file.Save(outputFilePath, serializationMode.Value); }
+            { document.Save(outputFilePath, serializationMode.Value); }
             catch (Exception e)
             {
                 Console.WriteLine("File writing failed: " + e.Message);
@@ -324,7 +247,7 @@ namespace PdfClown.Samples.CLI
                 return;
 
             // Viewer preferences.
-            var view = document.ViewerPreferences;
+            var view = document.Catalog.ViewerPreferences;
             view.DocTitleDisplayed = true;
 
             // Document metadata.

@@ -31,13 +31,14 @@ namespace PdfClown.Documents
     /// <summary>Page article beads [PDF:1.7:3.6.2].</summary>
     /// <remarks>The beads are listed in natural reading order.</remarks>
     [PDF(VersionEnum.PDF11)]
-    public sealed class PageArticleElements : PageElements<ArticleElement>
+    public sealed class PageArticleElements : PageElementsWraper<ArticleElement>
     {
-        public static PageArticleElements Wrap(PdfDirectObject baseObject, PdfPage page) => baseObject != null
-            ? baseObject.Wrapper as PageArticleElements ?? new PageArticleElements(baseObject, page)
-            : null;
-
-        internal PageArticleElements(PdfDirectObject baseObject, PdfPage page) : base(baseObject, page)
+        public PageArticleElements(PdfDocument document)
+            : base(document)
         { }
+
+        internal PageArticleElements(PdfDirectObject baseObject)
+            : base(baseObject)
+        { }        
     }
 }

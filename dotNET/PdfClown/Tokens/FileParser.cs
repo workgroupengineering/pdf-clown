@@ -25,7 +25,9 @@
 
 using Org.BouncyCastle.Pkcs;
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Encryption;
+using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
 using PdfClown.Util.Parsers;
 
@@ -39,8 +41,8 @@ namespace PdfClown.Tokens
     public sealed class FileParser : BaseParser
     {
         // private static readonly int EOFMarkerChunkSize = 1024; // [PDF:1.6:H.3.18].
-
-        private PdfFile file;
+        
+        private PdfDocument document;
         private PdfEncryption encryption;
         private Stream keyStoreInputStream;
         private string password;
@@ -50,17 +52,45 @@ namespace PdfClown.Tokens
 
         public string KeyAlias { get => keyAlias; set => keyAlias = value; }
 
-        internal FileParser(IInputStream stream, PdfFile file, string password = null, Stream keyStoreInputStream = null)
+        internal FileParser(IInputStream stream, PdfDocument document, string password = null, Stream keyStoreInputStream = null)
             : base(stream)
         {
-            this.file = file;
+            this.document = document;
             this.password = password;
             this.keyStoreInputStream = keyStoreInputStream;
         }
 
-        protected override PdfDictionary CreatePdfDictionary(Dictionary<PdfName, PdfDirectObject> dictionary)
+        protected override PdfDictionary CreatePdfDictionary(Dictionary<PdfName, PdfDirectObject> dictionary, PdfName parentKey, PdfName gparentKey)
         {
-            IInputStream stream = Stream;
+            var stream = ReadStream(dictionary);
+            var dictType = dictionary.Get<PdfName>(PdfName.Type) ??
+                    PdfFactory.DetectDictionaryType(dictionary, parentKey, gparentKey);
+            var pdfDictionary = (PdfFactory.Dictionaries.TryGetValue(dictType, out var func))
+                ? func(dictionary)
+                : stream != null
+                    ? new PdfStream(dictionary)
+                    : new PdfDictionary(dictionary);
+
+            if (stream != null)
+                ((PdfStream)pdfDictionary).SetStream(stream);
+            return pdfDictionary;
+        }
+
+        protected override PdfArray CreatePdfArray(List<PdfDirectObject> array, PdfName parentKey, PdfName gparentKey)
+        {
+            if (parentKey != null
+                && PdfFactory.Arrays.TryGetValue(parentKey, out var func))
+                return func(array);
+            if (Destination.IsMatch(array))
+                return Destination.Create(array);
+            else if (ColorSpace.IsMatch(array))
+                return ColorSpace.Create(array);
+            return new PdfArrayImpl(array);
+        }
+
+        private StreamSegment ReadStream(Dictionary<PdfName, PdfDirectObject> dictionary)
+        {
+            var stream = Stream;
             int oldOffset = (int)stream.Position;
             MoveNext();
             // Is this dictionary the header of a stream object [PDF:1.6:3.2.7]?
@@ -72,7 +102,7 @@ namespace PdfClown.Tokens
                 // so we need to recover our current position after it returns.
                 long position = stream.Position;
                 // Get the stream length!
-                int length = dictionary.TryGetValue(PdfName.Length, out var pdfLength) ? (pdfLength?.Resolve() as IPdfNumber)?.IntValue ?? 0 : 0;
+                int length = dictionary.GetInt(PdfName.Length, 0);
                 // Move to the stream data beginning!
                 stream.Seek(position);
                 SkipEOL();
@@ -83,31 +113,23 @@ namespace PdfClown.Tokens
                 var bytes = new StreamSegment(stream, length);
                 stream.Skip(length);
                 MoveNext(); // Postcondition (last token should be 'endstream' keyword).
-                var streamType = dictionary.TryGetValue(PdfName.Type, out var pdfStreamType) ? (PdfName)pdfStreamType?.Resolve() : null;
-                if (PdfName.ObjStm.Equals(streamType)) // Object stream [PDF:1.6:3.4.6].
-                    return new ObjectStream(dictionary, bytes);
-                else if (PdfName.XRef.Equals(streamType)) // Cross-reference stream [PDF:1.6:3.4.7].
-                    return new XRefStream(dictionary, bytes);
-                else // Generic stream.
-                    return new PdfStream(dictionary, bytes);
+                return bytes;
             }
-            else // Stand-alone dictionary.
-            {
-                // Restores postcondition (last token should be the dictionary end).
-                stream.Seek(oldOffset);
-            }
-            return base.CreatePdfDictionary(dictionary);
+            // Stand-alone dictionary.
+            // Restores postcondition (last token should be the dictionary end).
+            Stream.Seek(oldOffset);
+            return null;
         }
 
-        public override PdfDataObject ParsePdfObject()
+        public override PdfDirectObject ParsePdfObject(PdfName parentKey = null)
         {
             if (TokenType == TokenTypeEnum.Reference)
             {
                 var reference = ReferenceToken;
-                return new PdfReference(reference.ObjectNumber, reference.GenerationNumber, file);
+                return new PdfReference(reference.ObjectNumber, reference.GenerationNumber, document);
             }
 
-            return base.ParsePdfObject();
+            return base.ParsePdfObject(parentKey);
         }
 
         private void ValidateLength(Dictionary<PdfName, PdfDirectObject> streamHeader, IInputStream stream, ref long position, ref int length)
@@ -125,12 +147,10 @@ namespace PdfClown.Tokens
                     || !CharsToken.Equals(Keyword.EndStream, StringComparison.Ordinal))
                 {
                     stream.Seek(position);
-
                     length = RepairStreamLength(streamHeader, stream, position);
                 }
             }
             stream.Seek(position);
-
         }
 
         private int RepairStreamLength(Dictionary<PdfName, PdfDirectObject> streamHeader, IInputStream stream, long position)
@@ -150,17 +170,17 @@ namespace PdfClown.Tokens
             return length;
         }
 
-        public PdfDataObject ParsePdfObjectWithLock(XRefEntry xrefEntry)
+        public PdfDirectObject ParsePdfObjectWithLock(XRefEntry xrefEntry, PdfName parentKey)
         {
-            lock (file.LockObject)
+            lock (document.LockObject)
             {
-                return ParsePdfObject(xrefEntry);
+                return ParsePdfObject(xrefEntry, parentKey);
             }
         }
 
         /// <summary>Parses the specified PDF indirect object [PDF:1.6:3.2.9].</summary>
         /// <param name="xrefEntry">Cross-reference entry of the indirect object to parse.</param>
-        public PdfDataObject ParsePdfObject(XRefEntry xrefEntry)
+        public PdfDirectObject ParsePdfObject(XRefEntry xrefEntry, PdfName parentKey)            
         {
             // Go to the beginning of the indirect object!
             Seek(xrefEntry.Offset);
@@ -168,7 +188,7 @@ namespace PdfClown.Tokens
             while (MoveNextComplex() && !started)
             {
                 if (IsInderectObjectEnd())
-                    return null;
+                    return default;
                 else if (TokenType == TokenTypeEnum.InderectObject
                     || IsInderectObjectBegin())
                 {
@@ -183,7 +203,7 @@ namespace PdfClown.Tokens
             }
 
             // Get the indirect data object!
-            var dataObject = ParsePdfObject();
+            var dataObject = ParsePdfObject(parentKey);
             if (securityHandler != null)
             {
                 Stream.Mark();
@@ -287,7 +307,7 @@ namespace PdfClown.Tokens
             {
                 return;
             }
-            encryption = file.Encryption;
+            encryption = document.Encryption;
             if (encryption == null)
             {
                 return;
@@ -309,7 +329,7 @@ namespace PdfClown.Tokens
                 }
 
                 securityHandler = encryption.SecurityHandler;
-                securityHandler.PrepareForDecryption(encryption, file.ID.BaseDataObject, decryptionMaterial);
+                securityHandler.PrepareForDecryption(encryption, document.ID, decryptionMaterial);
                 accessPermission = securityHandler.CurrentAccessPermission;
             }
             catch (IOException)
@@ -322,10 +342,7 @@ namespace PdfClown.Tokens
             }
             finally
             {
-                if (keyStoreInputStream != null)
-                {
-                    keyStoreInputStream.Dispose();
-                }
+                keyStoreInputStream?.Dispose();
             }
         }
     }

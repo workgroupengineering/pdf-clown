@@ -23,18 +23,14 @@
   this list of conditions.
 */
 
-using System;
+using PdfClown.Objects;
 
 namespace PdfClown.Util
 {
-    /**
-      <summary>Predicate interface.</summary>
-    */
+    /// <summary>Predicate interface.</summary>
     public interface IPredicate
     {
-        bool Evaluate(
-          object @object
-          );
+        bool Evaluate(PdfDictionary @object);
     }
 }
 

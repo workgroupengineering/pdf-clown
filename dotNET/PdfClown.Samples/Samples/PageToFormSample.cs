@@ -7,42 +7,34 @@ using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to reuse a PDF page as a form (precisely: form XObject
-      [PDF:1.6:4.9]).</summary>
-      <remarks>Form XObjects are a convenient way to represent contents multiple times on multiple pages
-      as templates.</remarks>
-    */
+    /// <summary>This sample demonstrates how to reuse a PDF page as a form (precisely: form XObject
+    /// [PDF:1.6:4.9]).</summary>
+    /// <remarks>Form XObjects are a convenient way to represent contents multiple times on multiple pages
+    /// as templates.</remarks>
     public class PageToFormSample : Sample
     {
         public override void Run()
         {
             // 1. Opening the form source file...
             string filePath = PromptFileChoice("Please select a PDF file to use as form");
-            using (var formFile = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                // 2. Instantiate a new PDF file!
-                var file = new PdfFile();
-                var document = file.Document;
-
                 // 3. Convert the first page of the source file into a form inside the new document!
-                var form = formFile.Document.Pages[0].ToXObject(document);
+                var form = document.Pages[0].ToXObject(document);
 
                 // 4. Insert the contents into the new document!
                 Populate(document, form);
 
                 // 5. Serialize the PDF file!
-                Serialize(file, "Page-to-form", "converting a page to a reusable form", "page to form");
+                Serialize(document, "Page-to-form", "converting a page to a reusable form", "page to form");
             }
         }
 
-        /**
-          <summary>Populates a PDF file with contents.</summary>
-        */
+        /// <summary>Populates a PDF file with contents.</summary>
         private void Populate(PdfDocument document, XObject form)
         {
             // 1. Add a page to the document!
-            var page = new PdfPage(document); // Instantiates the page inside the document context.
+            var page = new PdfPage(document, form.Size); // Instantiates the page inside the document context.
             document.Pages.Add(page); // Puts the page in the pages collection.
 
             // 2. Create a content composer for the content stream!
@@ -83,7 +75,7 @@ namespace PdfClown.Samples.CLI
                 var blockComposer = new BlockComposer(composer);
                 SKRect frame = SKRect.Create(18, 18, pageSize.Width * .5f, pageSize.Height * .5f);
                 blockComposer.Begin(frame, XAlignmentEnum.Justify, YAlignmentEnum.Top);
-                var bodyFont = FontType1.Load(document, FontName.CourierBold);
+                var bodyFont = PdfType1Font.Load(document, FontName.CourierBold);
                 composer.SetFont(bodyFont, 24);
                 blockComposer.ShowText("Page-to-form sample");
                 SKSize breakSize = new SKSize(0, 8);

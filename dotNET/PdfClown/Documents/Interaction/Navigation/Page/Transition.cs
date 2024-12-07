@@ -32,7 +32,7 @@ namespace PdfClown.Documents.Interaction.Navigation
 {
     /// <summary>Visual transition to use when moving to a page during a presentation [PDF:1.6:8.3.3].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class Transition : PdfObjectWrapper<PdfDictionary>
+    public sealed class Transition : PdfDictionary
     {
         /// <summary>Transition direction (counterclockwise) [PDF:1.6:8.3.3].</summary>
         public enum DirectionEnum
@@ -222,7 +222,9 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         /// <summary>Creates a new action within the given document context.</summary>
         public Transition(PdfDocument context)
-            : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Trans } })
+            : base(context, new (8) {
+                { PdfName.Type, PdfName.Trans }
+            })
         { }
 
         public Transition(PdfDocument context, StyleEnum style)
@@ -244,52 +246,53 @@ namespace PdfClown.Documents.Interaction.Navigation
             Scale = scale;
         }
 
-        public Transition(PdfDirectObject baseObject) : base(baseObject)
+        internal Transition(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the transition direction.</summary>
         public DirectionEnum Direction
         {
-            get => ToDirectionEnum(BaseDataObject[PdfName.Di]);
+            get => ToDirectionEnum(Get(PdfName.Di));
             set
             {
                 if (value == DefaultDirection)
-                { BaseDataObject.Remove(PdfName.Di); }
+                { Remove(PdfName.Di); }
                 else
-                { BaseDataObject[PdfName.Di] = ToCode(value); }
+                { this[PdfName.Di] = ToCode(value); }
             }
         }
 
         /// <summary>Gets/Sets the duration of the transition effect, in seconds.</summary>
         public double Duration
         {
-            get => BaseDataObject.GetDouble(PdfName.D, DefaultDuration);
-            set => BaseDataObject.Set(PdfName.D, value == DefaultDuration ? null : value);
+            get => GetDouble(PdfName.D, DefaultDuration);
+            set => Set(PdfName.D, value == DefaultDuration ? null : value);
         }
 
         /// <summary>Gets/Sets the transition orientation.</summary>
         public OrientationEnum Orientation
         {
-            get => ToOrientationEnum(BaseDataObject.GetString(PdfName.Dm));
+            get => ToOrientationEnum(GetString(PdfName.Dm));
             set
             {
                 if (value == DefaultOrientation)
-                { BaseDataObject.Remove(PdfName.Dm); }
+                { Remove(PdfName.Dm); }
                 else
-                { BaseDataObject[PdfName.Dm] = ToCode(value); }
+                { this[PdfName.Dm] = ToCode(value); }
             }
         }
 
         /// <summary>Gets/Sets the transition direction on page.</summary>
         public PageDirectionEnum PageDirection
         {
-            get => ToPageDirectionEnum(BaseDataObject.GetString(PdfName.M));
+            get => ToPageDirectionEnum(GetString(PdfName.M));
             set
             {
                 if (value == DefaultPageDirection)
-                { BaseDataObject.Remove(PdfName.M); }
+                { Remove(PdfName.M); }
                 else
-                { BaseDataObject[PdfName.M] = ToCode(value); }
+                { this[PdfName.M] = ToCode(value); }
             }
         }
 
@@ -297,26 +300,26 @@ namespace PdfClown.Documents.Interaction.Navigation
         [PDF(VersionEnum.PDF15)]
         public double Scale
         {
-            get => BaseDataObject.GetDouble(PdfName.SS, DefaultScale);
+            get => GetDouble(PdfName.SS, DefaultScale);
             set
             {
                 if (value == DefaultScale)
-                { BaseDataObject.Remove(PdfName.SS); }
+                { Remove(PdfName.SS); }
                 else
-                { BaseDataObject.Set(PdfName.SS, value); }
+                { Set(PdfName.SS, value); }
             }
         }
 
         /// <summary>Gets/Sets the transition style.</summary>
         public StyleEnum Style
         {
-            get => ToStyleEnum(BaseDataObject.GetString(PdfName.S));
+            get => ToStyleEnum(GetString(PdfName.S));
             set
             {
                 if (value == DefaultStyle)
-                { BaseDataObject.Remove(PdfName.S); }
+                { Remove(PdfName.S); }
                 else
-                { BaseDataObject[PdfName.S] = ToCode(value); }
+                { this[PdfName.S] = ToCode(value); }
             }
         }
     }

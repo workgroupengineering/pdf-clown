@@ -34,7 +34,7 @@ namespace PdfClown.Documents.Interaction.Viewer
 {
     /// <summary>Viewer preferences [PDF:1.7:8.1].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class ViewerPreferences : PdfObjectWrapper<PdfDictionary>
+    public sealed class ViewerPreferences : PdfDictionary
     {
         /// <summary>Predominant reading order for text [PDF:1.7:8.1].</summary>
         [PDF(VersionEnum.PDF13)]
@@ -109,18 +109,119 @@ namespace PdfClown.Documents.Interaction.Viewer
         private static readonly int DefaultPrintCount = 1;
         private static readonly PdfName DefaultPrintScaledObject = PdfName.AppDefault;
 
-        public ViewerPreferences(PdfDocument context) : base(context, new PdfDictionary())
+        private static readonly BiDictionary<PageModeEnum, string> pmeCodes = new()
+        {
+            [PageModeEnum.Simple] = PdfName.UseNone.StringValue,
+            [PageModeEnum.Bookmarks] = PdfName.UseOutlines.StringValue,
+            [PageModeEnum.Thumbnails] = PdfName.UseThumbs.StringValue,
+            [PageModeEnum.FullScreen] = PdfName.FullScreen.StringValue,
+            [PageModeEnum.Layers] = PdfName.UseOC.StringValue,
+            [PageModeEnum.Attachments] = PdfName.UseAttachments.StringValue
+        };
+
+        private static readonly BiDictionary<PageLayoutEnum, string> pleCodes = new()
+        {
+            [PageLayoutEnum.SinglePage] = PdfName.SinglePage.StringValue,
+            [PageLayoutEnum.OneColumn] = PdfName.OneColumn.StringValue,
+            [PageLayoutEnum.TwoColumnLeft] = PdfName.TwoColumnLeft.StringValue,
+            [PageLayoutEnum.TwoColumnRight] = PdfName.TwoColumnRight.StringValue,
+            [PageLayoutEnum.TwoPageLeft] = PdfName.TwoPageLeft.StringValue,
+            [PageLayoutEnum.TwoPageRight] = PdfName.TwoPageRight.StringValue
+        };
+
+        private static readonly BiDictionary<PaperModeEnum, string> paperModeCodes = new()
+        {
+            [PaperModeEnum.Simplex] = PdfName.Simplex.StringValue,
+            [PaperModeEnum.DuplexShortEdge] = PdfName.DuplexFlipShortEdge.StringValue,
+            [PaperModeEnum.DuplexLongEdge] = PdfName.DuplexFlipLongEdge.StringValue
+        };
+
+        private static readonly BiDictionary<DirectionEnum, string> directionCodes = new()
+        {
+            [DirectionEnum.LeftToRight] = PdfName.L2R.StringValue,
+            [DirectionEnum.RightToLeft] = PdfName.R2L.StringValue
+        };
+
+        public static DirectionEnum? GetDirection(string code) => GetDirection(code, null);
+
+        public static DirectionEnum? GetDirection(string code, DirectionEnum? defaultValue)
+        {
+            if (code == null)
+                return defaultValue;
+
+            DirectionEnum? value = directionCodes.GetKey(code);
+            if (!value.HasValue)
+                throw new ArgumentException(code.ToString());
+
+            return value.Value;
+        }
+
+        public static PdfName GetName(DirectionEnum value) => PdfName.Get(directionCodes[value], true);
+
+        public static PaperModeEnum? GetPaperMode(string code) => GetPaperMode(code, null);
+
+        public static PaperModeEnum? GetPaperMode(string code, PaperModeEnum? defaultValue)
+        {
+            if (code == null)
+                return defaultValue;
+
+            PaperModeEnum? value = paperModeCodes.GetKey(code);
+            if (!value.HasValue)
+                throw new ArgumentException(code.ToString());
+
+            return value.Value;
+        }
+
+        public static PdfName GetName(PaperModeEnum value) => PdfName.Get(paperModeCodes[value], true);
+
+        public static PageLayoutEnum? GetPageLayout(string code, PageLayoutEnum? defaultValue)
+        {
+            if (code == null)
+                return defaultValue;
+
+            PageLayoutEnum? value = pleCodes.GetKey(code);
+            if (!value.HasValue)
+                throw new ArgumentException(code.ToString());
+
+            return value.Value;
+        }
+
+        public static PdfName GetName(PageLayoutEnum value) => PdfName.Get(pleCodes[value], true);
+
+        public static PageModeEnum? Get(string code) => GetPageMode(code, null);
+
+        public static PageModeEnum? GetPageMode(string code, PageModeEnum? defaultValue)
+        {
+            if (code == null)
+                return defaultValue;
+
+            PageModeEnum? value = pmeCodes.GetKey(code);
+            if (!value.HasValue)
+                throw new ArgumentException(code.ToString());
+
+            return value.Value;
+        }
+
+        public static PdfName GetName(PageModeEnum value) => PdfName.Get(pmeCodes[value], true);
+
+        public ViewerPreferences()
+            : this((PdfDocument)null)
         { }
 
-        public ViewerPreferences(PdfDirectObject baseObject) : base(baseObject)
+        public ViewerPreferences(PdfDocument context)
+            : base(context, new ())
+        { }
+
+        internal ViewerPreferences(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the predominant reading order for text.</summary>
         [PDF(VersionEnum.PDF13)]
         public DirectionEnum Direction
         {
-            get => ViewerPreferencesDirectionEnumExtension.Get(BaseDataObject.GetString(PdfName.Direction), DefaultDirection).Value;
-            set => BaseDataObject[PdfName.Direction] = (value != DefaultDirection ? value.Code() : null);
+            get => GetDirection(GetString(PdfName.Direction), DefaultDirection).Value;
+            set => this[PdfName.Direction] = (value != DefaultDirection ? GetName(value) : null);
         }
 
         /// <summary>Gets/Sets whether the window's title bar should display the <see
@@ -128,24 +229,24 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF14)]
         public bool DocTitleDisplayed
         {
-            get => BaseDataObject.GetBool(PdfName.DisplayDocTitle, DefaultFlag);
-            set => BaseDataObject.Set(PdfName.DisplayDocTitle, value != DefaultFlag ? value : null);
+            get => GetBool(PdfName.DisplayDocTitle, DefaultFlag);
+            set => Set(PdfName.DisplayDocTitle, value != DefaultFlag ? value : null);
         }
 
         /// <summary>Gets/Sets whether the viewer application's menu bar is visible when the document is
         /// active.</summary>
         public bool MenubarVisible
         {
-            get => !BaseDataObject.GetBool(PdfName.HideMenubar, DefaultFlag);
-            set => BaseDataObject.Set(PdfName.HideMenubar, value != !DefaultFlag ? !value : null);
+            get => !GetBool(PdfName.HideMenubar, DefaultFlag);
+            set => Set(PdfName.HideMenubar, value != !DefaultFlag ? !value : null);
         }
 
         /// <summary>Gets/Sets the normal page mode, that is how the document should be displayed on
         /// exiting full-screen mode.</summary>
         public PageModeEnum NormalPageMode
         {
-            get => ViewerPreferencesPageModeEnumExtension.Get(BaseDataObject.GetString(PdfName.NonFullScreenPageMode), DefaultPageMode).Value;
-            set => BaseDataObject[PdfName.NonFullScreenPageMode] = (value != DefaultPageMode ? value.Code() : null);
+            get => GetPageMode(GetString(PdfName.NonFullScreenPageMode), DefaultPageMode).Value;
+            set => this[PdfName.NonFullScreenPageMode] = (value != DefaultPageMode ? GetName(value) : null);
         }
 
         /// <summary>Gets/Sets the page layout to be used when the document is opened [PDF:1.7:3.6.1].
@@ -153,8 +254,8 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF10)]
         public PageLayoutEnum PageLayout
         {
-            get => ViewerPreferencesPageLayoutEnumExtension.Get(Document.BaseDataObject.GetString(PdfName.PageLayout), DefaultPageLayout).Value;
-            set => Document.BaseDataObject[PdfName.PageLayout] = (value != DefaultPageLayout ? value.Code() : null);
+            get => GetPageLayout(Catalog.GetString(PdfName.PageLayout), DefaultPageLayout).Value;
+            set => Catalog[PdfName.PageLayout] = (value != DefaultPageLayout ? GetName(value) : null);
         }
 
         /// <summary>Gets/Sets the page mode, that is how the document should be displayed when is opened
@@ -162,8 +263,8 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF10)]
         public PageModeEnum PageMode
         {
-            get => ViewerPreferencesPageModeEnumExtension.Get(Document.BaseDataObject.GetString(PdfName.PageMode), DefaultPageMode).Value;
-            set => Document.BaseDataObject[PdfName.PageMode] = (value != DefaultPageMode ? value.Code() : null);
+            get => GetPageMode(Catalog.GetString(PdfName.PageMode), DefaultPageMode).Value;
+            set => Catalog[PdfName.PageMode] = (value != DefaultPageMode ? GetName(value) : null);
         }
 
         /// <summary>Gets/Sets the paper handling option to use when printing the file from the print
@@ -171,8 +272,8 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF17)]
         public PaperModeEnum? PaperMode
         {
-            get => ViewerPreferencesPaperModeEnumExtension.Get(BaseDataObject.GetString(PdfName.Duplex));
-            set => BaseDataObject[PdfName.Duplex] = (value.HasValue ? value.Value.Code() : null);
+            get => GetPaperMode(GetString(PdfName.Duplex));
+            set => this[PdfName.Duplex] = (value.HasValue ? GetName(value.Value) : null);
         }
 
         /// <summary>Gets/Sets whether the page size is used to select the input paper tray, as defined
@@ -180,8 +281,8 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF17)]
         public bool PaperTraySelected
         {
-            get => BaseDataObject.GetBool(PdfName.PickTrayByPDFSize, DefaultFlag);
-            set => BaseDataObject.Set(PdfName.PickTrayByPDFSize, value != DefaultFlag ? value : null);
+            get => GetBool(PdfName.PickTrayByPDFSize, DefaultFlag);
+            set => Set(PdfName.PickTrayByPDFSize, value != DefaultFlag ? value : null);
         }
 
         /// <summary>Gets/Sets the number of copies to be printed when the print dialog is opened for this
@@ -189,7 +290,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         [PDF(VersionEnum.PDF17)]
         public int PrintCount
         {
-            get => BaseDataObject.GetInt(PdfName.NumCopies, DefaultPrintCount);
+            get => GetInt(PdfName.NumCopies, DefaultPrintCount);
             set
             {
                 /*
@@ -199,7 +300,7 @@ namespace PdfClown.Documents.Interaction.Viewer
                 { value = 1; }
                 else if (value > 5)
                 { value = 5; }
-                BaseDataObject.Set(PdfName.NumCopies, value != DefaultPrintCount ? value : null);
+                Set(PdfName.NumCopies, value != DefaultPrintCount ? value : null);
             }
         }
 
@@ -211,7 +312,7 @@ namespace PdfClown.Documents.Interaction.Viewer
         {
             get
             {
-                var printPageRangesObject = BaseDataObject.Get<PdfArray>(PdfName.PrintPageRange);
+                var printPageRangesObject = Get<PdfArray>(PdfName.PrintPageRange);
                 if (printPageRangesObject == null
                   || printPageRangesObject.Count == 0
                   || printPageRangesObject.Count % 2 != 0)
@@ -233,8 +334,8 @@ namespace PdfClown.Documents.Interaction.Viewer
                 PdfArray printPageRangesObject = null;
                 if (value != null && value.Count > 0)
                 {
-                    printPageRangesObject = new PdfArray();
-                    int pageCount = Document.Pages.Count;
+                    printPageRangesObject = new PdfArrayImpl();
+                    int pageCount = Catalog.Pages.Count;
                     foreach (Interval<int> printPageRange in value)
                     {
                         int low = printPageRange.Low,
@@ -250,7 +351,7 @@ namespace PdfClown.Documents.Interaction.Viewer
                         printPageRangesObject.Add(high);
                     }
                 }
-                BaseDataObject[PdfName.PrintPageRange] = printPageRangesObject;
+                Set(PdfName.PrintPageRange, printPageRangesObject);
             }
         }
 
@@ -261,171 +362,42 @@ namespace PdfClown.Documents.Interaction.Viewer
         {
             get
             {
-                PdfDirectObject printScaledObject = BaseDataObject[PdfName.PrintScaling];
+                var printScaledObject = Get(PdfName.PrintScaling);
                 return printScaledObject == null || printScaledObject.Equals(DefaultPrintScaledObject);
             }
-            set => BaseDataObject[PdfName.PrintScaling] = (!value ? PdfName.None : null);
+            set => this[PdfName.PrintScaling] = (!value ? PdfName.None : null);
         }
 
         /// <summary>Gets/Sets whether the viewer application's tool bars are visible when the document is
         /// active.</summary>
         public bool ToolbarVisible
         {
-            get => !BaseDataObject.GetBool(PdfName.HideToolbar, DefaultFlag);
-            set => BaseDataObject.Set(PdfName.HideToolbar, value != !DefaultFlag ? !value : null);
+            get => !GetBool(PdfName.HideToolbar, DefaultFlag);
+            set => Set(PdfName.HideToolbar, value != !DefaultFlag ? !value : null);
         }
 
         /// <summary>Gets/Sets whether to position the document's window in the center of the screen.
         /// </summary>
         public bool WindowCentered
         {
-            get => BaseDataObject.GetBool(PdfName.CenterWindow, DefaultFlag);
-            set => BaseDataObject.Set(PdfName.CenterWindow, value != DefaultFlag ? value : null);
+            get => GetBool(PdfName.CenterWindow, DefaultFlag);
+            set => Set(PdfName.CenterWindow, value != DefaultFlag ? value : null);
         }
 
         /// <summary>Gets/Sets whether to resize the document's window to fit the size of the first
         /// displayed page.</summary>
         public bool WindowFitted
         {
-            get => BaseDataObject.GetBool(PdfName.FitWindow, DefaultFlag);
-            set => BaseDataObject.Set(PdfName.FitWindow, value != DefaultFlag ? value : null);
+            get => GetBool(PdfName.FitWindow, DefaultFlag);
+            set => Set(PdfName.FitWindow, value != DefaultFlag ? value : null);
         }
 
         /// <summary>Gets/Sets whether user interface elements in the document's window (such as scroll
         /// bars and navigation controls) are visible when the document is active.</summary>
         public bool WindowUIVisible
         {
-            get => !BaseDataObject.GetBool(PdfName.HideWindowUI, DefaultFlag);
-            set => BaseDataObject.Set(PdfName.HideWindowUI, value != !DefaultFlag ? !value : null);
+            get => !GetBool(PdfName.HideWindowUI, DefaultFlag);
+            set => Set(PdfName.HideWindowUI, value != !DefaultFlag ? !value : null);
         }
-    }
-
-    internal static class ViewerPreferencesDirectionEnumExtension
-    {
-        private static readonly BiDictionary<ViewerPreferences.DirectionEnum, string> codes;
-
-        static ViewerPreferencesDirectionEnumExtension()
-        {
-            codes = new BiDictionary<ViewerPreferences.DirectionEnum, string>
-            {
-                [ViewerPreferences.DirectionEnum.LeftToRight] = PdfName.L2R.StringValue,
-                [ViewerPreferences.DirectionEnum.RightToLeft] = PdfName.R2L.StringValue
-            };
-        }
-
-        public static ViewerPreferences.DirectionEnum? Get(string code) => Get(code, null);
-
-        public static ViewerPreferences.DirectionEnum? Get(string code, ViewerPreferences.DirectionEnum? defaultValue)
-        {
-            if (code == null)
-                return defaultValue;
-
-            ViewerPreferences.DirectionEnum? value = codes.GetKey(code);
-            if (!value.HasValue)
-                throw new ArgumentException(code.ToString());
-
-            return value.Value;
-        }
-
-        public static PdfName Code(this ViewerPreferences.DirectionEnum value) => PdfName.Get(codes[value], true);
-    }
-
-    internal static class ViewerPreferencesPageLayoutEnumExtension
-    {
-        private static readonly BiDictionary<ViewerPreferences.PageLayoutEnum, string> codes;
-
-        static ViewerPreferencesPageLayoutEnumExtension()
-        {
-            codes = new BiDictionary<ViewerPreferences.PageLayoutEnum, string>
-            {
-                [ViewerPreferences.PageLayoutEnum.SinglePage] = PdfName.SinglePage.StringValue,
-                [ViewerPreferences.PageLayoutEnum.OneColumn] = PdfName.OneColumn.StringValue,
-                [ViewerPreferences.PageLayoutEnum.TwoColumnLeft] = PdfName.TwoColumnLeft.StringValue,
-                [ViewerPreferences.PageLayoutEnum.TwoColumnRight] = PdfName.TwoColumnRight.StringValue,
-                [ViewerPreferences.PageLayoutEnum.TwoPageLeft] = PdfName.TwoPageLeft.StringValue,
-                [ViewerPreferences.PageLayoutEnum.TwoPageRight] = PdfName.TwoPageRight.StringValue
-            };
-        }
-
-        public static ViewerPreferences.PageLayoutEnum? Get(string code) => Get(code, null);
-
-        public static ViewerPreferences.PageLayoutEnum? Get(string code, ViewerPreferences.PageLayoutEnum? defaultValue)
-        {
-            if (code == null)
-                return defaultValue;
-
-            ViewerPreferences.PageLayoutEnum? value = codes.GetKey(code);
-            if (!value.HasValue)
-                throw new ArgumentException(code.ToString());
-
-            return value.Value;
-        }
-
-        public static PdfName Code(this ViewerPreferences.PageLayoutEnum value) => PdfName.Get(codes[value], true);
-    }
-
-    internal static class ViewerPreferencesPageModeEnumExtension
-    {
-        private static readonly BiDictionary<ViewerPreferences.PageModeEnum, string> codes;
-
-        static ViewerPreferencesPageModeEnumExtension()
-        {
-            codes = new BiDictionary<ViewerPreferences.PageModeEnum, string>
-            {
-                [ViewerPreferences.PageModeEnum.Simple] = PdfName.UseNone.StringValue,
-                [ViewerPreferences.PageModeEnum.Bookmarks] = PdfName.UseOutlines.StringValue,
-                [ViewerPreferences.PageModeEnum.Thumbnails] = PdfName.UseThumbs.StringValue,
-                [ViewerPreferences.PageModeEnum.FullScreen] = PdfName.FullScreen.StringValue,
-                [ViewerPreferences.PageModeEnum.Layers] = PdfName.UseOC.StringValue,
-                [ViewerPreferences.PageModeEnum.Attachments] = PdfName.UseAttachments.StringValue
-            };
-        }
-
-        public static ViewerPreferences.PageModeEnum? Get(string code) => Get(code, null);
-
-        public static ViewerPreferences.PageModeEnum? Get(string code, ViewerPreferences.PageModeEnum? defaultValue)
-        {
-            if (code == null)
-                return defaultValue;
-
-            ViewerPreferences.PageModeEnum? value = codes.GetKey(code);
-            if (!value.HasValue)
-                throw new ArgumentException(code.ToString());
-
-            return value.Value;
-        }
-
-        public static PdfName Code(this ViewerPreferences.PageModeEnum value) => PdfName.Get(codes[value], true);
-    }
-
-    internal static class ViewerPreferencesPaperModeEnumExtension
-    {
-        private static readonly BiDictionary<ViewerPreferences.PaperModeEnum, string> codes;
-
-        static ViewerPreferencesPaperModeEnumExtension()
-        {
-            codes = new BiDictionary<ViewerPreferences.PaperModeEnum, string>()
-            {
-                [ViewerPreferences.PaperModeEnum.Simplex] = PdfName.Simplex.StringValue,
-                [ViewerPreferences.PaperModeEnum.DuplexShortEdge] = PdfName.DuplexFlipShortEdge.StringValue,
-                [ViewerPreferences.PaperModeEnum.DuplexLongEdge] = PdfName.DuplexFlipLongEdge.StringValue
-            };
-        }
-
-        public static ViewerPreferences.PaperModeEnum? Get(string code) => Get(code, null);
-
-        public static ViewerPreferences.PaperModeEnum? Get(string code, ViewerPreferences.PaperModeEnum? defaultValue)
-        {
-            if (code == null)
-                return defaultValue;
-
-            ViewerPreferences.PaperModeEnum? value = codes.GetKey(code);
-            if (!value.HasValue)
-                throw new ArgumentException(code.ToString());
-
-            return value.Value;
-        }
-
-        public static PdfName Code(this ViewerPreferences.PaperModeEnum value) => PdfName.Get(codes[value], true);
-    }
+    }    
 }

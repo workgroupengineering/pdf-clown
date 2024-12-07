@@ -26,6 +26,7 @@
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
@@ -33,15 +34,17 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaClipSection : MediaClip
     {
-        public MediaClipSection(PdfDocument context) : base(context, PdfName.MCS)
+        public MediaClipSection(PdfDocument context) 
+            : base(context, PdfName.MCS)
         { }
 
-        internal MediaClipSection(PdfDirectObject baseObject) : base(baseObject)
+        internal MediaClipSection(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
-        public override PdfObjectWrapper Data
+        public override IPdfDataObject Data
         {
-            get => MediaClip.Wrap(BaseDataObject[PdfName.D]).Data;
+            get => Get<MediaClip>(PdfName.D)?.Data;
             set => throw new NotImplementedException();
         }
     }

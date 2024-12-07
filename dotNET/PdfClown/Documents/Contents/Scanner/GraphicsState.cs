@@ -38,9 +38,9 @@ namespace PdfClown.Documents.Contents
     {
         private BlendModeEnum? blendMode;
         private SKMatrix ctm;
-        private Color fillColor;
+        private IColor fillColor;
         private ColorSpace fillColorSpace;
-        private Color strokeColor;
+        private IColor strokeColor;
         private ColorSpace strokeColorSpace;
         private LineCapEnum lineCap;
         private LineDash lineDash;
@@ -48,7 +48,7 @@ namespace PdfClown.Documents.Contents
         private float lineWidth;
         private float miterLimit;
 
-        private Font font;
+        private PdfFont font;
         private float fontSize;
 
         private TextRenderModeEnum renderMode;
@@ -75,7 +75,7 @@ namespace PdfClown.Documents.Contents
         }
 
         /// <summary>Gets/Sets the current font [PDF:1.6:5.2].</summary>
-        public Font Font
+        public PdfFont Font
         {
             get => font;
             set => font = value;
@@ -184,7 +184,7 @@ namespace PdfClown.Documents.Contents
         }
 
         /// <summary>Gets/Sets the current color for nonstroking operations [PDF:1.6:4.5.1].</summary>
-        public Color FillColor
+        public IColor FillColor
         {
             get => fillColor;
             set => fillColor = value;
@@ -236,7 +236,7 @@ namespace PdfClown.Documents.Contents
         public ContentScanner Scanner => scanner;
 
         /// <summary>Gets/Sets the current color for stroking operations [PDF:1.6:4.5.1].</summary>
-        public Color StrokeColor
+        public IColor StrokeColor
         {
             get => strokeColor;
             set => strokeColor = value;
@@ -266,7 +266,7 @@ namespace PdfClown.Documents.Contents
             }
         }
 
-        public Patterns.Shadings.Shading Shading { get; internal set; }
+        public Shadings.Shading Shading { get; internal set; }
 
         public bool? Knockout { get; internal set; }
 
@@ -549,10 +549,10 @@ namespace PdfClown.Documents.Contents
             blendMode = BlendModeEnum.Normal;
             Ctm = GetInitialCtm();
             ltm = SKMatrix.Identity;
-            fillColor = DeviceGrayColor.Default;
-            fillColorSpace = DeviceGrayColorSpace.Default;
-            strokeColor = DeviceGrayColor.Default;
-            strokeColorSpace = DeviceGrayColorSpace.Default;
+            fillColor = GrayColor.Default;
+            fillColorSpace = GrayColorSpace.Default;
+            strokeColor = GrayColor.Default;
+            strokeColorSpace = GrayColorSpace.Default;
             lineCap = LineCapEnum.Butt;
             lineDash = new LineDash();
             lineJoin = LineJoinEnum.Miter;

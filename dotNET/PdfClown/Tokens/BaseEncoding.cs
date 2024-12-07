@@ -40,8 +40,9 @@ namespace PdfClown.Tokens
 
         public abstract byte[] Encode(string value);
 
+        public abstract byte[] Encode(char[] chars);
+
         public abstract void Encode(ReadOnlySpan<char> chars, Span<byte> bytes);
 
-        public byte[] Encode(char value) => Encode(value);
     }
 }

@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using System;
-
 namespace PdfClown.Files
 {
     /// <summary>Cross-reference mode [PDF:1.6:3.4].</summary>

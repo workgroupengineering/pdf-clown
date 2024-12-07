@@ -23,29 +23,22 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
 
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Go to the next page of the document' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Go to the next page of the document' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class GoToNextPage : NamedAction, IGoToAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public GoToNextPage(PdfDocument context)
             : base(context, PdfName.NextPage)
         { }
 
-        internal GoToNextPage(PdfDirectObject baseObject)
+        internal GoToNextPage(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 

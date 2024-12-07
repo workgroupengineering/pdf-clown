@@ -23,47 +23,40 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>
-        <para>Generic content entity.</para>
-        <para>It provides common ways to convert any content into content stream objects.</para>
-      </summary>
-    */
+    /// <summary>
+    ///   <para>Generic content entity.</para>
+    ///   <para>It provides common ways to convert any content into content stream objects.</para>
+    /// </summary>
     public interface IContentEntity
     {
-        /**
-          <summary>Converts this entity to its equivalent inline (dependent) object representation
-          [PDF:1.6:4.8.6].</summary>
-          <remarks>
-            <para>This method creates and shows an inline object within the target content context,
-            returning it.</para>
-            <para>Due to its direct-content nature (opposite to the indirect-content nature of
-            external objects), the resulting object should be shown only one time in order not to
-            wastefully duplicate its data.</para>
-          </remarks>
-          <param name="composer">Target content composer.</param>
-          <returns>The inline object representing the entity.</returns>
-        */
+        /// <summary>Converts this entity to its equivalent inline (dependent) object representation
+        /// [PDF:1.6:4.8.6].</summary>
+        /// <remarks>
+        ///   <para>This method creates and shows an inline object within the target content context,
+        ///   returning it.</para>
+        ///   <para>Due to its direct-content nature (opposite to the indirect-content nature of
+        ///   external objects), the resulting object should be shown only one time in order not to
+        ///   wastefully duplicate its data.</para>
+        /// </remarks>
+        /// <param name="composer"> Target content composer.</param>
+        /// <returns>The inline object representing the entity.</returns>
         ContentObject ToInlineObject(PrimitiveComposer composer);
 
-        /**
-          <summary>Converts this entity to its equivalent external (independent) object representation
-          [PDF:1.6:4.7].</summary>
-          <remarks>
-            <para>This method creates an external object within the target document, returning it.
-            To show it in a content context (eg: a page), then it must be applied in an appropriate manner
-            (see PrimitiveComposer object).</para>
-          </remarks>
-          <param name="context">Target document.</param>
-          <returns>The external object representing the entity.</returns>
-        */
-        XObjects.XObject ToXObject(PdfDocument context);
+        /// <summary>Converts this entity to its equivalent external (independent) object representation
+        /// [PDF:1.6:4.7].</summary>
+        /// <remarks>
+        ///   <para>This method creates an external object within the target document, returning it.
+        ///   To show it in a content context (eg: a page), then it must be applied in an appropriate manner
+        ///   (see PrimitiveComposer object).</para>
+        /// </remarks>
+        /// <param name="context"> Target document.</param>
+        /// <returns>The external object representing the entity.</returns>
+        XObject ToXObject(PdfDocument context);
     }
 }

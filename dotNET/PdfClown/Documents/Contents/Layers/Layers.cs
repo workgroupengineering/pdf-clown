@@ -25,29 +25,14 @@
 
 using PdfClown.Objects;
 
-using System;
-
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Read-only collection of all the layers existing in the document.</summary>
-    */
+    /// <summary>Read-only collection of all the layers existing in the document.</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class Layers : Array<Layer>
+    public sealed class Layers : PdfArrayWrapper<Layer>
     {
         public Layers(PdfDirectObject baseObject)
             : base(baseObject)
         { }
-
-        public override void Insert(int index, Layer item)
-        { throw new NotSupportedException(); }
-
-        public override void RemoveAt(int index)
-        { throw new NotSupportedException(); }
-
-        public override Layer this[int index]
-        {
-            set => throw new NotSupportedException();
-        }
     }
 }

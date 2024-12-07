@@ -230,7 +230,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 {
                     if (!GENERIC_FONTS.TryGetValue(baseName, out box))
                     {
-                        var type1Font = new FontType1(null, baseName);
+                        var type1Font = new PdfType1Font(null, baseName);
                         GENERIC_FONTS[baseName] = box = type1Font.Font;
                     }
                 }

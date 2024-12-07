@@ -23,28 +23,23 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>Named action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>Named action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF12)]
-    public class NamedAction : Action
+    public class NamedAction : PdfAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public NamedAction(PdfDocument context, PdfName actionName)
             : base(context, PdfName.Named)
-        { BaseDataObject[PdfName.N] = actionName; }
+        {
+            this[PdfName.N] = actionName;
+        }
 
-        internal NamedAction(PdfDirectObject baseObject)
+        internal NamedAction(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
     }

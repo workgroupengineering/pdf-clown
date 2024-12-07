@@ -23,13 +23,9 @@
   this list of conditions.
 */
 
-using System;
-
 namespace PdfClown.Tokens
 {
-    /**
-      <summary>Common data chunks for serialization purposes.</summary>
-    */
+    /// <summary>Common data chunks for serialization purposes.</summary>
     internal static class Chunk
     {
         // FIXME: proper calls to Encoding.Pdf.Encode(...) could NOT be done due to an unexpected Mono runtime SIGSEGV (TOO BAD).

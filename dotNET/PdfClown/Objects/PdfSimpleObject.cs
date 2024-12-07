@@ -74,22 +74,16 @@ namespace PdfClown.Objects
         /// <param name="defaultValue">Value returned in case the object's one is undefined.</param>
         public static object GetValue(PdfObject obj, object defaultValue)
         {
-            object value = null;
-            obj = Resolve(obj);
-            if (obj is IPdfValued valued)
-            {
-                value = valued.Value;
-            }
-            return value ?? defaultValue;
+            return (obj?.Resolve() as IPdfValued)?.Value ?? defaultValue;
         }
 
-        protected TValue value;
+        protected TValue v;
 
         public PdfSimpleObject()
         { }
 
         // NOTE: As simple objects are immutable, no parent can be associated.
-        public sealed override PdfObject Parent
+        public sealed override PdfObject ParentObject
         {
             get => null;
             internal set { }
@@ -98,8 +92,8 @@ namespace PdfClown.Objects
         /// <summary>Gets/Sets the low-level representation of the value.</summary>
         public virtual TValue RawValue
         {
-            get => value;
-            protected set => this.value = value;
+            get => v;
+            protected set => v = value;
         }
 
         public sealed override PdfObjectStatus Status
@@ -111,29 +105,11 @@ namespace PdfClown.Objects
         /// <summary>Gets/Sets the high-level representation of the value.</summary>
         public virtual object Value
         {
-            get => value;
-            protected set => this.value = (TValue)value;
+            get => v;
+            protected set => v = (TValue)value;
         }
 
-        public override IPdfObjectWrapper Wrapper
-        {
-            get => cache.TryGetValue(this, out var wrapper) ? wrapper : null;
-            internal set => cache[this] = value;
-        }
-
-        public override IPdfObjectWrapper Wrapper2
-        {
-            get => null;
-            internal set {}
-        }
-
-        public override IPdfObjectWrapper Wrapper3
-        {
-            get => null;
-            internal set { }
-        }
-
-        public override PdfObject Clone(PdfFile context) => this;  // NOTE: Simple objects are immutable.
+        public override PdfObject Clone(PdfDocument context) => this;  // NOTE: Simple objects are immutable.
 
         public override bool Equals(object @object)
         {

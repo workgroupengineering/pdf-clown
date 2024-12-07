@@ -61,7 +61,7 @@ namespace PdfClown.Objects
 
         public PdfReal(double value) => RawValue = value;
 
-        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
         public override int CompareTo(PdfDirectObject obj) => PdfNumber.Compare(this, obj);
 
@@ -71,7 +71,7 @@ namespace PdfClown.Objects
 
         public override int GetHashCode() => PdfNumber.GetHashCode(this);
 
-        public override void WriteTo(IOutputStream stream, PdfFile context) => stream.WriteAsString(RawValue, context.Configuration.RealFormat, formatInfo);
+        public override void WriteTo(IOutputStream stream, PdfDocument context) => stream.WriteAsString(RawValue, context.Configuration.RealFormat, formatInfo);
 
         public double DoubleValue => RawValue;
 
@@ -84,7 +84,7 @@ namespace PdfClown.Objects
         public T GetValue<T>() where T : struct
         {
             if (typeof(T) == typeof(double))
-                return Unsafe.As<double, T>(ref value);
+                return Unsafe.As<double, T>(ref v);
             else if (typeof(T) == typeof(float))
             {
                 var value = FloatValue;

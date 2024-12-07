@@ -27,18 +27,18 @@
 */
 
 using PdfClown.Documents.Contents.Objects;
+using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using xObjects = PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Contents.Composition
 {
     /// <summary>
-    ///   <para>Content block composer.</para>
-    ///   <para>It provides content positioning functionalities for page typesetting.</para>
+    //  <para>Content block composer.</para>
+    //  <para>It provides content positioning functionalities for page typesetting.</para>
     /// </summary>
     // NOTE: BlockComposer is going to become deprecated as soon as DocumentComposer fully supports its
     // functionality. Until DocumentComposer's content styles are available, BlockComposer is the only
@@ -52,7 +52,7 @@ namespace PdfClown.Documents.Contents.Composition
             public double BaseLine;
             public double Height;
             /// <summary>Row's objects.</summary>
-            public List<RowObject> Objects = new List<RowObject>();
+            public List<RowObject> Objects = new();
             /// <summary>Number of space characters.</summary>
             public int SpaceCount = 0;
             public double Width;
@@ -160,9 +160,9 @@ namespace PdfClown.Documents.Contents.Composition
         public PrimitiveComposer BaseComposer => baseComposer;
 
         /// <summary>Begins a content block.</summary>
-        /// <param name = "frame" > Block boundaries.</param>
-        /// <param name = "xAlignment" > Horizontal alignment.</param>
-        /// <param name = "yAlignment" > Vertical alignment.</param>
+        /// <param name="frame"> Block boundaries.</param>
+        /// <param name="xAlignment"> Horizontal alignment.</param>
+        /// <param name="yAlignment"> Vertical alignment.</param>
         public void Begin(SKRect frame, XAlignmentEnum xAlignment, YAlignmentEnum yAlignment)
         {
             this.frame = frame;
@@ -248,18 +248,18 @@ namespace PdfClown.Documents.Contents.Composition
         /// <summary>Ends current paragraph, specifying the offset of the next one.</summary>
         /// <remarks>This functionality allows higher-level features such as paragraph indentation
         /// and margin.</remarks>
-        /// <param name = "offset" > Relative location of the next paragraph.</param>
+        /// <param name="offset"> Relative location of the next paragraph.</param>
         public bool ShowBreak(SKSize offset) => ShowBreak(offset, null);
 
         /// <summary>Ends current paragraph, specifying the alignment of the next one.</summary>
         /// <remarks>This functionality allows higher-level features such as paragraph indentation and margin.</remarks>
-        /// <param name = "xAlignment" > Horizontal alignment.</param>
+        /// <param name="xAlignment"> Horizontal alignment.</param>
         public bool ShowBreak(XAlignmentEnum xAlignment) => ShowBreak(null, xAlignment);
 
         /// <summary>Ends current paragraph, specifying the offset and alignment of the next one.</summary>
         /// <remarks>This functionality allows higher-level features such as paragraph indentation and margin.</remarks>
-        /// <param name = "offset" > Relative location of the next paragraph.</param>
-        /// <param name = "xAlignment" > Horizontal alignment.</param>
+        /// <param name="offset"> Relative location of the next paragraph.</param>
+        /// <param name="xAlignment"> Horizontal alignment.</param>
         public bool ShowBreak(SKSize? offset, XAlignmentEnum? xAlignment)
         {
             // End previous row!
@@ -281,18 +281,18 @@ namespace PdfClown.Documents.Contents.Composition
 
         /// <summary>Shows text.</summary>
         /// <remarks>Default line alignment is applied.</remarks>
-        /// <param name = "text" > Text to show.</param>
+        /// <param name="text"> Text to show.</param>
         /// <returns>Last shown character index.</returns>
         public int ShowText(string text) => ShowText(text, lineAlignment);
 
         /// <summary>Shows text.</summary>
-        /// <param name = "text" > Text to show.</param>
-        /// <param name = "lineAlignment" > Line alignment.It can be:
-        ///   <list type = "bullet" >
-        ///     < item >< see cref= "LineAlignmentEnum" /></ item >
-        ///     < item >< see cref= "Length" >: arbitrary super-/sub-script, depending on whether the value is
-        ///     positive or not.</item>
-        ///   </list>
+        /// <param name="text"> Text to show.</param>
+        /// <param name="lineAlignment"> Line alignment.It can be:
+        ///  <list type="bullet">
+        ///    <item><see cref="LineAlignmentEnum"/></item>
+        ///    <item><see cref="Length">: arbitrary super-sub-script, depending on whether the value is
+        ///    positive or not.</item>
+        ///  </list>
         /// </param>
         /// <returns>Last shown character index.</returns>
         public int ShowText(string text, object lineAlignment)
@@ -403,30 +403,28 @@ namespace PdfClown.Documents.Contents.Composition
 
         /// <summary>Shows the specified external object.</summary>
         /// <remarks>Default line alignment is applied.</remarks>
-        /// <param name = "xObject" > External object.</param>
-        /// <param name = "size" > Size of the external object.</param>
+        /// <param name="xObject"> External object.</param>
+        /// <param name="size"> Size of the external object.</param>
         /// <returns>Whether the external object was successfully shown.</returns>
 
 
-        public bool ShowXObject(xObjects::XObject xObject, SKSize? size)
+        public bool ShowXObject(XObject xObject, SKSize? size)
         {
             return ShowXObject(xObject, size, lineAlignment);
         }
 
-        /**
-          <summary>Shows the specified external object.</summary>
-          <param name="xObject">External object.</param>
-          <param name="size">Size of the external object.</param>
-          <param name="lineAlignment">Line alignment. It can be:
-            <list type="bullet">
-              <item><see cref="LineAlignmentEnum"/></item>
-              <item><see cref="Length">: arbitrary super-/sub-script, depending on whether the value is
-              positive or not.</item>
-            </list>
-          </param>
-          <returns>Whether the external object was successfully shown.</returns>
-        */
-        public bool ShowXObject(xObjects::XObject xObject, SKSize? size, object lineAlignment)
+        /// <summary>Shows the specified external object.</summary>
+        /// <param name="xObject">External object.</param>
+        /// <param name="size">Size of the external object.</param>
+        /// <param name="lineAlignment">Line alignment. It can be:
+        ///   <list type="bullet">
+        ///     <item><see cref="LineAlignmentEnum"/></item>
+        ///     <item><see cref="Length">: arbitrary super-/sub-script, depending on whether the value is
+        ///     positive or not.</item>
+        ///   </list>
+        /// </param>
+        /// <returns>Whether the external object was successfully shown.</returns>
+        public bool ShowXObject(XObject xObject, SKSize? size, object lineAlignment)
         {
             if (xObject == null
               || !EnsureRow(true))
@@ -458,8 +456,7 @@ namespace PdfClown.Documents.Contents.Composition
                           lineAlignment,
                           size.Value.Height,
                           0,
-                          0
-                          );
+                          0);
                         baseComposer.ShowXObject(xObject, location, size);
                         baseComposer.End(); // Closes the row object's local state.
                     }
@@ -558,10 +555,10 @@ namespace PdfClown.Documents.Contents.Composition
 
             rowEnded = true;
 
-            List<RowObject> objects = currentRow.Objects;
-            double[] objectXOffsets = new double[objects.Count]; // Horizontal object displacements.
-            double wordSpace = 0; // Exceeding space among words.
-            double rowXOffset = 0; // Horizontal row offset.
+            var objects = currentRow.Objects;
+            var objectXOffsets = new double[objects.Count]; // Horizontal object displacements.
+            var wordSpace = 0D; // Exceeding space among words.
+            var rowXOffset = 0D; // Horizontal row offset.
 
             // Horizontal alignment.
             XAlignmentEnum xAlignment = this.xAlignment;
@@ -666,9 +663,11 @@ namespace PdfClown.Documents.Contents.Composition
                     if (showTextOperation is ShowAdjustedText)
                     {
                         var wordSpaceObject = PdfInteger.Get((int)Math.Round(-wordSpace * 1000 * row.Scale / row.FontSize));
-                        var textParams = (PdfArray)showTextOperation.Operands[0];
+                        var textParams = showTextOperation.Operands.Get<PdfArray>(0);
                         for (int textParamIndex = 1, textParamsLength = textParams.Count; textParamIndex < textParamsLength; textParamIndex += 2)
-                        { textParams[textParamIndex] = wordSpaceObject; }
+                        {
+                            textParams.SetSimple(textParamIndex, wordSpaceObject);
+                        }
                     }
                 }
             }

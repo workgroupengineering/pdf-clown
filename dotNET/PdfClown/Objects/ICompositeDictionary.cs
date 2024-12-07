@@ -35,6 +35,6 @@ namespace PdfClown.Objects
         IBiDictionary Get(Type type);
 
         /// <summary>Gets the value associated to the specified key for the specified type.</summary>
-        T Get<T>(TKey key) where T : PdfObjectWrapper;
+        T GetRes<T>(TKey key);
     }
 }

@@ -28,12 +28,13 @@ using PdfClown.Documents.Multimedia;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
     /// <summary>'Control the playing of multimedia content' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class Render : Action
+    public sealed class Render : PdfAction
     {
         public enum OperationEnum
         {
@@ -58,28 +59,27 @@ namespace PdfClown.Documents.Interaction.Actions
             Rendition = rendition;
         }
 
-        internal Render(PdfDirectObject baseObject)
+        internal Render(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the operation to perform when the action is triggered.</summary>
         public OperationEnum? Operation
         {
-            get => (OperationEnum?)BaseDataObject.GetNInt(PdfName.OP);
+            get => (OperationEnum?)this.GetNInt(PdfName.OP);
             set
             {
-                PdfDictionary baseDataObject = BaseDataObject;
-                if (value == null && baseDataObject[PdfName.JS] == null)
+                if (value == null && Get(PdfName.JS) == null)
                     throw new ArgumentException("Operation MUST be defined.");
 
-                baseDataObject.Set(PdfName.OP, (int?)value);
+                Set(PdfName.OP, (int?)value);
             }
         }
 
         /// <summary>Gets/Sets the rendition object to render.</summary>
         public Rendition Rendition
         {
-            get => Rendition.Wrap(BaseDataObject[PdfName.R]);
+            get => Get<Rendition>(PdfName.R);
             set
             {
                 if (value == null)
@@ -95,14 +95,14 @@ namespace PdfClown.Documents.Interaction.Actions
                         }
                     }
                 }
-                BaseDataObject[PdfName.R] = PdfObjectWrapper.GetBaseObject(value);
+                Set(PdfName.R, value);
             }
         }
 
         /// <summary>Gets/Sets the screen where to render the rendition object.</summary>
         public Screen Screen
         {
-            get => (Screen)Annotation.Wrap(BaseDataObject[PdfName.AN]);
+            get => Get<Screen>(PdfName.AN);
             set
             {
                 if (value == null)
@@ -121,21 +121,20 @@ namespace PdfClown.Documents.Interaction.Actions
                         }
                     }
                 }
-                BaseDataObject[PdfName.AN] = PdfObjectWrapper.GetBaseObject(value);
+                Set(PdfName.AN, value);
             }
         }
 
         /// <summary>Gets/Sets the JavaScript script to be executed when the action is triggered.</summary>
         public String Script
         {
-            get => JavaScript.GetScript(BaseDataObject, PdfName.JS);
+            get => JavaScript.GetScript(this, PdfName.JS);
             set
             {
-                PdfDictionary baseDataObject = BaseDataObject;
-                if (value == null && baseDataObject[PdfName.OP] == null)
+                if (value == null && Get(PdfName.OP) == null)
                     throw new ArgumentException("Script MUST be defined.");
 
-                JavaScript.SetScript(baseDataObject, PdfName.JS, value);
+                JavaScript.SetScript(this, PdfName.JS, value);
             }
         }
 

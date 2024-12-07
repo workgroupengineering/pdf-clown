@@ -25,6 +25,7 @@
 
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
@@ -37,7 +38,7 @@ namespace PdfClown.Documents.Interaction.Actions
             : base(context, PdfName.GoTo, destination)
         { }
 
-        internal GoToLocal(PdfDirectObject baseObject)
+        internal GoToLocal(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 

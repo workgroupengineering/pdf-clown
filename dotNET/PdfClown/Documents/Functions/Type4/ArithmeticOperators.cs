@@ -20,7 +20,7 @@ using System;
 
 namespace PdfClown.Documents.Functions.Type4
 {
-	 /// <summary>Provides the arithmetic operators such as "add" and "sub".</summary>
+    /// <summary>Provides the arithmetic operators such as "add" and "sub".</summary>
     public class ArithmeticOperators
     {
 
@@ -80,7 +80,6 @@ namespace PdfClown.Documents.Functions.Type4
         /// <summary>Implements the "atan" operator.</summary>
         internal sealed class Atan : Operator
         {
-
             public override void Execute(ExecutionContext context)
             {
                 float den = context.PopReal();
@@ -206,7 +205,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "ln" operator. */
+        /// <summary>Implements the "ln" operator.</summary>
         internal sealed class Ln : Operator
         {
 
@@ -218,7 +217,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "log" operator. */
+        /// <summary>Implements the "log" operator.</summary>
         internal sealed class Log : Operator
         {
 
@@ -230,7 +229,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "mod" operator. */
+        /// <summary>Implements the "mod" operator.</summary>
         internal sealed class Mod : Operator
         {
 
@@ -243,7 +242,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "mul" operator. */
+        /// <summary>Implements the "mul" operator.</summary>
         internal sealed class Mul : Operator
         {
 
@@ -272,7 +271,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "neg" operator. */
+        /// <summary>Implements the "neg" operator.</summary>
         internal sealed class Neg : Operator
         {
 
@@ -299,7 +298,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "round" operator. */
+        /// <summary>Implements the "round" operator.</summary>
         internal sealed class Round : Operator
         {
 
@@ -318,7 +317,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "sin" operator. */
+        /// <summary>Implements the "sin" operator.</summary>
         internal sealed class Sin : Operator
         {
 

@@ -28,6 +28,7 @@ using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -37,43 +38,45 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF10)]
     public sealed class Link : Annotation, ILink
     {
-        public Link(PdfPage page, SKRect box, string text, PdfObjectWrapper target) : base(page, PdfName.Link, box, text)
+        public Link(PdfPage page, SKRect box, string text, PdfDirectObject target)
+            : base(page, PdfName.Link, box, text)
         { Target = target; }
 
-        public Link(PdfDirectObject baseObject) : base(baseObject)
+        public Link(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
-        public override Action Action
+        public override PdfAction Action
         {
             get => base.Action;
             set
             {
                 // NOTE: This entry is not permitted in link annotations if a 'Dest' entry is present.
-                if (BaseDataObject.ContainsKey(PdfName.Dest)
+                if (ContainsKey(PdfName.Dest)
                   && value != null)
-                { BaseDataObject.Remove(PdfName.Dest); }
+                { Remove(PdfName.Dest); }
 
                 base.Action = value;
             }
         }
 
-        public PdfObjectWrapper Target
+        public PdfDirectObject Target
         {
             get
             {
-                if (BaseDataObject.ContainsKey(PdfName.Dest))
+                if (ContainsKey(PdfName.Dest))
                     return Destination;
-                else if (BaseDataObject.ContainsKey(PdfName.A))
+                else if (ContainsKey(PdfName.A))
                     return Action;
                 else
                     return null;
             }
             set
             {
-                if (value is Destination)
-                { Destination = (Destination)value; }
-                else if (value is Action)
-                { Action = (Action)value; }
+                if (value is Destination destination)
+                { Destination = destination; }
+                else if (value is PdfAction action)
+                { Action = action; }
                 else
                     throw new System.ArgumentException("It MUST be either a Destination or an Action.");
             }
@@ -83,22 +86,21 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get
             {
-                PdfDirectObject destinationObject = BaseDataObject[PdfName.Dest];
-                return destinationObject != null
-                  ? Document.ResolveName<Destination>(destinationObject)
+                return Get(PdfName.Dest) is PdfDirectObject destinationObject
+                  ? Catalog.ResolveName<Destination>(destinationObject)
                   : null;
             }
             set
             {
                 if (value == null)
-                { BaseDataObject.Remove(PdfName.Dest); }
+                { Remove(PdfName.Dest); }
                 else
                 {
                     // NOTE: This entry is not permitted in link annotations if an 'A' entry is present.
-                    if (BaseDataObject.ContainsKey(PdfName.A))
-                    { BaseDataObject.Remove(PdfName.A); }
+                    if (ContainsKey(PdfName.A))
+                    { Remove(PdfName.A); }
 
-                    BaseDataObject[PdfName.Dest] = value.NamedBaseObject;
+                    Set(PdfName.Dest, value.NamedBaseObject);
                 }
             }
         }

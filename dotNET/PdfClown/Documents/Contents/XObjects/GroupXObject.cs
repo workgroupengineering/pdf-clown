@@ -25,19 +25,15 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
-    public class GroupXObject : PdfObjectWrapper<PdfDictionary>
+    public class GroupXObject : PdfDictionary
     {
-        public static GroupXObject Wrap(PdfDirectObject baseObject)
+        internal static GroupXObject Create(Dictionary<PdfName, PdfDirectObject> baseObject)
         {
-            if (baseObject == null)
-                return null;
-            if (baseObject.Wrapper is GroupXObject groupObject)
-                return groupObject;
-            
-            var subtype = ((PdfDictionary)baseObject).Get<PdfName>(PdfName.S);
+            var subtype = baseObject.Get<PdfName>(PdfName.S);
             if (subtype.Equals(PdfName.Transparency))
             {
                 return new TransparencyXObject(baseObject);
@@ -48,26 +44,21 @@ namespace PdfClown.Documents.Contents.XObjects
             }
         }
 
-        public GroupXObject(PdfDocument context, PdfDictionary baseDataObject)
-            : base(context, baseDataObject)
+        public GroupXObject(PdfDocument context)
+            : base(context, new Dictionary<PdfName, PdfDirectObject>{
+                { PdfName.Type, PdfName.Group }
+            })
         {
-            Type = PdfName.Group;
         }
 
-        public GroupXObject(PdfDirectObject baseObject)
+        public GroupXObject(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
-        public PdfName Type
-        {
-            get => BaseDataObject.Get<PdfName>(PdfName.Type);
-            set => BaseDataObject[PdfName.Type] = value;
-        }
-
         public PdfName SubType
         {
-            get => BaseDataObject.Get<PdfName>(PdfName.S);
-            set => BaseDataObject[PdfName.S] = value;
+            get => Get<PdfName>(PdfName.S);
+            set => SetSimple(PdfName.S,  value);
         }
     }
 }

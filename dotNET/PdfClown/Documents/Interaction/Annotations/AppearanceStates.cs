@@ -34,7 +34,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 {
     /// <summary>Appearance states [PDF:1.6:8.4.4].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class AppearanceStates : PdfObjectWrapper2<PdfDataObject>, IDictionary<PdfName, FormXObject>
+    public sealed class AppearanceStates : PdfObjectWrapper<PdfDirectObject>, IDictionary<PdfName, FormXObject>
     {
         public static AppearanceStates Wrap(PdfName statesKey, Appearance appearance)
         {
@@ -45,7 +45,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         private PdfName statesKey;
 
         public AppearanceStates(PdfName statesKey, Appearance appearance)
-            : base(appearance.BaseDataObject[statesKey])
+            : base(appearance.Get(statesKey))
         {
             this.appearance = appearance;
             this.statesKey = statesKey;
@@ -57,9 +57,6 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <summary>Gets the appearance associated to these states.</summary>
         public Appearance Appearance => appearance;
 
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); } // TODO: verify appearance reference.
-
         //TODO
         /**
           Gets the key associated to a given value.
@@ -70,11 +67,11 @@ namespace PdfClown.Documents.Interaction.Annotations
         //   {return BaseDataObject.GetKey(value.BaseObject);}
 
         public void Add(PdfName key, FormXObject value)
-        { EnsureDictionary()[key] = value.BaseObject; }
+        { EnsureDictionary()[key] = value.RefOrSelf; }
 
         public bool ContainsKey(PdfName key)
         {
-            PdfDataObject baseDataObject = BaseDataObject;
+            PdfDirectObject baseDataObject = DataObject;
             if (baseDataObject == null) // No state.
                 return false;
             else if (baseDataObject is PdfStream) // Single state.
@@ -83,20 +80,20 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return ((PdfDictionary)baseDataObject).ContainsKey(key);
         }
 
-        public ICollection<PdfName> Keys => BaseDataObject is PdfStream ? new SingleItemCollection<PdfName>(null)
-            : BaseDataObject is PdfDictionary dict ? dict.Keys : EmptyCollection<PdfName>.Default;
+        public ICollection<PdfName> Keys => DataObject is PdfStream ? new SingleItemCollection<PdfName>(null)
+            : DataObject is PdfDictionary dict ? dict.Keys : EmptyCollection<PdfName>.Default;
 
         public bool Remove(PdfName key)
         {
-            PdfDataObject baseDataObject = BaseDataObject;
+            PdfDirectObject baseDataObject = DataObject;
             if (baseDataObject == null) // No state.
                 return false;
             else if (baseDataObject is PdfStream) // Single state.
             {
                 if (key == null)
                 {
-                    BaseObject = null;
-                    appearance.BaseDataObject.Remove(statesKey);
+                    RefOrSelf = null;
+                    appearance.Remove(statesKey);
                     return true;
                 }
                 else // Invalid key.
@@ -110,28 +107,25 @@ namespace PdfClown.Documents.Interaction.Annotations
         {
             get
             {
-                PdfDataObject baseDataObject = BaseDataObject;
+                PdfDirectObject baseDataObject = DataObject;
                 if (baseDataObject == null) // No state.
                     return null;
                 else if (key == null)
                 {
-                    if (baseDataObject is PdfStream) // Single state.
-                        return FormXObject.Wrap(BaseObject);
-                    else // Multiple state, but invalid key.
-                        return null;
+                    return baseDataObject as FormXObject;
                 }
                 else // Multiple state.
-                    return FormXObject.Wrap(((PdfDictionary)baseDataObject)[key]);
+                    return ((PdfDictionary)baseDataObject).Get<FormXObject>(key);
             }
             set
             {
                 if (key == null) // Single state.
                 {
-                    BaseObject = value?.BaseObject;
-                    appearance.BaseDataObject[statesKey] = BaseObject;
+                    RefOrSelf = value?.RefOrSelf;
+                    appearance.Set(statesKey, RefOrSelf);
                 }
                 else // Multiple state.
-                { EnsureDictionary()[key] = value.BaseObject; }
+                { EnsureDictionary()[key] = value?.RefOrSelf; }
             }
         }
 
@@ -149,11 +143,11 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         bool ICollection<KeyValuePair<PdfName, FormXObject>>.Contains(KeyValuePair<PdfName, FormXObject> entry)
         {
-            PdfDataObject baseDataObject = BaseDataObject;
+            PdfDirectObject baseDataObject = DataObject;
             if (baseDataObject == null) // No state.
                 return false;
             else if (baseDataObject is PdfStream) // Single state.
-                return entry.Value.BaseObject.Equals(BaseObject);
+                return entry.Value.RefOrSelf.Equals(RefOrSelf);
             else // Multiple state.
                 return entry.Value.Equals(this[entry.Key]);
         }
@@ -168,16 +162,12 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public int Count
         {
-            get
+            get => DataObject switch // No state.
             {
-                PdfDataObject baseDataObject = BaseDataObject;
-                if (baseDataObject == null) // No state.
-                    return 0;
-                else if (baseDataObject is PdfStream) // Single state.
-                    return 1;
-                else // Multiple state.
-                    return ((PdfDictionary)baseDataObject).Count;
-            }
+                null => 0,
+                PdfStream => 1,
+                _ => ((PdfDictionary)DataObject).Count,
+            };
         }
 
         public bool IsReadOnly => false;
@@ -187,14 +177,12 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         IEnumerator<KeyValuePair<PdfName, FormXObject>> IEnumerable<KeyValuePair<PdfName, FormXObject>>.GetEnumerator()
         {
-            PdfDataObject baseDataObject = BaseDataObject;
+            PdfDirectObject baseDataObject = DataObject;
             if (baseDataObject == null) // No state.
             { /* NOOP. */ }
-            else if (baseDataObject is PdfStream) // Single state.
+            else if (baseDataObject is FormXObject formX) // Single state.
             {
-                yield return new KeyValuePair<PdfName, FormXObject>(
-                  null,
-                  FormXObject.Wrap(BaseObject));
+                yield return new KeyValuePair<PdfName, FormXObject>(null, formX);
             }
             else // Multiple state.
             {
@@ -202,7 +190,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 {
                     yield return new KeyValuePair<PdfName, FormXObject>(
                       entry.Key,
-                      FormXObject.Wrap(entry.Value));
+                      (FormXObject)entry.Value.Resolve(PdfName.XObject));
                 }
             }
         }
@@ -211,18 +199,18 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         private PdfDictionary EnsureDictionary()
         {
-            PdfDataObject baseDataObject = BaseDataObject;
-            if (baseDataObject is PdfStream stream)
+            PdfDirectObject baseDataObject = DataObject;
+            if (baseDataObject is PdfStream)
             {
                 // NOTE: Single states are erased as they have no valid key
                 // to be consistently integrated within the dictionary.
-                BaseObject = (PdfDirectObject)(baseDataObject = new PdfDictionary());
-                appearance.BaseDataObject[statesKey] = (PdfDirectObject)baseDataObject;
+                RefOrSelf = baseDataObject = new PdfDictionary();
+                appearance.Set(statesKey, baseDataObject.RefOrSelf);
             }
             else if (baseDataObject == null)
             {
-                BaseObject = (PdfDirectObject)(baseDataObject = new PdfDictionary());
-                appearance.BaseDataObject[statesKey] = (PdfDirectObject)baseDataObject;
+                RefOrSelf = baseDataObject = new PdfDictionary();
+                appearance.Set(statesKey, baseDataObject.RefOrSelf);
             }
             return (PdfDictionary)baseDataObject;
         }

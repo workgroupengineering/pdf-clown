@@ -42,17 +42,18 @@ namespace PdfClown.Tokens
         private const string XRefGenerationFormat = "00000";
         private const string XRefOffsetFormat = "0000000000";
 
-        internal PlainWriter(PdfFile file, IOutputStream stream) : base(file, stream)
+        internal PlainWriter(PdfDocument document, IOutputStream stream) 
+            : base(document, stream)
         { }
 
         protected override void WriteIncremental()
         {
             // 1. Original content (head, body and previous trailer).
-            FileParser parser = file.Reader.Parser;
+            var parser = document.Reader.Parser;
             stream.Write(parser.Stream);
 
             // 2. Body update (modified indirect objects insertion).
-            int xrefSize = file.IndirectObjects.Count;
+            int xrefSize = document.IndirectObjects.Count;
             var xrefBuilder = new StringBuilder(XRefChunk);
             {
                 // NOTE: Incremental xref table comprises multiple sections
@@ -61,7 +62,7 @@ namespace PdfClown.Tokens
                 var xrefSubBuilder = new StringBuilder(); // Xref-table subsection builder.
                 int xrefSubCount = 0; // Xref-table subsection counter.
                 int prevKey = 0; // Previous-entry object number.
-                foreach (var indirectObjectEntry in file.IndirectObjects.ModifiedObjects.OrderBy(x => x.Key).ToList())
+                foreach (var indirectObjectEntry in document.IndirectObjects.ModifiedObjects.OrderBy(x => x.Key).ToList())
                 {
                     // Is the object in the current subsection?
                     // NOTE: To belong to the current subsection, the object entry MUST be contiguous with the
@@ -91,7 +92,7 @@ namespace PdfClown.Tokens
                         // Add in-use entry!
                         AppendXRefEntry(xrefSubBuilder, indirectObjectEntry.Value.Reference, stream.Length);
                         // Add in-use entry content!
-                        indirectObjectEntry.Value.WriteTo(stream, file);
+                        indirectObjectEntry.Value.WriteTo(stream, document);
                     }
                     else // Free entry.
                     {
@@ -123,7 +124,7 @@ namespace PdfClown.Tokens
             WriteHeader();
 
             // 2. Body [PDF:1.6:3.4.2].
-            int xrefSize = file.IndirectObjects.Count;
+            int xrefSize = document.IndirectObjects.Count;
             var xrefBuilder = new StringBuilder(XRefChunk);
             {
                 // NOTE: A standard xref table comprises just one section composed by just one subsection.
@@ -133,7 +134,7 @@ namespace PdfClown.Tokens
                 AppendXRefSubsectionIndexer(xrefBuilder, 0, xrefSize);
 
                 var xrefInUseBlockBuilder = new StringBuilder();
-                var indirectObjects = file.IndirectObjects;
+                var indirectObjects = document.IndirectObjects;
                 var freeReference = indirectObjects[0].Reference; // Initialized to the first free entry.
                 for (int index = 1; index < xrefSize; index++)
                 {
@@ -144,7 +145,7 @@ namespace PdfClown.Tokens
                         // Add in-use entry!
                         AppendXRefEntry(xrefInUseBlockBuilder, indirectObject.Reference, stream.Length);
                         // Add in-use entry content!
-                        indirectObject.WriteTo(stream, file);
+                        indirectObject.WriteTo(stream, document);
                     }
                     else // Free entry.
                     {
@@ -189,7 +190,7 @@ namespace PdfClown.Tokens
                     throw new NotSupportedException();
             }
             return xrefBuilder.Append(offset.ToString(XRefOffsetFormat)).Append(Symbol.Space)
-              .Append(reference.GenerationNumber.ToString(XRefGenerationFormat)).Append(Symbol.Space)
+              .Append(reference.Generation.ToString(XRefGenerationFormat)).Append(Symbol.Space)
               .Append(usage).Append(XRefEOLChunk);
         }
 
@@ -221,7 +222,7 @@ namespace PdfClown.Tokens
 
             // 2. Body.
             // Update its entries:
-            PdfDictionary trailer = file.Trailer;
+            PdfDictionary trailer = document.Trailer;
             UpdateTrailer(trailer, stream);
             // * Size
             trailer.Set(PdfName.Size, xrefSize);
@@ -231,7 +232,7 @@ namespace PdfClown.Tokens
             else
             { trailer.Set(PdfName.Prev, (int)parser.RetrieveXRefOffset()); }
             // Serialize its contents!
-            trailer.WriteTo(stream, file); stream.Write(Chunk.LineFeed);
+            trailer.WriteTo(stream, document); stream.Write(Chunk.LineFeed);
 
             // 3. Tail.
             WriteTail(startxref);

@@ -44,7 +44,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, box, text, subtype)
         { }
 
-        protected VertexShape(PdfDirectObject baseObject)
+        protected VertexShape(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
@@ -89,13 +89,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public PdfArray Vertices
         {
-            get => (PdfArray)BaseDataObject.GetOrCreate<PdfArray>(PdfName.Vertices);
+            get => GetOrCreate<PdfArrayImpl>(PdfName.Vertices);
             set
             {
                 var oldValue = Vertices;
                 if (!PdfArray.SequenceEquals(oldValue, value))
                 {
-                    BaseDataObject[PdfName.Vertices] = value;
+                    this[PdfName.Vertices] = value;
                     OnPropertyChanged(oldValue, value);
                     QueueRefreshAppearance();
                 }
@@ -246,7 +246,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
         }
 
-        public override object Clone(Cloner cloner)
+        public override PdfObject Clone(Cloner cloner)
         {
             var cloned = (VertexShape)base.Clone(cloner);
             cloned.controlPoints = new Dictionary<int, IndexControlPoint>();

@@ -55,17 +55,14 @@ namespace PdfClown.Tools
             // to express their content streams as arrays of data streams.
             PdfArray streams;
             {
-                var contentsObject = page.BaseDataObject[PdfName.Contents];
-                var contentsDataObject = PdfObject.Resolve(contentsObject);
+                var contentsObject = page.Get(PdfName.Contents);
+                var contentsDataObject = contentsObject?.Resolve();
                 // Single data stream?
                 if (contentsDataObject is PdfStream)
                 {
                     // NOTE: Content stream MUST be expressed as an array of data streams in order to host
                     // background- and foreground-stamped contents.
-                    page.BaseDataObject[PdfName.Contents] = streams = new PdfArray
-                    {
-                        contentsObject
-                    };
+                    page[PdfName.Contents] = streams = new PdfArrayImpl { contentsObject };
                 }
                 else
                 { streams = (PdfArray)contentsDataObject; }
@@ -75,13 +72,13 @@ namespace PdfClown.Tools
             // Serialize the content!
             background.Flush();
             // Insert the serialized content into the page's content stream!
-            streams.Insert(0, background.Scanner.Contents.BaseObject);
+            streams.Insert(0, background.Scanner.Contents.RefOrSelf);
 
             // Foreground.
             // Serialize the content!
             foreground.Flush();
             // Append the serialized content into the page's content stream!
-            streams.Add(foreground.Scanner.Contents.BaseObject);
+            streams.Add(foreground.Scanner.Contents.RefOrSelf);
         }
 
         public PrimitiveComposer Background => background;
@@ -120,6 +117,9 @@ namespace PdfClown.Tools
             }
         }
 
-        private PrimitiveComposer CreateFilter() => new PrimitiveComposer(new ContentScanner(page, new ContentWrapper(page.File.Register(new PdfStream()))));
+        private PrimitiveComposer CreateFilter() => new PrimitiveComposer(
+            new ContentScanner(page,
+                new ContentWrapper(page.Document.Register(
+                    new PdfStream()))));
     }
 }

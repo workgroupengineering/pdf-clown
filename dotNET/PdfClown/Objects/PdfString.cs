@@ -69,7 +69,7 @@ namespace PdfClown.Objects
             return value.Length != 0 ? new PdfString(value) : null;
         }
 
-        public static readonly PdfString Default = new PdfString("");
+        public static readonly PdfString Default = new PdfString(string.Empty);
 
         private const byte BackspaceCode = 8;
         private const byte CarriageReturnCode = 13;
@@ -101,7 +101,7 @@ namespace PdfClown.Objects
         protected PdfString()
         { }
 
-        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
         public override int CompareTo(PdfDirectObject obj)
         {
@@ -143,7 +143,7 @@ namespace PdfClown.Objects
 
         public byte[] GetArrayBuffer()
         {
-            return Unsafe.As<Memory<byte>, ArraySegment<byte>>(ref value).Array;
+            return Unsafe.As<Memory<byte>, ArraySegment<byte>>(ref v).Array;
         }
 
         public void SetBuffer(byte[] data)
@@ -206,7 +206,7 @@ namespace PdfClown.Objects
             }
         }
 
-        public override void WriteTo(IOutputStream stream, PdfFile context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             var buffer = stream;
             {

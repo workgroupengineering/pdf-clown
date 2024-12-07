@@ -25,16 +25,16 @@
 
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Weakly-typed annotation.</summary>
-      <remarks>This is used to model annotations which do not have a dedicated type.</remarks>
-    */
+    /// <summary>Weakly-typed annotation.</summary>
+    /// <remarks>This is used to model annotations which do not have a dedicated type.</remarks>
     public sealed class GenericAnnotation : Annotation
     {
-        internal GenericAnnotation(PdfDirectObject baseObject) : base(baseObject)
+        internal GenericAnnotation(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         protected override FormXObject GenerateAppearance()

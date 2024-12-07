@@ -23,54 +23,15 @@
   this list of conditions.
 */
 
-using PdfClown.Objects;
-using PdfClown.Util;
-
-using System;
-
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>List mode specifying which layers should be displayed to the user [PDF:1.7:4.10.3].
-      </summary>
-    */
+    /// <summary>List mode specifying which layers should be displayed to the user [PDF:1.7:4.10.3].
+    /// </summary>
     public enum UIModeEnum
     {
-        /**
-          <summary>All the layers are displayed.</summary>
-        */
+        /// <summary>All the layers are displayed.</summary>
         AllPages,
-        /**
-          <summary>Only the layers referenced by one or more visible pages are displayed.</summary>
-        */
+        /// <summary>Only the layers referenced by one or more visible pages are displayed.</summary>
         VisiblePages
-    }
-
-    internal static class UIModeEnumExtension
-    {
-        private static readonly BiDictionary<UIModeEnum, string> codes;
-
-        static UIModeEnumExtension()
-        {
-            codes = new BiDictionary<UIModeEnum, string>
-            {
-                [UIModeEnum.AllPages] = PdfName.AllPages.StringValue,
-                [UIModeEnum.VisiblePages] = PdfName.VisiblePages.StringValue
-            };
-        }
-
-        public static UIModeEnum Get(string name)
-        {
-            if (name == null)
-                return UIModeEnum.AllPages;
-
-            UIModeEnum? uiMode = codes.GetKey(name);
-            if (!uiMode.HasValue)
-                throw new NotSupportedException("UI mode unknown: " + name);
-
-            return uiMode.Value;
-        }
-
-        public static PdfName GetName(this UIModeEnum uiMode) => PdfName.Get(codes[uiMode], true);
-    }
+    }   
 }

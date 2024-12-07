@@ -35,13 +35,15 @@ namespace PdfClown.Documents.Files
     [PDF(VersionEnum.PDF13)]
     public sealed class RelatedFiles : PdfObjectWrapper<PdfArray>, IDictionary<string, EmbeddedFile>
     {
-        public RelatedFiles(PdfDocument context) : base(context, new PdfArray())
+        public RelatedFiles(PdfDocument context)
+            : base(context, new PdfArrayImpl())
         { }
 
-        public RelatedFiles(PdfDirectObject baseObject) : base(baseObject)
+        public RelatedFiles(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
 
-        public int Count => BaseDataObject.Count;
+        public int Count => DataObject.Count;
 
         public bool IsReadOnly => false;
 
@@ -50,7 +52,7 @@ namespace PdfClown.Documents.Files
             get
             {
                 var keys = new List<string>();
-                var itemPairs = BaseDataObject;
+                var itemPairs = DataObject;
                 for (int index = 0, length = itemPairs.Count; index < length; index += 2)
                 {
                     keys.Add(itemPairs.GetString(index));
@@ -64,10 +66,10 @@ namespace PdfClown.Documents.Files
             get
             {
                 var values = new List<EmbeddedFile>();
-                var itemPairs = BaseDataObject;
+                var itemPairs = DataObject;
                 for (int index = 1, length = itemPairs.Count; index < length; index += 2)
                 {
-                    values.Add(Wrap<EmbeddedFile>(itemPairs[index]));
+                    values.Add(itemPairs.Get<EmbeddedFile>(index, PdfName.EmbeddedFile));
                 }
                 return values;
             }
@@ -75,15 +77,15 @@ namespace PdfClown.Documents.Files
 
         public void Add(string key, EmbeddedFile value)
         {
-            var itemPairs = BaseDataObject;
+            var itemPairs = DataObject;
             // New entry.
-            itemPairs.Add(new PdfTextString(key));
-            itemPairs.Add(value.BaseObject);
+            itemPairs.Add(key);
+            itemPairs.Add(value.Reference);
         }
 
         public bool ContainsKey(string key)
         {
-            PdfArray itemPairs = BaseDataObject;
+            PdfArray itemPairs = DataObject;
             for (int index = 0, length = itemPairs.Count; index < length; index += 2)
             {
                 if (itemPairs.GetString(index).Equals(key, StringComparison.Ordinal))
@@ -94,7 +96,7 @@ namespace PdfClown.Documents.Files
 
         public bool Remove(string key)
         {
-            PdfArray itemPairs = BaseDataObject;
+            PdfArray itemPairs = DataObject;
             for (int index = 0, length = itemPairs.Count; index < length; index += 2)
             {
                 if (itemPairs.GetString(index).Equals(key, StringComparison.Ordinal))
@@ -111,29 +113,29 @@ namespace PdfClown.Documents.Files
         {
             get
             {
-                PdfArray itemPairs = BaseDataObject;
+                PdfArray itemPairs = DataObject;
                 for (int index = 0, length = itemPairs.Count; index < length; index += 2)
                 {
                     if (itemPairs.GetString(index).Equals(key, StringComparison.Ordinal))
-                        return Wrap<EmbeddedFile>(itemPairs[index + 1]);
+                        return itemPairs.Get<EmbeddedFile>(index + 1);
                 }
                 return null;
             }
             set
             {
-                PdfArray itemPairs = BaseDataObject;
+                PdfArray itemPairs = DataObject;
                 for (int index = 0, length = itemPairs.Count; index < length; index += 2)
                 {
                     // Already existing entry?
                     if (itemPairs.GetString(index).Equals(key, StringComparison.Ordinal))
                     {
-                        itemPairs[index + 1] = value.BaseObject;
+                        itemPairs.Set(index + 1, value.Reference);
                         return;
                     }
                 }
                 // New entry.
-                itemPairs.Add(new PdfTextString(key));
-                itemPairs.Add(value.BaseObject);
+                itemPairs.Add(key);
+                itemPairs.Add(value.Reference);
             }
         }
 
@@ -153,7 +155,7 @@ namespace PdfClown.Documents.Files
 
         public void Clear()
         {
-            BaseDataObject.Clear();
+            DataObject.Clear();
         }
 
         bool ICollection<KeyValuePair<string, EmbeddedFile>>.Contains(KeyValuePair<string, EmbeddedFile> entry)
@@ -176,12 +178,12 @@ namespace PdfClown.Documents.Files
 
         IEnumerator<KeyValuePair<string, EmbeddedFile>> IEnumerable<KeyValuePair<string, EmbeddedFile>>.GetEnumerator()
         {
-            PdfArray itemPairs = BaseDataObject;
+            PdfArray itemPairs = DataObject;
             for (int i = 0, c = itemPairs.Count; i < c; i += 2)
             {
                 yield return new KeyValuePair<string, EmbeddedFile>(
                   itemPairs.GetString(i),
-                  Wrap<EmbeddedFile>(itemPairs[i + 1]));
+                  itemPairs.Get<EmbeddedFile>(i + 1));
             }
         }
 

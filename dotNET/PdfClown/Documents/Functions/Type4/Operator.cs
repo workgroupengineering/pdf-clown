@@ -20,10 +20,8 @@ namespace PdfClown.Documents.Functions.Type4
     public abstract class Operator
     {
 
-        /**
-		 * Executes the operator. The method can inspect and manipulate the stack.
-		 * @param context the execution context
-		 */
+        /// <summary>Executes the operator. The method can inspect and manipulate the stack.</summary>
+        /// <param name="context">the execution context</param>
         public abstract void Execute(ExecutionContext context);
 
     }

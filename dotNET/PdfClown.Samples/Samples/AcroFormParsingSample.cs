@@ -1,36 +1,25 @@
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Entities;
-using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Forms;
-using PdfClown.Files;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to inspect the AcroForm fields of a PDF document.</summary>
-    */
-    public class AcroFormParsingSample
-      : Sample
+    /// <summary>This sample demonstrates how to inspect the AcroForm fields of a PDF document.</summary>
+    public class AcroFormParsingSample : Sample
     {
-        public override void Run(
-          )
+        public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
+                var catalog = document.Catalog;
 
                 // 2. Get the acroform!
-                Form form = document.Form;
-                if (!form.Exists())
+                AcroForm form = catalog.Form;
+                if (form.Virtual)
                 { Console.WriteLine("\nNo acroform available (AcroForm dictionary not found)."); }
                 else
                 {
@@ -40,19 +29,19 @@ namespace PdfClown.Samples.CLI
                     Dictionary<string, int> objCounters = new Dictionary<string, int>(StringComparer.Ordinal);
                     foreach (Field field in form.Fields.Values)
                     {
-                        Console.WriteLine("* Field '" + field.FullName + "' (" + field.BaseObject + ")");
+                        Console.WriteLine("* Field '" + field.FullName + "' (" + field.RefOrSelf + ")");
 
                         string typeName = field.GetType().Name;
                         Console.WriteLine("    Type: " + typeName);
                         Console.WriteLine("    Value: " + field.Value);
-                        Console.WriteLine("    Data: " + field.BaseDataObject.ToString());
+                        Console.WriteLine("    Data: " + field.DataObject.ToString());
 
                         int widgetIndex = 0;
                         foreach (Widget widget in field.Widgets)
                         {
                             Console.WriteLine("    Widget " + (++widgetIndex) + ":");
                             var widgetPage = widget.Page;
-                            Console.WriteLine("      Page: " + (widgetPage == null ? "undefined" : widgetPage.Number + " (" + widgetPage.BaseObject + ")"));
+                            Console.WriteLine("      Page: " + (widgetPage == null ? "undefined" : widgetPage.Number + " (" + widgetPage.RefOrSelf + ")"));
 
                             SKRect widgetBox = widget.GetViewBounds();
                             Console.WriteLine("      Coordinates: {x:" + Math.Round(widgetBox.Left) + "; y:" + Math.Round(widgetBox.Top) + "; width:" + Math.Round(widgetBox.Width) + "; height:" + Math.Round(widgetBox.Height) + "}");

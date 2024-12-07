@@ -23,19 +23,13 @@
  */
 
 using System;
-using Org.BouncyCastle.Asn1.Cms;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Net.Security;
-using System.Runtime.ConstrainedExecution;
 using System.Diagnostics;
 using PdfClown.Util.Collections;
-using PdfClown.Bytes;
-using Org.BouncyCastle.X509.Store;
 using System.Threading.Tasks;
 using System.DirectoryServices.Protocols;
 

@@ -23,10 +23,7 @@ using System.Linq;
 namespace PdfClown.Documents.Functions.Type4
 {
 
-    /**
-     * Provides the stack operators such as "Pop" and "dup".
-     *
-     */
+    /// <summary>Provides the stack operators such as "Pop" and "dup".</summary>
     internal class StackOperators
     {
 
@@ -35,7 +32,7 @@ namespace PdfClown.Documents.Functions.Type4
             // Private constructor.
         }
 
-        /** Implements the "copy" operator. */
+        /// <summary>Implements the "copy" operator.</summary>
         internal sealed class Copy : Operator
         {
             public override void Execute(ExecutionContext context)
@@ -52,7 +49,7 @@ namespace PdfClown.Documents.Functions.Type4
             }
         }
 
-        /** Implements the "dup" operator. */
+        /// <summary>Implements the "dup" operator.</summary>
         internal sealed class Dup : Operator
         {
             public override void Execute(ExecutionContext context)
@@ -63,7 +60,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "exch" operator. */
+        /// <summary>Implements the "exch" operator.</summary>
         internal sealed class Exch : Operator
         {
             public override void Execute(ExecutionContext context)
@@ -77,7 +74,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "index" operator. */
+        /// <summary>Implements the "index" operator.</summary>
         internal sealed class Index : Operator
         {
             public override void Execute(ExecutionContext context)
@@ -94,7 +91,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "Pop" operator. */
+        /// <summary>Implements the "Pop" operator.</summary>
         internal sealed class Pop : Operator
         {
             public override void Execute(ExecutionContext context)
@@ -104,7 +101,7 @@ namespace PdfClown.Documents.Functions.Type4
             }
         }
 
-        /** Implements the "roll" operator. */
+        /// <summary>Implements the "roll" operator.</summary>
         internal sealed class Roll : Operator
         {
             public override void Execute(ExecutionContext context)

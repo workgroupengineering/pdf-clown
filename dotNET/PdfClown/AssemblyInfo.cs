@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 [assembly: AssemblyCulture("")] // Culture-neutral (main assembly, NOT satellite!).
 

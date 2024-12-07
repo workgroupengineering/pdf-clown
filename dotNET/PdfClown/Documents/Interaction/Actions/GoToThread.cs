@@ -23,28 +23,21 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Jump to a specified bead on an article thread' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Jump to a specified bead on an article thread' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class GoToThread : Action, IGoToAction
+    public sealed class GoToThread : PdfAction, IGoToAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public GoToThread(PdfDocument context)
             : base(context, PdfName.Thread)
         { }
 
-        internal GoToThread(PdfDirectObject baseObject)
+        internal GoToThread(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 

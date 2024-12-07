@@ -30,31 +30,44 @@ namespace PdfClown.Documents.Contents.Layers
 {
     /// <summary>Optional content properties [PDF:1.7:4.10.3].</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class LayerDefinition : PdfObjectWrapper<PdfDictionary>, ILayerConfiguration
+    public sealed class LayerDefinition : PdfDictionary, ILayerConfiguration
     {
-        public LayerDefinition(PdfDocument context) : base(context, new PdfDictionary())
+        private Layers layers;
+
+        public LayerDefinition()
+            : base()
         { }
 
-        public LayerDefinition(PdfDirectObject baseObject) : base(baseObject)
+        public LayerDefinition(PdfDocument context)
+            : base(context, new())
         { }
+
+        internal LayerDefinition(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+        public override PdfName ModifyTypeKey(PdfName key) => key == PdfName.D ? PdfName.Config : key;
 
         /// <summary>Gets the layer configurations used under particular circumstances.</summary>
-        public Array<LayerConfiguration> AlternateConfigurations
+        public LayerConfigurations AlternateConfigurations
         {
-            get => Wrap<Array<LayerConfiguration>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.Configs));
-            set => BaseDataObject[PdfName.Configs] = value.BaseObject;
+            get => GetOrCreate<LayerConfigurations>(PdfName.Configs);
+            set => Set(PdfName.Configs, value);
         }
 
         /// <summary>Gets the default layer configuration, that is the initial state of the optional
         /// content groups when a document is first opened.</summary>
         public LayerConfiguration DefaultConfiguration
         {
-            get => Wrap<LayerConfiguration>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.D));
-            set => BaseDataObject[PdfName.D] = value.BaseObject;
+            get => GetOrCreate<LayerConfiguration>(PdfName.D);
+            set => Set(PdfName.D, value);
         }
 
         /// <summary>Gets the collection of all the layers existing in the document.</summary>
-        public Layers Layers => Wrap<Layers>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.OCGs));
+        public Layers Layers
+        {
+            get => layers ??= new(GetOrCreate<PdfArrayImpl>(PdfName.OCGs));
+            set => Set(PdfName.OCGs, layers = value);
+        }
 
         public string Creator
         {
@@ -68,7 +81,7 @@ namespace PdfClown.Documents.Contents.Layers
             set => DefaultConfiguration.Intents = value;
         }
 
-        public Array<OptionGroup> OptionGroups => DefaultConfiguration.OptionGroups;
+        public OptionGroups OptionGroups => DefaultConfiguration.OptionGroups;
 
         public string Title
         {

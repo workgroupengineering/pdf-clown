@@ -24,21 +24,28 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
     /// <summary>Appearance [PDF:1.6:8.4.4].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class Appearance : PdfObjectWrapper<PdfDictionary>
+    public sealed class Appearance : PdfDictionary
     {
         private AppearanceStates down;
         private AppearanceStates normal;
         private AppearanceStates roolover;
 
-        public Appearance(PdfDocument context) : base(context, new PdfDictionary())
+        public Appearance()
+            : this((PdfDocument)null)
         { }
 
-        public Appearance(PdfDirectObject baseObject) : base(baseObject)
+        public Appearance(PdfDocument context) 
+            : base(context, new ())
+        { }
+
+        internal Appearance(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets the annotation's down appearance.</summary>

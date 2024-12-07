@@ -51,14 +51,14 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
         private Length borderRadius = DefaultBorderRadius;
         private Length borderWidth = DefaultBorderWidth;
         private Color color = DefaultColor;
-        private Font font;
+        private PdfFont font;
         private string text;
         private TypeEnum type;
         private float width;
 
         private PdfDocument document;
 
-        public StampAppearanceBuilder(PdfDocument document, TypeEnum type, string text, float width, Font font)
+        public StampAppearanceBuilder(PdfDocument document, TypeEnum type, string text, float width, PdfFont font)
         {
             this.document = document;
             this.type = type;
@@ -145,7 +145,7 @@ namespace PdfClown.Documents.Interaction.Annotations.styles
             set => color = value;
         }
 
-        public Font Font
+        public PdfFont Font
         {
             set => font = value;
         }

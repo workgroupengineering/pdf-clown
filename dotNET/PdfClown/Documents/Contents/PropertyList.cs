@@ -25,46 +25,41 @@
 
 using PdfClown.Documents.Contents.Layers;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
     /// <summary>Private information meaningful to the program (application or plugin extension)
     /// creating the marked content [PDF:1.6:10.5.1].</summary>
     [PDF(VersionEnum.PDF12)]
-    public class PropertyList : PdfObjectWrapper<PdfDictionary>
+    public class PropertyList : PdfDictionary
     {
         /// <summary>Wraps the specified base object into a property list object.</summary>
-        /// <param name="baseObject">Base object of a property list object.</param>
+        /// <param name="dictionary">Base object of a property list object.</param>
         /// <returns>Property list object corresponding to the base object.</returns>
-        public static PropertyList Wrap(PdfDirectObject baseObject)
+        internal static PropertyList Create(Dictionary<PdfName, PdfDirectObject> dictionary)
         {
-            if (baseObject == null)
-                return null;
-            if (baseObject.Wrapper is PropertyList propertyList)
-                return propertyList;
-
-            var type = ((PdfDictionary)baseObject.Resolve()).Get<PdfName>(PdfName.Type);
+            var type = dictionary.Get<PdfName>(PdfName.Type);
             if (Layer.TypeName.Equals(type))
-                return new Layer(baseObject);
+                return new Layer(dictionary);
             else if (LayerMembership.TypeName.Equals(type))
-                return new LayerMembership(baseObject);
+                return new LayerMembership(dictionary);
             else
-                return new PropertyList(baseObject);
+                return new PropertyList(dictionary);
         }
 
-        public PropertyList(PdfDocument context, PdfDictionary baseDataObject)
+        public PropertyList(PdfDocument context, Dictionary<PdfName, PdfDirectObject> baseDataObject)
             : base(context, baseDataObject)
         { }
 
-        public PropertyList(PdfDirectObject baseObject)
+        public PropertyList(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
-
         public int Id
         {
-            get => BaseDataObject.GetInt(PdfName.MCID);
-            set => BaseDataObject.Set(PdfName.MCID, value);
+            get => GetInt(PdfName.MCID);
+            set => Set(PdfName.MCID, value);
         }
     }
 }

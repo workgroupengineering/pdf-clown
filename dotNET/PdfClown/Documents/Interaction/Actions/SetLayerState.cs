@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.Layers;
 using PdfClown.Objects;
 using PdfClown.Util;
@@ -38,8 +36,10 @@ namespace PdfClown.Documents.Interaction.Actions
 {
     /// <summary>'Set the state of one or more optional content groups' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class SetLayerState : Action
+    public sealed class SetLayerState : PdfAction
     {
+        private LayerStates states;
+
         public enum StateModeEnum
         {
             On,
@@ -62,7 +62,7 @@ namespace PdfClown.Documents.Interaction.Actions
                         int itemIndex = baseStates.GetBaseIndex(parentState)
                           + 1; // Name object offset.
                         for (int count = Count; count > 0; count--)
-                        { baseStates.BaseDataObject.RemoveAt(itemIndex); }
+                        { baseStates.DataObject.RemoveAt(itemIndex); }
                     }
                     // High-level definition.
                     base.ClearItems();
@@ -80,7 +80,7 @@ namespace PdfClown.Documents.Interaction.Actions
                         int itemIndex = baseIndex
                           + 1 // Name object offset.
                           + index; // Layer object offset.
-                        baseStates.BaseDataObject[itemIndex] = item.BaseObject;
+                        baseStates.DataObject.Set(itemIndex, item.RefOrSelf);
                     }
                 }
 
@@ -96,7 +96,7 @@ namespace PdfClown.Documents.Interaction.Actions
                         int itemIndex = baseIndex
                           + 1 // Name object offset.
                           + index; // Layer object offset.
-                        baseStates.BaseDataObject.RemoveAt(itemIndex);
+                        baseStates.DataObject.RemoveAt(itemIndex);
                     }
                 }
 
@@ -106,7 +106,7 @@ namespace PdfClown.Documents.Interaction.Actions
                     InsertItem(index, item);
                 }
 
-                private LayerStates BaseStates => parentState != null ? parentState.baseStates : null;
+                private LayerStates BaseStates => parentState?.baseStates;
             }
 
             private readonly LayersImpl layers;
@@ -162,7 +162,7 @@ namespace PdfClown.Documents.Interaction.Actions
                     if (baseStates != null)
                     {
                         int baseIndex = baseStates.GetBaseIndex(this);
-                        baseStates.BaseDataObject[baseIndex] = value.GetName();
+                        baseStates.DataObject.Set(baseIndex, GetName(value));
                     }
                 }
             }
@@ -178,7 +178,8 @@ namespace PdfClown.Documents.Interaction.Actions
         {
             private List<LayerState> items;
 
-            public LayerStates() : base(new PdfArray())
+            public LayerStates()
+                : base(new PdfArrayImpl())
             { }
 
             public LayerStates(PdfDirectObject baseObject) : base(baseObject)
@@ -194,11 +195,11 @@ namespace PdfClown.Documents.Interaction.Actions
                 { Add(item); }
                 else
                 {
-                    PdfArray baseDataObject = BaseDataObject;
+                    PdfArray baseDataObject = DataObject;
                     // Low-level definition.
-                    baseDataObject.Insert(baseIndex++, item.Mode.GetName());
+                    baseDataObject.Insert(baseIndex++, GetName(item.Mode));
                     foreach (Layer layer in item.Layers)
-                    { baseDataObject.Insert(baseIndex++, layer.BaseObject); }
+                    { baseDataObject.Insert(baseIndex++, layer.RefOrSelf); }
                     // High-level definition.
                     items.Insert(index, item);
                     item.Attach(this);
@@ -214,11 +215,11 @@ namespace PdfClown.Documents.Interaction.Actions
                     if (baseIndex == -1)
                         throw new IndexOutOfRangeException();
 
-                    PdfArray baseDataObject = BaseDataObject;
+                    PdfArray baseDataObject = DataObject;
                     bool done = false;
                     for (int baseCount = baseDataObject.Count; baseIndex < baseCount;)
                     {
-                        if (baseDataObject[baseIndex] is PdfName)
+                        if (baseDataObject.Get(baseIndex) is PdfName)
                         {
                             if (done)
                                 break;
@@ -248,11 +249,11 @@ namespace PdfClown.Documents.Interaction.Actions
 
             public void Add(LayerState item)
             {
-                PdfArray baseDataObject = BaseDataObject;
+                var baseDataObject = DataObject;
                 // Low-level definition.
-                baseDataObject.Add(item.Mode.GetName());
+                baseDataObject.AddSimple(GetName(item.Mode));
                 foreach (Layer layer in item.Layers)
-                { baseDataObject.Add(layer.BaseObject); }
+                { baseDataObject.Add(layer.RefOrSelf); }
                 // High-level definition.
                 items.Add(item);
                 item.Attach(this);
@@ -261,7 +262,7 @@ namespace PdfClown.Documents.Interaction.Actions
             public void Clear()
             {
                 // Low-level definition.
-                BaseDataObject.Clear();
+                DataObject.Clear();
                 // High-level definition.
                 foreach (LayerState item in items)
                 { item.Detach(); }
@@ -306,11 +307,11 @@ namespace PdfClown.Documents.Interaction.Actions
             {
                 int baseIndex = -1;
                 {
-                    PdfArray baseDataObject = BaseDataObject;
+                    PdfArray baseDataObject = DataObject;
                     int layerStateIndex = -1;
                     for (int baseItemIndex = 0, baseItemCount = baseDataObject.Count; baseItemIndex < baseItemCount; baseItemIndex++)
                     {
-                        if (baseDataObject[baseItemIndex] is PdfName)
+                        if (baseDataObject.Get(baseItemIndex) is PdfName)
                         {
                             layerStateIndex++;
                             if (layerStateIndex == index)
@@ -332,21 +333,21 @@ namespace PdfClown.Documents.Interaction.Actions
             {
                 int baseIndex = -1;
                 {
-                    PdfArray baseDataObject = BaseDataObject;
+                    PdfArray baseDataObject = DataObject;
                     for (int baseItemIndex = 0, baseItemCount = baseDataObject.Count; baseItemIndex < baseItemCount; baseItemIndex++)
                     {
-                        PdfDirectObject baseItem = baseDataObject[baseItemIndex];
+                        var baseItem = baseDataObject.Get(baseItemIndex);
                         if (baseItem is PdfName baseName
-                          && baseName.Equals(item.Mode.GetName()))
+                          && baseName.Equals(GetName(item.Mode)))
                         {
                             foreach (Layer layer in item.Layers)
                             {
                                 if (++baseItemIndex >= baseItemCount)
                                     break;
 
-                                baseItem = baseDataObject[baseItemIndex];
+                                baseItem = baseDataObject.Get(baseItemIndex);
                                 if (baseItem is PdfName
-                                  || !baseItem.Equals(layer.BaseObject))
+                                  || !baseItem.Equals(layer.RefOrSelf))
                                     break;
                             }
                         }
@@ -358,33 +359,56 @@ namespace PdfClown.Documents.Interaction.Actions
             private void Initialize()
             {
                 items = new List<LayerState>();
-                PdfArray baseDataObject = BaseDataObject;
+                PdfArray baseDataObject = DataObject;
                 StateModeEnum? mode = null;
                 LayerState.LayersImpl layers = null;
                 for (int baseIndex = 0, baseCount = baseDataObject.Count; baseIndex < baseCount; baseIndex++)
                 {
-                    PdfDirectObject baseObject = baseDataObject[baseIndex];
+                    var baseObject = baseDataObject.Get(baseIndex);
                     if (baseObject is PdfName)
                     {
                         if (mode.HasValue)
                         { items.Add(new LayerState(mode.Value, layers, this)); }
-                        mode = StateModeEnumExtension.Get((PdfName)baseObject);
+                        mode = GetStateMode((PdfName)baseObject);
                         layers = new LayerState.LayersImpl();
                     }
                     else
-                    { layers.Add(Wrap<Layer>(baseObject)); }
+                    { layers.Add((Layer)baseObject.Resolve(PdfName.OCG)); }
                 }
                 if (mode.HasValue)
                 { items.Add(new LayerState(mode.Value, layers, this)); }
             }
         }
 
+        private static readonly BiDictionary<StateModeEnum, PdfName> stateModeCodes = new()
+        {
+            [StateModeEnum.On] = PdfName.ON,
+            [StateModeEnum.Off] = PdfName.OFF,
+            [StateModeEnum.Toggle] = PdfName.Toggle
+        };
+
+        public static StateModeEnum GetStateMode(PdfName name)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            StateModeEnum? stateMode = stateModeCodes.GetKey(name);
+            if (!stateMode.HasValue)
+                throw new NotSupportedException("State mode unknown: " + name);
+
+            return stateMode.Value;
+        }
+
+        public static PdfName GetName(StateModeEnum stateMode) => stateModeCodes[stateMode];
+
         /// <summary>Creates a new action within the given document context.</summary>
-        public SetLayerState(PdfDocument context) : this(context, (LayerState)null)
+        public SetLayerState(PdfDocument context)
+            : this(context, (LayerState)null)
         { }
 
         /// <summary>Creates a new action within the given document context.</summary>
-        public SetLayerState(PdfDocument context, params LayerState[] states) : base(context, PdfName.SetOCGState)
+        public SetLayerState(PdfDocument context, params LayerState[] states)
+            : base(context, PdfName.SetOCGState)
         {
             States = new LayerStates();
             if (states != null && states.Length > 0)
@@ -395,43 +419,18 @@ namespace PdfClown.Documents.Interaction.Actions
             }
         }
 
-        internal SetLayerState(PdfDirectObject baseObject) : base(baseObject)
+        internal SetLayerState(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         public LayerStates States
         {
-            get => new LayerStates(BaseDataObject[PdfName.State]);
-            set => BaseDataObject[PdfName.State] = value.BaseObject;
+            get => states ??= new LayerStates(Get(PdfName.State));
+            set => Set(PdfName.State, value);
         }
 
         public override string GetDisplayName() => "Set Layer State";
     }
 
-    internal static class StateModeEnumExtension
-    {
-        private static readonly BiDictionary<SetLayerState.StateModeEnum, PdfName> codes;
 
-        static StateModeEnumExtension()
-        {
-            codes = new BiDictionary<SetLayerState.StateModeEnum, PdfName>();
-            codes[SetLayerState.StateModeEnum.On] = PdfName.ON;
-            codes[SetLayerState.StateModeEnum.Off] = PdfName.OFF;
-            codes[SetLayerState.StateModeEnum.Toggle] = PdfName.Toggle;
-        }
-
-        public static SetLayerState.StateModeEnum Get(PdfName name)
-        {
-            if (name == null)
-                throw new ArgumentNullException("name");
-
-            SetLayerState.StateModeEnum? stateMode = codes.GetKey(name);
-            if (!stateMode.HasValue)
-                throw new NotSupportedException("State mode unknown: " + name);
-
-            return stateMode.Value;
-        }
-
-        public static PdfName GetName(this SetLayerState.StateModeEnum stateMode)
-        { return codes[stateMode]; }
-    }
 }

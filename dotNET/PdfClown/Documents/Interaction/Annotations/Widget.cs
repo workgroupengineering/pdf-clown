@@ -84,10 +84,16 @@ namespace PdfClown.Documents.Interaction.Annotations
             return HighlightModeEnum.Invert;
         }
 
+        public Widget(PdfPage page)
+            : base(page.Document, PdfName.Widget)
+        { }
+
         /// <summary>Creates a new generic widget.</summary>
         public Widget(PdfPage page, SKRect box)
             : base(page, PdfName.Widget, box, null)
-        { Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Print, true); }
+        {
+            Flags = EnumUtils.Mask(Flags, AnnotationFlagsEnum.Print, true);
+        }
 
         /// <summary>Creates a new dual-state widget (required by <see
         /// cref="PdfClown.Documents.forms.RadioButton"/> fields).</summary>
@@ -98,33 +104,28 @@ namespace PdfClown.Documents.Interaction.Annotations
             //NOTE: This is necessary to keep the reference to the on-state name.
             var appearance = new Appearance(page.Document);
             Appearance = appearance;
-            AppearanceStates normalAppearance = appearance.Normal;
+            var normalAppearance = appearance.Normal;
             normalAppearance[PdfName.Get(name)] = new FormXObject(page.Document, Box.Size);
         }
 
-        internal Widget(PdfDirectObject baseObject) : base(baseObject)
+        internal Widget(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
-
-        public override AnnotationActions Actions
-        {
-            get => WidgetActions.Wrap(this, BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.AA));
-            set => base.Actions = value;
-        }
 
         /// <summary>Gets/Sets the annotation's appearance characteristics to be used for its visual
         /// presentation on the page.</summary>
         public AppearanceCharacteristics AppearanceCharacteristics
         {
-            get => Wrap<AppearanceCharacteristics>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MK));
-            set => BaseDataObject[PdfName.MK] = value.BaseObject;
+            get => Get<AppearanceCharacteristics>(PdfName.MK);
+            set => Set(PdfName.MK, value);
         }
 
         /// <summary>Gets/Sets the annotation's highlighting mode, the visual effect to be used when the
         /// mouse button is pressed or held down inside its active area.</summary>
         public HighlightModeEnum HighlightMode
         {
-            get => ToHighlightModeEnum(BaseDataObject.GetString(PdfName.H));
-            set => BaseDataObject[PdfName.H] = ToCode(value);
+            get => ToHighlightModeEnum(GetString(PdfName.H));
+            set => this[PdfName.H] = ToCode(value);
         }
 
         /// <summary>Gets the widget value (applicable to dual-state widgets only). It corresponds to the
@@ -145,7 +146,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public override string Name
         {
-            get => base.Name ?? BaseDataObject.GetString(PdfName.T);
+            get => base.Name ?? GetString(PdfName.T);
             set => base.Name = value;
         }
 
@@ -157,11 +158,17 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public Field FormsField
         {
-            get => formsField ??= (Document.Form.Fields[BaseDataObject.GetString(PdfName.T)]
-                    ?? BaseObject.Wrapper2 as Field);
+            get => formsField ??= (Catalog.Form.Fields[GetString(PdfName.T)]
+                    ?? Catalog.Form.Fields.Wrap(Reference));
         }
 
         public override bool AllowSize => false;
+
+        public override FormXObject ResetAppearance(SKRect box, out SKMatrix zeroMatrix)
+        {
+            zeroMatrix = SKMatrix.Identity;
+            return Appearance.Normal[null] ?? base.ResetAppearance(box, out zeroMatrix);
+        }
 
         protected override FormXObject GenerateAppearance()
         {

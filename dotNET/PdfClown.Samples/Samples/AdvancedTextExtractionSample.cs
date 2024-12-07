@@ -1,29 +1,25 @@
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.Scanner;
 using PdfClown.Tools;
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Samples.CLI
 {
     /// <summary>This sample demonstrates how to retrieve text content along with its graphic attributes
     /// (font, font size, text color, text rendering mode, text bounding box, and so on) from a PDF document;
     /// text is automatically sorted and aggregated.</summary>
-
-
     public class AdvancedTextExtractionSample : Sample
     {
         public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
+                var catalog = document.Catalog;
 
                 // 2. Text extraction from the document pages.
                 var extractor = new TextExtractor();
-                foreach (var page in document.Pages)
+                foreach (var page in catalog.Pages)
                 {
                     if (!PromptNextPage(page, false))
                     {
@@ -31,7 +27,7 @@ namespace PdfClown.Samples.CLI
                         break;
                     }
 
-                    IList<ITextString> textStrings = extractor.Extract(page)[TextExtractor.DefaultArea];
+                    var textStrings = extractor.Extract(page)[TextExtractor.DefaultArea];
                     foreach (ITextString textString in textStrings)
                     {
                         var textStringQuad = textString.Quad;

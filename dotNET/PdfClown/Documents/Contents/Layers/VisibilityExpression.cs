@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown;
 using PdfClown.Objects;
 using PdfClown.Util;
 
@@ -31,12 +30,10 @@ using System;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Visibility expression, used to compute visibility of content based on a set of layers
-      [PDF:1.7:4.10.1].</summary>
-    */
+    /// <summary>Visibility expression, used to compute visibility of content based on a set of layers
+    /// [PDF:1.7:4.10.1].</summary>
     [PDF(VersionEnum.PDF16)]
-    public class VisibilityExpression : PdfObjectWrapper2<PdfArray>
+    public class VisibilityExpression : PdfObjectWrapper<PdfArray>
     {
         public enum OperatorEnum
         {
@@ -45,66 +42,31 @@ namespace PdfClown.Documents.Contents.Layers
             Not
         }
 
-        private class OperandsImpl : Array<IPdfObjectWrapper>
+        private static readonly BiDictionary<OperatorEnum, string> operatorCodes = new()
         {
-            private class ItemWrapper : IEntryWrapper<IPdfObjectWrapper>
-            {
-                public IPdfObjectWrapper Wrap(PdfDirectObject baseObject)
-                {
-                    if (baseObject.Wrapper is IPdfObjectWrapper wrapper)
-                        return wrapper;
-                    if (baseObject.Resolve() is PdfArray)
-                        return Wrap2<VisibilityExpression>(baseObject);
-                    else
-                        return Wrap<Layer>(baseObject);
-                }
-            }
+            [OperatorEnum.And] = PdfName.And.StringValue,
+            [OperatorEnum.Not] = PdfName.Not.StringValue,
+            [OperatorEnum.Or] = PdfName.Or.StringValue
+        };
 
-            private static readonly ItemWrapper Wrapper = new ItemWrapper();
+        public static OperatorEnum GetOperator(string name)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
 
-            public OperandsImpl(PdfDirectObject baseObject) : base(Wrapper, baseObject)
-            { }
+            OperatorEnum? @operator = operatorCodes.GetKey(name);
+            if (!@operator.HasValue)
+                throw new NotSupportedException("Operator unknown: " + name);
 
-            public override int Count => base.Count - 1;
-
-            public override int IndexOf(IPdfObjectWrapper item)
-            {
-                int index = base.IndexOf(item);
-                return index > 0 ? index - 1 : -1;
-            }
-
-            public override void Insert(int index, IPdfObjectWrapper item)
-            {
-                if (PdfName.Not.Equals(base[0]) && base.Count >= 2)
-                    throw new ArgumentException("'Not' operator requires only one operand.");
-
-                ValidateItem(item);
-                base.Insert(index + 1, item);
-            }
-
-            public override void RemoveAt(int index)
-            { base.RemoveAt(index + 1); }
-
-            public override IPdfObjectWrapper this[int index]
-            {
-                get => base[index + 1];
-                set
-                {
-                    ValidateItem(value);
-                    base[index + 1] = value;
-                }
-            }
-
-            private void ValidateItem(IPdfObjectWrapper item)
-            {
-                if (!(item is VisibilityExpression
-                  || item is Layer))
-                    throw new ArgumentException("Operand MUST be either VisibilityExpression or Layer");
-            }
+            return @operator.Value;
         }
 
+        public static string GetOperatorName(OperatorEnum @operator) => operatorCodes[@operator];
+
+        private OperandsImpl operands;
+
         public VisibilityExpression(PdfDocument context, OperatorEnum @operator, params IPdfObjectWrapper[] operands)
-            : base(context, new PdfArray(operands?.Length ?? 1) { (PdfDirectObject)null })
+            : base(context, new PdfArrayImpl(operands?.Length ?? 1) { (PdfDirectObject)null })
         {
             Operator = @operator;
             var operands_ = Operands;
@@ -115,48 +77,19 @@ namespace PdfClown.Documents.Contents.Layers
         public VisibilityExpression(PdfDirectObject baseObject) : base(baseObject)
         { }
 
-        public Array<IPdfObjectWrapper> Operands => Wrap<OperandsImpl>(BaseObject);
+        public ArrayWrapper<IPdfObjectWrapper> Operands => operands ??= new OperandsImpl(RefOrSelf);
 
         public OperatorEnum Operator
         {
-            get => OperatorEnumExtension.Get(BaseDataObject.GetString(0));
+            get => GetOperator(DataObject.GetString(0));
             set
             {
-                if (value == OperatorEnum.Not && BaseDataObject.Count > 2)
+                if (value == OperatorEnum.Not && DataObject.Count > 2)
                     throw new ArgumentException("'Not' operator requires only one operand.");
 
-                BaseDataObject.SetName(0, value.GetName());
+                DataObject.SetName(0, GetOperatorName(value));
             }
         }
-    }
-
-    internal static class OperatorEnumExtension
-    {
-        private static readonly BiDictionary<VisibilityExpression.OperatorEnum, string> codes;
-
-        static OperatorEnumExtension()
-        {
-            codes = new BiDictionary<VisibilityExpression.OperatorEnum, string>
-            {
-                [VisibilityExpression.OperatorEnum.And] = PdfName.And.StringValue,
-                [VisibilityExpression.OperatorEnum.Not] = PdfName.Not.StringValue,
-                [VisibilityExpression.OperatorEnum.Or] = PdfName.Or.StringValue
-            };
-        }
-
-        public static VisibilityExpression.OperatorEnum Get(string name)
-        {
-            if (name == null)
-                throw new ArgumentNullException();
-
-            VisibilityExpression.OperatorEnum? @operator = codes.GetKey(name);
-            if (!@operator.HasValue)
-                throw new NotSupportedException("Operator unknown: " + name);
-
-            return @operator.Value;
-        }
-
-        public static string GetName(this VisibilityExpression.OperatorEnum @operator) => codes[@operator];
     }
 }
 

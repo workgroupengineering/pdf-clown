@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
@@ -31,33 +32,37 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class MediaRendition : Rendition
     {
-        public MediaRendition(MediaClip clip) : base(clip.Document, PdfName.MR)
-        { Clip = clip; }
+        public MediaRendition(MediaClip clip)
+            : base(clip.Document, PdfName.MR)
+        {
+            Clip = clip;
+        }
 
-        internal MediaRendition(PdfDirectObject baseObject) : base(baseObject)
+        internal MediaRendition(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the content to be played.</summary>
         public MediaClip Clip
         {
-            get => MediaClip.Wrap(BaseDataObject[PdfName.C]);
-            set => BaseDataObject[PdfName.C] = PdfObjectWrapper.GetBaseObject(value);
+            get => Get<MediaClip>(PdfName.C);
+            set => Set(PdfName.C, value);
         }
 
         /// <summary>Gets/Sets the parameters that specify how this media rendition should be played.
         /// </summary>
         public MediaPlayParameters PlayParameters
         {
-            get => Wrap<MediaPlayParameters>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.P));
-            set => BaseDataObject[PdfName.P] = PdfObjectWrapper.GetBaseObject(value);
+            get => GetOrCreate<MediaPlayParameters>(PdfName.P);
+            set => Set(PdfName.P, value);
         }
 
         /// <summary>Gets/Sets the parameters that specify where the media rendition object should be
         /// played.<summary>
         public MediaScreenParameters ScreenParameters
         {
-            get => Wrap<MediaScreenParameters>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.SP));
-            set => BaseDataObject[PdfName.SP] = PdfObjectWrapper.GetBaseObject(value);
+            get => GetOrCreate<MediaScreenParameters>(PdfName.SP);
+            set => Set(PdfName.SP, value);
         }
     }
 }

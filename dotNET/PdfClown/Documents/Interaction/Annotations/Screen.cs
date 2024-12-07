@@ -31,6 +31,7 @@ using PdfClown.Documents.Multimedia;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -57,7 +58,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public Screen(PdfPage page, SKRect box, String text, String mediaPath, String mimeType)
             : this(page, box, text, new MediaRendition(new MediaClipData(
-                FileSpecification.Get(EmbeddedFile.Get(page.Document, mediaPath), System.IO.Path.GetFileName(mediaPath)),
+                IFileSpecification.Get(EmbeddedFile.Get(page.Document, mediaPath), System.IO.Path.GetFileName(mediaPath)),
                 mimeType))
             )
         { }
@@ -65,7 +66,7 @@ namespace PdfClown.Documents.Interaction.Annotations
         public Screen(PdfPage page, SKRect box, String text, Rendition rendition)
             : base(page, PdfName.Screen, box, text)
         {
-            Render render = new Render(this, Render.OperationEnum.PlayResume, rendition);
+            var render = new Render(this, Render.OperationEnum.PlayResume, rendition);
             {
                 // Adding preview and play/pause control...
                 /*
@@ -75,15 +76,15 @@ namespace PdfClown.Documents.Interaction.Annotations
                   only be altered setting it on another widget, we have to define an ancillary field on the
                   same page (so convoluted!).
                 */
-                string playerReference = "__player" + ((PdfReference)render.BaseObject).ObjectNumber;
-                Document.Form.Fields.Add(new TextField(playerReference, new Widget(page, SKRect.Create(box.Left, box.Top, 0, 0)), "")); // Ancillary field.
+                string playerReference = "__player" + render.Reference.Number;
+                Catalog.Form.Fields.Add(new TextField(playerReference, new Widget(page, SKRect.Create(box.Left, box.Top, 0, 0)), "")); // Ancillary field.
                 render.Script = RenderScript.Replace(PlayerPlaceholder, playerReference);
             }
             Actions.OnPageOpen = render;
 
             if (rendition is MediaRendition mediaRendition)
             {
-                if (mediaRendition.Clip.Data is FileSpecification fileSpec)
+                if (mediaRendition.Clip.Data is IFileSpecification fileSpec)
                 {
                     // Adding fallback annotation...
                     /*
@@ -92,20 +93,21 @@ namespace PdfClown.Documents.Interaction.Annotations
                       screen annotation.
                     */
                     var attachment = new FileAttachment(page, box, text, fileSpec);
-                    BaseDataObject.Set(PdfName.T, fileSpec.Path);
+                    Set(PdfName.T, fileSpec.FilePath);
                     // Force empty appearance to ensure no default icon is drawn on the canvas!
-                    attachment.BaseDataObject[PdfName.AP] = new PdfDictionary(3)
+                    attachment.Appearance = new Appearance(new Dictionary<PdfName, PdfDirectObject>(3)
                     {
                         { PdfName.D, new PdfDictionary() },
                         { PdfName.R, new PdfDictionary() },
                         { PdfName.N, new PdfDictionary() }
-                    };
+                    });
                     page.Annotations.Add(attachment);
                 }
             }
         }
 
-        internal Screen(PdfDirectObject baseObject) : base(baseObject)
+        internal Screen(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         protected override FormXObject GenerateAppearance()

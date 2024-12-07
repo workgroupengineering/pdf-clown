@@ -1,35 +1,29 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Contents;
-using colors = PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
-using fonts = PdfClown.Documents.Contents.Fonts;
-using PdfClown.Files;
+using PdfClown.Documents.Contents.Fonts;
 
 using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to obtain the actual area occupied by text shown in a PDF page.</summary>
-    */
+    /// <summary>This sample demonstrates how to obtain the actual area occupied by text shown in a PDF page.</summary>
     public class TextFrameSample : Sample
     {
         public override void Run()
         {
             // 1. Instantiate a new PDF file!
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Insert the contents into the document!
             Populate(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Text frame", "getting the actual bounding box of text shown", "text frames");
+            Serialize(document, "Text frame", "getting the actual bounding box of text shown", "text frames");
         }
 
-        /**
-          <summary>Populates a PDF file with contents.</summary>
-        */
+        /// <summary>Populates a PDF file with contents.</summary>
         private void Populate(PdfDocument document)
         {
             // 1. Add the page to the document!
@@ -39,20 +33,20 @@ namespace PdfClown.Samples.CLI
             // 2. Create a content composer for the page!
             var composer = new PrimitiveComposer(page);
 
-            var textColor = new colors::DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d);
+            var textColor = new RGBColor(115 / 255d, 164 / 255d, 232 / 255d);
             composer.SetFillColor(textColor);
             composer.SetLineDash(new LineDash(new float[] { 10 }));
             composer.SetLineWidth(.25);
 
             var blockComposer = new BlockComposer(composer);
             blockComposer.Begin(SKRect.Create(300, 400, 200, 100), XAlignmentEnum.Left, YAlignmentEnum.Middle);
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.TimesItalic), 12);
+            composer.SetFont(PdfType1Font.Load(document, FontName.TimesItalic), 12);
             blockComposer.ShowText("PrimitiveComposer.ShowText(...) methods return the actual bounding box of the text shown, allowing to precisely determine its location on the page.");
             blockComposer.End();
 
             // 3. Inserting contents...
             // Set the font to use!
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.CourierBold), 72);
+            composer.SetFont(PdfType1Font.Load(document, FontName.CourierBold), 72);
             composer.DrawPolygon(
               composer.ShowText(
                 "Text frame",
@@ -62,7 +56,7 @@ namespace PdfClown.Samples.CLI
                 45).GetPoints());
             composer.Stroke();
 
-            composer.SetFont(fonts::FontType0.Load(document, GetResourcePath("fonts" + System.IO.Path.DirectorySeparatorChar + "Ruritania-Outline.ttf")), 102);
+            composer.SetFont(PdfType0Font.Load(document, GetResourcePath("fonts" + System.IO.Path.DirectorySeparatorChar + "Ruritania-Outline.ttf")), 102);
             composer.DrawPolygon(
               composer.ShowText(
                 "Text frame",

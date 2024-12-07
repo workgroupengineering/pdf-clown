@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Util.Collections;
 using System.Collections.Generic;
 
 namespace PdfClown.Tokens

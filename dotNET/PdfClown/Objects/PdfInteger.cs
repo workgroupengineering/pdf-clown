@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Tokens;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -46,7 +45,7 @@ namespace PdfClown.Objects
 
         public PdfInteger(int value) => RawValue = value;
 
-        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
         public override int CompareTo(PdfDirectObject obj) => PdfNumber.Compare(this, obj);
 
@@ -56,12 +55,12 @@ namespace PdfClown.Objects
 
         public override int GetHashCode() => PdfNumber.GetHashCode(this);
 
-        public override void WriteTo(IOutputStream stream, PdfFile context) => stream.WriteAsString(RawValue);
+        public override void WriteTo(IOutputStream stream, PdfDocument context) => stream.WriteAsString(RawValue);
 
         public T GetValue<T>() where T : struct
         {
             if (typeof(T) == typeof(int))
-                return Unsafe.As<int, T>(ref value);
+                return Unsafe.As<int, T>(ref v);
             else if (typeof(T) == typeof(float))
             {
                 var value = FloatValue;

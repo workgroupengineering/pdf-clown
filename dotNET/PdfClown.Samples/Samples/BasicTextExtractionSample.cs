@@ -17,10 +17,8 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
-
                 // 2. Text extraction from the document pages.
                 foreach (var page in document.Pages)
                 {
@@ -50,7 +48,7 @@ namespace PdfClown.Samples.CLI
             {
                 if (content is ShowText showText)
                 {
-                    Font font = level.State.Font;
+                    PdfFont font = level.State.Font;
                     // Extract the current text chunk, decoding it!
                     Console.WriteLine(font.Decode(showText.TextBytes));
                     return false;

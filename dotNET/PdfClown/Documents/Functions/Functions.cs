@@ -26,59 +26,27 @@
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Functions
 {
-    ///<summary>List of 1-input functions combined in a Parent stitching function</see> [PDF:1.6:3.9.3].</summary>
+    /// <summary>List of 1-input functions combined in a Parent stitching function</see> [PDF:1.6:3.9.3].</summary>
     [PDF(VersionEnum.PDF13)]
-    public sealed class Functions : Array<Function>
+    public sealed class Functions : PdfArray<Function>
     {
-        public class ItemWrapper : IEntryWrapper<Function>
-        {
-            public Function Wrap(PdfDirectObject baseObject) => Function.Wrap(baseObject);
-        }
-
-        private static readonly ItemWrapper Wrapper = new ItemWrapper();
-
-        public static Functions Wrap(PdfDirectObject baseObject) => baseObject != null
-                ? baseObject.Wrapper is Functions functions ? functions : new Functions(baseObject)
-                : null;
-
-        public Functions(PdfDirectObject baseObject) : base(Wrapper, baseObject)
+        public Functions(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
-        public override Object Clone(PdfDocument context)
-        { return new NotImplementedException(); }
+        public override PdfName TypeKey => PdfName.Function;
 
-
-        public override void Insert(int index, Function value)
-        {
-            Validate(value);
-            base.Insert(index, value);
-        }
-
-        public override Function this[int index]
-        {
-            get => base[index];
-            set
-            {
-                Validate(value);
-                base[index] = value;
-            }
-        }
-
-        public override void Add(Function value)
-        {
-            Validate(value);
-            base.Add(value);
-        }
-
-        ///<summary>Checks whether the specified function is valid for insertion.</summary>
-        ///<param name="value">Function to validate.</param>
-        private void Validate(Function value)
+        /// <summary>Checks whether the specified function is valid for insertion.</summary>
+        /// <param name="value">Function to validate.</param>
+        protected override Function CheckIn(Function value)
         {
             if (value.InputCount != 1)
                 throw new ArgumentException("value parameter MUST be 1-input function.");
+            return value;
         }
     }
 }

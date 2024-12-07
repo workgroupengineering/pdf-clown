@@ -2,30 +2,26 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
+using PdfClown.Documents.Contents.Entities;
+using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using entities = PdfClown.Documents.Contents.Entities;
-using fonts = PdfClown.Documents.Contents.Fonts;
-using xObjects = PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates some of the graphics operations available
-      through the PrimitiveComposer and BlockComposer classes to compose a PDF document.</summary>
-    */
+    /// <summary>This sample demonstrates some of the graphics operations available
+    /// through the PrimitiveComposer and BlockComposer classes to compose a PDF document.</summary>
     public class GraphicsSample : Sample
     {
-        private static readonly DeviceRGBColor SampleColor = DeviceRGBColor.Get(SKColors.Red);
-        private static readonly DeviceRGBColor BackColor = new DeviceRGBColor(210 / 255d, 232 / 255d, 245 / 255d);
+        private static readonly RGBColor SampleColor = RGBColor.Get(SKColors.Red);
+        private static readonly RGBColor BackColor = new RGBColor(210 / 255d, 232 / 255d, 245 / 255d);
 
         public override void Run()
         {
             // 1. Instantiate a new PDF file!
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Insert the contents into the document!
             BuildCurvesPage(document);
@@ -37,7 +33,7 @@ namespace PdfClown.Samples.CLI
             BuildTextBlockPage4(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Composition elements", "applying the composition elements", "graphics, line styles, text alignment, shapes, circles, ellipses, spirals, polygons, rounded rectangles, images, clipping");
+            Serialize(document, "Composition elements", "applying the composition elements", "graphics, line styles, text alignment, shapes, circles, ellipses, spirals, polygons, rounded rectangles, images, clipping");
         }
 
         private void BuildCurvesPage(PdfDocument document)
@@ -49,13 +45,13 @@ namespace PdfClown.Samples.CLI
             SKSize pageSize = page.Size;
 
             // 2. Create a content composer for the page!
-            PrimitiveComposer composer = new PrimitiveComposer(page);
+            var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.CourierBold), 32);
+            composer.SetFont(PdfType1Font.Load(document, FontName.CourierBold), 32);
 
             {
-                BlockComposer blockComposer = new BlockComposer(composer);
+                var blockComposer = new BlockComposer(composer);
                 blockComposer.Begin(SKRect.Create(30, 0, pageSize.Width - 60, 50), XAlignmentEnum.Center, YAlignmentEnum.Middle);
                 blockComposer.ShowText("Curves");
                 blockComposer.End();
@@ -187,11 +183,7 @@ namespace PdfClown.Samples.CLI
                     float x = 150;
                     float branchWidth = .5f;
                     float branchRatio = 1;
-                    for (
-                      int spiralIndex = 0;
-                      spiralIndex < 4;
-                      spiralIndex++
-                      )
+                    for (int spiralIndex = 0; spiralIndex < 4; spiralIndex++)
                     {
                         float spiralTurnsCount;
                         switch (rowIndex)
@@ -219,8 +211,7 @@ namespace PdfClown.Samples.CLI
                           0,
                           360 * spiralTurnsCount,
                           branchWidth,
-                          branchRatio
-                          );
+                          branchRatio);
                         composer.Stroke();
 
                         x += spiralWidth + 10;
@@ -263,7 +254,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.CourierBold), 32);
+            composer.SetFont(PdfType1Font.Load(document, FontName.CourierBold), 32);
             {
                 BlockComposer blockComposer = new BlockComposer(composer);
                 blockComposer.Begin(SKRect.Create(30, 0, pageSize.Width - 60, 50), XAlignmentEnum.Center, YAlignmentEnum.Middle);
@@ -412,8 +403,8 @@ namespace PdfClown.Samples.CLI
             composer.Clip();
             // Showing a clown image...
             // Instantiate a jpeg image object!
-            entities::Image image = entities::Image.Get(GetResourcePath("images" + System.IO.Path.DirectorySeparatorChar + "Clown.jpg")); // Abstract image (entity).
-            xObjects::XObject imageXObject = image.ToXObject(document);
+            var image = Image.Get(GetResourcePath("images" + System.IO.Path.DirectorySeparatorChar + "Clown.jpg")); // Abstract image (entity).
+            var imageXObject = image.ToXObject(document);
             // Show the image!
             composer.ShowXObject(
               imageXObject,
@@ -437,7 +428,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
             // 3. Inserting contents...
             // Set the font to use!
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.CourierBold), 32);
+            composer.SetFont(PdfType1Font.Load(document, FontName.CourierBold), 32);
 
             var xAlignments = Enum.GetValues<XAlignmentEnum>();
             var yAlignments = Enum.GetValues<YAlignmentEnum>();
@@ -575,7 +566,7 @@ namespace PdfClown.Samples.CLI
                 YAlignmentEnum[] yAlignments = Enum.GetValues<YAlignmentEnum>();
                 step = (int)(pageSize.Height) / (xAlignments.Length * yAlignments.Length + 1);
             }
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var blockComposer = new BlockComposer(composer);
             {
                 blockComposer.Begin(SKRect.Create(30, 0, pageSize.Width - 60, step * .8f), XAlignmentEnum.Center, YAlignmentEnum.Middle);
                 composer.SetFont(mainFont, 32);
@@ -584,7 +575,7 @@ namespace PdfClown.Samples.CLI
             }
 
             // Drawing the text blocks...
-            var sampleFont = fonts::FontType1.Load(document, fonts::FontName.TimesRoman);
+            var sampleFont = PdfType1Font.Load(document, FontName.TimesRoman);
             int x = 30;
             int y = (int)(step * 1.2);
             foreach (XAlignmentEnum xAlignment in Enum.GetValues<XAlignmentEnum>())
@@ -650,7 +641,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            var mainFont = fonts::FontType1.Load(document, fonts::FontName.CourierBold);
+            var mainFont = PdfType1Font.Load(document, FontName.CourierBold);
             int stepCount = 5;
             int step = (int)(pageSize.Height) / (stepCount + 1);
             var blockComposer = new BlockComposer(composer);
@@ -666,8 +657,8 @@ namespace PdfClown.Samples.CLI
 
             // Drawing the text block...
             {
-                var sampleFont = fonts::FontType1.Load(document, fonts::FontName.TimesRoman);
-                var sampleImage = entities::Image.Get(GetResourcePath("images" + System.IO.Path.DirectorySeparatorChar + "gnu.jpg"));
+                var sampleFont = PdfType1Font.Load(document, FontName.TimesRoman);
+                var sampleImage = Image.Get(GetResourcePath("images" + System.IO.Path.DirectorySeparatorChar + "gnu.jpg"));
                 var sampleImageXObject = sampleImage.ToXObject(document);
 
                 var lineAlignments = new List<LineAlignmentEnum>(Enum.GetValues<LineAlignmentEnum>());
@@ -688,8 +679,7 @@ namespace PdfClown.Samples.CLI
                               30 + (frameWidth + 5) * imageIndex,
                               100 + (frameHeight + 5) * (index * 2 + index2),
                               frameWidth,
-                              frameHeight
-                              );
+                              frameHeight);
 
                             blockComposer.Begin(frame, XAlignmentEnum.Left, YAlignmentEnum.Top);
                             {
@@ -754,7 +744,7 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            var mainFont = fonts::FontType1.Load(document, fonts::FontName.CourierBold);
+            var mainFont = PdfType1Font.Load(document, FontName.CourierBold);
             int stepCount = 5;
             int step = (int)(pageSize.Height) / (stepCount + 1);
 
@@ -775,7 +765,7 @@ namespace PdfClown.Samples.CLI
             }
 
             // 3.2. Drawing the text blocks...
-            var sampleFont = fonts::FontType1.Load(document, fonts::FontName.TimesRoman);
+            var sampleFont = PdfType1Font.Load(document, FontName.TimesRoman);
             int x = 30;
             int y = (int)(step * 1.1);
             blockComposer.LineSpace.UnitMode = Length.UnitModeEnum.Relative;
@@ -826,10 +816,10 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(page);
 
             // 3. Drawing the page contents...
-            var mainFont = fonts::FontType1.Load(document, fonts::FontName.CourierBold);
+            var mainFont = PdfType1Font.Load(document, FontName.CourierBold);
             int stepCount = 5;
             int step = (int)pageSize.Height / (stepCount + 1);
-            BlockComposer blockComposer = new BlockComposer(composer);
+            var blockComposer = new BlockComposer(composer);
             {
                 blockComposer.Begin(
                   SKRect.Create(30, 0, pageSize.Width - 60, step * .8f),
@@ -842,7 +832,7 @@ namespace PdfClown.Samples.CLI
 
             // Drawing the text block...
             {
-                var sampleFont = fonts::FontType1.Load(document, fonts::FontName.TimesRoman);
+                var sampleFont = PdfType1Font.Load(document, FontName.TimesRoman);
                 composer.SetFont(sampleFont, 15);
 
                 float topMargin = 100;
@@ -936,8 +926,7 @@ namespace PdfClown.Samples.CLI
               new SKPoint(location.X + 70, location.Y),
               XAlignmentEnum.Left,
               YAlignmentEnum.Middle,
-              0
-              );
+              0);
             composer.End();
         }
     }

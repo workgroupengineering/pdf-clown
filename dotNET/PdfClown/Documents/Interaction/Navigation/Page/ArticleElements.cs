@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
 using PdfClown.Util;
 
@@ -35,19 +34,19 @@ namespace PdfClown.Documents.Interaction.Navigation
 {
     /// <summary>Article bead [PDF:1.7:8.3.2].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class ArticleElements : PdfObjectWrapper2<PdfDictionary>, IList<ArticleElement>
+    public sealed class ArticleElements : PdfObjectWrapper<PdfDictionary>, IList<ArticleElement>
     {
         private sealed class ElementCounter : ElementEvaluator
         {
             public int Count => index + 1;
         }
 
-        private class ElementEvaluator : IPredicate
+        private class ElementEvaluator //: IPredicate
         {
             // Current position.
             protected int index = -1;
 
-            public virtual bool Evaluate(object @object)
+            public virtual bool Evaluate(ArticleElement @object)
             {
                 index++;
                 return false;
@@ -56,24 +55,24 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         private sealed class ElementGetter : ElementEvaluator
         {
-            private PdfDictionary bead;
+            private ArticleElement bead;
             private readonly int beadIndex;
 
             public ElementGetter(int beadIndex)
             { this.beadIndex = beadIndex; }
 
-            public override bool Evaluate(object @object)
+            public override bool Evaluate(ArticleElement @object)
             {
                 base.Evaluate(@object);
                 if (index == beadIndex)
                 {
-                    bead = (PdfDictionary)@object;
+                    bead = @object;
                     return true;
                 }
                 return false;
             }
 
-            public PdfDictionary Bead => bead;
+            public ArticleElement Bead => bead;
         }
 
         private sealed class ElementIndexer : ElementEvaluator
@@ -83,7 +82,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             public ElementIndexer(PdfDictionary searchedBead)
             { this.searchedBead = searchedBead; }
 
-            public override bool Evaluate(object @object)
+            public override bool Evaluate(ArticleElement @object)
             {
                 base.Evaluate(@object);
                 return @object.Equals(searchedBead);
@@ -96,9 +95,9 @@ namespace PdfClown.Documents.Interaction.Navigation
         {
             public IList<ArticleElement> elements = new List<ArticleElement>();
 
-            public override bool Evaluate(object @object)
+            public override bool Evaluate(ArticleElement @object)
             {
-                elements.Add(Wrap<ArticleElement>((PdfDirectObject)@object));
+                elements.Add(@object);
                 return false;
             }
 
@@ -107,14 +106,16 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         private class Enumerator : IEnumerator<ArticleElement>
         {
-            private PdfDirectObject currentObject;
-            private readonly PdfDirectObject firstObject;
-            private PdfDirectObject nextObject;
+            private ArticleElement currentObject;
+            private readonly ArticleElement firstObject;
+            private ArticleElement nextObject;
 
             internal Enumerator(ArticleElements elements)
-            { nextObject = firstObject = elements.BaseDataObject[PdfName.F]; }
+            {
+                nextObject = firstObject = elements.DataObject.Get<ArticleElement>(PdfName.F);
+            }
 
-            ArticleElement IEnumerator<ArticleElement>.Current => Wrap<ArticleElement>(currentObject);
+            ArticleElement IEnumerator<ArticleElement>.Current => currentObject;
 
             public object Current => ((IEnumerator<ArticleElement>)this).Current;
 
@@ -124,7 +125,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                     return false;
 
                 currentObject = nextObject;
-                nextObject = ((PdfDictionary)currentObject.Resolve())[PdfName.N];
+                nextObject = currentObject.Get<ArticleElement>(PdfName.N);
                 if (nextObject == firstObject) // Looping back.
                 { nextObject = null; }
                 return true;
@@ -145,7 +146,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             if (@object == null)
                 return -1; // NOTE: By definition, no bead can be null.
 
-            ElementIndexer indexer = new ElementIndexer(@object.BaseDataObject);
+            var indexer = new ElementIndexer(@object);
             Iterate(indexer);
             return indexer.Index;
         }
@@ -155,16 +156,16 @@ namespace PdfClown.Documents.Interaction.Navigation
             if (index < 0)
                 throw new ArgumentOutOfRangeException();
 
-            ElementGetter getter = new ElementGetter(index);
+            var getter = new ElementGetter(index);
             Iterate(getter);
             PdfDictionary bead = getter.Bead;
             if (bead == null)
             { Add(@object); }
             else
-            { Link(@object.BaseDataObject, bead); }
+            { Link(@object, bead); }
         }
 
-        public void RemoveAt(int index) => Unlink(this[index].BaseDataObject);
+        public void RemoveAt(int index) => Unlink(this[index]);
 
         public ArticleElement this[int index]
         {
@@ -173,21 +174,21 @@ namespace PdfClown.Documents.Interaction.Navigation
                 if (index < 0)
                     throw new ArgumentOutOfRangeException();
 
-                ElementGetter getter = new ElementGetter(index);
+                var getter = new ElementGetter(index);
                 Iterate(getter);
-                PdfDictionary bead = getter.Bead;
+                var bead = getter.Bead;
                 if (bead == null)
                     throw new ArgumentOutOfRangeException();
 
-                return Wrap<ArticleElement>(bead.Reference);
+                return bead;
             }
             set => throw new NotImplementedException();
         }
 
         public void Add(ArticleElement @object)
         {
-            PdfDictionary itemBead = @object.BaseDataObject;
-            PdfDictionary firstBead = FirstBead;
+            var itemBead = @object;
+            var firstBead = FirstBead;
             if (firstBead != null) // Non-empty list.
             { Link(itemBead, firstBead); }
             else // Empty list.
@@ -222,7 +223,7 @@ namespace PdfClown.Documents.Interaction.Navigation
             if (!Contains(@object))
                 return false;
 
-            Unlink(@object.BaseDataObject);
+            Unlink(@object);
             return true;
         }
 
@@ -230,38 +231,36 @@ namespace PdfClown.Documents.Interaction.Navigation
 
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<ArticleElement>)this).GetEnumerator();
 
-        private PdfDictionary FirstBead
+        private ArticleElement FirstBead
         {
-            get => BaseDataObject.Get<PdfDictionary>(PdfName.F);
+            get => DataObject.Get<ArticleElement>(PdfName.F);
             set
             {
-                PdfDictionary oldValue = FirstBead;
-                BaseDataObject[PdfName.F] = PdfObject.Unresolve(value);
+                var oldValue = FirstBead;
+                DataObject[PdfName.F] = value?.Unresolve();
                 if (value != null)
-                { value[PdfName.T] = BaseObject; }
+                { value[PdfName.T] = RefOrSelf; }
                 if (oldValue != null)
                 { oldValue.Remove(PdfName.T); }
             }
         }
 
-        private void Iterate(IPredicate predicate)
+        private void Iterate(ElementEvaluator predicate)
         {
-            PdfDictionary firstBead = FirstBead;
-            PdfDictionary bead = firstBead;
+            var firstBead = FirstBead;
+            var bead = firstBead;
             while (bead != null)
             {
                 if (predicate.Evaluate(bead))
                     break;
 
-                bead = bead.Get<PdfDictionary>(PdfName.N);
+                bead = bead.Get<ArticleElement>(PdfName.N);
                 if (bead == firstBead)
                     break;
             }
         }
 
-        /**
-          <summary>Links the given item.</summary>
-        */
+        /// <summary>Links the given item.</summary>
         private void Link(PdfDictionary item, PdfDictionary next)
         {
             var previous = next.Get<PdfDictionary>(PdfName.V);
@@ -277,15 +276,13 @@ namespace PdfClown.Documents.Interaction.Navigation
             }
         }
 
-        /**
-          <summary>Unlinks the given item.</summary>
-          <remarks>It assumes the item is contained in this list.</remarks>
-        */
+        /// <summary>Unlinks the given item.</summary>
+        /// <remarks>It assumes the item is contained in this list.</remarks>
         private void Unlink(PdfDictionary item)
         {
-            var prevBead = item.Get<PdfDictionary>(PdfName.V);
+            var prevBead = item.Get<ArticleElement>(PdfName.V);
             item.Remove(PdfName.V);
-            var nextBead = item.Get<PdfDictionary>(PdfName.N);
+            var nextBead = item.Get<ArticleElement>(PdfName.N);
             item.Remove(PdfName.N);
             if (prevBead != item) // Still some elements.
             {

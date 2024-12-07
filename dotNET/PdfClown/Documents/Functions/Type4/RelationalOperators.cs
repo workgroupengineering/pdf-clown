@@ -19,10 +19,7 @@ using PdfClown.Objects;
 namespace PdfClown.Documents.Functions.Type4
 {
 
-    /**
-     * Provides the relational operators such as "eq" and "le".
-     *
-     */
+    /// <summary>Provides the relational operators such as "eq" and "le".</summary>
     internal class RelationalOperators
     {
 
@@ -31,7 +28,7 @@ namespace PdfClown.Documents.Functions.Type4
             // Private constructor.
         }
 
-        /** Implements the "eq" operator. */
+        /// <summary>Implements the "eq" operator.</summary>
         internal class Eq : Operator
         {
 
@@ -60,7 +57,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Abstract base class for number comparison operators. */
+        /// <summary>Abstract base class for number comparison operators.</summary>
         internal abstract class AbstractNumberComparisonOperator : Operator
         {
 
@@ -79,7 +76,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "ge" operator. */
+        /// <summary>Implements the "ge" operator.</summary>
         internal sealed class Ge : AbstractNumberComparisonOperator
         {
             protected override bool Compare(IPdfNumber num1, IPdfNumber num2)
@@ -89,7 +86,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "gt" operator. */
+        /// <summary>Implements the "gt" operator.</summary>
         internal sealed class Gt : AbstractNumberComparisonOperator
         {
             protected override bool Compare(IPdfNumber num1, IPdfNumber num2)
@@ -99,7 +96,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "le" operator. */
+        /// <summary>Implements the "le" operator.</summary>
         internal sealed class Le : AbstractNumberComparisonOperator
         {
             protected override bool Compare(IPdfNumber num1, IPdfNumber num2)
@@ -109,7 +106,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "lt" operator. */
+        /// <summary>Implements the "lt" operator.</summary>
         internal sealed class Lt : AbstractNumberComparisonOperator
         {
             protected override bool Compare(IPdfNumber num1, IPdfNumber num2)
@@ -119,7 +116,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         }
 
-        /** Implements the "ne" operator. */
+        /// <summary>Implements the "ne" operator.</summary>
         internal sealed class Ne : Eq
         {
             protected override bool IsEqual(PdfDirectObject op1, PdfDirectObject op2)

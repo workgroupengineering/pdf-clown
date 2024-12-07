@@ -23,45 +23,46 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Patterns.Shadings;
+using PdfClown.Documents.Contents.Shadings;
 using PdfClown.Objects;
 using SkiaSharp;
-using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Patterns
 {
-    /**
-      <summary>Pattern providing a smooth transition between colors across an area to be painted [PDF:1.6:4.6.3].</summary>
-      <remarks>The transition is continuous and independent of the resolution of any particular output device.</remarks>
-    */
+    /// <summary>Pattern providing a smooth transition between colors across an area to be painted[PDF:1.6:4.6.3].</summary>
+    /// <remarks>The transition is continuous and independent of the resolution of any particular output device.</remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class ShadingPattern : Pattern
     {
         //TODO:IMPL new element constructor!
 
-        internal ShadingPattern(PdfDirectObject baseObject) : base(baseObject)
+        internal ShadingPattern(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
-        /**
-          <summary>Gets the graphics state parameters to be put into effect temporarily
-          while the shading pattern is painted.</summary>
-          <remarks>Any parameters that are not so specified are inherited from the graphics state
-          that was in effect at the beginning of the content stream in which the pattern
-          is defined as a resource.</remarks>
-         */
-        public ExtGState ExtGState => Wrap<ExtGState>(((PdfDictionary)BaseDataObject)[PdfName.ExtGState]);
+        /// <summary>Gets the graphics state parameters to be put into effect temporarily
+        /// while the shading pattern is painted.</summary>
+        /// <remarks>Any parameters that are not so specified are inherited from the graphics state
+        /// that was in effect at the beginning of the content stream in which the pattern
+        /// is defined as a resource.</remarks>
+        public ExtGState ExtGState
+        {
+            get => Get<ExtGState>(PdfName.ExtGState);
+            set => Set(PdfName.ExtGState, value);
+        }
 
-        /**
-          <summary>Gets a shading object defining the shading pattern's gradient fill.</summary>
-        */
-        public Shading Shading => Shading.Wrap(((PdfDictionary)BaseDataObject)[PdfName.Shading]);
+        /// <summary>Gets a shading object defining the shading pattern's gradient fill.</summary>
+        public Shading Shading
+        {
+            get => Get<Shading>(PdfName.Shading);
+            set => Set(PdfName.Shading, value);
+        }
 
         public override SKShader GetShader(GraphicsState state)
         {
             return Shading.GetShader(Matrix, state);
         }
 
-       
     }
 }

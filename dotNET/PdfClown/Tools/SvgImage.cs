@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Net.Mail;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -103,7 +102,11 @@ namespace PdfClown.Tools
         {
             var matrix = GetMatrix(svg, bounds, indent);
             canvas.Save();
+#if NET9_0_OR_GREATER
+            canvas.Concat(in matrix);
+#else
             canvas.Concat(ref matrix);
+#endif
             canvas.DrawPath(svg.Path, paint);
             canvas.Restore();
         }
@@ -204,20 +207,32 @@ namespace PdfClown.Tools
                             if (string.Equals(reader.Name, "path", StringComparison.Ordinal))
                             {
                                 var pathData = reader["d"];
-                                using (var path = SKPath.ParseSvgPathData(pathData))
-                                    Path.AddPath(path, ref matrix);
+                                using var path = SKPath.ParseSvgPathData(pathData);
+#if NET9_0_OR_GREATER
+                                Path.AddPath(path, in matrix);
+#else
+                                Path.AddPath(path, ref matrix);
+#endif
                             }
                             else if (string.Equals(reader.Name, "polyline", StringComparison.Ordinal))
                             {
                                 var pathData = "M" + reader["points"];
-                                using (var path = SKPath.ParseSvgPathData(pathData))
-                                    Path.AddPath(path, ref matrix);
+                                using var path = SKPath.ParseSvgPathData(pathData);
+#if NET9_0_OR_GREATER
+                                Path.AddPath(path, in matrix);
+#else
+                                Path.AddPath(path, ref matrix);
+#endif
                             }
                             else if (string.Equals(reader.Name, "polygon", StringComparison.Ordinal))
                             {
                                 var pathData = "M" + reader["points"] + " Z";
-                                using (var path = SKPath.ParseSvgPathData(pathData))
-                                    Path.AddPath(path, ref matrix);
+                                using var path = SKPath.ParseSvgPathData(pathData);
+#if NET9_0_OR_GREATER
+                                Path.AddPath(path, in matrix);
+#else
+                                Path.AddPath(path, ref matrix);
+#endif
                             }
                             else if (string.Equals(reader.Name, "line", StringComparison.Ordinal))
                             {
@@ -225,23 +240,27 @@ namespace PdfClown.Tools
                                 var x2 = ReadNumber(reader["x2"]);
                                 var y1 = ReadNumber(reader["y1"]);
                                 var y2 = ReadNumber(reader["y2"]);
-                                using (var path = new SKPath())
-                                {
-                                    path.MoveTo(x1, y1);
-                                    path.LineTo(x2, y2);
-                                    Path.AddPath(path, ref matrix);
-                                }
+                                using var path = new SKPath();
+                                path.MoveTo(x1, y1);
+                                path.LineTo(x2, y2);
+#if NET9_0_OR_GREATER
+                                Path.AddPath(path, in matrix);
+#else
+                                Path.AddPath(path, ref matrix);
+#endif
                             }
                             else if (string.Equals(reader.Name, "circle", StringComparison.Ordinal))
                             {
                                 var cx = ReadNumber(reader["cx"]);
                                 var cy = ReadNumber(reader["cy"]);
                                 var rr = ReadNumber(reader["r"]);
-                                using (var path = new SKPath())
-                                {
-                                    path.AddCircle(cx, cy, rr);
-                                    Path.AddPath(path, ref matrix);
-                                }
+                                using var path = new SKPath();
+                                path.AddCircle(cx, cy, rr);
+#if NET9_0_OR_GREATER
+                                Path.AddPath(path, in matrix);
+#else
+                                Path.AddPath(path, ref matrix);
+#endif
                             }
                             else if (string.Equals(reader.Name, "ellipse", StringComparison.Ordinal))
                             {
@@ -249,11 +268,13 @@ namespace PdfClown.Tools
                                 var cy = ReadNumber(reader["cy"]);
                                 var rx = ReadNumber(reader["rx"]);
                                 var ry = ReadNumber(reader["ry"]);
-                                using (var path = new SKPath())
-                                {
-                                    path.AddOval(new SKRect(cx, cy, rx, ry));
-                                    Path.AddPath(path, ref matrix);
-                                }
+                                using var path = new SKPath();
+                                path.AddOval(new SKRect(cx, cy, rx, ry));
+#if NET9_0_OR_GREATER
+                                Path.AddPath(path, in matrix);
+#else
+                                Path.AddPath(path, ref matrix);
+#endif
                             }
                             else if (string.Equals(reader.Name, "rect", StringComparison.Ordinal))
                             {
@@ -264,18 +285,20 @@ namespace PdfClown.Tools
                                 var rx = ReadOptionalNumber(reader["rx"]);
                                 var ry = ReadOptionalNumber(reader["ry"]);
                                 var rect = SKRect.Create(x, y, width, height);
-                                using (var path = new SKPath())
+                                using var path = new SKPath();
+                                if (rx != null)
                                 {
-                                    if (rx != null)
-                                    {
-                                        path.AddRoundRect(rect, rx ?? 0, ry ?? 0);
-                                    }
-                                    else
-                                    {
-                                        path.AddRect(rect);
-                                    }
-                                    Path.AddPath(path, ref matrix);
+                                    path.AddRoundRect(rect, rx ?? 0, ry ?? 0);
                                 }
+                                else
+                                {
+                                    path.AddRect(rect);
+                                }
+#if NET9_0_OR_GREATER
+                                Path.AddPath(path, in matrix);
+#else
+                                Path.AddPath(path, ref matrix);
+#endif
                             }
                         }
                     }
@@ -411,8 +434,13 @@ namespace PdfClown.Tools
                             var t1 = SKMatrix.CreateTranslation(x, y);
                             var t2 = SKMatrix.CreateRotationDegrees(a);
                             var t3 = SKMatrix.CreateTranslation(-x, -y);
+#if NET9_0_OR_GREATER
+                            SKMatrix.Concat(ref nt, t1, t2);
+                            SKMatrix.Concat(ref nt, nt, t3);
+#else
                             SKMatrix.Concat(ref nt, ref t1, ref t2);
                             SKMatrix.Concat(ref nt, ref nt, ref t3);
+#endif
                         }
                         else
                         {
@@ -423,7 +451,11 @@ namespace PdfClown.Tools
                         Debug.WriteLine($"Can't transform {args[0]}");
                         break;
                 }
+#if NET9_0_OR_GREATER
+                SKMatrix.Concat(ref t, t, nt);
+#else
                 SKMatrix.Concat(ref t, ref t, ref nt);
+#endif
             }
 
             return t;

@@ -29,6 +29,10 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
 {
     public class PropBuild : PdfObjectWrapper<PdfDictionary>
     {
+        private PropBuildDataDictionary filter;
+        private PropBuildDataDictionary publicSection;
+        private PropBuildDataDictionary application;
+
         public PropBuild(PdfDirectObject obj)
             : base(obj)
         {
@@ -36,20 +40,20 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
 
         public PropBuildDataDictionary Filter
         {
-            get => Wrap<PropBuildDataDictionary>(BaseDataObject.Resolve<PdfDictionary>(PdfName.Filter));
-            set => BaseDataObject[PdfName.Filter] = value?.BaseDataObject;
+            get => filter ??= new(DataObject.GetOrCreate<PdfDictionary>(PdfName.Filter));
+            set => DataObject.SetDirect(PdfName.Filter, filter = value);
         }
 
         public PropBuildDataDictionary PublicSection
         {
-            get => Wrap<PropBuildDataDictionary>(BaseDataObject.Resolve<PdfDictionary>(PdfName.PubSec));
-            set => BaseDataObject[PdfName.PubSec] = value?.BaseDataObject;
+            get => publicSection ??= new(DataObject.GetOrCreate<PdfDictionary>(PdfName.PubSec));
+            set => DataObject.SetDirect(PdfName.PubSec, publicSection = value);
         }
 
         public PropBuildDataDictionary Application
         {
-            get => Wrap<PropBuildDataDictionary>(BaseDataObject.Resolve<PdfDictionary>(PdfName.App));
-            set => BaseDataObject[PdfName.App] = value?.BaseDataObject;
+            get => application ??= new(DataObject.GetOrCreate<PdfDictionary>(PdfName.App));
+            set => DataObject.SetDirect(PdfName.App, application = value);
         }
     }
 }

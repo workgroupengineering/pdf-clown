@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Org.BouncyCastle.Cms;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Tsp;
 using System.IO;
 using System;
-using System.Security.Cryptography;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Crypto.IO;
 using Org.BouncyCastle.Math;
@@ -30,11 +28,9 @@ using System.Threading.Tasks;
 using System.Net.Http.Headers;
 using Org.BouncyCastle.Operators.Utilities;
 
-/**
- * Time Stamping Authority (TSA) Client [RFC 3161].
- * @author Vakhtang Koroghlishvili
- * @author John Hewson
- */
+/// <summary>Time Stamping Authority (TSA) Client [RFC 3161].
+/// @author Vakhtang Koroghlishvili
+/// @author John Hewson</summary>
 public class TSAClient
 {
 

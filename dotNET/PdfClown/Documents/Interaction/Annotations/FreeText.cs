@@ -36,7 +36,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -45,145 +44,8 @@ namespace PdfClown.Documents.Interaction.Annotations
     /// annotation has no open or closed state; instead of being displayed in a pop-up window, the text
     /// is always visible.</remarks>
     [PDF(VersionEnum.PDF13)]
-    public sealed class FreeText : Markup
+    public sealed partial class FreeText : Markup
     {
-        /// <summary>Callout line [PDF:1.6:8.4.5].</summary>
-        public class CalloutLine : PdfObjectWrapper<PdfArray>
-        {
-            private SKPoint? end;
-            private SKPoint? knee;
-            private SKPoint? start;
-
-            public CalloutLine(PdfPage page, SKPoint start, SKPoint end)
-                : this(page, start, null, end)
-            { }
-
-            public CalloutLine(PdfPage page, SKPoint start, SKPoint? knee, SKPoint end)
-                : base(new PdfArray())
-            {
-                SKMatrix matrix = page.InvertRotateMatrix;
-                PdfArray baseDataObject = BaseDataObject;
-                {
-                    start = matrix.MapPoint(start);
-                    baseDataObject.Add(start.X);
-                    baseDataObject.Add(start.Y);
-                    if (knee.HasValue)
-                    {
-                        knee = matrix.MapPoint(knee.Value);
-                        baseDataObject.Add(knee.Value.X);
-                        baseDataObject.Add(knee.Value.Y);
-                    }
-                    end = matrix.MapPoint(end);
-                    baseDataObject.Add(end.X);
-                    baseDataObject.Add(end.Y);
-                }
-            }
-
-            public CalloutLine(PdfDirectObject baseObject) : base(baseObject)
-            { }
-
-            public SKPoint End
-            {
-                get
-                {
-                    return end ??= BaseDataObject is PdfArray coordinates
-                        ? coordinates.Count < 6
-                            ? new SKPoint(
-                            coordinates.GetFloat(2),
-                            coordinates.GetFloat(3))
-                            : new SKPoint(
-                            coordinates.GetFloat(4),
-                            coordinates.GetFloat(5))
-                       : SKPoint.Empty;
-                }
-                set
-                {
-                    if (End != value)
-                    {
-                        SetEnd(value);
-                        FreeText.QueueRefreshAppearance();
-                    }
-                }
-            }
-
-            internal void SetEnd(SKPoint value)
-            {
-                end = value;
-                PdfArray coordinates = BaseDataObject;
-                if (coordinates.Count < 6)
-                {
-                    coordinates.Set(2, value.X);
-                    coordinates.Set(3, value.Y);
-                }
-                else
-                {
-                    coordinates.Set(4, value.X);
-                    coordinates.Set(5, value.Y);
-                }
-                FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
-            }
-
-            public SKPoint? Knee
-            {
-                get => knee ??= BaseDataObject is PdfArray coordinates
-                        ? coordinates.Count < 6
-                            ? null
-                            : new SKPoint(coordinates.GetFloat(2), coordinates.GetFloat(3))
-                            : SKPoint.Empty;
-                set
-                {
-                    if (Knee != value)
-                    {
-                        SetKnee(value);
-                        FreeText.QueueRefreshAppearance();
-                    }
-                }
-            }
-
-            internal void SetKnee(SKPoint? value)
-            {
-                knee = value;
-                PdfArray coordinates = BaseDataObject;
-                if (value is SKPoint val)
-                {
-                    coordinates.Set(2, val.X);
-                    coordinates.Set(3, val.Y);
-                }
-                FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
-            }
-
-            public SKPoint Start
-            {
-                get
-                {
-                    return start ??= BaseDataObject is PdfArray coordinates
-                        ? new SKPoint(
-                      coordinates.GetFloat(0),
-                      coordinates.GetFloat(1))
-                        : SKPoint.Empty;
-                }
-                set
-                {
-                    if (Start != value)
-                    {
-                        SetStart(value);
-                        FreeText.QueueRefreshAppearance();
-                    }
-                }
-            }
-
-            internal void SetStart(SKPoint value)
-            {
-                start = value;
-                PdfArray coordinates = BaseDataObject;
-                coordinates.Set(0, value.X);
-                coordinates.Set(1, value.Y);
-                FreeText.OnPropertyChanged(FreeText.Callout, FreeText.Callout, nameof(FreeText.Callout));
-
-            }
-
-            public FreeText FreeText { get; internal set; }
-        }
 
 
         private static readonly JustificationEnum DefaultJustification = JustificationEnum.Left;
@@ -196,24 +58,27 @@ namespace PdfClown.Documents.Interaction.Annotations
         private TextLineKneeControlPoint cpLineKnee;
         private TextMidControlPoint cpTextMid;
         private SKRect? textBox;
+        private CalloutLine line;
+        private PdfPadding padding;
 
         public FreeText(PdfPage page, SKRect box, string text)
             : base(page, PdfName.FreeText, box, text)
         { }
 
-        public FreeText(PdfDirectObject baseObject) : base(baseObject)
+        public FreeText(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the justification to be used in displaying the annotation's text.</summary>
         public JustificationEnum Justification
         {
-            get => (JustificationEnum)BaseDataObject.GetInt(PdfName.Q);
+            get => (JustificationEnum)GetInt(PdfName.Q);
             set
             {
                 var oldValue = Justification;
                 if (oldValue != value)
                 {
-                    BaseDataObject.Set(PdfName.Q, value != DefaultJustification ? (int)value : null);
+                    Set(PdfName.Q, value != DefaultJustification ? (int)value : null);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -221,13 +86,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public PdfArray Callout
         {
-            get => BaseDataObject.Get<PdfArray>(PdfName.CL);
+            get => Get<PdfArray>(PdfName.CL);
             set
             {
                 var oldValue = Callout;
                 if (!PdfArray.SequenceEquals(oldValue, value))
                 {
-                    BaseDataObject[PdfName.CL] = value;
+                    this[PdfName.CL] = value;
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -249,19 +114,12 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <summary>Gets/Sets the callout line attached to the free text annotation.</summary>
         public CalloutLine Line
         {
-            get
-            {
-                var line = Wrap<CalloutLine>(Callout);
-                if (line != null)
-                {
-                    line.FreeText = this;
-                }
-                return line;
-            }
+            get => line ??= CalloutLine.Wrap(Callout, this);
             set
             {
                 var oldValue = Line;
-                Callout = value?.BaseDataObject;
+                Callout = value?.DataObject;
+                line = value;
                 if (value != null)
                 {
                     // NOTE: To ensure the callout would be properly rendered, we have to declare the
@@ -276,13 +134,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <summary>Gets/Sets the style of the ending line ending.</summary>
         public LineEndStyleEnum LineEndStyle
         {
-            get => LineEndStyleEnumExtension.Get(BaseDataObject.GetString(PdfName.LE));
+            get => LineEndStyleEnumExtension.Get(GetString(PdfName.LE));
             set
             {
                 var oldValue = LineEndStyle;
                 if (oldValue != value)
                 {
-                    BaseDataObject.SetName(PdfName.LE, value.GetName());
+                    SetName(PdfName.LE, value.GetName());
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -328,15 +186,15 @@ namespace PdfClown.Documents.Interaction.Annotations
                 bounds.Bottom - padding.Bottom);
         }
 
-        public Padding Padding
+        public PdfPadding Padding
         {
-            get => Wrap<Padding>(BaseDataObject[PdfName.RD]);
+            get => padding ??= PdfPadding.Wrap(PdfName.RD);
             set
             {
                 var oldValue = Padding;
                 if (!(oldValue?.Equals(value) ?? value == null))
                 {
-                    BaseDataObject[PdfName.RD] = value?.BaseDataObject;
+                    SetDirect(PdfName.RD, padding = value);
                     textBox = null;
                     OnPropertyChanged(oldValue, value);
                     QueueRefreshAppearance();
@@ -390,7 +248,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         private List<ContentObject> GetDSOperations()
         {
-            if (Dictionary.Get<PdfString>(PdfName.DS) is not PdfString ds
+            if (Get<PdfString>(PdfName.DS) is not PdfString ds
                 || string.IsNullOrWhiteSpace(ds.StringValue))
                 return null;
             daOperation = new List<ContentObject>();
@@ -463,7 +321,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
             var normalAppearance = ResetAppearance(out var matrix);
             var textBounds = TextBox;
-            SKRect box = Box;
+            //SKRect box = Box;
             var font = DASetFont?.Name ?? normalAppearance.GetDefaultFont(out _);
             var fontSize = DASetFont?.Size ?? 10;
             var composer = new PrimitiveComposer(normalAppearance);
@@ -588,7 +446,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 var padding = Padding?.ToSKRect();
                 if (padding != null)
                 {
-                    Padding = new Padding(new SKRect(
+                    Padding = new PdfPadding(new SKRect(
                        TextBox.Left - Box.Left,
                        TextBox.Top - Box.Top,
                        Box.Right - TextBox.Right,
@@ -671,7 +529,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 }
             }
             Box = box;
-            Padding = new Padding(new SKRect(
+            Padding = new PdfPadding(new SKRect(
                        textBox.Left - box.Left,
                        textBox.Top - box.Top,
                        box.Right - textBox.Right,
@@ -703,7 +561,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         }
 
-        public override object Clone(Cloner cloner)
+        public override PdfObject Clone(Cloner cloner)
         {
             var cloned = (FreeText)base.Clone(cloner);
             cloned.cpTexcTopLeft = null;
@@ -809,5 +667,5 @@ namespace PdfClown.Documents.Interaction.Annotations
             base.SetPoint(point);
             FreeText.TextMidPoint = point;
         }
-    }    
+    }
 }

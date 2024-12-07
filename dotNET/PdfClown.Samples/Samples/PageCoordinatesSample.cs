@@ -27,22 +27,21 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. Instantiate a new PDF file!
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Insert the contents into the document!
             BuildContent(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Page coordinates", "manipulating the CTM", "page coordinates, ctm");
+            Serialize(document, "Page coordinates", "manipulating the CTM", "page coordinates, ctm");
         }
 
         private void BuildContent(PdfDocument document)
         {
             // Set default page size (A4)!
-            document.PageSize = PageFormat.GetSize();
+            document.Catalog.PageSize = PageFormat.GetSize();
             // Add a font to the fonts collection!
-            document.Resources.Fonts[ResourceName_DefaultFont] = FontType1.Load(document, FontName.CourierBold);
+            document.Catalog.Resources.Fonts[ResourceName_DefaultFont] = PdfType1Font.Load(document, FontName.CourierBold);
 
             // Add a page to the document!
             var page = new PdfPage(document); // Instantiates the page inside the document context.

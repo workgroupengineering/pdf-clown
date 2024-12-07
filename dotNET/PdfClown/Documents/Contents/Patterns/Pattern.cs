@@ -28,54 +28,53 @@ using PdfClown.Objects;
 using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Patterns
 {
     /// <summary>Paint that consists of a repeating graphical figure or a smoothly varying color gradient
     /// instead of a simple color [PDF:1.6:4.6].</summary>
     [PDF(VersionEnum.PDF12)]
-    public abstract class Pattern : Color, IPattern
+    public abstract class Pattern : PdfStream, IPattern
     {
         //TODO:verify!
-        public static readonly Pattern Default = new TilingPattern(null);
+        public static readonly Pattern Default = new TilingPattern(new ());
         private const int PatternType1 = 1;
         private const int PatternType2 = 2;
         private SKMatrix? matrix;
-        private PdfArray components = new();
+        private PatternColorSpace colorSpace;
 
         /// <summary>Wraps the specified base object into a pattern object.</summary>
-        /// <param name = "baseObject" > Base object of a pattern object.</param>
+        /// <param name="baseObject"> Base object of a pattern object.</param>
         /// <returns>Pattern object corresponding to the base object.</returns>
-        public static Pattern Wrap(PdfDirectObject baseObject)
+        internal static Pattern Create(Dictionary<PdfName, PdfDirectObject> dictionary)
         {
-            if (baseObject == null)
-                return null;
-            if (baseObject.Wrapper is Pattern pattern)
-                return pattern;
-
-            var dataObject = baseObject.Resolve();
-            var dictionary = dataObject as PdfDictionary;
             int patternType = dictionary.GetInt(PdfName.PatternType);
-            switch (patternType)
+            return patternType switch
             {
-                case PatternType1:
-                    return new TilingPattern(baseObject);
-                case PatternType2:
-                    return new ShadingPattern(baseObject);
-                default:
-                    throw new NotSupportedException("Pattern type " + patternType + " unknown.");
-            }
+                PatternType1 => new TilingPattern(dictionary),
+                PatternType2 => new ShadingPattern(dictionary),
+                _ => throw new NotSupportedException("Pattern type " + patternType + " unknown."),
+            };
         }
 
         //TODO:verify (colorspace is available or may be implicit?)
-        protected Pattern(PdfDirectObject baseObject) : base(baseObject)
+        protected Pattern(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         //TODO:verify (colorspace is available or may be implicit?)
-        protected Pattern(PatternColorSpace colorSpace, PdfDirectObject baseObject) : base(colorSpace, baseObject)
-        { }
+        protected Pattern(PatternColorSpace colorSpace, Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        {
+            this.colorSpace = colorSpace;
+        }
 
-        public override PdfArray Components => components;
+        public ColorSpace ColorSpace => colorSpace;
+
+        public PdfArray Components => PdfArray.Empty;
+
+        public float[] Floats => Array.Empty<float>();
 
         /// <summary>Gets the pattern matrix, a transformation matrix that maps the pattern's
         /// internal coordinate system to the default coordinate system of the pattern's
@@ -87,12 +86,10 @@ namespace PdfClown.Documents.Contents.Patterns
             //NOTE: Pattern-space-to-user-space matrix is identity [1 0 0 1 0 0] by default.
             //NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
             /// but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
-            get => matrix ??= Dictionary.Get<PdfArray>(PdfName.Matrix)?.ToSkMatrix() ?? SKMatrix.Identity;
-            set => Dictionary[PdfName.Matrix] = value.ToPdfArray();
+            get => matrix ??= Get<PdfArray>(PdfName.Matrix)?.ToSkMatrix() ?? SKMatrix.Identity;
+            set => this[PdfName.Matrix] = value.ToPdfArray();
         }
 
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
 
         public abstract SKShader GetShader(GraphicsState state);
 

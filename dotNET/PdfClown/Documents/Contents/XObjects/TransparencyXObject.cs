@@ -24,37 +24,42 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
     public sealed class TransparencyXObject : GroupXObject
     {
-        public TransparencyXObject(PdfDocument context, PdfDictionary baseDataObject)
-            : base(context, baseDataObject)
+        private ColorSpace colorSpace;
+
+        public TransparencyXObject(PdfDocument context)
+            : base(context)
         {
             SubType = PdfName.Transparency;
         }
 
-        public TransparencyXObject(PdfDirectObject baseObject) : base(baseObject)
+        internal TransparencyXObject(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
-        public ColorSpaces.ColorSpace ColorSpace
+        public ColorSpace ColorSpace
         {
-            get => ColorSpaces.ColorSpace.Wrap(BaseDataObject[PdfName.CS]);
-            set => BaseDataObject[PdfName.CS] = value?.BaseObject;
+            get => colorSpace ??= ColorSpace.Wrap(Get(PdfName.CS));
+            set => Set(PdfName.CS, value = colorSpace);
         }
 
         public bool Isolated
         {
-            get => BaseDataObject.GetBool(PdfName.I);
-            set => BaseDataObject.Set(PdfName.I, value);
+            get => GetBool(PdfName.I);
+            set => Set(PdfName.I, value);
         }
 
         public bool Knockout
         {
-            get => BaseDataObject.GetBool(PdfName.K);
-            set => BaseDataObject.Set(PdfName.K, value);
+            get => GetBool(PdfName.K);
+            set => Set(PdfName.K, value);
         }
     }
 }

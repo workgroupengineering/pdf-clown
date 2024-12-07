@@ -27,6 +27,7 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -38,19 +39,20 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, PdfName.Movie, box, text)
         { Content = content; }
 
-        internal Movie(PdfDirectObject baseObject) : base(baseObject)
+        internal Movie(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the movie to be played.</summary>
         public Multimedia.Movie Content
         {
-            get => Wrap<Multimedia.Movie>(BaseDataObject[PdfName.Movie]);
+            get => Get<Multimedia.Movie>(PdfName.Movie);
             set
             {
                 if (value == null)
                     throw new ArgumentException("Movie MUST be defined.");
 
-                BaseDataObject[PdfName.Movie] = value.BaseObject;
+                Set(PdfName.Movie, value);
             }
         }
 

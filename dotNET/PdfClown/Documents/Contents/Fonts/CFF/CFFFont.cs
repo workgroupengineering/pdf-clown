@@ -33,7 +33,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         private CFFCharset charset;
         private CFFParser.IByteSource source;
         private SKRect? fontBBox;
-        protected readonly Dictionary<string, object> topDict = new Dictionary<string, object>(StringComparer.Ordinal);
+        protected readonly Dictionary<string, object> topDict = new(StringComparer.Ordinal);
         protected Memory<byte>[] charStrings;
         protected Memory<byte>[] globalSubrIndex;
 
@@ -73,22 +73,14 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             get => topDict.TryGetValue("FontMatrix", out var array) ? (List<float>)array : null;
         }
 
-        /**
-		 * Returns the CFFCharset of the font.
-		 * 
-		 * @return the charset
-		 */
+        /// <summary>Returns the CFFCharset of the font.</summary>
         public virtual CFFCharset Charset
         {
             get => charset;
             set => charset = value;
         }
 
-        /**
-		 * Returns the character strings dictionary. For expert users only.
-		 *
-		 * @return the dictionary
-		 */
+        /// <summary>Returns the character strings dictionary. For expert users only.</summary>
         public Memory<byte>[] CharStringBytes
         {
             get => charStrings;
@@ -109,23 +101,18 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
         }
 
 
-        /**
-		 * Returns the list containing the global subroutine .
-		 * 
-		 * @return the dictionary
-		 */
+        /// <summary>Returns the list containing the global subroutine.</summary>
         public Memory<byte>[] GlobalSubrIndex
         {
             get => globalSubrIndex;
             set => globalSubrIndex = value;
         }
 
-        /**
-		 * Adds the given key/value pair to the top dictionary.
-		 * 
-		 * @param name the given key
-		 * @param value the given value
-		 */
+        /// <summary>
+        /// Adds the given key/value pair to the top dictionary.
+        /// </summary>
+        /// <param name="name">the given key</param>
+        /// <param name="value">the given value</param>
         public void AddValueToTopDict(string name, object value)
         {
             if (value != null)
@@ -134,12 +121,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-		 * Returns the Type 2 charstring for the given CID.
-		 *
-		 * @param cidOrGid CID for CIFFont, or GID for Type 1 font
-		 * @throws IOException if the charstring could not be read
-		 */
+        /// <summary>Returns the Type 2 charstring for the given CID.</summary>
+        /// <param name="cidOrGid">CID for CIFFont, or GID for Type 1 font</param>
+        /// <returns></returns>
         public abstract Type2CharString GetType2CharString(int cidOrGid);
 
 

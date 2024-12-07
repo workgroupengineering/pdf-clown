@@ -48,75 +48,55 @@ namespace PdfClown.Documents.Contents.Layers
             AllOff
         }
 
-        protected LayerEntity(PdfDocument context, PdfName typeName) : base(
-            context,
-            new PdfDictionary(1) { { PdfName.Type, typeName } })
-        { }
-
-        protected LayerEntity(PdfDirectObject baseObject) : base(baseObject)
-        { }
-
-        /// <summary>Gets the default membership, corresponding to the hierarchical relation between this
-        /// layer entity and its ascendants; top-level layers return themselves.</summary>
-        public abstract LayerEntity Membership
+        protected static readonly BiDictionary<VisibilityPolicyEnum, string> vpeCodes = new()
         {
-            get;
-        }
+            [VisibilityPolicyEnum.AllOn] = PdfName.AllOn.StringValue,
+            [VisibilityPolicyEnum.AnyOn] = PdfName.AnyOn.StringValue,
+            [VisibilityPolicyEnum.AnyOff] = PdfName.AnyOff.StringValue,
+            [VisibilityPolicyEnum.AllOff] = PdfName.AllOff.StringValue
+        };
 
-        /// <summary>Gets the visibility expression.</summary>
-        /// <remarks><see cref="VisibilityExpression"/> should be preferred to <see cref="VisibilityPolicy"/>
-        /// and<see cref="VisibilityMembers"/> as a more advanced alternative. However, for compatibility
-        /// purposes, PDF creators should also provide the latters to approximate the behavior in older
-        /// consumer software.</remarks>
-        public abstract VisibilityExpression VisibilityExpression
-        {
-            get;
-            set;
-        }
-
-        /// <summary>Gets the layers whose states determine the visibility of content controlled by this
-        /// entity.</summary>
-        public abstract IList<Layer> VisibilityMembers
-        {
-            get;
-            set;
-        }
-
-        /// <summary>Gets/Sets the visibility policy of this entity.</summary>
-        public abstract VisibilityPolicyEnum VisibilityPolicy
-        {
-            get;
-            set;
-        }
-    }
-
-    internal static class VisibilityPolicyEnumExtension
-    {
-        private static readonly BiDictionary<LayerMembership.VisibilityPolicyEnum, string> codes;
-
-        static VisibilityPolicyEnumExtension()
-        {
-            codes = new BiDictionary<LayerMembership.VisibilityPolicyEnum, string>
-            {
-                [LayerMembership.VisibilityPolicyEnum.AllOn] = PdfName.AllOn.StringValue,
-                [LayerMembership.VisibilityPolicyEnum.AnyOn] = PdfName.AnyOn.StringValue,
-                [LayerMembership.VisibilityPolicyEnum.AnyOff] = PdfName.AnyOff.StringValue,
-                [LayerMembership.VisibilityPolicyEnum.AllOff] = PdfName.AllOff.StringValue
-            };
-        }
-
-        public static LayerMembership.VisibilityPolicyEnum Get(string name)
+        public static VisibilityPolicyEnum GetVPE(string name)
         {
             if (name == null)
-                return LayerMembership.VisibilityPolicyEnum.AnyOn;
+                return VisibilityPolicyEnum.AnyOn;
 
-            LayerMembership.VisibilityPolicyEnum? visibilityPolicy = codes.GetKey(name);
+            VisibilityPolicyEnum? visibilityPolicy = vpeCodes.GetKey(name);
             if (!visibilityPolicy.HasValue)
                 throw new NotSupportedException("Visibility policy unknown: " + name);
 
             return visibilityPolicy.Value;
         }
 
-        public static PdfName GetName(this LayerMembership.VisibilityPolicyEnum visibilityPolicy) => PdfName.Get(codes[visibilityPolicy], true);
+        public static PdfName GetName(VisibilityPolicyEnum visibilityPolicy) => PdfName.Get(vpeCodes[visibilityPolicy], true);
+
+        protected LayerEntity(PdfDocument context, PdfName typeName)
+            : base(context, new(1) {
+                { PdfName.Type, typeName }
+            })
+        { }
+
+        protected LayerEntity(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        /// <summary>Gets the default membership, corresponding to the hierarchical relation between this
+        /// layer entity and its ascendants; top-level layers return themselves.</summary>
+        public abstract LayerEntity Membership { get; }
+
+        /// <summary>Gets the visibility expression.</summary>
+        /// <remarks><see cref="VisibilityExpression"/> should be preferred to <see cref="VisibilityPolicy"/>
+        /// and<see cref="VisibilityMembers"/> as a more advanced alternative. However, for compatibility
+        /// purposes, PDF creators should also provide the latters to approximate the behavior in older
+        /// consumer software.</remarks>
+        public abstract VisibilityExpression VisibilityExpression { get; set; }
+
+        /// <summary>Gets the layers whose states determine the visibility of content controlled by this
+        /// entity.</summary>
+        public abstract IList<Layer> VisibilityMembers { get; set; }
+
+        /// <summary>Gets/Sets the visibility policy of this entity.</summary>
+        public abstract VisibilityPolicyEnum VisibilityPolicy { get; set; }
     }
+
 }

@@ -23,35 +23,30 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Files;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Change the view to a specified destination in another PDF file' action
-      [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Change the view to a specified destination in another PDF file' action
+    /// [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class GoToRemote : GotoNonLocal<RemoteDestination>
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public GoToRemote(PdfDocument context, FileSpecification destinationFile, RemoteDestination destination)
             : base(context, PdfName.GoToR, destinationFile, destination)
         { }
 
-        internal GoToRemote(PdfDirectObject baseObject)
+        internal GoToRemote(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
-        public override FileSpecification DestinationFile
+        public override IFileSpecification DestinationFile
         {
             get => base.DestinationFile;
             set
@@ -63,6 +58,6 @@ namespace PdfClown.Documents.Interaction.Actions
             }
         }
 
-        public override string GetDisplayName() => "Go To " + DestinationFile?.Path;
+        public override string GetDisplayName() => "Go To " + DestinationFile?.FilePath;
     }
 }

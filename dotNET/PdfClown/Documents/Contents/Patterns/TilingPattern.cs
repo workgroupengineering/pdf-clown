@@ -49,11 +49,11 @@ namespace PdfClown.Documents.Contents.Patterns
         private List<ITextBlock> textBlocks;
         private ContentWrapper contents;
 
-        internal TilingPattern(PatternColorSpace colorSpace, PdfDirectObject baseObject)
+        internal TilingPattern(PatternColorSpace colorSpace, Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(colorSpace, baseObject)
         { }
 
-        internal TilingPattern(PdfDirectObject baseObject)
+        internal TilingPattern(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
@@ -69,12 +69,12 @@ namespace PdfClown.Documents.Contents.Patterns
 
         /// <summary>Gets the pattern cell's bounding box (expressed in the pattern coordinate system)
         /// used to clip the pattern cell.</summary>
-        public Rectangle BBox
+        public PdfRectangle BBox
         {
-            get => Wrap<Rectangle>(BaseHeader.GetOrCreate<PdfArray>(PdfName.BBox));
+            get => GetOrCreate<PdfRectangle>(PdfName.BBox);
             set
             {
-                BaseHeader[PdfName.BBox] = value?.BaseObject;
+                SetDirect(PdfName.BBox, value);
                 box = null;
             }
         }
@@ -96,37 +96,36 @@ namespace PdfClown.Documents.Contents.Patterns
         /// <summary>Gets how the color of the pattern cell is to be specified.</summary>
         public TilingPaintTypeEnum PaintType
         {
-            get => (TilingPaintTypeEnum)BaseHeader.GetInt(PdfName.PaintType);
-            set => BaseHeader.Set(PdfName.PaintType, (int)value);
+            get => (TilingPaintTypeEnum)GetInt(PdfName.PaintType);
+            set => Set(PdfName.PaintType, (int)value);
         }
 
         /// <summary>Gets the named resources required by the pattern's content stream.</summary>
-        public Resources Resources => Wrap<Resources>(BaseHeader[PdfName.Resources]);
+        public Resources Resources => Get<Resources>(PdfName.Resources);
 
         /// <summary>Gets how to adjust the spacing of tiles relative to the device pixel grid.</summary>
         public TilingTypeEnum TilingType
         {
-            get => (TilingTypeEnum)BaseHeader.GetInt(PdfName.TilingType);
-            set => BaseHeader.Set(PdfName.TilingType, (int)value);
+            get => (TilingTypeEnum)GetInt(PdfName.TilingType);
+            set => Set(PdfName.TilingType, (int)value);
         }
 
         /// <summary>Gets the horizontal spacing between pattern cells (expressed in the pattern coordinate system).</summary>
         public float XStep
         {
-            get => BaseHeader.GetFloat(PdfName.XStep);
-            set => BaseHeader.Set(PdfName.XStep, value);
+            get => GetFloat(PdfName.XStep);
+            set => Set(PdfName.XStep, value);
         }
 
         /// <summary>Gets the vertical spacing between pattern cells (expressed in the pattern coordinate system).</summary>
         public float YStep
         {
-            get => BaseHeader.GetFloat(PdfName.YStep);
-            set => BaseHeader.Set(PdfName.YStep, value);
+            get => GetFloat(PdfName.YStep);
+            set => Set(PdfName.YStep, value);
         }
 
-        public ContentWrapper Contents => contents ??= new ContentWrapper(BaseObject);
+        public ContentWrapper Contents => contents ??= new ContentWrapper(RefOrSelf);
 
-        private PdfDictionary BaseHeader => (PdfDictionary)BaseDataObject;
 
         public RotationEnum Rotation => RotationEnum.Downward;
 
@@ -136,9 +135,9 @@ namespace PdfClown.Documents.Contents.Patterns
 
         public AppDataCollection AppData => throw new NotImplementedException();
 
-        public DateTime? ModificationDate => Dictionary.GetDate(PdfName.LastModified);
+        public DateTime? ModificationDate => GetDate(PdfName.LastModified);
 
-        public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseHeader[PdfName.Group]);
+        public TransparencyXObject Group => Get<TransparencyXObject>(PdfName.Group);
 
         public List<ITextBlock> TextBlocks => textBlocks ??= new List<ITextBlock>();
 
@@ -175,30 +174,15 @@ namespace PdfClown.Documents.Contents.Patterns
             scanner.Scan();
         }
 
-        public AppData GetAppData(PdfName appName)
-        {
-            throw new NotImplementedException();
-        }
+        public AppData GetAppData(PdfName appName) => throw new NotImplementedException();
 
-        public void Touch(PdfName appName)
-        {
-            throw new NotImplementedException();
-        }
+        public void Touch(PdfName appName) => throw new NotImplementedException();
 
-        public void Touch(PdfName appName, DateTime modificationDate)
-        {
-            throw new NotImplementedException();
-        }
+        public void Touch(PdfName appName, DateTime modificationDate) => throw new NotImplementedException();
 
-        public ContentObject ToInlineObject(PrimitiveComposer composer)
-        {
-            throw new NotImplementedException();
-        }
+        public ContentObject ToInlineObject(PrimitiveComposer composer) => throw new NotImplementedException();
 
-        public XObject ToXObject(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
+        public XObject ToXObject(PdfDocument context) => throw new NotImplementedException();
 
 
     }

@@ -23,26 +23,20 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Forms.Signature;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
-using System.IO;
 using System.Linq;
-using System.Xml.Linq;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Signature field [PDF:1.6:8.6.3].</summary>
-    */
+    /// <summary>Signature field [PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF13)]
     public sealed class SignatureField : Field
     {
@@ -55,12 +49,10 @@ namespace PdfClown.Documents.Interaction.Forms
 
         internal SignatureField(PdfDirectObject baseObject) : base(baseObject)
         {
-            initialSD = Wrap<SignatureDictionary>(BaseDataObject.Get<PdfDictionary>(PdfName.V));
+            initialSD = DataObject.Get<SignatureDictionary>(PdfName.V);
         }
 
-        /**
-          <returns>A <see cref="PdfDictionary"/>.</returns>
-        */
+        /// <returns>A <see cref="PdfDictionary"/>.</returns>
         public override object Value
         {
             get => SignatureDictionary;
@@ -69,8 +61,8 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public SignatureDictionary SignatureDictionary
         {
-            get => Wrap<SignatureDictionary>(BaseDataObject.Get<PdfDictionary>(PdfName.V));
-            set => BaseDataObject[PdfName.V] = value?.BaseDataObject;
+            get => DataObject.Get<SignatureDictionary>(PdfName.V);
+            set => DataObject.SetDirect(PdfName.V, value);
         }
 
         public void RefreshAppearence(string text)
@@ -83,7 +75,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
             var box = zeroMatrix.MapRect(rect);
 
-            var font = FontType0.Load(Document, FontName.TimesRoman);
+            var font = PdfType0Font.Load(Document, FontName.TimesRoman);
 
             var horizontal = box.Width > box.Height;
             var maxSize = nameArray.Select(x => font.GetWidth(x, 1)).Max();
@@ -114,7 +106,7 @@ namespace PdfClown.Documents.Interaction.Forms
                     : new SKRect(box.Left, box.MidY, box.Right, box.Bottom),
                 XAlignmentEnum.Left,
                 YAlignmentEnum.Middle);
-            composer.SetFillColor(DeviceRGBColor.Black);
+            composer.SetFillColor(RGBColor.Black);
             composer.SetFont(font, headerFontSize / 2.5);
             blockComp.ShowText(text);
             blockComp.End();

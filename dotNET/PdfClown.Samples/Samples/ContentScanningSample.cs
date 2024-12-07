@@ -17,10 +17,8 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
-
                 // 2. Parsing the document...
                 Console.WriteLine("\nLooking for images...");
                 foreach (var page in document.Pages)
@@ -55,7 +53,7 @@ namespace PdfClown.Samples.CLI
                     if (xObject is ImageXObject)
                     {
                         // Image key and indirect reference.
-                        Console.Write($"External Image '{paintXObject.Name}' ({xObject.BaseObject})");
+                        Console.Write($"External Image '{paintXObject.Name}' ({xObject.RefOrSelf})");
                         imageSize = xObject.Size; // Image native size.
                     }
                     paintXObject.Scan(scanner.State);
@@ -71,7 +69,7 @@ namespace PdfClown.Samples.CLI
                 {
                     SKRect box = boxed.GetBox(scanner.State); // Image position (location and size) on the page.
                     Console.WriteLine(
-                      " on page " + page.Number + " (" + page.BaseObject + ")" // Page index and indirect reference.
+                      " on page " + page.Number + " (" + page.RefOrSelf + ")" // Page index and indirect reference.
                       );
                     Console.WriteLine("  Coordinates:");
                     Console.WriteLine("     x: " + Math.Round(box.Left));

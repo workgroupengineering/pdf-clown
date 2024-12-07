@@ -25,16 +25,11 @@
 
 using PdfClown.Objects;
 
-using System;
-using System.IO;
-
 namespace PdfClown.Documents.Files
 {
-    /**
-      <summary>Simple reference to the contents of another file [PDF:1.6:3.10.2].</summary>
-    */
+    /// <summary>Simple reference to the contents of another file [PDF:1.6:3.10.2].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class SimpleFileSpecification : FileSpecification
+    public sealed class SimpleFileSpecification : PdfObjectWrapper<PdfDirectObject>, IFileSpecification
     {
         internal SimpleFileSpecification(PdfDocument context, string path)
             : base(context, new PdfString(path))
@@ -44,11 +39,15 @@ namespace PdfClown.Documents.Files
             : base(baseObject)
         { }
 
-        public override string Path
+        public string FilePath
         {
-            get => ((IPdfString)BaseDataObject).StringValue;
+            get => ((IPdfString)DataObject).StringValue;
             set { }
         }
+
+        public PdfString Name => RetrieveName();
+
+        public PdfDirectObject NamedBaseObject => RetrieveNamedBaseObject();
     }
 }
 

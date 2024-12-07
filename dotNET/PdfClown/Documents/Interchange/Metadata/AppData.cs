@@ -27,36 +27,39 @@ using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interchange.Metadata
 {
     /// <summary>Private application data dictionary [PDF:1.7:10.4].</summary>
     [PDF(VersionEnum.PDF13)]
-    public class AppData : PdfObjectWrapper<PdfDictionary>
+    public class AppData : PdfDictionary
     {
-        internal AppData(PdfDocument context) : base(context, new PdfDictionary())
+        public AppData(PdfDocument context) 
+            : base(context, new ())
         { }
 
-        public AppData(PdfDirectObject baseObject) : base(baseObject)
+        internal AppData(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the private data associated to the application.</summary>
         /// <remarks>It can be any type, although dictionary is its typical form.</remarks>
-        public PdfDataObject Data
+        public PdfDirectObject Data
         {
-            get => BaseDataObject[PdfName.Private];
-            set => BaseDataObject[PdfName.Private] = PdfObject.Unresolve(value);
+            get => Get(PdfName.Private);
+            set => Set(PdfName.Private, value?.Unresolve());
         }
 
-        /// <summary>Gets the date when the contents of the holder (<see cref="PdfDocument">document</see>,
+        /// <summary>Gets the date when the contents of the holder (<see cref="PdfCatalog">document</see>,
         /// <see cref="PdfPage">page</see>, or <see cref="FormXObject">form</see>) were most recently
         /// modified by this application.</summary>
         /// <remarks>To update it, use the <see cref="IAppDataHolder.Touch(PdfName)"/> method of the
         /// holder.</remarks>
         public DateTime ModificationDate
         {
-            get => BaseDataObject.GetDate(PdfName.LastModified) ?? DateTime.MinValue;
-            internal set => BaseDataObject.Set(PdfName.LastModified, value);
+            get => GetDate(PdfName.LastModified) ?? DateTime.MinValue;
+            internal set => Set(PdfName.LastModified, value);
         }
     }
 }

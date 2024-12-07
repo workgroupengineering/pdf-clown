@@ -25,14 +25,22 @@
 
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents
 {
     /// <summary>Article threads [PDF:1.7:3.6.1].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class Articles : Array<Article>
+    public sealed class Articles : PdfArray<Article>
     {
-        public Articles(PdfDirectObject baseObject) : base(baseObject)
+        public Articles()
+            : this(new())
         { }
+
+        internal Articles(List<PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        public override PdfName TypeKey => PdfName.Thread;
     }
 }

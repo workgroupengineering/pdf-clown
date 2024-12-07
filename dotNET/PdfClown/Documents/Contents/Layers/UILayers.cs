@@ -26,41 +26,44 @@
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Optional content group collection.</summary>
-    */
+    /// <summary>Optional content group collection.</summary>
     [PDF(VersionEnum.PDF15)]
-    public class UILayers : Array<IUILayerNode>
+    public class UILayers : ArrayWrapper<IUILayerNode>
     {
         private delegate int EvaluateNode(int currentNodeIndex, int currentBaseIndex);
 
         private class ItemWrapper : IEntryWrapper<IUILayerNode>
         {
+            private readonly Dictionary<PdfDirectObject, IUILayerNode> cache = new();
+
             public IUILayerNode Wrap(PdfDirectObject baseObject)
             {
-                if (baseObject == null)
-                    return null;
-                if (baseObject.Wrapper is IUILayerNode node)
-                    return node;
-                PdfDataObject baseDataObject = baseObject.Resolve();
-                if (baseDataObject is PdfDictionary)
-                    return Wrap<Layer>(baseObject);
-                else if (baseDataObject is PdfArray)
-                    return Wrap<LayerCollection>(baseObject);
+                return baseObject?.Resolve(PdfName.OCG) is PdfDirectObject dataObject
+                    ? cache.TryGetValue(baseObject, out var uiLayer) ? uiLayer : cache[baseObject] = Wrap(baseObject, dataObject)
+                    : null;
+            }
+
+            private static IUILayerNode Wrap(PdfDirectObject baseObject, PdfDirectObject dataObject)
+            {
+                if (dataObject is Layer layer)
+                    return layer;
+                else if (dataObject is PdfArray)
+                    return new LayerCollection(baseObject);
                 else
-                    throw new ArgumentException(baseDataObject.GetType().Name + " is NOT a valid layer node.");
+                    throw new ArgumentException(dataObject.GetType().Name + " is NOT a valid layer node.");
             }
         }
 
-        private static readonly ItemWrapper Wrapper = new ItemWrapper();
+        public UILayers(PdfDocument context)
+            : base(context, new ItemWrapper())
+        { }
 
-
-        public UILayers(PdfDocument context) : base(context, Wrapper) { }
-
-        public UILayers(PdfDirectObject baseObject) : base(Wrapper, baseObject)
+        public UILayers(PdfDirectObject baseObject)
+            : base(baseObject, new ItemWrapper())
         { }
 
         public override int Count => Evaluate(delegate (int currentNodeIndex, int currentBaseIndex)
@@ -71,11 +74,9 @@ namespace PdfClown.Documents.Contents.Layers
                                                            return -1;
                                                    }) + 1;
 
-        public override int IndexOf(IUILayerNode item)
-        { return GetNodeIndex(base.IndexOf(item)); }
+        public override int IndexOf(IUILayerNode item) => GetNodeIndex(base.IndexOf(item));
 
-        public override void Insert(int index, IUILayerNode item)
-        { base.Insert(GetBaseIndex(index), item); }
+        public override void Insert(int index, IUILayerNode item) => base.Insert(GetBaseIndex(index), item);
 
         public override void RemoveAt(int index)
         {
@@ -85,11 +86,11 @@ namespace PdfClown.Documents.Contents.Layers
             if (removedItem is Layer
               && baseIndex < base.Count)
             {
-                /*
-                  NOTE: Sublayers MUST be removed as well.
-                */
-                if (BaseDataObject.Resolve(baseIndex) is PdfArray)
-                { BaseDataObject.RemoveAt(baseIndex); }
+                // NOTE: Sublayers MUST be removed as well.
+                if (DataObject.Get<PdfArray>(baseIndex) != null)
+                {
+                    DataObject.RemoveAt(baseIndex);
+                }
             }
         }
 
@@ -99,22 +100,18 @@ namespace PdfClown.Documents.Contents.Layers
             set => base[GetBaseIndex(index)] = value;
         }
 
-        /**
-          <summary>Gets the positional information resulting from the collection evaluation.</summary>
-          <param name="evaluator">Expression used to evaluate the positional matching.</param>
-        */
+        /// <summary>Gets the positional information resulting from the collection evaluation.</summary>
+        /// <param name="evaluator">Expression used to evaluate the positional matching.</param>
         private int Evaluate(EvaluateNode evaluateNode)
         {
-            /*
-              NOTE: Layer hierarchies are represented through a somewhat flatten structure which needs
-              to be evaluated in order to match nodes in their actual place.
-            */
-            PdfArray baseDataObject = BaseDataObject;
+            // NOTE: Layer hierarchies are represented through a somewhat flatten structure which needs
+            // to be evaluated in order to match nodes in their actual place.
+            PdfArray baseDataObject = DataObject;
             int nodeIndex = -1;
             bool groupAllowed = true;
             for (int baseIndex = 0, baseLength = base.Count; baseIndex < baseLength; baseIndex++)
             {
-                PdfDataObject itemDataObject = baseDataObject.Resolve(baseIndex);
+                var itemDataObject = baseDataObject.Get<PdfDirectObject>(baseIndex);
                 if (itemDataObject is PdfDictionary
                   || (itemDataObject is PdfArray && groupAllowed))
                 {
@@ -123,7 +120,7 @@ namespace PdfClown.Documents.Contents.Layers
                     if (evaluation > -1)
                         return evaluation;
                 }
-                groupAllowed = !(itemDataObject is PdfDictionary);
+                groupAllowed = itemDataObject is not PdfDictionary;
             }
             return evaluateNode(nodeIndex, -1);
         }

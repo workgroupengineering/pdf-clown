@@ -1,28 +1,17 @@
 using PdfClown.Documents;
-using PdfClown.Documents.Contents;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Interaction.Annotations;
-using PdfClown.Files;
-using PdfClown.Objects;
-
-using System;
-using System.Collections.Generic;
 using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to insert screen annotations to display media clips inside
-      a PDF document.</summary>
-    */
+    /// <summary>This sample demonstrates how to insert screen annotations to display media clips inside
+    ///  a PDF document.</summary>
     public class VideoEmbeddingSample : Sample
     {
         public override void Run()
         {
             // 1. Instantiate the PDF file!
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Insert a new page!
             var page = new PdfPage(document);
@@ -37,7 +26,7 @@ namespace PdfClown.Samples.CLI
               "video/mp4");
 
             // 4. Serialize the PDF file!
-            Serialize(file, "Video embedding", "inserting screen annotations to display media clips inside a PDF document", "video embedding");
+            Serialize(document, "Video embedding", "inserting screen annotations to display media clips inside a PDF document", "video embedding");
         }
     }
 }

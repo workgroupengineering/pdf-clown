@@ -23,25 +23,17 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 using PdfClown.Util;
 
-using System;
-
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>Combo box [PDF:1.6:8.6.3].</summary>
-    */
+    /// <summary>Combo box [PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class ComboBox : ChoiceField
     {
-        /**
-          <summary>Creates a new combobox within the given document context.</summary>
-        */
+        /// <summary>Creates a new combobox within the given document context.</summary>
         public ComboBox(string name, Widget widget)
             : base(name, widget)
         { Flags = EnumUtils.Mask(Flags, FlagsEnum.Combo, true); }
@@ -50,18 +42,14 @@ namespace PdfClown.Documents.Interaction.Forms
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets whether the text is editable.</summary>
-        */
+        /// <summary>Gets/Sets whether the text is editable.</summary>
         public bool Editable
         {
             get => (Flags & FlagsEnum.Edit) == FlagsEnum.Edit;
             set => Flags = EnumUtils.Mask(Flags, FlagsEnum.Edit, value);
         }
 
-        /**
-          <summary>Gets/Sets whether the edited text is spell checked.</summary>
-        */
+        /// <summary>Gets/Sets whether the edited text is spell checked.</summary>
         public bool SpellChecked
         {
             get => (Flags & FlagsEnum.DoNotSpellCheck) != FlagsEnum.DoNotSpellCheck;

@@ -39,20 +39,16 @@ namespace PdfClown.Documents.Interaction.Annotations
     [PDF(VersionEnum.PDF13)]
     public sealed class FileAttachment : Markup, IFileResource
     {
-        private static readonly Dictionary<FileAttachmentImageType, PdfName> IconTypeEnumCodes;
+        private static readonly Dictionary<FileAttachmentImageType, PdfName> IconTypeEnumCodes = new()
+        {
+            [FileAttachmentImageType.Graph] = PdfName.Graph,
+            [FileAttachmentImageType.PaperClip] = PdfName.Paperclip,
+            [FileAttachmentImageType.PushPin] = PdfName.PushPin,
+            [FileAttachmentImageType.Tag] = PdfName.Tag
+        };
 
         private static readonly FileAttachmentImageType DefaultIconType = FileAttachmentImageType.PushPin;
-
-        static FileAttachment()
-        {
-            IconTypeEnumCodes = new Dictionary<FileAttachmentImageType, PdfName>
-            {
-                [FileAttachmentImageType.Graph] = PdfName.Graph,
-                [FileAttachmentImageType.PaperClip] = PdfName.Paperclip,
-                [FileAttachmentImageType.PushPin] = PdfName.PushPin,
-                [FileAttachmentImageType.Tag] = PdfName.Tag
-            };
-        }
+        private IFileSpecification fs;
 
         /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(FileAttachmentImageType value)
@@ -73,40 +69,40 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultIconType;
         }
 
-        public FileAttachment(PdfPage page, SKRect box, string text, FileSpecification dataFile)
+        public FileAttachment(PdfPage page, SKRect box, string text, IFileSpecification dataFile)
             : base(page, PdfName.FileAttachment, box, text)
         {
             DataFile = dataFile;
         }
 
-        public FileAttachment(PdfDirectObject baseObject)
+        public FileAttachment(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
         public FileAttachmentImageType AttachmentName
         {
-            get => ToImageTypeEnum((IPdfString)BaseDataObject[PdfName.Name]);
+            get => ToImageTypeEnum(Get<IPdfString>(PdfName.Name));
             set
             {
                 var oldvalue = AttachmentName;
                 if (oldvalue != value)
                 {
-                    BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
+                    this[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
                     OnPropertyChanged(oldvalue, value);
                 }
             }
         }
 
-        public FileSpecification DataFile
+        public IFileSpecification DataFile
         {
-            get => FileSpecification.Wrap(BaseDataObject[PdfName.FS]);
+            get => fs ??= IFileSpecification.Wrap(Get(PdfName.FS));
             set
             {
                 var oldValue = DataFile;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.FS] = value.BaseObject;
+                    Set(PdfName.FS, (fs = value).RefOrSelf);
                     OnPropertyChanged(oldValue, value);
                 }
             }

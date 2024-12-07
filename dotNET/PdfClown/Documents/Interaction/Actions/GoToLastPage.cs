@@ -23,28 +23,21 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Go to the last page of the document' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Go to the last page of the document' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class GoToLastPage : NamedAction, IGoToAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public GoToLastPage(PdfDocument context)
             : base(context, PdfName.LastPage)
         { }
 
-        internal GoToLastPage(PdfDirectObject baseObject)
+        internal GoToLastPage(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 

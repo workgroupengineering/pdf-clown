@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-using PdfClown.Files;
 using PdfClown.Objects;
 
 using System;
@@ -35,84 +33,86 @@ namespace PdfClown.Documents.Interchange.Metadata
 {
     /// <summary>Document information [PDF:1.6:10.2.1].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class Information : PdfObjectWrapper<PdfDictionary>, IDictionary<PdfName, object>
+    public sealed class Information : PdfDictionary, IDictionary<PdfName, object>
     {
-        public Information(PdfDocument context) : base(context, new PdfDictionary())
+        public Information()
+            : this((PdfDocument)null)
         { }
 
-        public Information(PdfDirectObject baseObject) : base(baseObject)
+        public Information(PdfDocument context)
+            : base(context, new())
+        { }
+
+        internal Information(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         public string Author
         {
-            get => BaseDataObject.GetString(PdfName.Author);
-            set => BaseDataObject.SetText(PdfName.Author, value);
+            get => GetString(PdfName.Author);
+            set => SetText(PdfName.Author, value);
         }
 
         public DateTime? CreationDate
         {
-            get => BaseDataObject.GetDate(PdfName.CreationDate);
-            set => BaseDataObject.Set(PdfName.CreationDate, value);
+            get => GetDate(PdfName.CreationDate);
+            set => Set(PdfName.CreationDate, value);
         }
 
         public string Creator
         {
-            get => BaseDataObject.GetString(PdfName.Creator);
-            set => BaseDataObject.SetText(PdfName.Creator, value);
+            get => GetString(PdfName.Creator);
+            set => SetText(PdfName.Creator, value);
         }
 
         [PDF(VersionEnum.PDF11)]
         public string Keywords
         {
-            get => BaseDataObject.GetString(PdfName.Keywords);
-            set => BaseDataObject.SetText(PdfName.Keywords, value);
+            get => GetString(PdfName.Keywords);
+            set => SetText(PdfName.Keywords, value);
         }
 
         [PDF(VersionEnum.PDF11)]
         public DateTime? ModificationDate
         {
-            get => BaseDataObject.GetDate(PdfName.ModDate);
-            set => BaseDataObject.Set(PdfName.ModDate, value);
+            get => GetDate(PdfName.ModDate);
+            set => Set(PdfName.ModDate, value);
         }
 
         public string Producer
         {
-            get => BaseDataObject.GetString(PdfName.Producer);
-            set => BaseDataObject.SetText(PdfName.Producer, value);
+            get => GetString(PdfName.Producer);
+            set => SetText(PdfName.Producer, value);
         }
 
         [PDF(VersionEnum.PDF11)]
         public string Subject
         {
-            get => BaseDataObject.GetString(PdfName.Subject);
-            set => BaseDataObject.SetText(PdfName.Subject, value);
+            get => GetString(PdfName.Subject);
+            set => SetText(PdfName.Subject, value);
         }
 
         [PDF(VersionEnum.PDF11)]
         public string Title
         {
-            get => BaseDataObject.GetString(PdfName.Title);
-            set => BaseDataObject.SetText(PdfName.Title, value);
+            get => GetString(PdfName.Title);
+            set => SetText(PdfName.Title, value);
         }
 
-        public void Add(PdfName key, object value) => BaseDataObject.Add(key, PdfSimpleObject<object>.Get(value));
+        void IDictionary<PdfName, object>.Add(PdfName key, object value) => Add(key, PdfSimpleObject<object>.Get(value));
 
-        public bool ContainsKey(PdfName key) => BaseDataObject.ContainsKey(key);
+        bool IDictionary<PdfName, object>.ContainsKey(PdfName key) => ContainsKey(key);
 
-        public ICollection<PdfName> Keys => BaseDataObject.Keys;
-
-        public bool Remove(PdfName key) => BaseDataObject.Remove(key);
-
-        public object this[PdfName key]
+        object IDictionary<PdfName, object>.this[PdfName key]
         {
-            get => PdfSimpleObject<object>.GetValue(BaseDataObject[key]);
-            set => BaseDataObject[key] = PdfSimpleObject<object>.Get(value);
+            get => PdfSimpleObject<object>.GetValue(Get(key));
+            set => this[key] = PdfSimpleObject<object>.Get(value);
         }
 
-        public bool TryGetValue(PdfName key, out object value)
+        bool IDictionary<PdfName, object>.TryGetValue(PdfName key, out object value)
         {
             PdfDirectObject valueObject;
-            if (BaseDataObject.TryGetValue(key, out valueObject))
+            if (TryGetValue(key, out valueObject))
             {
                 value = PdfSimpleObject<object>.GetValue(valueObject);
                 return true;
@@ -122,34 +122,30 @@ namespace PdfClown.Documents.Interchange.Metadata
             return false;
         }
 
-        public ICollection<object> Values
+        ICollection<PdfName> IDictionary<PdfName, object>.Keys => base.Keys;
+
+        ICollection<object> IDictionary<PdfName, object>.Values
         {
             get
             {
                 IList<object> values = new List<object>();
-                foreach (PdfDirectObject item in BaseDataObject.Values)
+                foreach (PdfDirectObject item in Values)
                 { values.Add(PdfSimpleObject<object>.GetValue(item)); }
                 return values;
             }
         }
 
-        void ICollection<KeyValuePair<PdfName, object>>.Add(KeyValuePair<PdfName, object> entry) => Add(entry.Key, entry.Value);
+        void ICollection<KeyValuePair<PdfName, object>>.Add(KeyValuePair<PdfName, object> entry) => Add(entry.Key, PdfSimpleObject<object>.Get(entry.Value));
 
-        public void Clear() => BaseDataObject.Clear();
-
-        bool ICollection<KeyValuePair<PdfName, object>>.Contains(KeyValuePair<PdfName, object> entry) => entry.Value.Equals(this[entry.Key]);
+        bool ICollection<KeyValuePair<PdfName, object>>.Contains(KeyValuePair<PdfName, object> entry) => entry.Value.Equals(Get(entry.Key));
 
         public void CopyTo(KeyValuePair<PdfName, object>[] entries, int index) => throw new NotImplementedException();
-
-        public int Count => BaseDataObject.Count;
-
-        public bool IsReadOnly => false;
 
         public bool Remove(KeyValuePair<PdfName, object> entry) => throw new NotImplementedException();
 
         IEnumerator<KeyValuePair<PdfName, object>> IEnumerable<KeyValuePair<PdfName, object>>.GetEnumerator()
         {
-            foreach (var entry in BaseDataObject)
+            foreach (var entry in this)
             {
                 yield return new KeyValuePair<PdfName, object>(
                   entry.Key,

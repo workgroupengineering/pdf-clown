@@ -15,7 +15,7 @@ namespace PdfClown.Samples.CLI
     /// it also generates a document version decorated by text bounding boxes.</summary>
     public class TextInfoExtractionSample : Sample
     {
-        private DeviceRGBColor[] textCharBoxColors = new DeviceRGBColor[]
+        private RGBColor[] textCharBoxColors = new RGBColor[]
           {
         new RGBColor(200 / 255d, 100 / 255d, 100 / 255d),
         new RGBColor(100 / 255d, 200 / 255d, 100 / 255d),
@@ -27,10 +27,8 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
-
                 PageStamper stamper = new PageStamper(); // NOTE: Page stamper is used to draw contents on existing pages.
 
                 // 2. Iterating through the document pages...
@@ -47,7 +45,7 @@ namespace PdfClown.Samples.CLI
                 }
 
                 // 3. Decorated version serialization.
-                Serialize(file);
+                Serialize(document);
             }
         }
 

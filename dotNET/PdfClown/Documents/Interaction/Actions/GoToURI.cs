@@ -23,17 +23,16 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
     ///<summary>'Cause a URI (Uniform Resource Identifier) to be resolved' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class GoToURI : Action, IGoToAction
+    public sealed class GoToURI : PdfAction, IGoToAction
     {
         private Uri url;
 
@@ -44,15 +43,16 @@ namespace PdfClown.Documents.Interaction.Actions
             URI = uri;
         }
 
-        internal GoToURI(PdfDirectObject baseObject) : base(baseObject)
+        internal GoToURI(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the uniform resource identifier to resolve [RFC 2396].</summary>
         public Uri URI
         {
             //NOTE: 'URI' entry MUST exist.
-            get => url ??= Uri.TryCreate(BaseDataObject.GetString(PdfName.URI), UriKind.RelativeOrAbsolute, out var parsed) ? parsed : null;
-            set => BaseDataObject.Set(PdfName.URI, (url = value)?.ToString());
+            get => url ??= Uri.TryCreate(GetString(PdfName.URI), UriKind.RelativeOrAbsolute, out var parsed) ? parsed : null;
+            set => Set(PdfName.URI, (url = value)?.ToString());
         }
 
         public override string GetDisplayName() => "Go To " + URI;

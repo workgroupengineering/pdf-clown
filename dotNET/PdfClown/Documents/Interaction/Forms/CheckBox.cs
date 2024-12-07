@@ -47,21 +47,21 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                var value = BaseDataObject.Get<PdfName>(PdfName.V);
+                var value = DataObject.Get<PdfName>(PdfName.V);
                 return !(value == null || value.Equals(PdfName.Off));
             }
             set
             {
-                PdfDictionary widgetDictionary = Widgets[0].BaseDataObject;
-                /*
-                  NOTE: The appearance for the off state is optional but, if present, MUST be stored in the
-                  appearance dictionary under the name Off. The recommended (but NOT required) name for the
-                  on state is Yes.
-                */
+                PdfDictionary widgetDictionary = Widgets[0];
+
+                // NOTE: The appearance for the off state is optional but, if present, MUST be stored in the
+                // appearance dictionary under the name Off. The recommended (but NOT required) name for the
+                // on state is Yes.
+
                 PdfName baseValue = null;
                 if (value)
                 {
-                    var appearanceDictionary = widgetDictionary.Get<PdfDictionary>(PdfName.AP);
+                    var appearanceDictionary = widgetDictionary.Get<Appearance>(PdfName.AP);
                     if (appearanceDictionary != null)
                     {
                         foreach (PdfName appearanceKey in appearanceDictionary.Get<PdfDictionary>(PdfName.N).Keys)
@@ -78,7 +78,7 @@ namespace PdfClown.Documents.Interaction.Forms
                 }
                 else
                 { baseValue = PdfName.Off; }
-                BaseDataObject[PdfName.V] = baseValue;
+                DataObject[PdfName.V] = baseValue;
                 widgetDictionary[PdfName.AS] = baseValue;
             }
         }

@@ -39,7 +39,7 @@ namespace PdfClown.Tokens
     {
         internal sealed class ObjectEntry
         {
-            internal PdfDataObject dataObject;
+            internal PdfDirectObject dataObject;
             internal int offset;
 
             private FileParser parser;
@@ -54,24 +54,26 @@ namespace PdfClown.Tokens
                 this.offset = offset;
             }
 
-            public ObjectEntry(PdfDataObject dataObject, FileParser parser)
+            public ObjectEntry(PdfDirectObject dataObject, FileParser parser)
                 : this(parser)
             {
                 this.dataObject = dataObject;
                 this.offset = -1; // Undefined -- to set on stream serialization.
             }
 
-            public PdfDataObject DataObject
+            public PdfDirectObject DataObject
             {
-                get
+                get => GetDataObject(null);
+            }
+
+            public PdfDirectObject GetDataObject(PdfName parentKey)
+            {
+                if (dataObject == null)
                 {
-                    if (dataObject == null)
-                    {
-                        parser.Seek(offset); parser.MoveNext();
-                        dataObject = parser.ParsePdfObject();
-                    }
-                    return dataObject;
+                    parser.Seek(offset); parser.MoveNext();
+                    dataObject = parser.ParsePdfObject(parentKey);
                 }
+                return dataObject;
             }
         }
 
@@ -82,25 +84,31 @@ namespace PdfClown.Tokens
         private FileParser parser;
 
         public ObjectStream()
-            : base(new Dictionary<PdfName, PdfDirectObject>() { { PdfName.Type, PdfName.ObjStm } })
+            : base(new Dictionary<PdfName, PdfDirectObject>() {
+                { PdfName.Type, PdfName.ObjStm }
+            }, new ByteStream())
         { }
 
-        public ObjectStream(Dictionary<PdfName, PdfDirectObject> header, IInputStream body)
+        internal ObjectStream(Dictionary<PdfName, PdfDirectObject> header)
+            : base(header)
+        { }
+
+        internal ObjectStream(Dictionary<PdfName, PdfDirectObject> header, IInputStream body)
             : base(header, body)
         { }
 
-        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
         /// <summary>Gets/Sets the object stream extended by this one.</summary>
         /// <remarks>Both streams are considered part of a collection of object streams  whose links form
         /// a directed acyclic graph.</remarks>
         public ObjectStream BaseStream
         {
-            get => (ObjectStream)Resolve(PdfName.Extends);
-            set => this[PdfName.Extends] = value.Reference;
+            get => Get<ObjectStream>(PdfName.Extends);
+            set => Set(PdfName.Extends, value);
         }
 
-        public override void WriteTo(IOutputStream stream, PdfFile context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             if (objectEntries != null)
             { Flush(stream); }
@@ -108,7 +116,7 @@ namespace PdfClown.Tokens
             base.WriteTo(stream, context);
         }
 
-        public void Add(int key, PdfDataObject value) => Entries.Add(key, new ObjectEntry(value, parser));
+        public void Add(int key, PdfDirectObject value) => Entries.Add(key, new ObjectEntry(value, parser));
 
         public bool ContainsKey(int key) => Entries.ContainsKey(key);
 
@@ -116,13 +124,13 @@ namespace PdfClown.Tokens
 
         public bool Remove(int key) => Entries.Remove(key);
 
-        public PdfDataObject this[int key]
+        public PdfDirectObject this[int key]
         {
-            get => Entries.TryGetValue(key, out var direct)? direct?.DataObject:null;
+            get => Entries.TryGetValue(key, out var direct) ? direct?.DataObject : null;
             set => Entries[key] = new ObjectEntry(value, parser);
         }
 
-        public bool TryGetValue(int key, out PdfDataObject value)
+        public bool TryGetValue(int key, out PdfDirectObject value)
         {
             if (Entries.TryGetValue(key, out var direct))
             {
@@ -133,18 +141,7 @@ namespace PdfClown.Tokens
             return false;
         }
 
-        public ICollection<PdfDataObject> ObjectValues
-        {
-            get
-            {
-                IList<PdfDataObject> values = new List<PdfDataObject>();
-                foreach (int key in Entries.Keys)
-                { values.Add(this[key]); }
-                return values;
-            }
-        }
-
-        //void ICollection<KeyValuePair<int, PdfDataObject>>.Add(KeyValuePair<int, PdfDataObject> entry)
+        //void ICollection<KeyValuePair<int, PdfDirectObject>>.Add(KeyValuePair<int, PdfDirectObject> entry)
         //{
         //    Add(entry.Key, entry.Value);
         //}
@@ -157,21 +154,21 @@ namespace PdfClown.Tokens
             { objectEntries.Clear(); }
         }
 
-        //bool ICollection<KeyValuePair<int, PdfDataObject>>.Contains(KeyValuePair<int, PdfDataObject> entry)
+        //bool ICollection<KeyValuePair<int, PdfDirectObject>>.Contains(KeyValuePair<int, PdfDirectObject> entry)
         //{
-        //    return ((ICollection<KeyValuePair<int, PdfDataObject>>)Entries).Contains(entry);
+        //    return ((ICollection<KeyValuePair<int, PdfDirectObject>>)Entries).Contains(entry);
         //}
 
-        public void CopyTo(KeyValuePair<int, PdfDataObject>[] entries, int index)
+        public void CopyTo(KeyValuePair<int, PdfDirectObject>[] entries, int index)
         {
             throw new NotImplementedException();
         }
 
         public int ObjectsCount => Entries.Count;
 
-        public bool Remove(KeyValuePair<int, PdfDataObject> entry)
+        public bool Remove(KeyValuePair<int, PdfDirectObject> entry)
         {
-            PdfDataObject value;
+            PdfDirectObject value;
             if (TryGetValue(entry.Key, out value)
               && value.Equals(entry.Value))
                 return Entries.Remove(entry.Key);
@@ -179,14 +176,14 @@ namespace PdfClown.Tokens
                 return false;
         }
 
-        //IEnumerator<KeyValuePair<int, PdfDataObject>> IEnumerable<KeyValuePair<int, PdfDataObject>>.GetEnumerator()
+        //IEnumerator<KeyValuePair<int, PdfDirectObject>> IEnumerable<KeyValuePair<int, PdfDirectObject>>.GetEnumerator()
         //{
         //    foreach (int key in Keys)
-        //    { yield return new KeyValuePair<int, PdfDataObject>(key, this[key]); }
+        //    { yield return new KeyValuePair<int, PdfDirectObject>(key, this[key]); }
         //}
 
         //IEnumerator IEnumerable.GetEnumerator()
-        //{ return ((IEnumerable<KeyValuePair<int, PdfDataObject>>)this).GetEnumerator(); }
+        //{ return ((IEnumerable<KeyValuePair<int, PdfDirectObject>>)this).GetEnumerator(); }
 
         internal Dictionary<int, ObjectEntry> Entries
         {
@@ -199,12 +196,12 @@ namespace PdfClown.Tokens
                     var body = GetInputStream();
                     if (body.Length > 0)
                     {
-                        parser = new FileParser(body, File);
+                        parser = new FileParser(body, Document);
                         int baseOffset = GetInt(PdfName.First);
                         for (int index = 0, length = GetInt(PdfName.N); index < length; index++)
                         {
-                            int objectNumber = ((PdfInteger)parser.ParsePdfObject(1)).IntValue;
-                            int objectOffset = baseOffset + ((PdfInteger)parser.ParsePdfObject(1)).IntValue;
+                            int objectNumber = ((PdfInteger)parser.ParseNextPdfObject(null)).RawValue;
+                            int objectOffset = baseOffset + ((PdfInteger)parser.ParseNextPdfObject(null)).RawValue;
                             objectEntries[objectNumber] = new ObjectEntry(objectOffset, parser);
                         }
                     }
@@ -222,9 +219,9 @@ namespace PdfClown.Tokens
                 // Serializing the entries into the stream buffer...
                 IByteStream indexBuffer = new ByteStream();
                 IByteStream dataBuffer = new ByteStream();
-                var indirectObjects = File.IndirectObjects;
+                var indirectObjects = Document.IndirectObjects;
                 int objectIndex = -1;
-                var context = File;
+                var context = Document;
                 foreach (KeyValuePair<int, ObjectEntry> entry in Entries)
                 {
                     int objectNumber = entry.Key;

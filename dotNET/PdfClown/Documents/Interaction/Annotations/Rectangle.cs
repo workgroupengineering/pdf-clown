@@ -25,6 +25,7 @@
 
 using PdfClown.Objects;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -37,11 +38,11 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, box, text, PdfName.Square)
         { }
 
-        public Rectangle(PdfDirectObject baseObject)
+        public Rectangle(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
-        public override Objects.Rectangle Rect
+        public override PdfRectangle Rect
         {
             get => base.Rect;
             set

@@ -24,21 +24,20 @@
 */
 
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>A collection of mutually-exclusive layers [PDF:1.7:4.10.3].</summary>
-    */
+    /// <summary>A collection of mutually-exclusive layers [PDF:1.7:4.10.3].</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class OptionGroup : Array<Layer>
+    public sealed class OptionGroup : PdfArrayWrapper<Layer>
     {
-        public OptionGroup(PdfDocument context) : base(context)
+        public OptionGroup(PdfDocument context)
+            : base(context, new PdfArrayImpl())
         { }
 
-        public OptionGroup(PdfDirectObject baseObject) : base(baseObject)
+        public OptionGroup(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
     }
 }

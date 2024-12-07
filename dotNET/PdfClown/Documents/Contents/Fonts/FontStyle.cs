@@ -25,24 +25,30 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    public class FontStyle : PdfObjectWrapper<PdfDictionary>
+    public class FontStyle : PdfDictionary
     {
         private Panose panose;
 
-        public FontStyle(PdfDirectObject baseObject) : base(baseObject)
+        public FontStyle(PdfDocument context, Dictionary<PdfName, PdfDirectObject> dictionary)
+            : base(context, dictionary)
+        { }
+        public FontStyle() 
+            : base()
         { }
 
-        public FontStyle(PdfDocument document, PdfDictionary dictionary) : base(document, dictionary)
+        internal FontStyle(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         public Panose Panose
         {
-            get => panose ??= new Panose(Dictionary.GetTextBytes(PdfName.Panose));
-            set => Dictionary.Set(PdfName.Panose, value.Bytes);
+            get => panose ??= new Panose(GetTextBytes(PdfName.Panose));
+            set => Set(PdfName.Panose, value.Bytes);
         }
     }
 }

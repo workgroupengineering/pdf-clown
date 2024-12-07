@@ -23,25 +23,28 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
-using PdfClown.Util;
-
-using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
     /// <summary>Article thread [PDF:1.7:8.3.2].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class Article : PdfObjectWrapper<PdfDictionary>
+    public sealed class Article : PdfDictionary
     {
-        public Article(PdfDocument context)
-            : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.Thread } })
-        { context.Articles.Add(this); }
+        private ArticleElements elements;
 
-        public Article(PdfDirectObject baseObject) : base(baseObject)
+        public Article(PdfDocument context)
+            : base(context, new Dictionary<PdfName, PdfDirectObject>(1) { 
+                { PdfName.Type, PdfName.Thread } 
+            })
+        {
+            context.Catalog.Articles.Add(this);
+        }
+
+        internal Article(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Deletes this thread removing also its reference in the document's collection.</summary>
@@ -49,20 +52,23 @@ namespace PdfClown.Documents.Interaction.Navigation
         {
             // Shallow removal (references):
             // * reference in document
-            Document.Articles.Remove(this);
+            Catalog.Articles.Remove(this);
 
             // Deep removal (indirect object).
             return base.Delete();
         }
 
         /// <summary>Gets the beads associated to this thread.</summary>
-        public ArticleElements Elements => Wrap2<ArticleElements>(BaseObject);
+        public ArticleElements Elements
+        {
+            get => elements ??= new ArticleElements(this);
+        }
 
         /// <summary>Gets/Sets common article metadata.</summary>
         public Information Information
         {
-            get => Wrap<Information>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.I));
-            set => BaseDataObject[PdfName.I] = PdfObjectWrapper.GetBaseObject(value);
+            get => GetOrCreate<Information>(PdfName.I);
+            set => Set(PdfName.I, value);
         }
     }
 }

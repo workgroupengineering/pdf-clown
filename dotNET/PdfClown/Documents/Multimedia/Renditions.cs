@@ -24,22 +24,19 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
-    public class Renditions : Array<Rendition>
+    public class Renditions : PdfArrayWrapper<Rendition>
     {
-        private class RenditionWrapper : IEntryWrapper<Rendition>
-        {
-            public Rendition Wrap(PdfDirectObject baseObject) => Rendition.Wrap(baseObject);
-        }
-
-        private static readonly IEntryWrapper<Rendition> Wrapper = new RenditionWrapper();
-        
-        public Renditions(PdfDocument context) : base(context, Wrapper)
+        public Renditions(PdfDocument context)
+            : base(context)
         { }
 
-        public Renditions(PdfDirectObject baseObject) : base(Wrapper, baseObject)
+        internal Renditions(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
+
     }
 }
