@@ -4,9 +4,9 @@
     <TargetFramework>net9.0</TargetFramework>
     <!--<Nullable>enable</Nullable>-->
     <ImplicitUsings>enable</ImplicitUsings>
-	<WasmEnableThreads>true</WasmEnableThreads>
+	<!--<WasmEnableThreads>true</WasmEnableThreads>-->
 	<!--<WasmProfilers>browser;</WasmProfilers>-->
-	<WasmNativeStrip>true</WasmNativeStrip>
+	<!--<WasmNativeStrip>true</WasmNativeStrip>-->
 	<WasmBuildNative>true</WasmBuildNative>
 	<InvariantTimezone>true</InvariantTimezone>
 	<InvariantGlobalization>true</InvariantGlobalization>  
