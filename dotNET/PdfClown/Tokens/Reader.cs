@@ -197,7 +197,7 @@ namespace PdfClown.Tokens
                     throw new PostScriptParseException("Neither object number of the first object in this xref subsection nor end of xref section found.", parser);
 
                 // Get the object number of the first object in this xref-table subsection!
-                int startObjectNumber = parser.IntegerToken;
+                int first = parser.IntegerToken;
 
                 // 2. Last object number.
                 parser.MoveNext();
@@ -205,38 +205,39 @@ namespace PdfClown.Tokens
                     throw new PostScriptParseException("Number of entries in this xref subsection not found.", parser);
 
                 // Get the object number of the last object in this xref-table subsection!
-                int endObjectNumber = parser.IntegerToken + startObjectNumber;
+                int count = parser.IntegerToken;
 
                 // 3. XRef-table subsection entries.
-                for (int index = startObjectNumber; index < endObjectNumber; index++)
-                {
-                    if (xrefEntries.ContainsKey(index)) // Already-defined entry.
+                for (int i = 0; i < count; i++)
                     {
-                        // Skip to the next entry!
-                        parser.MoveNext(3);
-                        continue;
-                    }
-
                     // Get the indirect object offset!
                     int offset = parser.MoveNext() ? parser.IntegerToken : 0;
                     // Get the object generation number!
                     int generation = parser.MoveNext() ? parser.IntegerToken : 0;
                     // Get the usage tag!
+                    var usageToken = parser.MoveNext() ? parser.CharsToken : ReadOnlySpan<char>.Empty;
+
                     XRefEntry.UsageEnum usage;
-                    {
-                        var usageToken = parser.MoveNext() ? parser.CharsToken : ReadOnlySpan<char>.Empty;
                         if (MemoryExtensions.Equals(usageToken, Keyword.InUseXrefEntry, StringComparison.Ordinal))
                             usage = XRefEntry.UsageEnum.InUse;
                         else if (MemoryExtensions.Equals(usageToken, Keyword.FreeXrefEntry, StringComparison.Ordinal))
                             usage = XRefEntry.UsageEnum.Free;
                         else
                             throw new PostScriptParseException("Invalid xref entry.", parser);
+                    // The first xref table entry, i.e. obj 0, should be free. Attempting
+                    // to adjust an incorrect first obj # (fixes issue 3248 and 7229 from pdf.js).
+                    if (i == 0 && usage == XRefEntry.UsageEnum.Free && first == 1)
+                    {
+                        first = 0;
                     }
-
+                    var index = first + i;
+                    if (!xrefEntries.ContainsKey(index)) // Already-defined entry.
+                    {
                     // Define entry!
                     xrefEntries[index] = new XRefEntry(index, generation, offset, usage);
                 }
             }
+        }
         }
 
         internal void PrepareDecryption()
