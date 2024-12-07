@@ -1,5 +1,6 @@
 ﻿using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Objects;
 using PdfClown.Util.Invokers;
 using SkiaSharp;
 
@@ -27,7 +28,7 @@ namespace PdfClown.UI.Operations
             var cloned = (AnnotationOperation)base.Clone(document);
 
             cloned.Annotation = document.FindAnnotation(Annotation.Name)
-                ?? (Annotation)Annotation.Clone(document.Document);
+                ?? (Annotation)Annotation.RefOrSelf.Clone(document.Document).Resolve(PdfName.Annot);
 
             if (cloned.Property is ControlPoint controlPoint)
                 cloned.Property = controlPoint.Clone(cloned.Annotation);

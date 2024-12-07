@@ -5,9 +5,11 @@ using PdfClown.UI.Operations;
 using PdfClown.UI.Text;
 using PdfClown.Util.Math;
 using SkiaSharp.Views.Blazor;
+using System.Runtime.Versioning;
 
 namespace PdfClown.UI.Blazor
 {
+    [SupportedOSPlatform("browser")]
     public partial class PdfView : SKScrollView, IPdfView
     {
         private readonly PdfViewState state;
@@ -20,7 +22,7 @@ namespace PdfClown.UI.Blazor
         public PdfView()
         {
             Envir.Init();
-            
+
             state = new PdfViewState { Viewer = this };
             state.CurrentPageChanged += OnCurrentPageChanged;
             state.ScaleChanged += OnScaleChanged;
@@ -64,7 +66,7 @@ namespace PdfClown.UI.Blazor
         [Parameter]
         public EventCallback<bool> ShowCharBoundChanged { get; set; }
 
-        public IPdfDocumentViewModel Document
+        public IPdfDocumentViewModel? Document
         {
             get => state.Document;
             set
@@ -77,13 +79,13 @@ namespace PdfClown.UI.Blazor
             }
         }
 
-        public PdfPage PdfPage
+        public PdfPage? PdfPage
         {
             get => Page?.GetPage(state);
-            set => Page = Document.GetPageView(value);
+            set => Page = Document?.GetPageView(value);
         }
 
-        public IPdfPageViewModel Page
+        public IPdfPageViewModel? Page
         {
             get => state.CurrentPage;
             set => state.CurrentPage = value;
@@ -97,7 +99,7 @@ namespace PdfClown.UI.Blazor
         public bool IsEdited { get; set; }
 
         [Parameter]
-        public EventCallback<bool> IsEditedChanged { get; set; }
+        public EventCallback<bool>? IsEditedChanged { get; set; }
 
         [Parameter]
         public int PagesCount { get; set; }
@@ -118,7 +120,7 @@ namespace PdfClown.UI.Blazor
         public EventCallback<int> PageNumberChanged { get; set; }
 
 
-        public event PdfDocumentEventHandler DocumentChanged;
+        public event PdfDocumentEventHandler? DocumentChanged;
 
         public void NextPage() => NewPageNumber += 1;
 
@@ -137,7 +139,7 @@ namespace PdfClown.UI.Blazor
             }
             if (state.Scale != ScaleContent)
             {
-                state.Scale = ScaleContent; 
+                state.Scale = ScaleContent;
             }
             if (showMarkup != ShowMarkup)
             {
@@ -165,7 +167,10 @@ namespace PdfClown.UI.Blazor
         {
             fitMode = newValue;
             //InvalidateSurface();
-            ScrollTo(Page);
+            if (Page != null)
+            {
+                ScrollTo(Page);
+            }
         }
 
         private void OnShowMarkupChanged(bool oldValue, bool newValue)
@@ -233,7 +238,7 @@ namespace PdfClown.UI.Blazor
             return base.OnKeyDown(keyName, modifiers);
         }
 
-        private void OnDocumentChanged(IPdfDocumentViewModel value)
+        private void OnDocumentChanged(IPdfDocumentViewModel? value)
         {
             _ = PagesCountChanged.InvokeAsync(state.PagesCount);
             DocumentChanged?.Invoke(new PdfDocumentEventArgs(value));
@@ -259,9 +264,9 @@ namespace PdfClown.UI.Blazor
             InvalidatePaint();
         }
 
-        private void OnOperationsChanged(object sender, EventArgs e)
+        private void OnOperationsChanged(object? sender, EventArgs? e)
         {
-            IsEditedChanged.InvokeAsync(Operations.HashOperations);
+            IsEditedChanged?.InvokeAsync(Operations.HashOperations);
         }
 
         protected override void OnTouch(TouchEventArgs e)
@@ -285,16 +290,19 @@ namespace PdfClown.UI.Blazor
             return false;
         }
 
-        protected override void OnSizeAllocated(float width, float height)
+        protected override void OnSizeAllocated(double width, double height)
         {
             base.OnSizeAllocated(width, height);
             state.UpdateCurrentMatrix((float)width, (float)height);
-            ScrollTo(Page);
+            if (Page != null)
+            {
+                ScrollTo(Page);
+            }
         }
 
         public void Reload()
         {
-            var newDocument = Document.Reload(Operations);
+            var newDocument = Document?.Reload(Operations);
             Operations.MoveToLast();
             Close();
             Document = newDocument;
@@ -322,7 +330,11 @@ namespace PdfClown.UI.Blazor
             document?.Dispose();
         }
 
-        public void ScrollTo(PdfPage page) => ScrollTo(Document.GetPageView(page));
+        public void ScrollTo(PdfPage page)
+        {
+            if (Document != null)
+                ScrollTo(Document.GetPageView(page));
+        }
 
         public void ScrollTo(IPdfPageViewModel page)
         {

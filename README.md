@@ -6,7 +6,7 @@ https://sourceforge.net/projects/clown/ mirror.
 - Pdf rendering by [SkiaSharp](https://github.com/mono/SkiaSharp).
 - UI integrations 
   - [Blazor](https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/webassembly?view=aspnetcore-8.0) (alfa)
-  - [Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms) (pre-release)
+  - [Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms) (expired)
   - [Avalonia UI](https://avaloniaui.net/) (todo 1)
   - [Uno Platform](https://platform.uno/) (todo)
   - [MAUI](https://learn.microsoft.com/ru-ru/dotnet/maui/what-is-maui?view=net-maui-8.0) (todo)
@@ -21,7 +21,7 @@ https://sourceforge.net/projects/clown/ mirror.
 
 - Change Code amd Docs formatting
 - Rendering and Editing Pdf Annotations
-- Move core projects to .net6 (Blazor on .net8)
+- Move core projects to .net8 (Blazor on .net9)
 - Performance improvements
   - PdfName cached globbaly
   - Suppress reflections invocation

@@ -17,10 +17,10 @@ namespace PdfClown.UI.ToolTip
             Clear();
 
             var athorText = Markup.Author ?? "User";
-            var author = MeasureLine(athorText, DefaultSKStyles.PaintToolTipHeadText);
+            var author = MeasureLine(athorText, DefaultSKStyles.PaintToolTipHeadText, DefaultSKStyles.FontToolTipHeadText);
 
             var contentBound = author.Bound;
-            ContentLines = MeasureText(Markup.Contents ?? "<empty>", DefaultSKStyles.PaintToolTipText, ref contentBound);
+            ContentLines = MeasureText(Markup.Contents ?? "<empty>", DefaultSKStyles.PaintToolTipText, DefaultSKStyles.FontToolTipText, ref contentBound);
             ContentLines.Insert(0, author);
             contentBound.Offset(Indent, Indent);
             contentBound.Inflate(Indent, Indent);

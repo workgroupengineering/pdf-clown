@@ -17,25 +17,27 @@ namespace PdfClown.UI.Blazor.Internal
             }
         }
 
-        private Action<double> action;
+        private Action<double>? action;
         private double currentValue;
         private double newValue;
         private Easing easing;
         private double step;
         private bool cancel;
-        private Timer timer;
+        private Timer? timer;
         private string name;
-        private Dictionary<string, Animation> names;
-        private Action<double, bool> finished;
-        private List<Animation> animations;
-        private Animation Parent;
+        private Dictionary<string, Animation>? names;
+        private Action<double, bool>? finished;
+        private List<Animation>? animations;
+        private Animation? Parent;
 
         public Animation()
         {
+            name = "Multi";
         }
 
         public Animation(Action<double> action, double currentValue, double newValue, Easing easing)
         {
+            name = string.Empty;
             this.action = action;
             this.currentValue = currentValue;
             this.newValue = newValue;
@@ -76,7 +78,7 @@ namespace PdfClown.UI.Blazor.Internal
             {
                 Run(rate, length, finished);
             }
-            else
+            else if (animations != null)
             {
                 this.finished = finished;
                 foreach (var item in animations)
@@ -107,17 +109,17 @@ namespace PdfClown.UI.Blazor.Internal
             if (Math.Abs(step) < 0.001
                 || IsCancel)
             {
-                action(newValue);
+                action?.Invoke(newValue);
                 Finish();
                 return;
             }
             timer = new Timer(TimerTick, null, 0, rate);
         }
-        
-        public void TimerTick(object sender)
+
+        public void TimerTick(object? sender)
         {
             currentValue += step;
-            action(currentValue);
+            action?.Invoke(currentValue);
             if (Math.Abs(currentValue - newValue) < 0.001
                 || IsCancel)
             {

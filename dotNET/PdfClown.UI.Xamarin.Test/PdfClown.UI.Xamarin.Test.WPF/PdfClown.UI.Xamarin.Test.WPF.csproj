@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-	<TargetFramework>net6.0-windows</TargetFramework>
+	<TargetFramework>net8.0-windows</TargetFramework>
 	<OutputType>WinExe</OutputType>
     <RootNamespace>PdfClown.UI.Test.WPF</RootNamespace>
     <AssemblyName>PdfClown.UI.Test.WPF</AssemblyName>
     <UseWpf>true</UseWpf>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SkiaSharp.Views.Forms.WPF" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp.Views.Forms.WPF" Version="2.88.9" />
     <PackageReference Include="Xamarin.Forms.Platform.WPF" Version="5.0.0.2662" />
   </ItemGroup>
   <ItemGroup>

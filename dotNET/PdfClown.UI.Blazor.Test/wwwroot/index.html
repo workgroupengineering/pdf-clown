@@ -26,8 +26,8 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
-    <script type="module">
+    <script src="_framework/blazor.webassembly.js"></script>
+    <!--autostart="false" <script type="module">
         import { BrotliDecode } from './decode.min.js';
         Blazor.start({
             loadBootResource: function (type, name, defaultUri, integrity) {
@@ -48,7 +48,7 @@
                 }
             }
         });
-    </script>
+    </script>-->
     <!--<script>
         Blazor.start({
             configureRuntime: function (dotnet) {

@@ -3,13 +3,12 @@ using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Layers;
 using PdfClown.Documents.Files;
 using PdfClown.Documents.Interaction;
+using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics.CodeAnalysis;
 
 namespace PdfClown.Util.Invokers
 {
@@ -20,7 +19,7 @@ namespace PdfClown.Util.Invokers
         {
             cache.Add(typeof(Annotation), new Dictionary<string, IInvoker>()
             {
-                {  nameof(Annotation.Action), new ActionInvoker<Annotation, PdfClown.Documents.Interaction.Actions.Action>(nameof(Annotation.Action), a => a.Action, (a,v) => a.Action = v ) },
+                {  nameof(Annotation.Action), new ActionInvoker<Annotation, PdfAction>(nameof(Annotation.Action), a => a.Action, (a,v) => a.Action = v ) },
                 {  nameof(Annotation.Alpha), new ActionInvoker<Annotation, float>(nameof(Annotation.Alpha), a => a.Alpha, (a,v) => a.Alpha = v ) },
                 {  nameof(Annotation.Appearance), new ActionInvoker<Annotation, Appearance>(nameof(Annotation.Appearance), a => a.Appearance, (a,v) => a.Appearance = v ) },
                 {  nameof(Annotation.Author), new ActionInvoker<Annotation, string>(nameof(Annotation.Appearance), a => a.Author, (a,v) => a.Author = v ) },
@@ -35,7 +34,7 @@ namespace PdfClown.Util.Invokers
                 {  nameof(Annotation.ModificationDate), new ActionInvoker<Annotation, DateTime?>(nameof(Annotation.ModificationDate), a => a.ModificationDate, (a,v) => a.ModificationDate = v ) },
                 {  nameof(Annotation.Name), new ActionInvoker<Annotation, string>(nameof(Annotation.Name), a => a.Name, (a,v) => a.Name = v ) },
                 {  nameof(Annotation.Page), new ActionInvoker<Annotation, PdfPage>(nameof(Annotation.Page), a => a.Page, (a,v) => a.Page = v ) },
-                {  nameof(Annotation.Rect), new ActionInvoker<Annotation, Objects.Rectangle>(nameof(Annotation.Rect), a => a.Rect, (a,v) => a.Rect = v ) },
+                {  nameof(Annotation.Rect), new ActionInvoker<Annotation, PdfRectangle>(nameof(Annotation.Rect), a => a.Rect, (a,v) => a.Rect = v ) },
                 {  nameof(Annotation.Printable), new ActionInvoker<Annotation, bool>(nameof(Annotation.Printable), a => a.Printable, (a,v) => a.Printable = v ) },
                 {  nameof(Annotation.SKColor), new ActionInvoker<Annotation, SKColor>(nameof(Annotation.SKColor), a => a.SKColor, (a,v) => a.SKColor = v ) },
                 {  nameof(Annotation.Subject), new ActionInvoker<Annotation, string>(nameof(Annotation.Subject), a => a.Subject, (a,v) => a.Subject = v ) },
@@ -60,7 +59,7 @@ namespace PdfClown.Util.Invokers
             cache.Add(typeof(FileAttachment), new Dictionary<string, IInvoker>()
             {
                 {  nameof(FileAttachment.AttachmentName), new ActionInvoker<FileAttachment, FileAttachmentImageType>(nameof(FileAttachment.AttachmentName), a => a.AttachmentName, (a,v) => a.AttachmentName = v ) },
-                {  nameof(FileAttachment.DataFile), new ActionInvoker<FileAttachment, FileSpecification>(nameof(FileAttachment.DataFile), a => a.DataFile, (a,v) => a.DataFile = v ) },
+                {  nameof(FileAttachment.DataFile), new ActionInvoker<FileAttachment, IFileSpecification>(nameof(FileAttachment.DataFile), a => a.DataFile, (a,v) => a.DataFile = v ) },
             });
             cache.Add(typeof(FreeText), new Dictionary<string, IInvoker>()
             {
@@ -69,7 +68,7 @@ namespace PdfClown.Util.Invokers
                 {  nameof(FreeText.Callout), new ActionInvoker<FreeText, PdfArray>(nameof(FreeText.Callout), a => a.Callout, (a,v) => a.Callout = v ) },
                 {  nameof(FreeText.Line), new ActionInvoker<FreeText, FreeText.CalloutLine>(nameof(FreeText.Line), a => a.Line, (a,v) => a.Line = v ) },
                 {  nameof(FreeText.LineEndStyle), new ActionInvoker<FreeText, LineEndStyleEnum>(nameof(FreeText.LineEndStyle), a => a.LineEndStyle, (a,v) => a.LineEndStyle = v ) },
-                {  nameof(FreeText.Padding), new ActionInvoker<FreeText, Objects.Padding>(nameof(FreeText.Padding), a => a.Padding, (a,v) => a.Padding = v ) },
+                {  nameof(FreeText.Padding), new ActionInvoker<FreeText, Objects.PdfPadding>(nameof(FreeText.Padding), a => a.Padding, (a,v) => a.Padding = v ) },
             });
             cache.Add(typeof(Line), new Dictionary<string, IInvoker>()
             {
@@ -105,7 +104,7 @@ namespace PdfClown.Util.Invokers
             });
             cache.Add(typeof(StickyNote), new Dictionary<string, IInvoker>()
             {
-                {  nameof(StickyNote.ImageName), new ActionInvoker<StickyNote, ImageNameEnum>(nameof(StickyNote.ImageName), a => a.ImageName, (a,v) => a.ImageName = v ) },
+                {  nameof(StickyNote.ImageName), new ActionInvoker<StickyNote, NoteImageEnum>(nameof(StickyNote.ImageName), a => a.ImageName, (a,v) => a.ImageName = v ) },
                 {  nameof(StickyNote.IsOpen), new ActionInvoker<StickyNote, bool>(nameof(StickyNote.IsOpen), a => a.IsOpen, (a,v) => a.IsOpen = v ) },
                 {  nameof(StickyNote.State), new ActionInvoker<StickyNote, MarkupState?>(nameof(StickyNote.State), a => a.State, (a,v) => a.State = v ) },
                 {  nameof(StickyNote.StateModel), new ActionInvoker<StickyNote, MarkupStateModel?>(nameof(StickyNote.StateModel), a => a.StateModel, (a,v) => a.StateModel = v ) },

@@ -1,5 +1,4 @@
 ﻿using PdfClown.Documents;
-using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Forms;
 using PdfClown.UI.Operations;
 using SkiaSharp;

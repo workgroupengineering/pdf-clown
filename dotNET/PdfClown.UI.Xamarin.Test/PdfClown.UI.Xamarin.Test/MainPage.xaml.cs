@@ -51,7 +51,7 @@ namespace PdfClown.UI.Test
                     || key.Equals(PdfName.Page))
                     continue;
                 var prntKey = "".PadLeft(level, '-') + key.StringValue;
-                var obj = dictionary[key];
+                var obj = dictionary.Get(key);
                 foreach (var sub in Extract(obj, prntKey, level))
                     yield return sub;
             }
@@ -60,7 +60,7 @@ namespace PdfClown.UI.Test
         private IEnumerable<string> ExtractArray(PdfArray array, int level = 0)
         {
             int i = 0;
-            foreach (var obj in array)
+            foreach (var obj in array.GetItems())
             {
                 var prntKey = "".PadLeft(level, '-') + i.ToString();
                 foreach (var sub in Extract(obj, prntKey, level))
@@ -79,8 +79,8 @@ namespace PdfClown.UI.Test
             {
                 //yield return $"{prntKey} {reference} {reference.GetType()}";
 
-                obj = reference.DataObject as PdfDirectObject;
-                if (reference.DataObject is PdfStream stream)
+                obj = reference.Resolve(null);
+                if (obj is PdfStream stream)
                 {
                     foreach (var sub in ExtractDictionary(stream, level + 2))
                         yield return sub;

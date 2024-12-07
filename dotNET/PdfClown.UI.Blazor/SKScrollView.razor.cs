@@ -6,13 +6,15 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 
 namespace PdfClown.UI.Blazor
 {
+    [SupportedOSPlatform("browser")]
     public partial class SKScrollView : ComponentBase, IDisposable
     {
-        protected EventHandler<ScrollEventArgs> verticalScrolledHandler;
-        protected EventHandler<ScrollEventArgs> нorizontalScrolledHandler;
+        protected EventHandler<ScrollEventArgs>? verticalScrolledHandler;
+        protected EventHandler<ScrollEventArgs>? нorizontalScrolledHandler;
 
 
         private static readonly SKPaint bottonPaint = new SKPaint
@@ -51,7 +53,6 @@ namespace PdfClown.UI.Blazor
         {
             IsAntialias = true,
             ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Black, SKBlendMode.SrcIn),
-            FilterQuality = SKFilterQuality.Medium
         };
 
         private static readonly SvgImage upSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-up");
@@ -67,11 +68,11 @@ namespace PdfClown.UI.Blazor
         private const string ahHorizontalScroll = "HorizontalScrollAnimation";
 
 #if __FORCE_GL__
-        private SKGLView canvasView = null;
+        private SKGLView canvasView;
 #else
-        private SKCanvasView canvasView = null;
+        private SKCanvasView? canvasView;
 #endif
-        private SKHtmlScrollInterop interop = null;
+        private SKHtmlScrollInterop? interop;
 
         private SKPoint nullLocation;
         private Orientation nullDirection = Orientation.Vertical;
@@ -86,8 +87,8 @@ namespace PdfClown.UI.Blazor
         private SKRect verticalPadding = new SKRect(0, 0, 0, DefaultSKStyles.StepSize);
         private SKRect horizontalPadding = new SKRect(0, 0, DefaultSKStyles.StepSize, 0);
         private bool isDrawing;
-        private SvgImage hoverButton = null;
-        private SvgImage pressedButton = null;
+        private SvgImage? hoverButton = null;
+        private SvgImage? pressedButton = null;
         private double verticalMaximum;
         private double horizontalMaximum;
         private CursorType cursor;
@@ -108,7 +109,7 @@ namespace PdfClown.UI.Blazor
         IJSRuntime JS { get; set; } = null!;
 
         [Parameter(CaptureUnmatchedValues = true)]
-        public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
+        public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
         [Parameter]
         public string CanvasId { get; set; } = Guid.NewGuid().ToString("N");
@@ -162,7 +163,8 @@ namespace PdfClown.UI.Blazor
             add => нorizontalScrolledHandler += value;
             remove => нorizontalScrolledHandler -= value;
         }
-        public event EventHandler<CanvasKeyEventArgs> KeyDown;
+
+        public event EventHandler<CanvasKeyEventArgs>? KeyDown;
 
         public double VerticalMaximum
         {
@@ -233,9 +235,9 @@ namespace PdfClown.UI.Blazor
 
         public KeyModifiers KeyModifiers { get; set; }
 
-        public Animation ScrollAnimation { get; private set; }
-        public Animation VerticalScrollAnimation { get; private set; }
-        public Animation HorizontalScrollAnimation { get; private set; }
+        public Animation? ScrollAnimation { get; private set; }
+        public Animation? VerticalScrollAnimation { get; private set; }
+        public Animation? HorizontalScrollAnimation { get; private set; }
 
         public double VericalSize => VerticalHovered ? DefaultSKStyles.MaxSize : DefaultSKStyles.MinSize;
 
@@ -295,7 +297,7 @@ namespace PdfClown.UI.Blazor
             }
         }
 
-        protected SvgImage PressedButton
+        protected SvgImage? PressedButton
         {
             get => pressedButton;
             set
@@ -308,7 +310,7 @@ namespace PdfClown.UI.Blazor
             }
         }
 
-        protected SvgImage HoverButton
+        protected SvgImage? HoverButton
         {
             get => hoverButton;
             set
@@ -322,13 +324,13 @@ namespace PdfClown.UI.Blazor
         }
 
 #if __FORCE_GL__
-        public event EventHandler<SKPaintGLSurfaceEventArgs> PaintContent;
+        public event EventHandler<SKPaintGLSurfaceEventArgs>? PaintContent;
 
-        public event EventHandler<SKPaintGLSurfaceEventArgs> PaintOver;
+        public event EventHandler<SKPaintGLSurfaceEventArgs>? PaintOver;
 #else
-        public event EventHandler<SKPaintSurfaceEventArgs> PaintContent;
+        public event EventHandler<SKPaintSurfaceEventArgs>? PaintContent;
 
-        public event EventHandler<SKPaintSurfaceEventArgs> PaintOver;
+        public event EventHandler<SKPaintSurfaceEventArgs>? PaintOver;
 #endif
 
         public bool VerticalScrollBarVisible => VerticalMaximum >= (Height + DefaultSKStyles.StepSize);
@@ -337,7 +339,7 @@ namespace PdfClown.UI.Blazor
 
         public bool WheelTouchSupported { get; set; } = true;
 
-        public event EventHandler ScrollComplete;
+        public event EventHandler? ScrollComplete;
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -490,7 +492,7 @@ namespace PdfClown.UI.Blazor
                             nullDirection = Orientation.Vertical;
                             PressedButton = shiftVSvg;
 
-                            interop.SetCapture(e.PointerId);
+                            interop?.SetCapture((int)e.PointerId);
                             return;
                         }
 
@@ -530,7 +532,7 @@ namespace PdfClown.UI.Blazor
             }
         }
 
-        protected virtual void OnSizeAllocated(float width, float height)
+        protected virtual void OnSizeAllocated(double width, double height)
         {
             Width = width;
             Height = height;
@@ -799,7 +801,7 @@ namespace PdfClown.UI.Blazor
         private void OnCursorChanged(CursorType oldValue, CursorType newValue)
         {
             cursor = newValue;
-            interop.ChangeCursor(newValue);
+            interop?.ChangeCursor(newValue);
         }
 
         public virtual bool OnKeyDown(string keyName, KeyModifiers modifiers)
@@ -837,7 +839,7 @@ namespace PdfClown.UI.Blazor
                 || (HorizontalScrollBarVisible && GetHorizontalValueBounds().Contains((float)x, (float)y));
         }
 
-        public Func<double, double, bool> CheckCaptureBox;        
+        public Func<double, double, bool>? CheckCaptureBox;
 
         private static KeyModifiers GetKeyModifiers(MouseEventArgs e)
         {
@@ -883,7 +885,13 @@ namespace PdfClown.UI.Blazor
 
         private static MouseButton GetMouseButton(MouseEventArgs e)
         {
-            return e.Button switch
+            var button = e.Button;
+            return GetMouseButton(button);
+        }
+
+        private static MouseButton GetMouseButton(long button)
+        {
+            return button switch
             {
                 0 => MouseButton.Left,
                 1 => MouseButton.Middle,
@@ -933,6 +941,17 @@ namespace PdfClown.UI.Blazor
             });
         }
 
+        private void OnPointerMove(int[] args)
+        {
+            KeyModifiers = (KeyModifiers)args[4];
+            OnTouch(new TouchEventArgs(TouchAction.Moved, GetMouseButton(args[1]))
+            {
+                Location = new SKPoint(args[2], args[3]),
+                PointerId = args[0],
+            });
+        }
+
+
         private void OnPointerMove(PointerEventArgs e)
         {
             KeyModifiers = GetKeyModifiers(e);
@@ -968,25 +987,11 @@ namespace PdfClown.UI.Blazor
             OnKeyDown(e.Key, GetKeyModifiers(e));
         }
 
-        private void OnPointerCancel(PointerEventArgs e)
-        {
-        }
-
-        private void OnDragStart(DragEventArgs e)
-        {
-        }
-
         public void Dispose()
         {
             interop?.DeInit();
+            interop = null;
         }
-        private async Task OnLostPointerCapture(PointerEventArgs e)
-        {
-            await JS.InvokeVoidAsync("console.log", "LostPointerCapture");
-        }
-        private async Task OnGotPointerCapture(PointerEventArgs e)
-        {
-            await JS.InvokeVoidAsync("console.log", "GotPointerCapture");
-        }
+
     }
 }

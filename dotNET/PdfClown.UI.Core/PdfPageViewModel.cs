@@ -144,7 +144,7 @@ namespace PdfClown.UI
 
                 if (state.Viewer.ShowMarkup && GetAnnotations().Any())
                 {
-                    OnPaintAnnotations(state);
+                    DrawAnnotations(state);
                 }
 
                 if (state.Viewer.ShowCharBound)
@@ -188,23 +188,27 @@ namespace PdfClown.UI
             catch { }
         }
 
-        private void OnPaintAnnotations(PdfViewState state)
+        private void DrawAnnotations(PdfViewState state)
         {
             var self = state.Page.RotateMatrix;
             state.Canvas.Save();
+#if NET9_0_OR_GREATER
+            state.Canvas.Concat(in self);
+#else
             state.Canvas.Concat(ref self);
+#endif
             foreach (var annotation in GetAnnotations())
             {
                 if (annotation != null && annotation.Visible)
                 {
                     state.DrawAnnotation = annotation;
-                    OnPainAnnotation(state);
+                    DrawAnnotation(state);
                 }
             }
             state.Canvas.Restore();
         }
 
-        private void OnPainAnnotation(PdfViewState state)
+        private void DrawAnnotation(PdfViewState state)
         {
             try
             {
@@ -217,13 +221,13 @@ namespace PdfClown.UI
                     && selectedAnnotation == state.DrawAnnotation
                     && selectedAnnotation.Page == state.Page)
                 {
-                    OnPaintSelectedAnnotation(state);
+                    DrawSelectedAnnotation(state);
                 }
             }
             catch { }
         }
 
-        private void OnPaintSelectedAnnotation(PdfViewState state)
+        private void DrawSelectedAnnotation(PdfViewState state)
         {
             var selectedPoint = state.Operations.SelectedPoint;
             if (state.Operations.Current == OperationType.None
@@ -251,7 +255,7 @@ namespace PdfClown.UI
             if (picture == null && Document.LockObject.IsSet)
             {
                 Document.LockObject.Reset();
-                var task = new Task(state => Paint((IPdfView)state), canvasView);
+                var task = new Task(state => Render((IPdfView)state), canvasView);
                 task.Start();
             }
             return picture;
@@ -279,7 +283,7 @@ namespace PdfClown.UI
             return image;
         }
 
-        private void Paint(IPdfView canvasView)
+        private void Render(IPdfView canvasView)
         {
             try
             {
@@ -293,15 +297,7 @@ namespace PdfClown.UI
                     }
                     catch (Exception ex)
                     {
-                        using var paint = new SKPaint { Color = SKColors.DarkRed };
-                        canvas.Save();
-                        if (canvas.TotalMatrix.ScaleY < 0)
-                        {
-                            var matrix = SKMatrix.CreateScale(1, -1);
-                            canvas.Concat(ref matrix);
-                        }
-                        canvas.DrawText(ex.Message, 0, 0, paint);
-                        canvas.Restore();
+                        DrawErrorText(canvas, ex);
                     }
                     picture = recorder.EndRecording();
                 }
@@ -315,6 +311,24 @@ namespace PdfClown.UI
             {
                 Document.LockObject.Set();
             }
+        }
+
+        private static void DrawErrorText(SKCanvas canvas, Exception ex)
+        {
+            using var paint = new SKPaint { Color = SKColors.DarkRed };
+            using var font = new SKFont();
+            canvas.Save();
+            if (canvas.TotalMatrix.ScaleY < 0)
+            {
+                var matrix = SKMatrix.CreateScale(1, -1);
+#if NET9_0_OR_GREATER
+                canvas.Concat(in matrix);
+#else
+                canvas.Concat(ref matrix);
+#endif
+            }
+            canvas.DrawText(ex.Message, 0, 0, font, paint);
+            canvas.Restore();
         }
 
         public IEnumerable<ITextString> GetStrings() => Page.TextBlocks.SelectMany(x => x.Strings);
@@ -670,23 +684,24 @@ namespace PdfClown.UI
                     state.PressedLocation = null;
                     if (state.Operations.SelectedAnnotation is Link link)
                     {
-                        if (link.Target is GoToLocal goToLocal)
+                        switch (link.Target)
                         {
-                            if (goToLocal.Destination is LocalDestination localDestination
-                                && localDestination.Page is PdfPage goToPage)
-                            {
-                                state.Viewer.ScrollTo(goToPage);
-                            }
-                        }
-                        else if (link.Target is GoToURI toToUri)
-                        {
-                            var uri = toToUri.URI;
-                            Process.Start(new ProcessStartInfo(uri.ToString()) { UseShellExecute = true });
-                        }
-                        else if (link.Target is LocalDestination localDestination
-                            && localDestination.Page is PdfPage goToPage)
-                        {
-                            state.Viewer.ScrollTo(goToPage);
+                            case GoToLocal goToLocal:
+                                if (goToLocal.Destination is LocalDestination gotoLocal
+                                    && gotoLocal.Page is PdfPage gotoLocalPage)
+                                {
+                                    state.Viewer.ScrollTo(gotoLocalPage);
+                                }
+                                break;
+                            case GoToURI goToUri:
+                                var uri = goToUri.URI;
+                                Process.Start(new ProcessStartInfo(uri.ToString()) { UseShellExecute = true });
+                                break;
+
+                            case LocalDestination localDestination:
+                                if (localDestination.Page is PdfPage goToPage)
+                                    state.Viewer.ScrollTo(goToPage);
+                                break;
                         }
 
                     }

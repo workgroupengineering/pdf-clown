@@ -32,10 +32,9 @@ namespace PdfClown.UI
             return document;
         }
 
-        private readonly List<PdfPageViewModel> pageViews = new List<PdfPageViewModel>();
-        private readonly Dictionary<int, PdfPageViewModel> indexCache = new Dictionary<int, PdfPageViewModel>();
-        private readonly Dictionary<PdfPage, PdfPageViewModel> pageCache = new Dictionary<PdfPage, PdfPageViewModel>();
-        private int iniFieldsCount;
+        private readonly List<PdfPageViewModel> pageViews = new();
+        private readonly Dictionary<int, PdfPageViewModel> indexCache = new();
+        private readonly Dictionary<PdfPage, PdfPageViewModel> pageCache = new();
         private Fields fields;
         private SKPaint pageBackgroundPaint;
         private SKColor pageBackgroundColor = SKColors.White;
@@ -44,17 +43,17 @@ namespace PdfClown.UI
         private SKMatrix matrix = SKMatrix.Identity;
         private SKPaint pageForegroundPaint;
 
-        public ManualResetEventSlim LockObject => Document?.File.LockObject;
+        public ManualResetEventSlim LockObject => Document?.LockObject;
 
         public bool IsPaintComplete => LockObject?.IsSet ?? true;
 
-        public PdfFile File { get; private set; }
+        public PdfDocument Document { get; private set; }
 
         public string Name { get; set; }
 
-        public PdfDocument Document => File.Document;
+        public PdfCatalog Catalog => Document.Catalog;
 
-        public Pages Pages { get; private set; }
+        public PdfPages Pages { get; private set; }
 
         public int PagesCount => pageViews.Count;
 
@@ -66,10 +65,10 @@ namespace PdfClown.UI
         {
             get
             {
-                if (fields == null || fields != Document.Form.Fields)
+                if (fields == null || fields != Catalog.Form.Fields)
                 {
-                    iniFieldsCount = Document.Form.Fields.Count;
-                    fields = Document.Form.Fields;
+                    var iniFieldsCount = Catalog.Form.Fields.Count;
+                    fields = Catalog.Form.Fields;
                 }
                 return fields;
             }
@@ -144,7 +143,7 @@ namespace PdfClown.UI
 
         public float AvgHeigth { get; private set; }
 
-        public bool IsClosed => File == null;
+        public bool IsClosed => Document == null;
 
         public SKColor PageBackgroundColor
         {
@@ -162,7 +161,7 @@ namespace PdfClown.UI
                     pageForegroundPaint = null;
                     temp?.Dispose();
 
-                    Document.PageAlpha = value.Alpha == 255 ? null : value.Alpha / 255F;
+                    Catalog.PageAlpha = value.Alpha == 255 ? null : value.Alpha / 255F;
 
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(PageAlpha));
@@ -228,7 +227,7 @@ namespace PdfClown.UI
         public void LoadPages()
         {
             float totalWidth, totalHeight;
-            Pages = Document.Pages;
+            Pages = Catalog.Pages;
 
             totalWidth = 0F;
             totalHeight = 0F;
@@ -242,22 +241,24 @@ namespace PdfClown.UI
                 var box = page.RotatedBox;
                 var dpi = 1F;
                 var imageSize = new SKSize(box.Width * dpi, box.Height * dpi);
+                page.Index = order;
                 var pageView = new PdfPageViewModel
                 {
                     Document = this,
-                    Order = order++,
-                    Index = page.Index,
+                    Order = order,
+                    Index = order,
                     Page = page,
                     Size = imageSize
                 };
                 pageView.Matrix = pageView.Matrix.PostConcat(SKMatrix.CreateTranslation(Indent, totalHeight));
-                indexCache[pageView.Index] = pageView;
+                indexCache[order] = pageView;
                 pageCache[page] = pageView;
                 pageViews.Add(pageView);
                 if (imageSize.Width > totalWidth)
                     totalWidth = imageSize.Width;
 
                 totalHeight += imageSize.Height;
+                order++;
             }
             Size = new SKSize(totalWidth + DoubleIndent, totalHeight);
 
@@ -292,15 +293,15 @@ namespace PdfClown.UI
 
         public void Dispose()
         {
-            if (File != null)
+            if (Document != null)
             {
                 pageBackgroundPaint?.Dispose();
                 pageBackgroundPaint = null;
                 ClearPages();
-                File.Dispose();
-                File = null;
+                Document.Dispose();
+                Document = null;
                 GC.Collect();
-                try { System.IO.File.Delete(TempFilePath); }
+                try { File.Delete(TempFilePath); }
                 catch { }
             }
         }
@@ -339,7 +340,7 @@ namespace PdfClown.UI
                 stream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
             }
 
-            File = new PdfFile(stream);
+            Document = new PdfDocument(stream);
             fields = null;
             LoadPages();
         }
@@ -359,7 +360,7 @@ namespace PdfClown.UI
 
         public void Save(string path, SerializationModeEnum mode)
         {
-            File.Save(path, mode);
+            Document.Save(path, mode);
         }
 
         public void SaveTo(Stream stream)
@@ -369,12 +370,12 @@ namespace PdfClown.UI
 
         public void SaveTo(Stream stream, SerializationModeEnum mode)
         {
-            File.Save(stream, mode);
+            Document.Save(stream, mode);
         }
 
         private SerializationModeEnum GetMode()
         {
-            return Document.HasSignatures
+            return Catalog.HasSignatures
                 ? SerializationModeEnum.Incremental
                 : SerializationModeEnum.Standard;
         }
