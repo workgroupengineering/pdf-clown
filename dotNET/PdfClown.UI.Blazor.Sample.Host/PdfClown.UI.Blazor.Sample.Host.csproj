@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PdfClown.UI.Blazor.Test\PdfClown.UI.Blazor.Test.csproj" />
+    <ProjectReference Include="..\PdfClown.UI.Blazor.Sample\PdfClown.UI.Blazor.Sample.csproj" />
   </ItemGroup>
 
   <ItemGroup>

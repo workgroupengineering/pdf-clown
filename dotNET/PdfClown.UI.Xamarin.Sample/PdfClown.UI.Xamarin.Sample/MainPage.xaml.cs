@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using Xamarin.Forms;
 
-namespace PdfClown.UI.Test
+namespace PdfClown.UI.Sample
 {
     // Learn more about making custom code visible in the Xamarin.Forms previewer
     // by visiting https://aka.ms/xamarinforms-previewer

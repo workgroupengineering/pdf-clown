@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-    x:Class="PdfClown.UI.Test.MainPage"
+    x:Class="PdfClown.UI.Sample.MainPage"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:core="clr-namespace:PdfClown.UI;assembly=PdfClown.UI.Core"
     xmlns:d="http://xamarin.com/schemas/2014/forms/design"
-    xmlns:local="clr-namespace:PdfClown.UI.Test;assembly=PdfClown.UI.Xamarin.Test"
+    xmlns:local="clr-namespace:PdfClown.UI.Sample;assembly=PdfClown.UI.Xamarin.Sample"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pdf="clr-namespace:PdfClown.UI;assembly=PdfClown.UI.Xamarin"
     Title="PDF Viewer!"

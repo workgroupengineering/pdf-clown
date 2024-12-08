@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace PdfClown.UI.Test
+namespace PdfClown.UI.Sample
 {
     public interface IOpenFileService
     {

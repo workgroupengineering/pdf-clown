@@ -3,8 +3,8 @@
   <PropertyGroup>
 	<TargetFramework>net8.0-windows</TargetFramework>
 	<OutputType>WinExe</OutputType>
-    <RootNamespace>PdfClown.UI.Test.WPF</RootNamespace>
-    <AssemblyName>PdfClown.UI.Test.WPF</AssemblyName>
+    <RootNamespace>PdfClown.UI.Sample.WPF</RootNamespace>
+    <AssemblyName>PdfClown.UI.Sample.WPF</AssemblyName>
     <UseWpf>true</UseWpf>
   </PropertyGroup>
   <ItemGroup>
@@ -16,6 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\PdfClown.UI.Xamarin\PdfClown.UI.Xamarin.WPF\PdfClown.UI.Xamarin.WPF.csproj" />
-    <ProjectReference Include="..\PdfClown.UI.Xamarin.Test\PdfClown.UI.Xamarin.Test.csproj" />
+    <ProjectReference Include="..\PdfClown.UI.Xamarin.Sample\PdfClown.UI.Xamarin.Sample.csproj" />
   </ItemGroup>
 </Project>

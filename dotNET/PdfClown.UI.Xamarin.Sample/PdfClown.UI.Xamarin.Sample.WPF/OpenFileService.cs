@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
-using PdfClown.UI.Test;
-using PdfClown.UI.Test.WPF;
+using PdfClown.UI.Sample;
+using PdfClown.UI.Sample.WPF;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,7 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 
 [assembly: Xamarin.Forms.Dependency(typeof(OpenFileService))]
-namespace PdfClown.UI.Test.WPF
+namespace PdfClown.UI.Sample.WPF
 {
     public class OpenFileService : IOpenFileService
     {

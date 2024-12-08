@@ -3,7 +3,7 @@ using System.Globalization;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
-namespace PdfClown.UI.Test
+namespace PdfClown.UI.Sample
 {
     public partial class App : Application
     {

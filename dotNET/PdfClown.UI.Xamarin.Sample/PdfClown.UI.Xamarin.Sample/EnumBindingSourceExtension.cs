@@ -2,7 +2,7 @@
 using Xamarin.Forms.Xaml;
 using Xamarin.Forms;
 
-namespace PdfClown.UI.Test
+namespace PdfClown.UI.Sample
 {
     [ContentProperty(nameof(Type))]
     public class EnumBindingSourceExtension : IMarkupExtension
