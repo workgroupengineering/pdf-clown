@@ -49,6 +49,9 @@ namespace PdfClown.UI
             RedoCommand = new Command(() => Operations.Redo(), () => Operations.CanRedo);
             PrevPageCommand = new Command(() => PrevPage(), CanPrevPage);
             NextPageCommand = new Command(() => NextPage(), CanNextPage);
+
+            scroll.VScrolled += OnVScrolled;
+            scroll.HScrolled += OnHScrolled;
         }
 
         public PdfViewFitMode FitMode
@@ -188,20 +191,16 @@ namespace PdfClown.UI
         {
         }
 
-        protected override void OnVerticalValueChanged(double oldValue, double newValue)
+        private void OnVScrolled(object sender, ScrollEventArgs e)
         {
             state.UpdateCurrentMatrix();
-            base.OnVerticalValueChanged(oldValue, newValue);
-            if (VerticalScrollAnimation == null)
-            {
+            if (!IsVScrollAnimation)
                 Page = state.GetCenterPage();
-            }
         }
 
-        protected override void OnHorizontalValueChanged(double oldValue, double newValue)
+        private void OnHScrolled(object sender, ScrollEventArgs e)
         {
             state.UpdateCurrentMatrix();
-            base.OnHorizontalValueChanged(oldValue, newValue);
         }
 
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)

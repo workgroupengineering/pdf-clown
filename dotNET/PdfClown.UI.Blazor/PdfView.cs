@@ -32,6 +32,9 @@ namespace PdfClown.UI.Blazor
 
             Operations = new EditOperationList { Viewer = this };
             Operations.Changed += OnOperationsChanged;
+
+            scroll.VScrolled += OnVScrolled;
+            scroll.HScrolled += OnHScrolled;
         }
 
         [Parameter]
@@ -191,24 +194,20 @@ namespace PdfClown.UI.Blazor
             InvalidatePaint();
         }
 
-        protected override void OnVerticalValueChanged(double oldValue, double newValue)
+        private void OnVScrolled(object? sender, ScrollEventArgs e)
         {
-            base.verticalValue = newValue;
             state.UpdateCurrentMatrix();
-            base.OnVerticalValueChanged(oldValue, newValue);
-            if (VerticalScrollAnimation == null)
+            if (!IsVScrollAnimation)
             {
                 Page = state.GetCenterPage();
             }
         }
 
-        protected override void OnHorizontalValueChanged(double oldValue, double newValue)
+        private void OnHScrolled(object? sender, ScrollEventArgs e)
         {
-            base.horizontalValue = newValue;
             state.UpdateCurrentMatrix();
-            base.OnHorizontalValueChanged(oldValue, newValue);
         }
-
+        
 #if __FORCE_GL__
         protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
 #else

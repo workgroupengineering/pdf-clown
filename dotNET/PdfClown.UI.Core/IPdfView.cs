@@ -5,7 +5,7 @@ using PdfClown.UI.Operations;
 
 namespace PdfClown.UI
 {
-    public interface IPdfView
+    public interface IPdfView: ISKScrollView
     {
         IPdfDocumentViewModel Document { get; set; }
         IPdfPageViewModel Page { get; set; }
@@ -25,16 +25,10 @@ namespace PdfClown.UI
         double Width { get; }
         double Height { get; }
 
-        double HorizontalMaximum { get; set; }
-        double VerticalMaximum { get; set; }
-        double HorizontalValue { get; set; }
-        double VerticalValue { get; set; }
         PdfViewFitMode FitMode { get; set; }
         float ScaleContent { get; set; }
 
         event PdfDocumentEventHandler DocumentChanged;
-
-        void InvalidatePaint();
 
         void ScrollTo(Annotation annotation);
         void ScrollTo(PdfPage page);

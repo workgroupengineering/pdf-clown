@@ -163,9 +163,9 @@ namespace PdfClown.UI
             }
         }
 
-        public bool VerticalScrollBarVisible => Viewer.VerticalMaximum >= (Viewer.Height + DefaultSKStyles.StepSize);
+        public bool VerticalScrollBarVisible => Viewer.VMaximum >= (Viewer.Height + DefaultSKStyles.StepSize);
 
-        public bool HorizontalScrollBarVisible => Viewer.HorizontalMaximum >= (Viewer.Width + DefaultSKStyles.StepSize);
+        public bool HorizontalScrollBarVisible => Viewer.HMaximum >= (Viewer.Width + DefaultSKStyles.StepSize);
 
         public SKMatrix ScaleMatrix;
 
@@ -430,8 +430,8 @@ namespace PdfClown.UI
         {
             UpdateCurrentMatrix();
             var size = Document?.Size ?? SKSize.Empty;
-            Viewer.HorizontalMaximum = size.Width * scale;
-            Viewer.VerticalMaximum = size.Height * scale;
+            Viewer.HMaximum = size.Width * scale;
+            Viewer.VMaximum = size.Height * scale;
             Viewer.InvalidatePaint();
         }
 
@@ -439,8 +439,8 @@ namespace PdfClown.UI
 
         public void UpdateCurrentMatrix(float width, float height)
         {
-            var horizontalValue = (float)Viewer.HorizontalValue;
-            var verticalValue = (float)Viewer.VerticalValue;
+            var horizontalValue = (float)Viewer.HValue;
+            var verticalValue = (float)Viewer.VValue;
             var size = Document?.Size ?? SKSize.Empty;
             WindowArea = SKRect.Create(0, 0, width, height);
             var maximumWidth = size.Width * scale;
@@ -535,11 +535,11 @@ namespace PdfClown.UI
                 var vector = newCurrentLocation - unscaleLocations;
                 if (HorizontalScrollBarVisible)
                 {
-                    Viewer.HorizontalValue += vector.X;
+                    Viewer.HValue += vector.X;
                 }
                 if (VerticalScrollBarVisible)
                 {
-                    Viewer.VerticalValue += vector.Y;
+                    Viewer.VValue += vector.Y;
                 }
             }
         }
@@ -594,8 +594,8 @@ namespace PdfClown.UI
             else if (TouchAction == TouchAction.Moved)
             {
                 var vector = PointerLocation - MoveLocation;
-                Viewer.HorizontalValue -= vector.X;
-                Viewer.VerticalValue -= vector.Y;
+                Viewer.HValue -= vector.X;
+                Viewer.VValue -= vector.Y;
                 MoveLocation = PointerLocation;
                 return true;
             }
