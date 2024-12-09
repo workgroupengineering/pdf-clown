@@ -17,5 +17,6 @@ namespace PdfClown.UI
         public int WheelDelta { get; set; }
         public SKPoint Location { get; set; }
         public long PointerId { get; set; }
+        public KeyModifiers KeyModifiers { get; set; }
     }
 }

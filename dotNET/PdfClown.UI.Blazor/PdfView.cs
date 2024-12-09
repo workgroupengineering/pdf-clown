@@ -273,7 +273,7 @@ namespace PdfClown.UI.Blazor
             base.OnTouch(e);
             if (e.Handled)
                 return;
-            state.OnTouch(e.ActionType, e.MouseButton, e.Location.Scale(XScaleFactor, YScaleFactor));
+            state.OnTouch(e.ActionType, e.MouseButton, e.Location.Scale(scroll.XScaleFactor, scroll.YScaleFactor));
         }
 
         public override bool OnScrolled(double delta)

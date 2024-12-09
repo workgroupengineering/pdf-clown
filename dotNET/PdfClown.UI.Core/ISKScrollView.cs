@@ -10,5 +10,6 @@
         bool IsHScrollAnimation { get; }
 
         void InvalidatePaint();
+        void CapturePointer(long pointerId);
     }
 }

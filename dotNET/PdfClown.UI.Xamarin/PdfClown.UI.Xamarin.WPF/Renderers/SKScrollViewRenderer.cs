@@ -27,6 +27,7 @@ namespace PdfClown.UI.WPF
             {
                 scrollView.WheelTouchSupported = false;
                 scrollView.Touch += OnElementTouch;
+                scrollView.CapturePointerFunc = CaptureMouse;
                 if (Control != null)
                 {
                     Control.Focusable = Element.IsTabStop;
@@ -122,13 +123,14 @@ namespace PdfClown.UI.WPF
             var pointerPoint = e.MouseDevice.GetPosition(view);
             if (Element is SKScrollView scrollView)
             {
-                scrollView.KeyModifiers = GetModifiers();
-                if (scrollView.ContainsCaptureBox(pointerPoint.X, pointerPoint.Y))
-                {
-                    pressed = true;
-                    Mouse.Capture(Control);
-                }
+                scrollView.KeyModifiers = GetModifiers();                
             }
+        }
+
+        public void CaptureMouse()
+        {
+            pressed = true;
+            Mouse.Capture(Control);
         }
 
         private static KeyModifiers GetModifiers()

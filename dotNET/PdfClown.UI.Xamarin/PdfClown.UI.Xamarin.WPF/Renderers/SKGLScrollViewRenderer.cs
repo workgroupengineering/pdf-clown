@@ -23,8 +23,9 @@ namespace PdfClown.UI.WPF
             {
                 e.NewElement.Touch -= OnElementTouch;
             }
-            if (e.NewElement is SKGLView)
+            if (e.NewElement is SKGLScrollView scrollView)
             {
+                scrollView.CapturePointerFunc = CaptureMouse;
                 e.NewElement.Touch += OnElementTouch;
                 if (Control != null)
                 {
@@ -103,12 +104,13 @@ namespace PdfClown.UI.WPF
         {
             var view = sender as FrameworkElement;
             var pointerPoint = e.MouseDevice.GetPosition(view);
-            if (Element is SKGLScrollView canvas && canvas.ContainsCaptureBox(pointerPoint.X, pointerPoint.Y))
-            {
-                pressed = true;
-                Mouse.Capture(Control);
-            }
             ((SKGLScrollView)Element).KeyModifiers = GetModifiers();
+        }
+
+        public void CaptureMouse()
+        {
+            pressed = true;
+            Mouse.Capture(Control);
         }
 
         private static KeyModifiers GetModifiers()

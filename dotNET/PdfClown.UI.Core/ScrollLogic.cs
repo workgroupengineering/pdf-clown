@@ -216,6 +216,9 @@ namespace PdfClown.UI
             }
         }
 
+        public float XScaleFactor { get; set; } = 1;
+        public float YScaleFactor { get; set; } = 1;
+
         public event EventHandler<ScrollEventArgs> VScrolled
         {
             add => vScrolledHandler += value;
@@ -543,6 +546,7 @@ namespace PdfClown.UI
                             nullLocation = e.Location;
                             nullDirection = Orientation.Vertical;
                             PressedButton = ShiftVSvg;
+                            scrollView.CapturePointer(e.PointerId);
                             return;
                         }
 
@@ -573,6 +577,7 @@ namespace PdfClown.UI
                             nullLocation = e.Location;
                             nullDirection = Orientation.Horizontal;
                             PressedButton = ShiftHSvg;
+                            scrollView.CapturePointer(e.PointerId);
                             return;
                         }
 

@@ -99,27 +99,18 @@ namespace PdfClown.UI
 
         protected void OnTouch(object sender, SKTouchEventArgs args)
         {
-            var e = new TouchEventArgs((TouchAction)args.ActionType, (MouseButton)args.MouseButton);
+            var e = new TouchEventArgs((TouchAction)args.ActionType, (MouseButton)args.MouseButton)
+            {
+                PointerId = args.Id,
+                Location = args.Location,
+            };
             OnTouch(e);
-            args.Handled = e.Handled;
-            //if (ScrollBarVisible)
-            //{
-            //    var scrollBound = GetScrollBounds();
-            //    if (scrollBound.Contains(e.Location))
-            //    {
-            //        e.Handled = true;
-            //    }
-            //}            
+            args.Handled = e.Handled;                       
         }
 
         protected virtual void OnTouch(TouchEventArgs e)
         {
             scroll.OnTouch(e);
-        }
-
-        private void OnTargetScrolled(object sender, ScrollEventArgs e)
-        {
-            OnScrolled(e.WheelDelta);
         }
 
         public virtual bool OnScrolled(int delta)
@@ -132,10 +123,10 @@ namespace PdfClown.UI
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
-            var XScaleFactor = (float)(e.Info.Width / Width);
-            var YScaleFactor = (float)(e.Info.Height / Height);
+            scroll.XScaleFactor = (float)(e.Info.Width / Width);
+            scroll.YScaleFactor = (float)(e.Info.Height / Height);
 
-            canvas.Scale(XScaleFactor, YScaleFactor);
+            canvas.Scale(scroll.XScaleFactor, scroll.YScaleFactor);
             canvas.Clear(BackgroundColor.ToSKColor());
             base.OnPaintSurface(e);
 
@@ -235,16 +226,7 @@ namespace PdfClown.UI
             ScrollComplete?.Invoke(this, EventArgs.Empty);
         }
 
-        public virtual bool ContainsCaptureBox(double x, double y)
-        {
-            var baseValue = CheckCaptureBox?.Invoke(x, y) ?? false;
-            return baseValue
-                || (scroll.VScrollBarVisible && scroll.GetVValueBounds().Contains((float)x, (float)y))
-                || (scroll.HScrollBarVisible && scroll.GetHValueBounds().Contains((float)x, (float)y));
-        }
-
-        public Func<double, double, bool> CheckCaptureBox;
-        
+        public Action CapturePointerFunc;        
 
         public virtual void InvalidatePaint()
         {
@@ -254,5 +236,9 @@ namespace PdfClown.UI
                 Envir.MainContext.Post(state => InvalidateSurface(), null);
         }
 
+        public void CapturePointer(long pointerId)
+        {
+            CapturePointerFunc?.Invoke();
+        }
     }
 }

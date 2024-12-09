@@ -194,15 +194,7 @@ namespace PdfClown.UI
             VValue = VValue - step * 2 * Math.Sign(delta);
         }
 
-        public virtual bool ContainsCaptureBox(double x, double y)
-        {
-            var baseValue = CheckCaptureBox?.Invoke(x, y) ?? false;
-            return baseValue
-                || (scrollLogic.VScrollBarVisible && scrollLogic.GetVValueBounds().Contains((float)x, (float)y))
-                || (scrollLogic.HScrollBarVisible && scrollLogic.GetHValueBounds().Contains((float)x, (float)y));
-        }
-
-        public Func<double, double, bool> CheckCaptureBox;
+        public Action CapturePointerFunc;
 
         public virtual void InvalidatePaint()
         {
@@ -210,6 +202,11 @@ namespace PdfClown.UI
                 InvalidateSurface();
             else
                 Envir.MainContext.Post(state => InvalidateSurface(), null);
+        }
+
+        public void CapturePointer(long pointerId)
+        {
+            CapturePointerFunc?.Invoke();
         }
     }
 }

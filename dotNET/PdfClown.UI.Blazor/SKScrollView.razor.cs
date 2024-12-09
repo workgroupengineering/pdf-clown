@@ -24,8 +24,6 @@ namespace PdfClown.UI.Blazor
         private SKHtmlScrollInterop? interop;
         private CursorType cursor;
 
-        protected float XScaleFactor = 1;
-        protected float YScaleFactor = 1;
         protected ScrollLogic scroll;
 
         public SKScrollView()
@@ -167,12 +165,12 @@ namespace PdfClown.UI.Blazor
         protected virtual void OnPaintSurface(SKPaintSurfaceEventArgs e)
 #endif
         {
-            XScaleFactor = (float)(e.Info.Width / Width);
-            YScaleFactor = (float)(e.Info.Height / Height);
+            scroll.XScaleFactor = (float)(e.Info.Width / Width);
+            scroll.YScaleFactor = (float)(e.Info.Height / Height);
 
             var canvas = e.Surface.Canvas;
 
-            canvas.Scale(XScaleFactor, YScaleFactor);
+            canvas.Scale(scroll.XScaleFactor, scroll.YScaleFactor);
             canvas.Clear(SKColors.Silver);
 
             OnPaintContent(e);
@@ -207,7 +205,6 @@ namespace PdfClown.UI.Blazor
                 AbortAnimation(ahVScroll);
             }
             var newValue = scroll.NormalizeVValue(VValue + delta);
-            //_ = JS.InvokeVoidAsync("console.log", $"Scroll Animation: from {Math.Round(VerticalValue)} to {Math.Round(newValue)}");
             VScrollAnimation = new Animation(v => VValue = v, VValue, newValue, asing);
             VScrollAnimation.Commit(this, ahVScroll, rate, legth, finished: OnScrollComplete);
         }
@@ -266,16 +263,6 @@ namespace PdfClown.UI.Blazor
             }
             ScrollComplete?.Invoke(this, EventArgs.Empty);
         }
-
-        public virtual bool ContainsCaptureBox(double x, double y)
-        {
-            var baseValue = CheckCaptureBox?.Invoke(x, y) ?? false;
-            return baseValue
-                || (scroll.VScrollBarVisible && scroll.GetVValueBounds().Contains((float)x, (float)y))
-                || (scroll.HScrollBarVisible && scroll.GetHValueBounds().Contains((float)x, (float)y));
-        }
-
-        public Func<double, double, bool>? CheckCaptureBox;
 
         private static KeyModifiers GetKeyModifiers(MouseEventArgs e)
         {
@@ -364,6 +351,7 @@ namespace PdfClown.UI.Blazor
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
+                KeyModifiers = KeyModifiers,
             });
         }
 
@@ -374,6 +362,7 @@ namespace PdfClown.UI.Blazor
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
+                KeyModifiers = KeyModifiers,
             });
         }
 
@@ -384,9 +373,9 @@ namespace PdfClown.UI.Blazor
             {
                 Location = new SKPoint(args[2], args[3]),
                 PointerId = args[0],
+                KeyModifiers = KeyModifiers,
             });
         }
-
 
         private void OnPointerMove(PointerEventArgs e)
         {
@@ -395,6 +384,7 @@ namespace PdfClown.UI.Blazor
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
+                KeyModifiers = KeyModifiers,
             });
         }
 
@@ -405,6 +395,7 @@ namespace PdfClown.UI.Blazor
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
+                KeyModifiers = KeyModifiers,
             });
         }
 
@@ -415,6 +406,7 @@ namespace PdfClown.UI.Blazor
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
+                KeyModifiers = KeyModifiers,
             });
         }
 
@@ -430,5 +422,9 @@ namespace PdfClown.UI.Blazor
             interop = null;
         }
 
+        public void CapturePointer(long pointerId)
+        {
+            interop?.SetCapture((int)pointerId);
+        }
     }
 }
