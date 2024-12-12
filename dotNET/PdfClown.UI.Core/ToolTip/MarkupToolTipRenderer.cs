@@ -5,12 +5,16 @@ namespace PdfClown.UI.ToolTip
 {
     public class MarkupToolTipRenderer : AnnotationToolTipRenderer
     {
-        public MarkupToolTipRenderer()
-            : base()
+        public MarkupToolTipRenderer(Markup markup)
+            : base(markup)
         {
         }
 
-        public Markup Markup { get => Annotation as Markup; set => Annotation = value; }
+        public Markup Markup
+        {
+            get => (Markup)Annotation;
+            set => Annotation = value;
+        }
 
         public override SKRect Measure()
         {
@@ -26,8 +30,8 @@ namespace PdfClown.UI.ToolTip
             contentBound.Inflate(Indent, Indent);
 
             return ContentBound = contentBound;
-        } 
-        
+        }
+
     }
 
 }

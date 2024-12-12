@@ -15,15 +15,15 @@ namespace PdfClown.UI
         IEnumerable<IPdfPageViewModel> PageViews { get; }
         SKSize Size { get; }
         int PagesCount { get; }
-        IEnumerable<Field> Fields { get; }
+        IEnumerable<Field>? Fields { get; }
         IPdfPageViewModel this[int inde] { get; }
 
         event PdfAnnotationEventHandler AnnotationAdded;
         event PdfAnnotationEventHandler AnnotationRemoved;
 
-        PdfDocumentViewModel GetDocumentView(PdfDocument document);
-        PdfPageViewModel GetPageView(PdfPage page);
-        IPdfDocumentViewModel Reload(EditOperationList operations);
+        PdfDocumentViewModel? GetDocumentView(PdfDocument document);
+        PdfPageViewModel? GetPageView(PdfPage page);
+        IPdfDocumentViewModel Reload(EditorOperations operations);
         bool ContainsField(string fieldName);
     }
 }

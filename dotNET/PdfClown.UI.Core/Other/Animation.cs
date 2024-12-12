@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Collections.Concurrent;
-using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
-namespace PdfClown.UI.Blazor.Internal
+namespace PdfClown.UI.Other
 {
     public class Animation
     {
-        private static readonly Dictionary<ComponentBase, Dictionary<string, Animation>> cache = new();
+        private static readonly Dictionary<object, Dictionary<string, Animation>> cache = new();
 
-        public static void Abort(ComponentBase component, string name)
+        public static void Abort(object component, string name)
         {
             if (cache.TryGetValue(component, out var names)
                 && names.TryGetValue(name, out var animation))
@@ -48,14 +49,14 @@ namespace PdfClown.UI.Blazor.Internal
 
         public bool IsIncrease => newValue > currentValue;
 
-        internal void Add(int v1, int v2, Animation animation)
+        public void Add(int v1, int v2, Animation animation)
         {
             animations ??= new List<Animation>();
             animations.Add(animation);
             animation.Parent = this;
         }
 
-        internal void Commit(ComponentBase component, string name, uint rate, uint length, Action<double, bool> finished)
+        public void Commit(object component, string name, uint rate, uint length, Action<double, bool> finished)
         {
             if (!cache.TryGetValue(component, out var names))
                 cache[component] = names = new Dictionary<string, Animation>();

@@ -2,6 +2,7 @@
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.UI.Operations;
 using PdfClown.UI.Text;
+using PdfClown.Util.Math;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using System;
@@ -29,21 +30,15 @@ namespace PdfClown.UI
 
         internal readonly SKPaint paintPageBackground = new SKPaint { Style = SKPaintStyle.Fill, Color = SKColors.White };
 
-        private readonly PdfViewState state;
-
-        private bool showCharBound;
-
         public PdfView()
         {
-            state = new PdfViewState { Viewer = this };
-            state.CurrentPageChanged += OnCurrentPageChanged;
-            state.ScaleChanged += OnScaleChanged;
-
             TextSelection = new TextSelection();
             TextSelection.Changed += OnTextSelectionChanged;
 
-            Operations = new EditOperationList { Viewer = this };
+            Operations = new EditorOperations(this);
             Operations.Changed += OnOperationsChanged;
+            Operations.CurrentPageChanged += OnCurrentPageChanged;
+            Operations.ScaleChanged += OnScaleChanged;
 
             UndoCommand = new Command(() => Operations.Undo(), () => Operations.CanUndo);
             RedoCommand = new Command(() => Operations.Redo(), () => Operations.CanRedo);
@@ -94,12 +89,12 @@ namespace PdfClown.UI
 
         public IPdfDocumentViewModel Document
         {
-            get => state.Document;
+            get => Operations.Document;
             set
             {
-                if (state.Document != value)
+                if (Operations.Document != value)
                 {
-                    state.Document = value;
+                    Operations.Document = value;
                     DocumentChanged?.Invoke(new PdfDocumentEventArgs(value));
                     OnPropertyChanged(nameof(PagesCount));
                 }
@@ -110,37 +105,37 @@ namespace PdfClown.UI
 
         public PdfPage PdfPage
         {
-            get => Page?.GetPage(state);
+            get => Page?.GetPage(Operations.State);
             set => Page = Document.GetPageView(value);
         }
 
         public IPdfPageViewModel Page
         {
-            get => state.CurrentPage;
-            set => state.CurrentPage = value;
+            get => Operations.CurrentPage;
+            set => Operations.CurrentPage = value;
         }
 
         public TextSelection TextSelection { get; private set; }
 
-        public EditOperationList Operations { get; private set; }
+        public EditorOperations Operations { get; private set; }
 
         public bool IsChanged => Operations.HashOperations;
 
         public int PagesCount
         {
-            get => state.PagesCount;
+            get => Operations.PagesCount;
         }
 
         public int NewPageNumber
         {
-            get => state.NewPageNumber;
-            set => state.NewPageNumber = value;
+            get => Operations.NewPageNumber;
+            set => Operations.NewPageNumber = value;
         }
 
         public int PageNumber
         {
-            get => state.CurrentPageNumber;
-            set => state.CurrentPageNumber = value;
+            get => Operations.CurrentPageNumber;
+            set => Operations.CurrentPageNumber = value;
         }
 
         public ICommand NextPageCommand { get; set; }
@@ -173,7 +168,7 @@ namespace PdfClown.UI
 
         private void OnScaleContentChanged(float oldValue, float newValue)
         {
-            state.Scale = newValue;
+            Operations.SetScale(newValue);
         }
 
         private void OnShowMarkupChanged(bool oldValue, bool newValue)
@@ -183,7 +178,6 @@ namespace PdfClown.UI
 
         private void OnShowCharBoundChanged(bool oldValue, bool newValue)
         {
-            showCharBound = newValue;
             InvalidatePaint();
         }
 
@@ -193,20 +187,19 @@ namespace PdfClown.UI
 
         private void OnVScrolled(object sender, ScrollEventArgs e)
         {
-            state.UpdateCurrentMatrix();
+            Operations.UpdateNavigationMatrix();
             if (!IsVScrollAnimation)
-                Page = state.GetCenterPage();
+                Page = Operations.GetCenterPage();
         }
 
         private void OnHScrolled(object sender, ScrollEventArgs e)
         {
-            state.UpdateCurrentMatrix();
+            Operations.UpdateNavigationMatrix();
         }
 
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
         {
-            state.XScaleFactor = (float)(e.Info.Width / Width);
-            state.YScaleFactor = (float)(e.Info.Height / Height);
+            Operations.State.SetWindowScale((float)(e.Info.Width / Width), (float)(e.Info.Height / Height));
             base.OnPaintSurface(e);
         }
 
@@ -214,7 +207,7 @@ namespace PdfClown.UI
         {
             if (Document == null)
                 return;
-            state.Draw(e.Surface.Canvas);
+            Operations.Draw(e.Surface.Canvas);
         }
 
         public override bool OnKeyDown(string keyName, KeyModifiers modifiers)
@@ -254,11 +247,11 @@ namespace PdfClown.UI
         protected override void OnTouch(SKTouchEventArgs e)
         {
             base.OnTouch(new SKTouchEventArgs(e.Id, e.ActionType, e.MouseButton, e.DeviceType,
-                new SKPoint(e.Location.X / state.XScaleFactor, e.Location.Y / state.YScaleFactor),
+                e.Location.Scale(scroll.XScaleFactor, scroll.YScaleFactor),
                 e.InContact));
             if (e.Handled)
                 return;
-            state.OnTouch((TouchAction)(int)e.ActionType, (MouseButton)(int)e.MouseButton, e.Location);
+            Operations.OnTouch((TouchAction)(int)e.ActionType, (MouseButton)(int)e.MouseButton, e.Location);
         }
 
         public override bool OnScrolled(int delta)
@@ -269,7 +262,7 @@ namespace PdfClown.UI
             }
             if (KeyModifiers == KeyModifiers.Ctrl)
             {
-                state.ScaleToPointer(delta);
+                Operations.ScaleToPointer(delta);
             }
             return false;
         }
@@ -277,7 +270,7 @@ namespace PdfClown.UI
         protected override void OnSizeAllocated(double width, double height)
         {
             base.OnSizeAllocated(width, height);
-            state.UpdateCurrentMatrix((float)width, (float)height);
+            Operations.UpdateNavigationMatrix((float)width, (float)height);
             ScrollTo(Page);
         }
 
@@ -315,13 +308,13 @@ namespace PdfClown.UI
 
         public void ScrollTo(IPdfPageViewModel page)
         {
-            var location = state.ScrollTo(page);
+            var location = Operations.ScrollTo(page);
             AnimateScroll(Math.Max(location.Y, 0), Math.Max(location.X, 0));
         }
 
         public void ScrollTo(Annotation annotation)
         {
-            var location = state.ScrollTo(annotation);
+            var location = Operations.ScrollTo(annotation);
             AnimateScroll(Math.Max(location.Y, 0), Math.Max(location.X, 0));
         }
     }

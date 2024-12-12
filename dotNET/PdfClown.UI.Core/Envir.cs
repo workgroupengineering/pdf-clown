@@ -12,7 +12,7 @@ namespace PdfClown.UI
             }
         }
 
-        public static SynchronizationContext MainContext { get; set; }
+        public static SynchronizationContext? MainContext { get; set; }
     }
 
 }

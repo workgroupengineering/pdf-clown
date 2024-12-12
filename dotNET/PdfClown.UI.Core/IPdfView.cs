@@ -7,23 +7,20 @@ namespace PdfClown.UI
 {
     public interface IPdfView: ISKScrollView
     {
-        IPdfDocumentViewModel Document { get; set; }
-        IPdfPageViewModel Page { get; set; }
+        IPdfDocumentViewModel? Document { get; set; }
+        IPdfPageViewModel? Page { get; set; }
         PdfPage PdfPage { get; set; }
         CursorType Cursor { get; set; }
-        bool ShowMarkup { get; }
-        bool ShowCharBound { get; }
+        bool ShowMarkup { get; set; }
+        bool ShowCharBound { get; set; }
         bool ScrollByPointer { get; set; }
-        EditOperationList Operations { get; }
+        EditorOperations Operations { get; }
         bool IsReadOnly { get; set; }
         int PagesCount { get; }
         int PageNumber { get; set; }
         int NewPageNumber { get; set; }
 
         TextSelection TextSelection { get; }
-
-        double Width { get; }
-        double Height { get; }
 
         PdfViewFitMode FitMode { get; set; }
         float ScaleContent { get; set; }

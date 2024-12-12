@@ -6,11 +6,11 @@ namespace PdfClown.UI
 
     public class PdfPageEventArgs : EventArgs
     {
-        public PdfPageEventArgs(IPdfPageViewModel page)
+        public PdfPageEventArgs(IPdfPageViewModel? page)
         {
             Page = page;
         }
 
-        public IPdfPageViewModel Page { get; internal set; }
+        public IPdfPageViewModel? Page { get; internal set; }
     }
 }

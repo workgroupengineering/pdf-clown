@@ -16,8 +16,9 @@ namespace PdfClown.UI
         private SKRect? bounds;
 
 
-        public PdfMultiPageViewModel(IEnumerable<PdfPageViewModel> pages)
+        public PdfMultiPageViewModel(PdfMultiDocumentViewModel document, IEnumerable<PdfPageViewModel> pages)
         {
+            Document = document;
             foreach (var item in pages)
                 Add(item);
         }
@@ -28,7 +29,7 @@ namespace PdfClown.UI
             item.BoundsChanged += OnItemBoundsChanged;
         }
 
-        private void OnItemBoundsChanged(object sender, EventArgs e)
+        private void OnItemBoundsChanged(object? sender, EventArgs e)
         {
             bounds = null;
             BoundsChanged?.Invoke(this, e);
@@ -64,7 +65,7 @@ namespace PdfClown.UI
 
         public int Order { get; set; }
 
-        public event EventHandler BoundsChanged;
+        public event EventHandler? BoundsChanged;
 
         private SKRect CalculateBounds()
         {
@@ -76,12 +77,12 @@ namespace PdfClown.UI
             return rect;
         }
 
-        public bool Draw(PdfViewState state)
+        public bool Draw(SKCanvas canvas, PdfViewState state)
         {
             var result = true;
             foreach (var item in items)
             {
-                if (!item.Draw(state))
+                if (!item.Draw(canvas, state))
                     result = false;
             }
             return result;
@@ -96,7 +97,7 @@ namespace PdfClown.UI
             }
         }
 
-        public Annotation GetAnnotation(string name)
+        public Annotation? GetAnnotation(string name)
         {
             foreach (var item in items)
             {
@@ -106,11 +107,11 @@ namespace PdfClown.UI
             return null;
         }
 
-        public IEnumerable<Annotation> GetAnnotations() => items.SelectMany(x => x.GetAnnotations());
+        public IEnumerable<Annotation> Annotations => items.SelectMany(x => x.Annotations);
 
         public IEnumerable<ITextString> GetStrings() => items.SelectMany(x => x.GetStrings());
 
-        public PdfPage GetPage(PdfViewState state)
+        public PdfPage? GetPage(PdfViewState state)
         {
             foreach (var item in items)
             {

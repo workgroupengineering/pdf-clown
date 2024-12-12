@@ -11,13 +11,13 @@ namespace PdfClown.UI
         int Index { get; }
         SKMatrix Matrix { get; set; }
         int Order { get; }
-        PdfPage GetPage(PdfViewState state);
+        PdfPage? GetPage(PdfViewState state);
         IPdfDocumentViewModel Document { get; set; }
 
-        bool Draw(PdfViewState state);
+        bool Draw(SKCanvas canvas, PdfViewState state);
         void Touch(PdfViewState state);
-        Annotation GetAnnotation(string name);
-        IEnumerable<Annotation> GetAnnotations();
+        Annotation? GetAnnotation(string name);
+        IEnumerable<Annotation> Annotations { get; }
         IEnumerable<ITextString> GetStrings();
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace PdfClown.UI.Blazor.Internal
+﻿namespace PdfClown.UI.Other
 {
     public enum Easing
     {

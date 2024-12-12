@@ -17,14 +17,14 @@ namespace PdfClown.UI
         private const string ahScroll = "VerticalScrollAnimation";
         private float xScaleFactor = 1F;
         private float yScaleFactor = 1F;
-        private ScrollLogic scrollLogic;
+        private ScrollLogic scroll;
 
         public SKGLScrollView()
         {
             IsTabStop = true;
             EnableTouchEvents = true;
             Touch += OnTouch;
-            scrollLogic = new ScrollLogic(this);
+            scroll = new ScrollLogic(this);
         }
 
         public CursorType Cursor
@@ -37,27 +37,31 @@ namespace PdfClown.UI
 
         public double VMaximum
         {
-            get => scrollLogic.VMaximum;
-            set => scrollLogic.VMaximum = value;
+            get => scroll.VMaximum;
+            set => scroll.VMaximum = value;
         }
 
         public double HMaximum
         {
-            get => scrollLogic.HMaximum;
-            set => scrollLogic.HMaximum = value;
+            get => scroll.HMaximum;
+            set => scroll.HMaximum = value;
         }
 
         public double VValue
         {
-            get => scrollLogic.VValue;
-            set => scrollLogic.VValue = value;
+            get => scroll.VValue;
+            set => scroll.VValue = value;
         }
 
         public double HValue
         {
-            get => scrollLogic.HValue;
-            set => scrollLogic.HValue = value;
+            get => scroll.HValue;
+            set => scroll.HValue = value;
         }
+
+        public bool VBarVisible => scroll.VBarVisible;
+
+        public bool HBarVisible => scroll.HBarVisible;
 
         public KeyModifiers KeyModifiers { get; set; }
 
@@ -119,7 +123,7 @@ namespace PdfClown.UI
         protected override void OnSizeAllocated(double width, double height)
         {
             base.OnSizeAllocated(width, height);
-            scrollLogic.OnSizeAllocated(width, height);
+            scroll.OnSizeAllocated(width, height);
         }
 
         protected void OnTouch(object sender, SKTouchEventArgs args)
@@ -139,7 +143,7 @@ namespace PdfClown.UI
 
         protected virtual void OnTouch(TouchEventArgs e)
         {
-            scrollLogic.OnTouch(e);
+            scroll.OnTouch(e);
         }
 
         protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
@@ -159,7 +163,7 @@ namespace PdfClown.UI
             canvas.Save();
             PaintContent?.Invoke(this, e);
             canvas.Restore();
-            scrollLogic.PaintScrollBars(canvas);
+            scroll.PaintScrollBars(canvas);
             PaintOver?.Invoke(this, e);
         }
 

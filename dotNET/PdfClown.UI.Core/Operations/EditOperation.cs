@@ -2,22 +2,29 @@
 {
     public abstract class EditOperation
     {
-        public EditOperationList OperationList { get; set; }
+        protected EditOperation(PdfDocumentViewModel document, EditorOperations operations) 
+        {
+            Operations = operations;
+            Document = document;
+        }
+
+        public EditorOperations Operations { get; set; }
+
         public PdfDocumentViewModel Document { get; set; }
 
         public OperationType Type { get; set; }
 
         public int PageIndex { get; set; }
 
-        public object Property { get; set; }
+        public object? Property { get; set; }
 
-        public object OldValue { get; set; }
+        public object? OldValue { get; set; }
 
-        public object NewValue { get; set; }
+        public object? NewValue { get; set; }
 
-        public virtual object EndOperation()
+        public virtual object? EndOperation()
         {
-            OperationList?.OnEndOperation(this, null);
+            Operations.OnEndOperation(this, null);
             return null;
         }
 

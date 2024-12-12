@@ -52,8 +52,8 @@ namespace PdfClown.UI
         public static readonly SvgImage ShiftVSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "line");
         public static readonly SvgImage ShiftHSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "link");
 
-        private EventHandler<ScrollEventArgs> vScrolledHandler;
-        private EventHandler<ScrollEventArgs> нScrolledHandler;
+        private EventHandler<ScrollEventArgs>? vScrolledHandler;
+        private EventHandler<ScrollEventArgs>? нScrolledHandler;
         private SKPoint nullLocation;
         private Orientation nullDirection = Orientation.Vertical;
 
@@ -70,8 +70,8 @@ namespace PdfClown.UI
         private ISKScrollView scrollView;
         private SKRect vPadding = new SKRect(0, 0, 0, DefaultSKStyles.StepSize);
         private SKRect hPadding = new SKRect(0, 0, DefaultSKStyles.StepSize, 0);
-        private SvgImage hoverButton;
-        private SvgImage pressedButton;
+        private SvgImage? hoverButton;
+        private SvgImage? pressedButton;
         private double vValue;
         private double hValue;
 
@@ -130,9 +130,9 @@ namespace PdfClown.UI
 
         public double HSize => HHovered ? DefaultSKStyles.MaxSize : DefaultSKStyles.MinSize;
 
-        public bool VScrollBarVisible => VMaximum >= (Height + DefaultSKStyles.StepSize);
+        public bool VBarVisible => VMaximum >= (Height + DefaultSKStyles.StepSize);
 
-        public bool HScrollBarVisible => HMaximum >= (Width + DefaultSKStyles.StepSize);
+        public bool HBarVisible => HMaximum >= (Width + DefaultSKStyles.StepSize);
 
         public bool VHovered
         {
@@ -190,7 +190,7 @@ namespace PdfClown.UI
             }
         }
 
-        public SvgImage PressedButton
+        public SvgImage? PressedButton
         {
             get => pressedButton;
             set
@@ -203,7 +203,7 @@ namespace PdfClown.UI
             }
         }
 
-        public SvgImage HoverButton
+        public SvgImage? HoverButton
         {
             get => hoverButton;
             set
@@ -233,7 +233,7 @@ namespace PdfClown.UI
 
         public double NormalizeVValue(double value)
         {
-            if (!VScrollBarVisible)
+            if (!VBarVisible)
             {
                 return 0;
             }
@@ -251,7 +251,7 @@ namespace PdfClown.UI
 
         public void PaintScrollBars(SKCanvas canvas)
         {
-            if (VScrollBarVisible)
+            if (VBarVisible)
             {
                 canvas.DrawRect(GetVScrollBounds(), scrollPaint);
                 // if (Hovered)
@@ -271,7 +271,7 @@ namespace PdfClown.UI
                 canvas.DrawRect(valueBound, HoverButton == ShiftVSvg ? PressedButton == ShiftVSvg ? bottonPaintPressed : bottonPaintHover : bottonPaint);
             }
 
-            if (HScrollBarVisible)
+            if (HBarVisible)
             {
                 canvas.DrawRect(GetHScrollBounds(), scrollPaint);
                 // if (Hovered)
@@ -405,7 +405,7 @@ namespace PdfClown.UI
             return SKRect.Create((float)left, (float)(Height - HSize), (float)vWidth, (float)HSize);
         }
 
-        public void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        public void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
         }
 
@@ -435,8 +435,8 @@ namespace PdfClown.UI
                 case TouchAction.Moved:
                     if (nullLocation == SKPoint.Empty)
                     {
-                        VHovered = VScrollBarVisible && GetVScrollBounds().Contains(e.Location);
-                        HHovered = HScrollBarVisible && GetHScrollBounds().Contains(e.Location);
+                        VHovered = VBarVisible && GetVScrollBounds().Contains(e.Location);
+                        HHovered = HBarVisible && GetHScrollBounds().Contains(e.Location);
 
                         if (VHovered)
                         {
@@ -497,7 +497,7 @@ namespace PdfClown.UI
                     break;
             }
 
-            if ((!VScrollBarVisible && !HScrollBarVisible)
+            if ((!VBarVisible && !HBarVisible)
                 || e.MouseButton != MouseButton.Left)
                 return;
             switch (e.ActionType)

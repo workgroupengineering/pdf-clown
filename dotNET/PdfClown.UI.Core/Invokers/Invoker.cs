@@ -116,13 +116,13 @@ namespace PdfClown.Util.Invokers
             });
         }
 
-        public static IInvoker GetPropertyInvoker(Type type, string propertyName)
+        public static IInvoker? GetPropertyInvoker(Type type, string propertyName)
         {
             TryGetPropertyInvoker(type, propertyName, out var invoker);
             return invoker;
         }
 
-        public static bool TryGetPropertyInvoker(Type declaringType, string propertyName, out IInvoker invoker)
+        public static bool TryGetPropertyInvoker(Type declaringType, string propertyName, out IInvoker? invoker)
         {
             foreach (var entry in cache)
             {
@@ -136,37 +136,37 @@ namespace PdfClown.Util.Invokers
             return false;
         }
 
-        public string Name { get; set; }
+        public abstract string Name { get; }
 
-        public Type DataType { get; set; }
+        public abstract Type DataType { get; }
 
-        public Type TargetType { get; set; }
+        public abstract Type TargetType { get; }
 
         public abstract bool CanWrite { get; }
 
 
-        public abstract object GetValue(object target);
+        public abstract object? GetValue(object target);
 
-        public abstract void SetValue(object target, object value);
+        public abstract void SetValue(object target, object? value);
     }
 
     public abstract class Invoker<T, V> : Invoker, IInvoker<T, V>
     {
         public Invoker()
-        {
-            DataType = typeof(V);
-            TargetType = typeof(T);
-        }
+        { }
+
+        public override Type DataType => typeof(V);
+        public override Type TargetType => typeof(T);
 
         public abstract V GetValue(T target);
 
-        public override object GetValue(object target) => GetValue((T)target);
+        public override object? GetValue(object target) => GetValue((T)target);
 
         public abstract void SetValue(T target, V value);
 
         public void SetValue(object target, V value) => SetValue((T)target, value);
 
-        public override void SetValue(object target, object value) => SetValue((T)target, (V)value);
+        public override void SetValue(object target, object? value) => SetValue((T)target, (V)value!);
 
         public override string ToString()
         {

@@ -9,15 +9,12 @@ namespace PdfClown.UI.ToolTip
     {
         public const int Indent = 3;
         public static readonly float MaxWidth = 360;
-        private static readonly char[] rnSplitters = new char[] { '\r', '\n' };
-        private static readonly Dictionary<SKPaint, SKFont> fontCache = new Dictionary<SKPaint, SKFont>();
 
-        protected List<LineOfText> ContentLines;
+        protected List<LineOfText>? ContentLines;
         protected SKRect ContentBound;
 
         protected ToolTipRenderer()
-        {
-        }
+        { }
 
         protected virtual void Clear()
         {
@@ -28,7 +25,7 @@ namespace PdfClown.UI.ToolTip
             }
         }
 
-        public virtual void Free()
+        public virtual void Dispose()
         {
             Clear();
         }
@@ -69,24 +66,26 @@ namespace PdfClown.UI.ToolTip
 
         public abstract SKRect Measure();
 
-        public void Draw(PdfViewState state)
+        public void Draw(SKCanvas canvas, PdfViewState state, SKRect bound)
         {
             if (ContentLines == null)
                 return;
 
-            state.Canvas.Save();
-            state.Canvas.SetMatrix(state.WindowScaleMatrix);
+            canvas.Save();
+            canvas.SetMatrix(state.WindowScaleMatrix);
 
-            var mapped = state.ToolTipBounds;
-            state.Canvas.Translate(mapped.Left, mapped.Top);
+            canvas.Translate(bound.Left, bound.Top);
 
-            DrawContent(state.Canvas);
+            DrawContent(canvas);
 
-            state.Canvas.Restore();
+            canvas.Restore();
         }
 
-        public virtual void DrawContent(SKCanvas canvas)
+        private void DrawContent(SKCanvas canvas)
         {
+            if (ContentLines == null)
+                return;
+
             canvas.DrawRect(ContentBound, DefaultSKStyles.PaintToolTipBackground);
             canvas.DrawRect(ContentBound, DefaultSKStyles.PaintToolTipBorder);
             canvas.Translate(Indent, Indent);
@@ -102,15 +101,14 @@ namespace PdfClown.UI.ToolTip
         public class LineOfText : IDisposable
         {
             public SKRect Bound;
-            public SKTextBlob Text { get; set; }
+            public SKTextBlob? Text { get; set; }
             public SKPoint Start { get; set; }
-            public SKPaint Paint { get; set; }
+            public SKPaint? Paint { get; set; }
             
             public void Dispose()
             {
                 Text?.Dispose();
                 Text = null;
-                Paint = null;
             }
 
             public void Draw(SKCanvas canvas)

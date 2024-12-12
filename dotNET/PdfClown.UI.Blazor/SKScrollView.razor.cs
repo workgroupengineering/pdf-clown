@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using PdfClown.UI.Blazor.Internal;
+using PdfClown.UI.Other;
 using SkiaSharp;
 using SkiaSharp.Views.Blazor;
 using System.Runtime.Versioning;
@@ -93,6 +94,10 @@ namespace PdfClown.UI.Blazor
             get => scroll.HValue;
             set => scroll.HValue = value;
         }
+
+        public bool VBarVisible => scroll.VBarVisible;
+
+        public bool HBarVisible => scroll.HBarVisible;
 
         public KeyModifiers KeyModifiers { get; set; }
 

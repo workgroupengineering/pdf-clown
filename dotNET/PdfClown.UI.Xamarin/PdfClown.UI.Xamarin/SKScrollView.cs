@@ -62,6 +62,10 @@ namespace PdfClown.UI
             set => scroll.HValue = value;            
         }
 
+        public bool VBarVisible => scroll.VBarVisible;
+
+        public bool HBarVisible => scroll.HBarVisible;
+
         public KeyModifiers KeyModifiers { get; set; }
 
         public Animation ScrollAnimation { get; private set; }
@@ -150,7 +154,7 @@ namespace PdfClown.UI
             PaintContent?.Invoke(this, e);
         }
 
-        public void HAnimateScroll(double newValue, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = null)
+        public void HAnimateScroll(double newValue, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = default)
         {
             if (HValue == newValue)
                 return;
@@ -163,7 +167,7 @@ namespace PdfClown.UI
             HScrollAnimation.Commit(this, ahHScroll, rate, legth, finished: OnScrollComplete);
         }
 
-        public void VAnimateScroll(double newValue, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = null)
+        public void VAnimateScroll(double newValue, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = default)
         {
             if (VValue == newValue)
                 return;
@@ -185,11 +189,11 @@ namespace PdfClown.UI
             {
                 this.AbortAnimation(ahScroll);
             }
-            ScrollAnimation = new Animation
-            {
-                { 0, 1, new Animation(v => VValue = v, VValue, top, Easing.SinOut) },
-                { 0, 1, new Animation(v => HValue = v, HValue, left, Easing.SinOut) }
-            };
+            top = (float)scroll.NormalizeVValue(top);
+            left = (float)scroll.NormalizeHValue(left);
+            ScrollAnimation = new Animation();
+            ScrollAnimation.Add(0, 1, new Animation(v => VValue = v, VValue, top, Easing.SinOut));
+            ScrollAnimation.Add(0, 1, new Animation(v => HValue = v, HValue, left, Easing.SinOut));
             ScrollAnimation.Commit(this, ahScroll, 16, 270, finished: OnScrollComplete);
         }
 

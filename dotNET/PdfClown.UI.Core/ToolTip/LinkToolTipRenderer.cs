@@ -7,14 +7,13 @@ namespace PdfClown.UI.ToolTip
 {
     public class LinkToolTipRenderer : AnnotationToolTipRenderer
     {
-        public LinkToolTipRenderer()
-            : base()
-        {
-        }
+        public LinkToolTipRenderer(Link link)
+            : base(link)
+        { }
 
         public Link Link
         {
-            get => Annotation as Link;
+            get => (Link)Annotation;
             set => Annotation = value;
         }
 

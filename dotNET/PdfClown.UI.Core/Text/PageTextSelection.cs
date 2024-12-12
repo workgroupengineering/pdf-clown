@@ -8,7 +8,7 @@ namespace PdfClown.UI.Text
 {
     public class PageTextSelection : IDisposable
     {
-        private SKPath path;
+        private SKPath? path;
 
         public List<TextChar> Chars { get; set; } = new List<TextChar>();
 
