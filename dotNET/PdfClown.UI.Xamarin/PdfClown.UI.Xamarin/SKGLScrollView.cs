@@ -1,7 +1,4 @@
-﻿using PdfClown.Tools;
-using PdfClown.UI;
-using SkiaSharp;
-using SkiaSharp.Views.Forms;
+﻿using SkiaSharp.Views.Forms;
 using System;
 using System.Threading;
 using Xamarin.Forms;
@@ -15,15 +12,14 @@ namespace PdfClown.UI
 
         public const int step = 16;
         private const string ahScroll = "VerticalScrollAnimation";
-        private float xScaleFactor = 1F;
-        private float yScaleFactor = 1F;
         private ScrollLogic scroll;
+        public Action CapturePointerFunc;
+        public Func<double> GetWindowScaleFunc;
 
         public SKGLScrollView()
         {
             IsTabStop = true;
             EnableTouchEvents = true;
-            Touch += OnTouch;
             scroll = new ScrollLogic(this);
         }
 
@@ -73,86 +69,25 @@ namespace PdfClown.UI
 
         public event EventHandler<SKPaintGLSurfaceEventArgs> PaintContent;
 
-        public event EventHandler<SKPaintGLSurfaceEventArgs> PaintOver;
-
-        public float XScaleFactor
-        {
-            get => xScaleFactor;
-            set
-            {
-                if (xScaleFactor != value)
-                {
-                    xScaleFactor = value;
-                    OnWindowScaleChanged();
-                }
-            }
-        }
-
-        public float YScaleFactor
-        {
-            get => yScaleFactor;
-            set
-            {
-                if (yScaleFactor != value)
-                {
-                    yScaleFactor = value;
-                    OnWindowScaleChanged();
-                }
-            }
-        }
+        public event EventHandler<SKPaintGLSurfaceEventArgs> PaintOver;        
 
         public bool IsVScrollAnimation => (VerticalScrollAnimation ?? ScrollAnimation) != null;
 
         public bool IsHScrollAnimation => (HorizontalScrollAnimation ?? ScrollAnimation) != null;
 
-        protected override void OnTouch(SKTouchEventArgs e)
-        {
-            base.OnTouch(new SKTouchEventArgs(e.Id, e.ActionType, e.MouseButton, e.DeviceType,
-                new SkiaSharp.SKPoint(e.Location.X / XScaleFactor, e.Location.Y / YScaleFactor),
-                e.InContact));
-            if (e.ActionType == SKTouchAction.WheelChanged)
-            {
-                OnScrolled(e.WheelDelta);
-            }
-        }
-
-        protected virtual void OnWindowScaleChanged()
-        {
-        }
-
         protected override void OnSizeAllocated(double width, double height)
         {
             base.OnSizeAllocated(width, height);
-            scroll.OnSizeAllocated(width, height);
+            scroll.OnSizeAllocated(width, height, (float)(GetWindowScaleFunc?.Invoke() ?? 1D));
         }
 
-        protected void OnTouch(object sender, SKTouchEventArgs args)
-        {
-            var e = new TouchEventArgs((TouchAction)args.ActionType, (MouseButton)args.MouseButton);
-            OnTouch(e);
-            args.Handled = e.Handled;
-            //if (ScrollBarVisible)
-            //{
-            //    var scrollBound = GetScrollBounds();
-            //    if (scrollBound.Contains(e.Location))
-            //    {
-            //        e.Handled = true;
-            //    }
-            //}            
-        }
-
-        protected virtual void OnTouch(TouchEventArgs e)
-        {
-            scroll.OnTouch(e);
-        }
+        protected virtual void OnTouch(TouchEventArgs e) => scroll.OnTouch(e);
 
         protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
-            XScaleFactor = (float)(CanvasSize.Width / Width);
-            YScaleFactor = (float)(CanvasSize.Height / Height);
 
-            canvas.Scale(XScaleFactor, YScaleFactor);
+            canvas.Scale(scroll.WindowScale, scroll.WindowScale);
             canvas.Clear();
 
             base.OnPaintSurface(e);
@@ -197,8 +132,6 @@ namespace PdfClown.UI
         {
             VValue = VValue - step * 2 * Math.Sign(delta);
         }
-
-        public Action CapturePointerFunc;
 
         public virtual void InvalidatePaint()
         {

@@ -646,7 +646,7 @@ namespace PdfClown.UI
                            && annotation is Markup markup
                            && markup.AllowSize)
                         {
-                            state.Viewer.Cursor = CursorType.SizeNWSE;
+                            state.Viewer.Cursor = CursorType.BottomRightCorner;
                         }
                         else
                         {
@@ -666,7 +666,7 @@ namespace PdfClown.UI
                         state.Operations.SelectedPoint = state.Operations.HoverPoint;
                         state.Operations.Current = OperationType.PointMove;
                     }
-                    else if (state.Viewer.Cursor == CursorType.SizeNWSE && !state.Viewer.IsReadOnly)
+                    else if (state.Viewer.Cursor == CursorType.BottomRightCorner && !state.Viewer.IsReadOnly)
                     {
                         state.Operations.Current = OperationType.AnnotationSize;
                     }

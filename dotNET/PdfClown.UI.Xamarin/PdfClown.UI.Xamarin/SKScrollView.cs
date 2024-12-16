@@ -1,5 +1,4 @@
-﻿using SkiaSharp;
-using SkiaSharp.Views.Forms;
+﻿using SkiaSharp.Views.Forms;
 using System;
 using System.Threading;
 using Xamarin.Forms;
@@ -14,17 +13,16 @@ namespace PdfClown.UI
         private const string ahScroll = "ScrollAnimation";
         private const string ahVScroll = "VScrollAnimation";
         private const string ahHScroll = "HScrollAnimation";
-        
-        private bool isDrawing;
+
         protected ScrollLogic scroll;
+        public Action CapturePointerFunc;
+        public Func<double> GetWindowScaleFunc;
 
         public SKScrollView()
         {
             Envir.Init();
             IsTabStop = true;
             IgnorePixelScaling = false;
-            EnableTouchEvents = true;
-            Touch += OnTouch;
             scroll = new ScrollLogic(this);
         }
 
@@ -33,8 +31,6 @@ namespace PdfClown.UI
             get => (CursorType)GetValue(CursorProperty);
             set => SetValue(CursorProperty, value);
         }
-
-        public bool AllowScrollView { get; set; } = true;
 
         public event EventHandler<CanvasKeyEventArgs> KeyDown;
 
@@ -47,31 +43,29 @@ namespace PdfClown.UI
         public double HMaximum
         {
             get => scroll.HMaximum;
-            set => scroll.HMaximum =  value;
+            set => scroll.HMaximum = value;
         }
 
         public double VValue
         {
             get => scroll.VValue;
-            set => scroll.VValue = value;            
+            set => scroll.VValue = value;
         }
 
         public double HValue
         {
             get => scroll.HValue;
-            set => scroll.HValue = value;            
+            set => scroll.HValue = value;
         }
 
         public bool VBarVisible => scroll.VBarVisible;
 
         public bool HBarVisible => scroll.HBarVisible;
 
-        public KeyModifiers KeyModifiers { get; set; }
-
         public Animation ScrollAnimation { get; private set; }
-        
+
         public Animation VScrollAnimation { get; private set; }
-        
+
         public Animation HScrollAnimation { get; private set; }
 
         public bool IsVScrollAnimation => (VScrollAnimation ?? ScrollAnimation) != null;
@@ -80,73 +74,31 @@ namespace PdfClown.UI
 
         public event EventHandler<SKPaintSurfaceEventArgs> PaintContent;
 
-        public event EventHandler<SKPaintSurfaceEventArgs> PaintOver;        
-
-        public bool WheelTouchSupported { get; set; } = true;
+        public event EventHandler<SKPaintSurfaceEventArgs> PaintOver;
 
         public event EventHandler ScrollComplete;
 
-        protected override void OnTouch(SKTouchEventArgs e)
-        {
-            base.OnTouch(e);
-            if (WheelTouchSupported && e.ActionType == SKTouchAction.WheelChanged)
-            {
-                OnScrolled(e.WheelDelta);
-            }
-        }
+        protected override void OnSizeAllocated(double width, double height) => scroll.OnSizeAllocated(width, height, GetWindowScaleFunc?.Invoke() ?? 1D);
 
-        protected override void OnSizeAllocated(double width, double height)
-        {
-            base.OnSizeAllocated(width, height);
-            scroll.OnSizeAllocated(width, height);            
-        }
+        public virtual void OnTouch(TouchEventArgs e) => scroll.OnTouch(e);
 
-        protected void OnTouch(object sender, SKTouchEventArgs args)
+        public virtual void OnScrolled(TouchEventArgs e)
         {
-            var e = new TouchEventArgs((TouchAction)args.ActionType, (MouseButton)args.MouseButton)
-            {
-                PointerId = args.Id,
-                Location = args.Location,
-            };
-            OnTouch(e);
-            args.Handled = e.Handled;                       
-        }
-
-        protected virtual void OnTouch(TouchEventArgs e)
-        {
-            scroll.OnTouch(e);
-        }
-
-        public virtual bool OnScrolled(int delta)
-        {
-            var temp = VValue;
-            VAnimateScroll(VValue - (delta * 1.5), 16, 160);
-            return temp != VValue;
+            VAnimateScroll(VValue - (e.WheelDelta * 1.5), 16, 160);
+            e.Handled = true;
         }
 
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
-            scroll.XScaleFactor = (float)(e.Info.Width / Width);
-            scroll.YScaleFactor = (float)(e.Info.Height / Height);
 
-            canvas.Scale(scroll.XScaleFactor, scroll.YScaleFactor);
+            canvas.Scale(scroll.WindowScale, scroll.WindowScale);
             canvas.Clear(BackgroundColor.ToSKColor());
             base.OnPaintSurface(e);
 
-            if (!IsVisible || isDrawing)
-                return;
-            isDrawing = true;
-            try
-            {
-                OnPaintContent(e);
-                scroll.PaintScrollBars(canvas);
-                PaintOver?.Invoke(this, e);
-            }
-            finally
-            {
-                isDrawing = false;
-            }
+            OnPaintContent(e);
+            scroll.PaintScrollBars(canvas);
+            PaintOver?.Invoke(this, e);
         }
 
         protected virtual void OnPaintContent(SKPaintSurfaceEventArgs e)
@@ -203,7 +155,6 @@ namespace PdfClown.UI
 
         public virtual bool OnKeyDown(string keyName, KeyModifiers modifiers)
         {
-            KeyModifiers = modifiers;
             var args = new CanvasKeyEventArgs(keyName, modifiers);
             KeyDown?.Invoke(this, args);
             return args.Handled;
@@ -229,8 +180,6 @@ namespace PdfClown.UI
             }
             ScrollComplete?.Invoke(this, EventArgs.Empty);
         }
-
-        public Action CapturePointerFunc;        
 
         public virtual void InvalidatePaint()
         {

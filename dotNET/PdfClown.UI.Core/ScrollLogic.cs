@@ -216,8 +216,7 @@ namespace PdfClown.UI
             }
         }
 
-        public float XScaleFactor { get; set; } = 1;
-        public float YScaleFactor { get; set; } = 1;
+        public float WindowScale { get; set; } = 1;
 
         public event EventHandler<ScrollEventArgs> VScrolled
         {
@@ -409,10 +408,11 @@ namespace PdfClown.UI
         {
         }
 
-        public void OnSizeAllocated(double width, double height)
+        public void OnSizeAllocated(double width, double height, double windowScale)
         {
             Width = width;
             Height = height;
+            WindowScale = (float)windowScale;
             OnVMaximumChanged(1, VMaximum);
             OnHMaximumChanged(1, HMaximum);
         }

@@ -21,12 +21,12 @@ namespace PdfClown.UI
 
         public EditorOperations Operations => Viewer.Operations;
 
-        public void SetWindowScale(float xScale, float yScale)
+        internal void SetWindowScale(float xScale, float yScale)
         {
             if (XScaleFactor != xScale
                 || YScaleFactor != yScale)
             {
-                WindowScaleMatrix = SKMatrix.CreateScale(XScaleFactor, YScaleFactor);
+                WindowScaleMatrix = SKMatrix.CreateScale(xScale, yScale);
             }
         }
 

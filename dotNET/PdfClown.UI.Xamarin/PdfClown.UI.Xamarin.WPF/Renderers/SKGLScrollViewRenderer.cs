@@ -53,16 +53,16 @@ namespace PdfClown.UI.WPF
                     case UI.CursorType.Arrow:
                         Control.Cursor = Cursors.Arrow;
                         break;
-                    case UI.CursorType.SizeWE:
+                    case UI.CursorType.SizeWestEast:
                         Control.Cursor = Cursors.SizeWE;
                         break;
-                    case UI.CursorType.SizeNS:
+                    case UI.CursorType.SizeNorthSouth:
                         Control.Cursor = Cursors.SizeNS;
                         break;
-                    case UI.CursorType.SizeNESW:
+                    case UI.CursorType.BottomLeftCorner:
                         Control.Cursor = Cursors.SizeNESW;
                         break;
-                    case UI.CursorType.SizeNWSE:
+                    case UI.CursorType.BottomRightCorner:
                         Control.Cursor = Cursors.SizeNWSE;
                         break;
                     case UI.CursorType.Hand:
@@ -71,7 +71,7 @@ namespace PdfClown.UI.WPF
                     case UI.CursorType.Wait:
                         Control.Cursor = Cursors.Wait;
                         break;
-                    case UI.CursorType.ScrollAll:
+                    case UI.CursorType.SizeAll:
                         Control.Cursor = Cursors.ScrollAll;
                         break;
                     case UI.CursorType.Cross:

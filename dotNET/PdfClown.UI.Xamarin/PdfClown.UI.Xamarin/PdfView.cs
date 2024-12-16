@@ -95,13 +95,10 @@ namespace PdfClown.UI
                 if (Operations.Document != value)
                 {
                     Operations.Document = value;
-                    DocumentChanged?.Invoke(new PdfDocumentEventArgs(value));
                     OnPropertyChanged(nameof(PagesCount));
                 }
             }
         }
-
-        public SKSize DocumentSize => Document?.Size ?? SKSize.Empty;
 
         public PdfPage PdfPage
         {
@@ -119,7 +116,7 @@ namespace PdfClown.UI
 
         public EditorOperations Operations { get; private set; }
 
-        public bool IsChanged => Operations.HashOperations;
+        public bool IsModified => Operations.HashOperations;
 
         public int PagesCount
         {
@@ -146,8 +143,6 @@ namespace PdfClown.UI
 
         public ICommand UndoCommand { get; set; }
 
-        public event PdfDocumentEventHandler DocumentChanged;
-
         public void NextPage() => NewPageNumber += 1;
 
         private bool CanNextPage() => PageNumber < PagesCount;
@@ -158,7 +153,8 @@ namespace PdfClown.UI
 
         private void OnFitModeChanged(PdfViewFitMode oldValue, PdfViewFitMode newValue)
         {
-            ScrollTo(Page);
+            if (Page != null)
+                ScrollTo(Page);
         }
 
         private void OnPageBackgroundChanged(Color oldValue, Color newValue)
@@ -197,16 +193,8 @@ namespace PdfClown.UI
             Operations.UpdateNavigationMatrix();
         }
 
-        protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
-        {
-            Operations.State.SetWindowScale((float)(e.Info.Width / Width), (float)(e.Info.Height / Height));
-            base.OnPaintSurface(e);
-        }
-
         protected override void OnPaintContent(SKPaintSurfaceEventArgs e)
         {
-            if (Document == null)
-                return;
             Operations.Draw(e.Surface.Canvas);
         }
 
@@ -239,39 +227,38 @@ namespace PdfClown.UI
 
         private void OnOperationsChanged(object sender, EventArgs e)
         {
-            OnPropertyChanged(nameof(IsChanged));
+            OnPropertyChanged(nameof(IsModified));
             ((Command)UndoCommand).ChangeCanExecute();
             ((Command)RedoCommand).ChangeCanExecute();
         }
 
-        protected override void OnTouch(SKTouchEventArgs e)
+        public override void OnTouch(TouchEventArgs e)
         {
-            base.OnTouch(new SKTouchEventArgs(e.Id, e.ActionType, e.MouseButton, e.DeviceType,
-                e.Location.Scale(scroll.XScaleFactor, scroll.YScaleFactor),
-                e.InContact));
+            base.OnTouch(e);
             if (e.Handled)
                 return;
-            Operations.OnTouch((TouchAction)(int)e.ActionType, (MouseButton)(int)e.MouseButton, e.Location);
+            Operations.OnTouch(e.ActionType, e.MouseButton, e.Location.Scale(scroll.WindowScale));
         }
 
-        public override bool OnScrolled(int delta)
+        public override void OnScrolled(TouchEventArgs e)
         {
-            if (KeyModifiers == KeyModifiers.None)
+            if (e.KeyModifiers == KeyModifiers.None)
             {
-                return base.OnScrolled(delta);
+                base.OnScrolled(e);
             }
-            if (KeyModifiers == KeyModifiers.Ctrl)
+            if (e.KeyModifiers == KeyModifiers.Ctrl)
             {
-                Operations.ScaleToPointer(delta);
+                Operations.ScaleToPointer(e.WheelDelta);
+                e.Handled = true;
             }
-            return false;
         }
 
         protected override void OnSizeAllocated(double width, double height)
         {
             base.OnSizeAllocated(width, height);
-            Operations.UpdateNavigationMatrix((float)width, (float)height);
-            ScrollTo(Page);
+            Operations.OnSizeAllocated((float)width, (float)height, scroll.WindowScale);
+            if (Page != null)
+                ScrollTo(Page);
         }
 
         public void Reload()
@@ -308,13 +295,13 @@ namespace PdfClown.UI
 
         public void ScrollTo(IPdfPageViewModel page)
         {
-            var location = Operations.ScrollTo(page);
+            var location = Operations.FitToAndGetLocation(page);
             AnimateScroll(Math.Max(location.Y, 0), Math.Max(location.X, 0));
         }
 
         public void ScrollTo(Annotation annotation)
         {
-            var location = Operations.ScrollTo(annotation);
+            var location = Operations.GetLocation(annotation);
             AnimateScroll(Math.Max(location.Y, 0), Math.Max(location.X, 0));
         }
     }

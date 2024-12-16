@@ -472,6 +472,16 @@ namespace PdfClown.Util.Math
         {
             return new SKPoint(point.X * scaleX, point.Y * scaleY);
         }
+
+        public static SKPoint UnScale(this SKPoint point, float scale)
+        {
+            return point.UnScale(scale, scale);
+        }
+
+        public static SKPoint UnScale(this SKPoint point, float scaleX, float scaleY)
+        {
+            return new SKPoint(point.X / scaleX, point.Y / scaleY);
+        }
     }
 }
 

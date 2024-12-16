@@ -11,6 +11,7 @@ namespace PdfClown.UI.Blazor.Internal
         private const string ModuleName = "SKHtmlScroll";
         private const string JsFilename = ".././_content/PdfClown.UI.Blazor/SKHtmlScroll.js";
         private const string InitSymbol = "SKHtmlScroll.init";
+        private const string GetDPRSymbol = "SKHtmlScroll.getDPR";
         private const string RequestLockSymbol = "SKHtmlScroll.requestLock";
         private const string SetCaptureSymbol = "SKHtmlScroll.setCapture";
         private const string ReleaseCaptureSymbol = "SKHtmlScroll.releaseCapture";
@@ -26,6 +27,9 @@ namespace PdfClown.UI.Blazor.Internal
 
         [JSImport(DeinitSymbol, ModuleName)]
         static partial void DeInit(string elementId);
+
+        [JSImport(GetDPRSymbol, ModuleName)]
+        public static partial float GetDPR();
 
         [JSImport(RequestLockSymbol, ModuleName)]
         static partial void RequestLock(string elementId);
@@ -47,13 +51,13 @@ namespace PdfClown.UI.Blazor.Internal
         {
             return cursor switch
             {
-                CursorType.SizeWE => "ew-resize",
-                CursorType.SizeNESW => "nesw-resize",
-                CursorType.SizeNS => "ns-resize",
-                CursorType.SizeNWSE => "nwse-resize",
+                CursorType.SizeWestEast => "ew-resize",
+                CursorType.BottomLeftCorner => "nesw-resize",
+                CursorType.SizeNorthSouth => "ns-resize",
+                CursorType.BottomRightCorner => "nwse-resize",
                 CursorType.Hand => "pointer",
                 CursorType.Wait => "wait",
-                CursorType.ScrollAll => "all-scroll",
+                CursorType.SizeAll => "all-scroll",
                 CursorType.Cross => "crosshair",
                 CursorType.IBeam => "text",
                 _ => "default",

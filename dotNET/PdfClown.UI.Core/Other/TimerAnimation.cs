@@ -5,9 +5,9 @@ using System.Threading;
 
 namespace PdfClown.UI.Other
 {
-    public class Animation
+    public class TimerAnimation
     {
-        private static readonly Dictionary<object, Dictionary<string, Animation>> cache = new();
+        private static readonly Dictionary<object, Dictionary<string, TimerAnimation>> cache = new();
 
         public static void Abort(object component, string name)
         {
@@ -21,37 +21,35 @@ namespace PdfClown.UI.Other
         private Action<double>? action;
         private double currentValue;
         private double newValue;
-        private Easing easing;
         private double step;
         private bool cancel;
         private Timer? timer;
         private string name;
-        private Dictionary<string, Animation>? names;
+        private Dictionary<string, TimerAnimation>? names;
         private Action<double, bool>? finished;
-        private List<Animation>? animations;
-        private Animation? Parent;
+        private List<TimerAnimation>? animations;
+        private TimerAnimation? Parent;
 
-        public Animation()
+        public TimerAnimation()
         {
             name = "Multi";
         }
 
-        public Animation(Action<double> action, double currentValue, double newValue, Easing easing)
+        public TimerAnimation(Action<double> action, double currentValue, double newValue)
         {
             name = string.Empty;
             this.action = action;
             this.currentValue = currentValue;
             this.newValue = newValue;
-            this.easing = easing;
         }
 
         public bool IsCancel => cancel || (Parent?.IsCancel ?? false);
 
         public bool IsIncrease => newValue > currentValue;
 
-        public void Add(int v1, int v2, Animation animation)
+        public void Add(int v1, int v2, TimerAnimation animation)
         {
-            animations ??= new List<Animation>();
+            animations ??= new List<TimerAnimation>();
             animations.Add(animation);
             animation.Parent = this;
         }
@@ -59,7 +57,7 @@ namespace PdfClown.UI.Other
         public void Commit(object component, string name, uint rate, uint length, Action<double, bool> finished)
         {
             if (!cache.TryGetValue(component, out var names))
-                cache[component] = names = new Dictionary<string, Animation>();
+                cache[component] = names = new Dictionary<string, TimerAnimation>();
             if (names.TryGetValue(name, out var animation))
             {
                 if (IsIncrease == animation.IsIncrease

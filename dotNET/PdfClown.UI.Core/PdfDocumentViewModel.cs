@@ -55,9 +55,9 @@ namespace PdfClown.UI
         private SKMatrix matrix = SKMatrix.Identity;
         private SKPaint? pageForegroundPaint;        
 
-        public PdfDocumentViewModel(PdfDocument pdfDocument)
+        public PdfDocumentViewModel(PdfDocument document)
         {
-            this.Document = pdfDocument;
+            Document = document;
             LoadPages();
         }
 

@@ -30,7 +30,7 @@ namespace PdfClown.UI.Operations
         private ToolTipRenderer? toolTipRenderer;
         private SKRect? toolTipBound;
         private FloatEventArgs cacheScaleArgs = new(0F);
-        private PdfPageEventArgs cacheCurrentArgs = new(null!);
+        private PdfPageEventArgs cacheCurrentArgs = new(null);
         private PdfViewState state;
         private SKPoint translateLocation;
 
@@ -213,6 +213,7 @@ namespace PdfClown.UI.Operations
                         Viewer.InvalidatePaint();
                     }
                     PagesCount = document?.PagesCount ?? 0;
+                    DocumentChanged?.Invoke(new PdfDocumentEventArgs(value));
                 }
             }
         }
@@ -342,6 +343,8 @@ namespace PdfClown.UI.Operations
 
         public PdfViewState State => state;
 
+        public event PdfDocumentEventHandler? DocumentChanged;
+
         public event EventHandler<DetailedPropertyChangedEventArgs>? AnnotationPropertyChanged;
 
         public event PdfAnnotationEventHandler? AnnotationAdded;
@@ -425,7 +428,7 @@ namespace PdfClown.UI.Operations
             {
                 translateLocation = state.PointerLocation;
                 if (state.TouchButton == MouseButton.Middle)
-                    Viewer.Cursor = CursorType.ScrollAll;
+                    Viewer.Cursor = CursorType.SizeAll;
                 return true;
             }
             else if (state.TouchAction == TouchAction.Moved)
@@ -569,7 +572,7 @@ namespace PdfClown.UI.Operations
             return newScale;
         }
 
-        public SKPoint ScrollTo(IPdfPageViewModel page)
+        public SKPoint FitToAndGetLocation(IPdfPageViewModel page)
         {
             if (page == null || Document == null)
             {
@@ -598,10 +601,10 @@ namespace PdfClown.UI.Operations
             return new SKPoint(bound.Left - (windowArea.MidX - bound.Width / 2),
                                bound.Height <= windowArea.Height
                                 ? bound.Top - (windowArea.MidY - bound.Height / 2)
-                                : bound.Top - 5);
+                                : bound.Top - 3);
         }
 
-        public SKPoint ScrollTo(Annotation annotation)
+        public SKPoint GetLocation(Annotation annotation)
         {
             if (annotation?.Page == null
                 || Document == null
@@ -626,29 +629,34 @@ namespace PdfClown.UI.Operations
             Viewer.VMaximum = size.Height * Scale;
         }
 
-        public void UpdateNavigationMatrix() => UpdateNavigationMatrix((float)Viewer.Width, (float)Viewer.Height);
-
-        public void UpdateNavigationMatrix(float width, float height)
+        public void OnSizeAllocated(float width, float height, float scale)
         {
-            var horizontalValue = (float)Viewer.HValue;
-            var verticalValue = (float)Viewer.VValue;
-            var size = Document?.Size ?? SKSize.Empty;
+            state.SetWindowScale(scale, scale);
+            if (width != state.WindowArea.Width
+                || height != state.WindowArea.Height)
             state.WindowArea = SKRect.Create(0, 0, width, height);
-            var maximumWidth = size.Width * Scale;
-            var maximumHeight = size.Height * Scale;
+            UpdateNavigationMatrix();
+        }
+
+        public void UpdateNavigationMatrix()
+        {
+            var dSize = Document?.Size ?? SKSize.Empty;
+            var wSize = state.WindowArea.Size;
+            var maximumWidth = dSize.Width * Scale;
+            var maximumHeight = dSize.Height * Scale;
             var dx = 0F; var dy = 0F;
-            if (maximumWidth < state.WindowArea.Width)
+            if (maximumWidth < wSize.Width)
             {
-                dx = (float)((width - 10) - maximumWidth) / 2;
+                dx = (float)((wSize.Width - 10) - maximumWidth) / 2;
             }
 
-            if (maximumHeight < state.WindowArea.Height)
+            if (maximumHeight < wSize.Height)
             {
-                dy = (float)(height - maximumHeight) / 2;
+                dy = (float)(wSize.Height - maximumHeight) / 2;
             }
             state.NavigationMatrix = new SKMatrix(
-                Scale, 0, (-horizontalValue) + dx,
-                0, Scale, (-verticalValue) + dy,
+                Scale, 0, (-(float)Viewer.HValue) + dx,
+                0, Scale, (-(float)Viewer.VValue) + dy,
                 0, 0, 1);
             Viewer.InvalidatePaint();
         }
@@ -992,7 +1000,7 @@ namespace PdfClown.UI.Operations
                     break;
                 case OperationType.AnnotationSize:
                     BeginOperation(selectedAnnotation, newValue, "Box");
-                    Viewer.Cursor = CursorType.SizeNWSE;
+                    Viewer.Cursor = CursorType.BottomRightCorner;
                     break;
                 case OperationType.PointMove:
                 case OperationType.PointAdd:
@@ -1079,5 +1087,6 @@ namespace PdfClown.UI.Operations
         IEnumerator<EditOperation> IEnumerable<EditOperation>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        
     }
 }

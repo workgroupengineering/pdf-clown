@@ -12,7 +12,6 @@ namespace PdfClown.UI.Blazor
     [SupportedOSPlatform("browser")]
     public partial class SKScrollView : ComponentBase, ISKScrollView, IDisposable
     {
-
         private const string ahScroll = "ScrollAnimation";
         private const string ahVScroll = "VScrollAnimation";
         private const string ahHScroll = "HScrollAnimation";
@@ -29,6 +28,7 @@ namespace PdfClown.UI.Blazor
 
         public SKScrollView()
         {
+            Envir.Init();
             //EnableTouchEvents = true;
             //this.Tou += OnTouch;
             scroll = new ScrollLogic(this);
@@ -99,13 +99,11 @@ namespace PdfClown.UI.Blazor
 
         public bool HBarVisible => scroll.HBarVisible;
 
-        public KeyModifiers KeyModifiers { get; set; }
+        public TimerAnimation? ScrollAnimation { get; private set; }
 
-        public Animation? ScrollAnimation { get; private set; }
+        public TimerAnimation? VScrollAnimation { get; private set; }
 
-        public Animation? VScrollAnimation { get; private set; }
-
-        public Animation? HScrollAnimation { get; private set; }
+        public TimerAnimation? HScrollAnimation { get; private set; }
 
         public bool IsVScrollAnimation => (VScrollAnimation ?? ScrollAnimation) != null;
 
@@ -120,8 +118,6 @@ namespace PdfClown.UI.Blazor
 
         public event EventHandler<SKPaintSurfaceEventArgs>? PaintOver;
 #endif
-
-        public bool WheelTouchSupported { get; set; } = true;
 
         public event EventHandler? ScrollComplete;
 
@@ -140,28 +136,15 @@ namespace PdfClown.UI.Blazor
             canvasView?.Invalidate();
         }
 
-        protected virtual void OnTouch(TouchEventArgs e)
+        protected virtual void OnTouch(TouchEventArgs e) => scroll.OnTouch(e);
+
+        protected virtual void OnSizeAllocated(double width, double height) => scroll.OnSizeAllocated(width, height, SKHtmlScrollInterop.GetDPR());
+
+        public virtual void OnScrolled(TouchEventArgs e)
         {
-            if (WheelTouchSupported && e.ActionType == TouchAction.WheelChanged)
-            {
-                OnScrolled(e.WheelDelta);
+            if (e.WheelDelta == 0)
                 return;
-            }
-            scroll.OnTouch(e);
-        }
-
-        protected virtual void OnSizeAllocated(double width, double height)
-        {
-            scroll.OnSizeAllocated(width, height);
-        }
-
-        public virtual bool OnScrolled(double delta)
-        {
-            if (delta == 0)
-                return false;
-            var temp = VValue;
-            VAnimateScroll(delta * 1.5, 16, 160);
-            return temp != VValue;
+            VAnimateScroll(e.WheelDelta * 1.5, 16, 160);
         }
 
 #if __FORCE_GL__
@@ -170,12 +153,9 @@ namespace PdfClown.UI.Blazor
         protected virtual void OnPaintSurface(SKPaintSurfaceEventArgs e)
 #endif
         {
-            scroll.XScaleFactor = (float)(e.Info.Width / Width);
-            scroll.YScaleFactor = (float)(e.Info.Height / Height);
-
             var canvas = e.Surface.Canvas;
 
-            canvas.Scale(scroll.XScaleFactor, scroll.YScaleFactor);
+            canvas.Scale(scroll.WindowScale, scroll.WindowScale);
             canvas.Clear(SKColors.Silver);
 
             OnPaintContent(e);
@@ -192,25 +172,25 @@ namespace PdfClown.UI.Blazor
             PaintContent?.Invoke(this, e);
         }
 
-        public void HAnimateScroll(double delta, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = Easing.SinOut)
+        public void HAnimateScroll(double delta, uint rate = DefaultSKStyles.MaxSize, uint legth = 400)
         {
             if (HScrollAnimation != null)
             {
                 AbortAnimation(ahHScroll);
             }
             var newValue = scroll.NormalizeHValue(HValue + delta);
-            HScrollAnimation = new Animation(v => HValue = v, HValue, newValue, asing);
+            HScrollAnimation = new TimerAnimation(v => HValue = v, HValue, newValue);
             HScrollAnimation.Commit(this, ahHScroll, rate, legth, finished: OnScrollComplete);
         }
 
-        public void VAnimateScroll(double delta, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = Easing.SinOut)
+        public void VAnimateScroll(double delta, uint rate = DefaultSKStyles.MaxSize, uint legth = 400)
         {
             if (VScrollAnimation != null)
             {
                 AbortAnimation(ahVScroll);
             }
             var newValue = scroll.NormalizeVValue(VValue + delta);
-            VScrollAnimation = new Animation(v => VValue = v, VValue, newValue, asing);
+            VScrollAnimation = new TimerAnimation(v => VValue = v, VValue, newValue);
             VScrollAnimation.Commit(this, ahVScroll, rate, legth, finished: OnScrollComplete);
         }
 
@@ -223,29 +203,15 @@ namespace PdfClown.UI.Blazor
             {
                 AbortAnimation(ahScroll);
             }
-            ScrollAnimation = new Animation();
-            ScrollAnimation.Add(0, 1, new Animation(v => VValue = v, VValue, top, Easing.SinOut));
-            ScrollAnimation.Add(0, 1, new Animation(v => HValue = v, HValue, left, Easing.SinOut));
+            ScrollAnimation = new TimerAnimation();
+            ScrollAnimation.Add(0, 1, new TimerAnimation(v => VValue = v, VValue, top));
+            ScrollAnimation.Add(0, 1, new TimerAnimation(v => HValue = v, HValue, left));
             ScrollAnimation.Commit(this, ahScroll, 16, 270, finished: OnScrollComplete);
         }
 
         private void AbortAnimation(string ahScroll)
         {
-            Animation.Abort(this, ahScroll);
-        }
-
-        private void OnCursorChanged(CursorType oldValue, CursorType newValue)
-        {
-            cursor = newValue;
-            interop?.ChangeCursor(newValue);
-        }
-
-        public virtual bool OnKeyDown(string keyName, KeyModifiers modifiers)
-        {
-            KeyModifiers = modifiers;
-            var args = new CanvasKeyEventArgs(keyName, modifiers);
-            KeyDown?.Invoke(this, args);
-            return args.Handled;
+            TimerAnimation.Abort(this, ahScroll);
         }
 
         protected virtual void OnScrollComplete(double arg1, bool arg2)
@@ -267,6 +233,19 @@ namespace PdfClown.UI.Blazor
                 scroll.RaiseVScroll();
             }
             ScrollComplete?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnCursorChanged(CursorType oldValue, CursorType newValue)
+        {
+            cursor = newValue;
+            interop?.ChangeCursor(newValue);
+        }
+
+        public virtual bool OnKeyDown(string keyName, KeyModifiers modifiers)
+        {
+            var args = new CanvasKeyEventArgs(keyName, modifiers);
+            KeyDown?.Invoke(this, args);
+            return args.Handled;
         }
 
         private static KeyModifiers GetKeyModifiers(MouseEventArgs e)
@@ -345,73 +324,71 @@ namespace PdfClown.UI.Blazor
 
         private void OnMouseWheel(WheelEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
-            OnScrolled(e.DeltaY);
+            OnScrolled(new TouchEventArgs(TouchAction.Released, GetMouseButton(e))
+            {
+                Location = GetMouseLocation(e),
+                WheelDelta = (float)e.DeltaY,
+                KeyModifiers = GetKeyModifiers(e),
+            });
         }
 
         private void OnPointerUp(PointerEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
             OnTouch(new TouchEventArgs(TouchAction.Released, GetMouseButton(e))
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
-                KeyModifiers = KeyModifiers,
+                KeyModifiers = GetKeyModifiers(e),
             });
         }
 
         private void OnPointerDown(PointerEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
             OnTouch(new TouchEventArgs(TouchAction.Pressed, GetMouseButton(e))
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
-                KeyModifiers = KeyModifiers,
+                KeyModifiers = GetKeyModifiers(e),
             });
         }
 
         private void OnPointerMove(int[] args)
         {
-            KeyModifiers = (KeyModifiers)args[4];
             OnTouch(new TouchEventArgs(TouchAction.Moved, GetMouseButton(args[1]))
             {
                 Location = new SKPoint(args[2], args[3]),
                 PointerId = args[0],
-                KeyModifiers = KeyModifiers,
+                KeyModifiers = (KeyModifiers)args[4],
             });
         }
 
         private void OnPointerMove(PointerEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
             OnTouch(new TouchEventArgs(TouchAction.Moved, GetMouseButton(e))
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
-                KeyModifiers = KeyModifiers,
+                KeyModifiers = GetKeyModifiers(e),
             });
         }
 
         private void OnPointerEnter(PointerEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
             OnTouch(new TouchEventArgs(TouchAction.Entered, GetMouseButton(e))
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
-                KeyModifiers = KeyModifiers,
+                KeyModifiers = GetKeyModifiers(e),
             });
         }
 
         private void OnPointerLeave(PointerEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
             OnTouch(new TouchEventArgs(TouchAction.Exited, GetMouseButton(e))
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
-                KeyModifiers = KeyModifiers,
+                KeyModifiers = GetKeyModifiers(e),
             });
         }
 

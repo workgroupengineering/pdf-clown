@@ -19,15 +19,11 @@ namespace PdfClown.UI.WPF
         protected override void OnElementChanged(ElementChangedEventArgs<SKCanvasView> e)
         {
             base.OnElementChanged(e);
-            if (e.OldElement is SKScrollView)
-            {
-                e.NewElement.Touch -= OnElementTouch;
-            }
+           
             if (e.NewElement is SKScrollView scrollView)
             {
-                scrollView.WheelTouchSupported = false;
-                scrollView.Touch += OnElementTouch;
                 scrollView.CapturePointerFunc = CaptureMouse;
+                scrollView.GetWindowScaleFunc = GetWindowScale;
                 if (Control != null)
                 {
                     Control.Focusable = Element.IsTabStop;
@@ -54,16 +50,16 @@ namespace PdfClown.UI.WPF
                     case UI.CursorType.Arrow:
                         Control.Cursor = Cursors.Arrow;
                         break;
-                    case UI.CursorType.SizeWE:
+                    case UI.CursorType.SizeWestEast:
                         Control.Cursor = Cursors.SizeWE;
                         break;
-                    case UI.CursorType.SizeNS:
+                    case UI.CursorType.SizeNorthSouth:
                         Control.Cursor = Cursors.SizeNS;
                         break;
-                    case UI.CursorType.SizeNESW:
+                    case UI.CursorType.BottomLeftCorner:
                         Control.Cursor = Cursors.SizeNESW;
                         break;
-                    case UI.CursorType.SizeNWSE:
+                    case UI.CursorType.BottomRightCorner:
                         Control.Cursor = Cursors.SizeNWSE;
                         break;
                     case UI.CursorType.Hand:
@@ -72,7 +68,7 @@ namespace PdfClown.UI.WPF
                     case UI.CursorType.Wait:
                         Control.Cursor = Cursors.Wait;
                         break;
-                    case UI.CursorType.ScrollAll:
+                    case UI.CursorType.SizeAll:
                         Control.Cursor = Cursors.ScrollAll;
                         break;
                     case UI.CursorType.Cross:
@@ -83,48 +79,107 @@ namespace PdfClown.UI.WPF
                         break;
                 }
             }
-        }
-
-        private void OnElementTouch(object sender, SKTouchEventArgs e)
-        {
-            if (Element is SKScrollView scrollView)
-            {
-                scrollView.KeyModifiers = GetModifiers();
-            }
-            if (e.ActionType == SKTouchAction.Released)
-            {
-                Element.Focus();
-                Control.Focus();
-            }
-        }
+        }        
 
         private void OnControlLoaded(object sender, RoutedEventArgs e)
-        {            
+        {
             Control.Loaded -= OnControlLoaded;
             Control.MouseWheel += OnControlMouseWheel;
+            Control.MouseEnter += OnControlMouseEnter;
+            Control.MouseLeave += OnControlMouseLeave;
             Control.PreviewKeyDown += OnControlKeyDown;
-            Control.PreviewMouseLeftButtonDown += OnControlMouseLeftButtonDown;
-            Control.PreviewMouseLeftButtonUp += OnControlMouseLeftButtonUp;
+            Control.PreviewMouseDown += OnControlMouseDown;
+            Control.PreviewMouseUp += OnControlMouseUp;
             Control.PreviewMouseMove += OnControlMouseMove;
         }
 
         private void OnControlMouseWheel(object sender, MouseWheelEventArgs e)
         {
+            var view = sender as FrameworkElement;
             if (Element is SKScrollView scrollView)
             {
-                scrollView.KeyModifiers = GetModifiers();
-                scrollView.OnScrolled(e.Delta);
+                var args = new TouchEventArgs(TouchAction.WheelChanged, GetMouseButton(e))
+                {
+                    WheelDelta = e.Delta,
+                    KeyModifiers = SKCanvasHelper.GetModifiers(),
+                    Location = e.MouseDevice.GetPosition(view).ToSKPoint()
+                };
+                scrollView.OnScrolled(args);
+                e.Handled = args.Handled;
             }
         }
 
-        private void OnControlMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void RaiseTouch(object sender, MouseEventArgs e, TouchAction touchAction)
         {
             var view = sender as FrameworkElement;
-            var pointerPoint = e.MouseDevice.GetPosition(view);
             if (Element is SKScrollView scrollView)
             {
-                scrollView.KeyModifiers = GetModifiers();                
+                var args = new TouchEventArgs(touchAction, GetMouseButton(e))
+                {
+                    KeyModifiers = SKCanvasHelper.GetModifiers(),
+                    Location = e.MouseDevice.GetPosition(view).ToSKPoint()
+                };
+                scrollView.OnTouch(args);
+                e.Handled = args.Handled;
             }
+        }
+
+        private void OnControlMouseLeave(object sender, MouseEventArgs e)
+        {
+            RaiseTouch(sender, e, TouchAction.Exited);
+        }
+
+        private void OnControlMouseEnter(object sender, MouseEventArgs e)
+        {
+            RaiseTouch(sender, e, TouchAction.Entered);
+        }
+
+        private void OnControlMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            RaiseTouch(sender, e, TouchAction.Pressed);
+        }        
+
+        private void OnControlMouseMove(object sender, MouseEventArgs e)
+        {
+            RaiseTouch(sender, e, TouchAction.Moved);
+        }
+
+        private void OnControlMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (pressed)
+            {
+                pressed = false;
+                Mouse.Capture(null);
+                e.Handled = true;
+            }
+            RaiseTouch(sender, e, TouchAction.Released);
+
+            Element.Focus();
+            Control.Focus();
+        }
+
+        private MouseButton GetMouseButton(MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+                return MouseButton.Left;
+            if (e.RightButton == MouseButtonState.Pressed)
+                return MouseButton.Right;
+            if (e.MiddleButton == MouseButtonState.Pressed)
+                return MouseButton.Middle;
+            return MouseButton.Unknown;
+        }
+        
+        private void OnControlKeyDown(object sender, KeyEventArgs e)
+        {
+            if (Element is SKScrollView scrollView)
+            {
+                e.Handled = scrollView.OnKeyDown(e.Key.ToString(), SKCanvasHelper.GetModifiers());
+            }
+        }
+
+        private double GetWindowScale()
+        {
+            return SKCanvasHelper.GetWindowScale(Control);
         }
 
         public void CaptureMouse()
@@ -133,81 +188,20 @@ namespace PdfClown.UI.WPF
             Mouse.Capture(Control);
         }
 
-        private static KeyModifiers GetModifiers()
-        {
-            var keyModifiers = KeyModifiers.None;
-            if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))
-            {
-                keyModifiers |= KeyModifiers.Alt;
-            }
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
-            {
-                keyModifiers |= KeyModifiers.Ctrl;
-            }
-            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
-            {
-                keyModifiers |= KeyModifiers.Shift;
-            }
-
-            return keyModifiers;
-        }
-
-        private void OnControlMouseMove(object sender, MouseEventArgs e)
-        {
-            if (Element is SKScrollView scrollView)
-            {
-                scrollView.KeyModifiers = GetModifiers();
-            }
-            if (pressed)
-            {
-                RaiseTouch(sender, e, SKTouchAction.Moved);
-            }
-        }
-
-        private void OnControlMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (pressed)
-            {
-                pressed = false;
-                Mouse.Capture(null);
-                e.Handled = true;
-                RaiseTouch(sender, e, SKTouchAction.Released);
-            }
-        }
-
-        private void RaiseTouch(object sender, MouseEventArgs e, SKTouchAction action)
-        {
-            var view = sender as FrameworkElement;
-            var pointerPoint = e.MouseDevice.GetPosition(view);
-            var skPoint = GetScaledCoord(pointerPoint.X, pointerPoint.Y);
-            var args = new SKTouchEventArgs(e.Timestamp, action, SKMouseButton.Left, SKTouchDeviceType.Mouse, skPoint, true);
-            ((ISKCanvasViewController)Element).OnTouch(args);
-        }
-
-        private void OnControlKeyDown(object sender, KeyEventArgs e)
-        {
-            if (Element is SKScrollView scrollView)
-            {
-                scrollView.KeyModifiers = GetModifiers();
-                e.Handled = scrollView.OnKeyDown(e.Key.ToString(), scrollView.KeyModifiers);
-            }
-        }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
-                if (Element != null)
-                {
-                    Element.Touch -= OnElementTouch;
-                }
+            {                
                 if (Control != null)
                 {
                     Control.Loaded -= OnControlLoaded;
                     Control.MouseWheel -= OnControlMouseWheel;
+                    Control.MouseEnter -= OnControlMouseEnter;
+                    Control.MouseLeave -= OnControlMouseLeave;
                     Control.PreviewKeyDown -= OnControlKeyDown;
-                    Control.PreviewMouseLeftButtonDown -= OnControlMouseLeftButtonDown;
-                    Control.PreviewMouseLeftButtonUp -= OnControlMouseLeftButtonUp;
+                    Control.PreviewMouseDown -= OnControlMouseDown;
+                    Control.PreviewMouseUp -= OnControlMouseUp;
                     Control.PreviewMouseMove -= OnControlMouseMove;
                 }
             }
@@ -224,20 +218,6 @@ namespace PdfClown.UI.WPF
             {
                 return SKCanvasHelper.GetScaledCoord(Control, x, y);
             }
-        }
-    }
-
-    public static class SKCanvasHelper
-    {
-        public static SKPoint GetScaledCoord(FrameworkElement control, double x, double y)
-        {
-            var matrix = control != null ? PresentationSource.FromVisual(control)?.CompositionTarget?.TransformToDevice : null;
-            var xfactor = matrix?.M11 ?? 1D;
-            var yfactor = matrix?.M22 ?? 1D;
-            x = x * xfactor;
-            y = y * yfactor;
-
-            return new SKPoint((float)x, (float)y);
         }
     }
 }

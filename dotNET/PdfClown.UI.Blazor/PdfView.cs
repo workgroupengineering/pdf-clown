@@ -19,8 +19,6 @@ namespace PdfClown.UI.Blazor
 
         public PdfView()
         {
-            Envir.Init();
-
             TextSelection = new TextSelection();
             TextSelection.Changed += OnTextSelectionChanged;
 
@@ -95,10 +93,10 @@ namespace PdfClown.UI.Blazor
         public EditorOperations Operations { get; private set; }
 
         [Parameter]
-        public bool IsEdited { get; set; }
+        public bool IsModified { get; set; }
 
         [Parameter]
-        public EventCallback<bool>? IsEditedChanged { get; set; }
+        public EventCallback<bool>? IsModifiedChanged { get; set; }
 
         [Parameter]
         public int PagesCount { get; set; }
@@ -117,9 +115,7 @@ namespace PdfClown.UI.Blazor
 
         [Parameter]
         public EventCallback<int> PageNumberChanged { get; set; }
-
-
-        public event PdfDocumentEventHandler? DocumentChanged;
+        
 
         public void NextPage() => NewPageNumber += 1;
 
@@ -203,16 +199,6 @@ namespace PdfClown.UI.Blazor
         {
             Operations.UpdateNavigationMatrix();
         }
-        
-#if __FORCE_GL__
-        protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
-#else
-        protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
-#endif
-        {
-            Operations.State.SetWindowScale((float)(e.Info.Width / Width), (float)(e.Info.Height / Height));
-            base.OnPaintSurface(e);
-        }
 
 #if __FORCE_GL__
         protected override void OnPaintContent(SKPaintGLSurfaceEventArgs e)
@@ -235,7 +221,6 @@ namespace PdfClown.UI.Blazor
         private void OnDocumentChanged(IPdfDocumentViewModel? value)
         {
             _ = PagesCountChanged.InvokeAsync(Operations.PagesCount);
-            DocumentChanged?.Invoke(new PdfDocumentEventArgs(value));
         }
 
         private void OnCurrentPageChanged(PdfPageEventArgs e)
@@ -252,7 +237,6 @@ namespace PdfClown.UI.Blazor
                 _ = ScaleContentChanged.InvokeAsync(e.Value);
         }
 
-
         private void OnTextSelectionChanged(TextSelectionEventArgs args)
         {
             InvalidatePaint();
@@ -260,7 +244,7 @@ namespace PdfClown.UI.Blazor
 
         private void OnOperationsChanged(object? sender, EventArgs? e)
         {
-            IsEditedChanged?.InvokeAsync(Operations.HashOperations);
+            IsModifiedChanged?.InvokeAsync(Operations.HashOperations);
         }
 
         protected override void OnTouch(TouchEventArgs e)
@@ -268,26 +252,25 @@ namespace PdfClown.UI.Blazor
             base.OnTouch(e);
             if (e.Handled)
                 return;
-            Operations.OnTouch(e.ActionType, e.MouseButton, e.Location.Scale(scroll.XScaleFactor, scroll.YScaleFactor));
+            Operations.OnTouch(e.ActionType, e.MouseButton, e.Location.Scale(scroll.WindowScale));
         }
 
-        public override bool OnScrolled(double delta)
+        public override void OnScrolled(TouchEventArgs e)
         {
-            if (KeyModifiers == KeyModifiers.None)
+            if (e.KeyModifiers == KeyModifiers.None)
             {
-                return base.OnScrolled(delta);
+                base.OnScrolled(e);
             }
-            if (KeyModifiers == KeyModifiers.Ctrl)
+            if (e.KeyModifiers == KeyModifiers.Ctrl)
             {
-                Operations.ScaleToPointer((float)delta);
+                Operations.ScaleToPointer(e.WheelDelta);
             }
-            return false;
         }
 
         protected override void OnSizeAllocated(double width, double height)
         {
             base.OnSizeAllocated(width, height);
-            Operations.UpdateNavigationMatrix((float)width, (float)height);
+            Operations.OnSizeAllocated((float)width, (float)height, scroll.WindowScale);
             if (Page != null)
             {
                 ScrollTo(Page);
@@ -324,6 +307,12 @@ namespace PdfClown.UI.Blazor
             document?.Dispose();
         }
 
+        public void ScrollTo(Annotation annotation)
+        {
+            var location = Operations.GetLocation(annotation);
+            AnimateScroll(Math.Max(location.Y, 0), Math.Max(location.X, 0));
+        }
+
         public void ScrollTo(PdfPage page)
         {
             if (Document?.GetPageView(page) is IPdfPageViewModel pageView)
@@ -332,14 +321,9 @@ namespace PdfClown.UI.Blazor
 
         public void ScrollTo(IPdfPageViewModel page)
         {
-            var location = Operations.ScrollTo(page);
+            var location = Operations.FitToAndGetLocation(page);
             AnimateScroll(Math.Max(location.Y, 0), Math.Max(location.X, 0));
         }
 
-        public void ScrollTo(Annotation annotation)
-        {
-            var location = Operations.ScrollTo(annotation);
-            AnimateScroll(Math.Max(location.Y, 0), Math.Max(location.X, 0));
-        }
     }
 }

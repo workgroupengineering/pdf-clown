@@ -9,13 +9,14 @@ namespace PdfClown.UI
     {
         IPdfDocumentViewModel? Document { get; set; }
         IPdfPageViewModel? Page { get; set; }
-        PdfPage PdfPage { get; set; }
+        PdfPage? PdfPage { get; set; }
         CursorType Cursor { get; set; }
         bool ShowMarkup { get; set; }
         bool ShowCharBound { get; set; }
         bool ScrollByPointer { get; set; }
         EditorOperations Operations { get; }
         bool IsReadOnly { get; set; }
+        bool IsModified { get; }
         int PagesCount { get; }
         int PageNumber { get; set; }
         int NewPageNumber { get; set; }
@@ -25,11 +26,9 @@ namespace PdfClown.UI
         PdfViewFitMode FitMode { get; set; }
         float ScaleContent { get; set; }
 
-        event PdfDocumentEventHandler DocumentChanged;
-
         void ScrollTo(Annotation annotation);
         void ScrollTo(PdfPage page);
-        void ScrollTo(IPdfPageViewModel currentPageView);
+        void ScrollTo(IPdfPageViewModel page);
         void Reload();
     }
 }

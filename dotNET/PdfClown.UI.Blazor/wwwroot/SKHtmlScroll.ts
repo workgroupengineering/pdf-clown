@@ -31,6 +31,10 @@ export class SKHtmlScroll {
         scrollElement.SKHtmlScroll = view;
     }
 
+    public static getDPR(): number {
+        return window.devicePixelRatio;
+    }
+
     public static deinit(elementId: string) {
         const element = SKHtmlScroll.elements.get(elementId);
         SKHtmlScroll.elements.delete(elementId);
