@@ -149,7 +149,11 @@ namespace PdfClown.Documents.Contents.Patterns
                 return picture;
             var box = Matrix.MapRect(Box);
             using var recorder = new SKPictureRecorder();// SKBitmap((int)box.Width, (int)box.Height);
+#if NET9_0_OR_GREATER
+            using var canvas = recorder.BeginRecording(box, true);
+#else
             using var canvas = recorder.BeginRecording(box);
+#endif
             Render(canvas, box, null, state.Scanner);
             return picture = recorder.EndRecording();
         }

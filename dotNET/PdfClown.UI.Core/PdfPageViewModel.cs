@@ -283,19 +283,21 @@ namespace PdfClown.UI
             try
             {
                 var rect = SKRect.Create(Size);
-                using (var recorder = new SKPictureRecorder())
-                using (var canvas = recorder.BeginRecording(rect))
+                using var recorder = new SKPictureRecorder();
+#if NET9_0_OR_GREATER
+                using var canvas = recorder.BeginRecording(rect, true);
+#else
+                using var canvas = recorder.BeginRecording(rect);
+#endif
+                try
                 {
-                    try
-                    {
-                        Page.Render(canvas, rect);
-                    }
-                    catch (Exception ex)
-                    {
-                        DrawErrorText(canvas, ex);
-                    }
-                    picture = recorder.EndRecording();
+                    Page.Render(canvas, rect);
                 }
+                catch (Exception ex)
+                {
+                    DrawErrorText(canvas, ex);
+                }
+                picture = recorder.EndRecording();
                 //text
                 var positionComparator = new TextBlockPositionComparer<ITextBlock>();
                 Page.TextBlocks.Sort(positionComparator);
@@ -341,7 +343,7 @@ namespace PdfClown.UI
 
         public void Touch(PdfViewState state)
         {
-            state.PageView = this;            
+            state.PageView = this;
             //SKMatrix.PreConcat(ref state.PageMatrix, state.PageView.InitialMatrix);
 
             switch (state.Operations.Current)

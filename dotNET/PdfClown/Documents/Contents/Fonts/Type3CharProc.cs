@@ -130,7 +130,11 @@ namespace PdfClown.Documents.Contents.Fonts
                 return picture;
             var box = Box;
             using var recorder = new SKPictureRecorder();
+#if NET9_0_OR_GREATER
+            using var canvas = recorder.BeginRecording(box, true);
+#else
             using var canvas = recorder.BeginRecording(box);
+#endif
             Render(canvas, box, null);
             return picture = recorder.EndRecording();
         }

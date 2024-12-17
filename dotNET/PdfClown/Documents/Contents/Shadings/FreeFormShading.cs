@@ -117,7 +117,11 @@ namespace PdfClown.Documents.Contents.Shadings
                 return null;
             var box = spaceMatrix.MapRect(Box.Value);
             using var recorder = new SKPictureRecorder();
+#if NET9_0_OR_GREATER
+            using var canvas = recorder.BeginRecording(box, true);
+#else
             using var canvas = recorder.BeginRecording(box);
+#endif
             canvas.SetMatrix(spaceMatrix);
             using var paint = new SKPaint { IsAntialias = AntiAlias };
             canvas.DrawVertices(skVerteces, SKBlendMode.Modulate, paint);
