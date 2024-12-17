@@ -23,6 +23,7 @@ namespace PdfClown.UI.Blazor
             TextSelection.Changed += OnTextSelectionChanged;
 
             Operations = new EditorOperations(this);
+            Operations.DocumentChanged += OnDocumentChanged;
             Operations.Changed += OnOperationsChanged;
             Operations.CurrentPageChanged += OnCurrentPageChanged;
             Operations.ScaleChanged += OnScaleChanged;
@@ -66,20 +67,13 @@ namespace PdfClown.UI.Blazor
         public IPdfDocumentViewModel? Document
         {
             get => Operations.Document;
-            set
-            {
-                if (Operations.Document != value)
-                {
-                    Operations.Document = value;
-                    OnDocumentChanged(value);
-                }
-            }
+            set => Operations.Document = value;
         }
 
         public PdfPage? PdfPage
         {
             get => Page?.GetPage(Operations.State);
-            set => Page = Document?.GetPageView(value);
+            set => Page = value == null ? null : Document?.GetPageView(value);
         }
 
         public IPdfPageViewModel? Page
@@ -115,7 +109,7 @@ namespace PdfClown.UI.Blazor
 
         [Parameter]
         public EventCallback<int> PageNumberChanged { get; set; }
-        
+
 
         public void NextPage() => NewPageNumber += 1;
 
@@ -218,7 +212,7 @@ namespace PdfClown.UI.Blazor
             return base.OnKeyDown(keyName, modifiers);
         }
 
-        private void OnDocumentChanged(IPdfDocumentViewModel? value)
+        private void OnDocumentChanged(PdfDocumentEventArgs e)
         {
             _ = PagesCountChanged.InvokeAsync(Operations.PagesCount);
         }

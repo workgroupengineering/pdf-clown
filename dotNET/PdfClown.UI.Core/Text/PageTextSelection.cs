@@ -29,7 +29,7 @@ namespace PdfClown.UI.Text
             path ??= new SKPath();
             if (!path.IsEmpty)
                 return path;
-            foreach (var textChar in Chars)
+            foreach (var textChar in Chars.ToArray())
             {
                 path.AddPoly(textChar.Quad.GetPoints());
             }

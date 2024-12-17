@@ -9,10 +9,13 @@ namespace PdfClown.UI
             if (MainContext == null)
             {
                 MainContext = SynchronizationContext.Current;
+                MainThreadId = Thread.CurrentThread.ManagedThreadId;
             }
         }
+        public static bool IsMainContext => Thread.CurrentThread.ManagedThreadId == MainThreadId;
 
-        public static SynchronizationContext? MainContext { get; set; }
+        public static SynchronizationContext? MainContext { get; private set; }
+        public static int MainThreadId { get; private set; }
     }
 
 }

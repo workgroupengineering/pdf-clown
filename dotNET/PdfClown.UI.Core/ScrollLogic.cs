@@ -7,7 +7,7 @@ namespace PdfClown.UI
 {
     public sealed class ScrollLogic
     {
-        public static readonly SKPaint bottonPaint = new()
+        private static readonly SKPaint bottonPaint = new()
         {
             Style = SKPaintStyle.StrokeAndFill,
             StrokeWidth = 1,
@@ -15,7 +15,7 @@ namespace PdfClown.UI
             Color = new SKColor(190, 190, 190)
         };
 
-        public static readonly SKPaint bottonPaintHover = new()
+        private static readonly SKPaint bottonPaintHover = new()
         {
             Style = SKPaintStyle.StrokeAndFill,
             StrokeWidth = 1,
@@ -23,7 +23,7 @@ namespace PdfClown.UI
             Color = new SKColor(160, 160, 160)
         };
 
-        public static readonly SKPaint bottonPaintPressed = new()
+        private static readonly SKPaint bottonPaintPressed = new()
         {
             Style = SKPaintStyle.StrokeAndFill,
             StrokeWidth = 1,
@@ -31,7 +31,7 @@ namespace PdfClown.UI
             Color = new SKColor(120, 120, 120)
         };
 
-        public static readonly SKPaint scrollPaint = new()
+        private static readonly SKPaint scrollPaint = new()
         {
             Style = SKPaintStyle.StrokeAndFill,
             StrokeWidth = 1,
@@ -39,7 +39,7 @@ namespace PdfClown.UI
             Color = new SKColor(240, 240, 240)
         };
 
-        public static readonly SKPaint svgPaint = new()
+        private static readonly SKPaint svgPaint = new()
         {
             IsAntialias = true,
             ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Black, SKBlendMode.SrcIn),

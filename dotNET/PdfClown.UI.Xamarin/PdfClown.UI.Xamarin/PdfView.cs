@@ -36,6 +36,7 @@ namespace PdfClown.UI
             TextSelection.Changed += OnTextSelectionChanged;
 
             Operations = new EditorOperations(this);
+            Operations.DocumentChanged += OnDocumentChanged;
             Operations.Changed += OnOperationsChanged;
             Operations.CurrentPageChanged += OnCurrentPageChanged;
             Operations.ScaleChanged += OnScaleChanged;
@@ -90,14 +91,7 @@ namespace PdfClown.UI
         public IPdfDocumentViewModel Document
         {
             get => Operations.Document;
-            set
-            {
-                if (Operations.Document != value)
-                {
-                    Operations.Document = value;
-                    OnPropertyChanged(nameof(PagesCount));
-                }
-            }
+            set => Operations.Document = value;
         }
 
         public PdfPage PdfPage
@@ -223,6 +217,16 @@ namespace PdfClown.UI
         private void OnTextSelectionChanged(TextSelectionEventArgs args)
         {
             InvalidatePaint();
+        }
+
+        private void OnDocumentChanged(PdfDocumentEventArgs e)
+        {
+            OnPropertyChanged(nameof(Document));
+            OnPropertyChanged(nameof(PagesCount));
+            ((Command)UndoCommand).ChangeCanExecute();
+            ((Command)RedoCommand).ChangeCanExecute();
+            ((Command)NextPageCommand).ChangeCanExecute();
+            ((Command)PrevPageCommand).ChangeCanExecute();
         }
 
         private void OnOperationsChanged(object sender, EventArgs e)
