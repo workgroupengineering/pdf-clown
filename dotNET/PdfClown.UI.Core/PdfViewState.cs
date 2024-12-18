@@ -9,7 +9,7 @@ namespace PdfClown.UI
         private PdfPageViewModel? pageView;
         private SKPoint pointerLocation;
         private SKMatrix navigationMatrix = SKMatrix.Identity;
-        private SKMatrix windowScaleMatrix = SKMatrix.Identity;
+        private SKMatrix windowMatrix = SKMatrix.Identity;
 
         public PdfViewState(IPdfView viewer)
         {
@@ -21,36 +21,43 @@ namespace PdfClown.UI
 
         public EditorOperations Operations => Viewer.Operations;
 
-        internal void SetWindowScale(float xScale, float yScale)
+        internal void SetWindowMatrix(float xScale, float yScale, float xTranslate, float yTranslate)
         {
-            if (XScaleFactor != xScale
-                || YScaleFactor != yScale)
+            if (XScale != xScale
+                || YScale != yScale
+                || windowMatrix.TransX != xTranslate
+                || windowMatrix.TransY != yTranslate)
             {
-                WindowScaleMatrix = SKMatrix.CreateScale(xScale, yScale);
+                var matrix = windowMatrix;
+                matrix.ScaleX = xScale;
+                matrix.ScaleY = yScale;
+                matrix.TransX = xTranslate;
+                matrix.TransY = yTranslate;
+                WindowMatrix = matrix;
             }
+        }        
+
+        public float XScale
+        {
+            get => WindowMatrix.ScaleX;
         }
 
-        public float XScaleFactor
+        public float YScale
         {
-            get => WindowScaleMatrix.ScaleX;
-        }
-
-        public float YScaleFactor
-        {
-            get => WindowScaleMatrix.ScaleY;
+            get => WindowMatrix.ScaleY;
         }
 
         public SKMatrix ScaleMatrix = SKMatrix.Identity;
 
-        public SKMatrix WindowScaleMatrix
+        public SKMatrix WindowMatrix
         {
-            get => windowScaleMatrix;
+            get => windowMatrix;
             set
             {
-                if (windowScaleMatrix != value)
+                if (windowMatrix != value)
                 {
-                    windowScaleMatrix = value;
-                    windowScaleMatrix.TryInvert(out InvertWindowScaleMatrix);
+                    windowMatrix = value;
+                    windowMatrix.TryInvert(out InvertWindowScaleMatrix);
                 }
             }
         }
@@ -67,7 +74,7 @@ namespace PdfClown.UI
                     navigationMatrix = value;
                     NavigationMatrix.TryInvert(out InvertNavigationMatrix);
 
-                    ViewMatrix = NavigationMatrix.PostConcat(windowScaleMatrix);
+                    ViewMatrix = NavigationMatrix.PostConcat(windowMatrix);
                     ViewMatrix.TryInvert(out InvertViewMatrix);
 
                     NavigationArea = InvertNavigationMatrix.MapRect(WindowArea);

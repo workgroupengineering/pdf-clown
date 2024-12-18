@@ -4,6 +4,7 @@ using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.UI.Operations;
 using PdfClown.UI.Text;
 using PdfClown.Util.Math;
+using SkiaSharp;
 using SkiaSharp.Views.Blazor;
 using System.Runtime.Versioning;
 
@@ -264,7 +265,7 @@ namespace PdfClown.UI.Blazor
         protected override void OnSizeAllocated(double width, double height)
         {
             base.OnSizeAllocated(width, height);
-            Operations.OnSizeAllocated((float)width, (float)height, scroll.WindowScale);
+            Operations.OnSizeAllocated(SKRect.Create((float)width, (float)height), scroll.WindowScale);
             if (Page != null)
             {
                 ScrollTo(Page);

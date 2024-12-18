@@ -72,7 +72,7 @@ namespace PdfClown.UI.ToolTip
                 return;
 
             canvas.Save();
-            canvas.SetMatrix(state.WindowScaleMatrix);
+            canvas.SetMatrix(state.WindowMatrix);
 
             canvas.Translate(bound.Left, bound.Top);
 

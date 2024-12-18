@@ -158,8 +158,21 @@ namespace PdfClown.UI.WPF
             Control.Focus();
         }
 
+        private MouseButton GetMouseButton(MouseButtonEventArgs e)
+        {
+            return e.ChangedButton switch
+            {
+                System.Windows.Input.MouseButton.Left => MouseButton.Left,
+                System.Windows.Input.MouseButton.Right => MouseButton.Right,
+                System.Windows.Input.MouseButton.Middle => MouseButton.Middle,
+                _ => MouseButton.Unknown,
+            };
+        }
+
         private MouseButton GetMouseButton(MouseEventArgs e)
         {
+            if (e is MouseButtonEventArgs button)
+                return GetMouseButton(button);
             if (e.LeftButton == MouseButtonState.Pressed)
                 return MouseButton.Left;
             if (e.RightButton == MouseButtonState.Pressed)

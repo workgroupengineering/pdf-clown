@@ -260,9 +260,11 @@ namespace PdfClown.UI
         protected override void OnSizeAllocated(double width, double height)
         {
             base.OnSizeAllocated(width, height);
-            Operations.OnSizeAllocated((float)width, (float)height, scroll.WindowScale);
+            Operations.OnSizeAllocated(SKRect.Create((float)width, (float)height), scroll.WindowScale);
             if (Page != null)
+            {
                 ScrollTo(Page);
+            }
         }
 
         public void Reload()

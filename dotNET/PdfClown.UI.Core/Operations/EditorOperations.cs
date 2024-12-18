@@ -538,20 +538,17 @@ namespace PdfClown.UI.Operations
         {
             var scaleStep = 0.06F * Math.Sign(delta);
             var newScale = Scale + scaleStep + scaleStep * Scale;
-            newScale = SetScale(newScale, pointerLocation);
+            SetScale(newScale, pointerLocation);
         }
 
-        public float SetScale(float newScale) => SetScale(newScale, new SKPoint(state.WindowArea.MidX, state.WindowArea.MidY));
+        public void SetScale(float newScale) => SetScale(newScale, new SKPoint(state.WindowArea.MidX, state.WindowArea.MidY));
 
-        public float SetScale(float newScale, SKPoint pointerLocation)
+        public void SetScale(float newScale, SKPoint pointerLocation)
         {
-            if (newScale < 0.01F)
-                newScale = 0.01F;
-            if (newScale > 60F)
-                newScale = 60F;
+            newScale = NormalizeScale(newScale);
             if (newScale != Scale)
             {
-                var unscaleLocations = new SKPoint(pointerLocation.X / state.XScaleFactor, pointerLocation.Y / state.YScaleFactor);
+                var unscaleLocations = pointerLocation.UnScale(state.XScale, state.YScale);
                 var oldSpacePoint = state.InvertNavigationMatrix.MapPoint(unscaleLocations);
 
                 Scale = newScale;
@@ -568,7 +565,14 @@ namespace PdfClown.UI.Operations
                     Viewer.VValue += vector.Y;
                 }
             }
+        }
 
+        private static float NormalizeScale(float newScale)
+        {
+            if (newScale < 0.01F)
+                newScale = 0.01F;
+            if (newScale > 60F)
+                newScale = 60F;
             return newScale;
         }
 
@@ -629,12 +633,14 @@ namespace PdfClown.UI.Operations
             Viewer.VMaximum = size.Height * Scale;
         }
 
-        public void OnSizeAllocated(float width, float height, float scale)
+        public void OnSizeAllocated(SKRect bound, float scale)
         {
-            state.SetWindowScale(scale, scale);
-            if (width != state.WindowArea.Width
-                || height != state.WindowArea.Height)
-            state.WindowArea = SKRect.Create(0, 0, width, height);
+            if (bound != state.WindowArea
+                || state.XScale != scale)
+            {
+                state.SetWindowMatrix(scale, scale, bound.Left, bound.Top);
+                state.WindowArea = bound;
+            }
             UpdateNavigationMatrix();
         }
 
