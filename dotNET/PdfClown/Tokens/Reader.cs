@@ -41,9 +41,9 @@ namespace PdfClown.Tokens
         {
             private readonly PdfDictionary trailer;
             private readonly PdfVersion version;
-            private readonly IDictionary<int, XRefEntry> xrefEntries;
+            private readonly Dictionary<int, XRefEntry> xrefEntries;
 
-            internal FileInfo(PdfVersion version, PdfDictionary trailer, IDictionary<int, XRefEntry> xrefEntries)
+            internal FileInfo(PdfVersion version, PdfDictionary trailer, Dictionary<int, XRefEntry> xrefEntries)
             {
                 this.version = version;
                 this.trailer = trailer;
@@ -54,13 +54,15 @@ namespace PdfClown.Tokens
 
             public PdfVersion Version => version;
 
-            public IDictionary<int, XRefEntry> XrefEntries => xrefEntries;
+            public Dictionary<int, XRefEntry> XrefEntries => xrefEntries;
         }
 
         private FileParser parser;
 
-        internal Reader(IInputStream stream, PdfFile file, string password = null, Stream keyStoreInputStream = null)
-        { this.parser = new FileParser(stream, file, password, keyStoreInputStream); }
+        internal Reader(IInputStream stream, PdfDocument document, string password = null, Stream keyStoreInputStream = null)
+        {
+            parser = new FileParser(stream, document, password, keyStoreInputStream);
+        }
 
         ~Reader()
         { Dispose(false); }
@@ -93,11 +95,11 @@ namespace PdfClown.Tokens
                 {
                     ReadXRefTable(xrefEntries);
                     // Get the previous trailer!
-                    sectionTrailer = (PdfDictionary)parser.ParsePdfObject(1);
+                    sectionTrailer = (PdfDictionary)parser.ParseNextPdfObject(PdfName.Trailer);
                 }
                 else // XRef-stream section.
                 {
-                    var obj = parser.ParsePdfObject(1);
+                    var obj = parser.ParseNextPdfObject(PdfName.XRef);
                     if (obj is XRefStream stream)
                     {
                         try
@@ -131,7 +133,7 @@ namespace PdfClown.Tokens
                             parser.Seek(xrefOffcet);
                             ReadXRefTable(xrefEntries);
                             // Get the previous trailer!
-                            sectionTrailer = (PdfDictionary)parser.ParsePdfObject(1);
+                            sectionTrailer = (PdfDictionary)parser.ParseNextPdfObject(PdfName.Trailer);
                         }
                     }
                     else if (xrefStm != null)
@@ -162,7 +164,7 @@ namespace PdfClown.Tokens
                 if (parser.TokenType == TokenTypeEnum.InderectObject)
                 {
                     var reference = parser.ReferenceToken;
-                    var pdfObject = parser.ParsePdfObject(1);
+                    var pdfObject = parser.ParseNextPdfObject(null);
                     if (pdfObject is XRefStream)
                         continue;
 
@@ -197,7 +199,7 @@ namespace PdfClown.Tokens
                     throw new PostScriptParseException("Neither object number of the first object in this xref subsection nor end of xref section found.", parser);
 
                 // Get the object number of the first object in this xref-table subsection!
-                int startObjectNumber = parser.IntegerToken;
+                int first = parser.IntegerToken;
 
                 // 2. Last object number.
                 parser.MoveNext();
@@ -205,36 +207,37 @@ namespace PdfClown.Tokens
                     throw new PostScriptParseException("Number of entries in this xref subsection not found.", parser);
 
                 // Get the object number of the last object in this xref-table subsection!
-                int endObjectNumber = parser.IntegerToken + startObjectNumber;
+                int count = parser.IntegerToken;
 
                 // 3. XRef-table subsection entries.
-                for (int index = startObjectNumber; index < endObjectNumber; index++)
+                for (int i = 0; i < count; i++)
                 {
-                    if (xrefEntries.ContainsKey(index)) // Already-defined entry.
-                    {
-                        // Skip to the next entry!
-                        parser.MoveNext(3);
-                        continue;
-                    }
-
                     // Get the indirect object offset!
                     int offset = parser.MoveNext() ? parser.IntegerToken : 0;
                     // Get the object generation number!
                     int generation = parser.MoveNext() ? parser.IntegerToken : 0;
                     // Get the usage tag!
-                    XRefEntry.UsageEnum usage;
-                    {
-                        var usageToken = parser.MoveNext() ? parser.CharsToken : ReadOnlySpan<char>.Empty;
-                        if (MemoryExtensions.Equals(usageToken, Keyword.InUseXrefEntry, StringComparison.Ordinal))
-                            usage = XRefEntry.UsageEnum.InUse;
-                        else if (MemoryExtensions.Equals(usageToken, Keyword.FreeXrefEntry, StringComparison.Ordinal))
-                            usage = XRefEntry.UsageEnum.Free;
-                        else
-                            throw new PostScriptParseException("Invalid xref entry.", parser);
-                    }
+                    var usageToken = parser.MoveNext() ? parser.CharsToken : ReadOnlySpan<char>.Empty;
 
-                    // Define entry!
-                    xrefEntries[index] = new XRefEntry(index, generation, offset, usage);
+                    XRefEntry.UsageEnum usage;
+                    if (MemoryExtensions.Equals(usageToken, Keyword.InUseXrefEntry, StringComparison.Ordinal))
+                        usage = XRefEntry.UsageEnum.InUse;
+                    else if (MemoryExtensions.Equals(usageToken, Keyword.FreeXrefEntry, StringComparison.Ordinal))
+                        usage = XRefEntry.UsageEnum.Free;
+                    else
+                        throw new PostScriptParseException("Invalid xref entry.", parser);
+                    // The first xref table entry, i.e. obj 0, should be free. Attempting
+                    // to adjust an incorrect first obj # (fixes issue 3248 and 7229 from pdf.js).
+                    if (i == 0 && usage == XRefEntry.UsageEnum.Free && first == 1)
+                    {
+                        first = 0;
+                    }
+                    var index = first + i;
+                    if (!xrefEntries.ContainsKey(index)) // Already-defined entry.
+                    {
+                        // Define entry!
+                        xrefEntries[index] = new XRefEntry(index, generation, offset, usage);
+                    }
                 }
             }
         }

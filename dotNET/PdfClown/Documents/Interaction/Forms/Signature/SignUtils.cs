@@ -62,20 +62,20 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         /// return values are 1, 2 or 3. 2 is also returned if the DocMDP transform parameters dictionary
         /// is found but did not contain a /P entry, or if the value is outside the valid range.
         /// </returns>
-        public static int GetMDPPermission(PdfDocument doc)
+        public static int GetMDPPermission(PdfCatalog doc)
         {
-            PdfDictionary permsDict = doc.BaseDataObject.Get<PdfDictionary>(PdfName.Perms);
+            var permsDict = doc.Get<PdfDictionary>(PdfName.Perms);
             if (permsDict != null
-                && permsDict.Resolve(PdfName.DocMDP) is PdfDictionary signatureDict
-                && signatureDict.Resolve(PdfName.Reference) is PdfArray refArray)
+                && permsDict.Get<PdfDictionary>(PdfName.DocMDP) is PdfDictionary signatureDict
+                && signatureDict.Get<PdfArray>(PdfName.Reference) is PdfArray refArray)
             {
                 for (int i = 0; i < refArray.Count; ++i)
                 {
-                    if (refArray.Resolve(i) is PdfDictionary sigRefDict)
+                    if (refArray.Get<PdfDictionary>(i) is PdfDictionary sigRefDict)
                     {
-                        if (PdfName.DocMDP.Equals(sigRefDict.Resolve(PdfName.TransformMethod)))
+                        if (PdfName.DocMDP.Equals(sigRefDict.Get<PdfName>(PdfName.TransformMethod)))
                         {
-                            if (sigRefDict.Resolve(PdfName.TransformParams) is PdfDictionary transformDict)
+                            if (sigRefDict.Get<PdfDictionary>(PdfName.TransformParams) is PdfDictionary transformDict)
                             {
                                 int accessPermissions = transformDict.GetInt(PdfName.P, 2);
                                 if (accessPermissions < 1 || accessPermissions > 3)
@@ -100,23 +100,21 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         /// <param name="signature">The signature object</param>
         /// <param name="accessPermissions">The permission value (1, 2 or 3)</param>
         /// <exception cref="Exception"></exception>
-        public static void SetMDPPermission(PdfDocument doc, SignatureDictionary signature, int accessPermissions)
+        public static void SetMDPPermission(PdfCatalog doc, SignatureDictionary signature, int accessPermissions)
         {
-            foreach (SignatureDictionary sig in doc.GetSignatureDictionaries())
+            foreach (var sig in doc.GetSignatureDictionaries())
             {
                 // "Approval signatures shall follow the certification signature if one is present"
                 // thus we don't care about timestamp signatures
-                if (PdfName.DocTimeStamp.Equals(sig.BaseDataObject.Get<PdfName>(PdfName.Type)))
+                if (PdfName.DocTimeStamp.Equals(sig.Get<PdfName>(PdfName.Type)))
                 {
                     continue;
                 }
-                if (sig.BaseDataObject.ContainsKey(PdfName.Contents))
+                if (sig.ContainsKey(PdfName.Contents))
                 {
                     throw new Exception("DocMDP transform method not allowed if an approval signature exists");
                 }
             }
-
-            var sigDict = signature.BaseDataObject;
 
             // DocMDP specific stuff
             // all values in the signature dictionary shall be direct objects
@@ -133,16 +131,15 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
                 [PdfName.TransformParams] = transformParameters
             };
 
-            var referenceArray = new PdfArray { referenceDict };
-            sigDict[PdfName.Reference] = referenceArray;
+            var referenceArray = new PdfArrayImpl { referenceDict };
+            signature[PdfName.Reference] = referenceArray;
 
             // Catalog
             var permsDict = new PdfDictionary
             {
-                [PdfName.DocMDP] = sigDict
+                [PdfName.DocMDP] = signature
             };
-            var catalogDict = doc.BaseDataObject;
-            catalogDict[PdfName.Perms] = permsDict;
+            doc[PdfName.Perms] = permsDict;
         }
 
         /// <summary>
@@ -212,7 +209,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         /// </summary>
         /// <param name="document">document to get its last signature</param>
         /// <returns>last signature or null when none found</returns>
-        public static SignatureDictionary getLastRelevantSignature(PdfDocument document)
+        public static SignatureDictionary GetLastRelevantSignature(PdfCatalog document)
         {
             // we can't use getLastSignatureDictionary() because this will fail (see PDFBOX-3978) 
             // if a signature is assigned to a pre-defined empty signature field that isn't the last.
@@ -248,7 +245,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             return new TimeStampToken(signedTSTData);
         }
 
-        public static void validateTimestampToken(TimeStampToken timeStampToken)
+        public static void ValidateTimestampToken(TimeStampToken timeStampToken)
         {
             // https://stackoverflow.com/questions/42114742/
             var tstMatches = timeStampToken.GetCertificates().EnumerateMatches(timeStampToken.SignerID);
@@ -267,7 +264,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         /// <param name="certFromSignedData"></param>
         /// <param name="signDate"></param>
         /// <returns></returns>
-        public static async Task verifyCertificateChain(IStore<X509Certificate> certificatesStore, X509Certificate certFromSignedData, DateTime signDate)
+        public static async Task VerifyCertificateChain(IStore<X509Certificate> certificatesStore, X509Certificate certFromSignedData, DateTime signDate)
         {
             var certificates = certificatesStore.EnumerateMatches(null);
             HashSet<X509Certificate> additionalCerts = new();
@@ -290,7 +287,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         /// </summary>
         /// <param name="tsaUrl">URL</param>
         /// <returns>the X.509 certificate</returns>
-        public static async Task<X509Certificate> getTsaCertificate(string tsaUrl)
+        public static async Task<X509Certificate> GetTsaCertificate(string tsaUrl)
         {
             var digest = new Sha256Digest();//"SHA-256"
             var tsaClient = new TSAClient(new Uri(tsaUrl), null, null, digest);
@@ -315,9 +312,9 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         /// <a href="https://stackoverflow.com/questions/71267471/">here</a>.
         /// </summary>
         /// <param name="doc">document</param>
-        public static void CheckCrossReferenceTable(PdfDocument doc)
+        public static void CheckCrossReferenceTable(PdfCatalog doc)
         {
-            List<XRefEntry> set = new(doc.File.IndirectObjects.Select(x => x.XrefEntry));
+            List<XRefEntry> set = new(doc.Document.IndirectObjects.Select(x => x.XrefEntry));
             if (set.Count != set.Last().Number)
             {
                 long n = 0;

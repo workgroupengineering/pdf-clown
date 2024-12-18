@@ -36,11 +36,19 @@ namespace PdfClown.Documents.Contents.Fonts
 {
     /// <summary>Adobe standard glyph mapping (unicode-encoding against glyph-naming)
     /// [PDF:1.6:D;AGL:2.0].</summary>
-    public class GlyphMapping
+    public partial class GlyphMapping
     {
+#if NET7_0_OR_GREATER
+        [GeneratedRegex(@"^(\w+);([A-F0-9 ]+)$", RegexOptions.CultureInvariant)]
+        private static partial Regex GetLinePattern();
+#else
+        private static Regex linePattern = new Regex(@"^(\w+);([A-F0-9 ]+)$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static Regex GetLinePattern() => linePattern;
+#endif
         public static readonly GlyphMapping Default = new GlyphMapping("AGL20", 4300);
         public static readonly GlyphMapping ZapfDingbats = new GlyphMapping("ZapfDingbats", 210);
         public static readonly GlyphMapping DLFONT = new GlyphMapping("G500", 100);
+        //public static readonly GlyphMapping Additional = new GlyphMapping("Additional", 128);
         public static bool IsExist(string fontName) => typeof(GlyphMapping).Assembly.GetManifestResourceNames().Contains($"fonts.{fontName}");
 
         private readonly Dictionary<string, int> nameToCode;
@@ -153,17 +161,13 @@ namespace PdfClown.Documents.Contents.Fonts
             return ".notdef";
         }
 
-        /**
-          <summary>Loads the glyph list mapping character names to character codes (unicode
-          encoding).</summary>
-        */
+        /// <summary>Loads the glyph list mapping character names to character codes (unicode
+        /// encoding).</summary>
         private void Load(string fontName)
         {
             // Open the glyph list!
-            /*
-              NOTE: The Adobe Glyph List [AGL:2.0] represents the reference name-to-unicode map
-              for consumer applications.
-            */
+            // NOTE: The Adobe Glyph List [AGL:2.0] represents the reference name-to-unicode map
+            // for consumer applications.
             using var resourceAsStream = typeof(GlyphMapping).Assembly.GetManifestResourceStream(fontName);
             if (resourceAsStream == null)
             {
@@ -182,7 +186,7 @@ namespace PdfClown.Documents.Contents.Fonts
         {
             // Parsing the glyph list...
             string line;
-            Regex linePattern = new Regex(@"^(\w+);([A-F0-9 ]+)$");
+            var linePattern = GetLinePattern();
             while ((line = glyphListStream.ReadLine()) != null)
             {
                 MatchCollection lineMatches = linePattern.Matches(line);
@@ -191,7 +195,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
                 Match lineMatch = lineMatches[0];
 
-                string name = lineMatch.Groups[1].Value;
+                var name = lineMatch.Groups[1].Value;
                 var codes = lineMatch.Groups[2].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
                 int code = 0;

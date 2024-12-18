@@ -38,7 +38,7 @@ namespace PdfClown.Documents.Interaction.Forms
             : base(name, widget)
         {
             Flags = EnumUtils.Mask(Flags, FlagsEnum.Pushbutton, true);
-            Value = caption;
+            base.Value = caption;
         }
 
         internal PushButton(PdfDirectObject baseObject) : base(baseObject)

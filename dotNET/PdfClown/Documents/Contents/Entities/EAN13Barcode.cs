@@ -32,10 +32,10 @@ using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Contents.Entities
 {
-    /// <see href = "http://en.wikipedia.org/wiki/EAN13" > EAN - 13 Bar Code</see> object[GS1:7.1:5.1.1.3.1].
+    /// <see href="http://en.wikipedia.org/wiki/EAN13"> EAN - 13 Bar Code</see> object[GS1:7.1:5.1.1.3.1].
     /// <para>The EAN-13 Bar Code Symbol shall be made up as follows, reading from left to right:</para>
-    /// <list type = "number" >
-    ///   < item > A left Quiet Zone</item>
+    /// <list type="number">
+    ///   <item> A left Quiet Zone</item>
     ///   <item>A normal Guard Bar Pattern (Left Guard)</item>
     ///   <item>Six symbol characters from number sets A and B (Left Half)</item>
     ///   <item>A center Guard Bar Pattern (Center Guard)</item>
@@ -54,24 +54,22 @@ namespace PdfClown.Documents.Contents.Entities
             * number set: symbol character encoding, representing the codomain of the digit domain
               (i.e. [0-9]).
         */
-        /**
-          Symbol Character Encodation (Number Set A, odd parity) [GS1:7.1:5.1.1.2.1].
-          NOTE: Number Set B uses the same patterns (though at inverted parity, i.e. even),
-          whilst Number Set C (even parity) mirrors Number Set B.
-        */
+        /// <summary>Symbol Character Encodation (Number Set A, odd parity) [GS1:7.1:5.1.1.2.1].</summary>
+        //  NOTE: Number Set B uses the same patterns (though at inverted parity, i.e. even),
+        //  whilst Number Set C (even parity) mirrors Number Set B.
         private static readonly int[][] DigitElementWidths =
-        {
-            new int[]{3, 2, 1, 1}, // 0
-            new int[]{2, 2, 2, 1}, // 1
-            new int[]{2, 1, 2, 2}, // 2
-            new int[]{1, 4, 1, 1}, // 3
-            new int[]{1, 1, 3, 2}, // 4
-            new int[]{1, 2, 3, 1}, // 5
-            new int[]{1, 1, 1, 4}, // 6
-            new int[]{1, 3, 1, 2}, // 7
-            new int[]{1, 2, 1, 3}, // 8
-            new int[]{3, 1, 1, 2}  // 9
-        };
+        [
+            [3, 2, 1, 1], // 0
+            [2, 2, 2, 1], // 1
+            [2, 1, 2, 2], // 2
+            [1, 4, 1, 1], // 3
+            [1, 1, 3, 2], // 4
+            [1, 2, 3, 1], // 5
+            [1, 1, 1, 4], // 6
+            [1, 3, 1, 2], // 7
+            [1, 2, 1, 3], // 8
+            [3, 1, 1, 2]  // 9
+        ];
 
         /** Bar elements count. */
         private static int ElementCount;
@@ -91,36 +89,37 @@ namespace PdfClown.Documents.Contents.Entities
 
         /** Guard bar index positions. */
         private static int[] GuardBarIndexes =
-        {
+        [
             0, 2, // Left Guard.
             28, 30, // Center Guard.
             56, 58 // Right Guard.
-        };
+        ];
 
         private static readonly int NumberSet_A = 0;
         private static readonly int NumberSet_B = 1;
-        /**
-          Left Half of an EAN-13 Bar Code Symbol.
-          Since the EAN-13 Bar Code Symbol comprises only 12 symbol characters
-          but encodes 13 digits of data (including the Check Digit),
-          the value of the additional digit (leading digit, implicitly encoded),
-          which is the character in the leftmost position in the data string,
-          shall be encoded by the variable parity mix of number sets A and B
-          for the six symbol characters in the left half of the symbol.
-        */
+        
+        /// <summary>
+        /// Left Half of an EAN-13 Bar Code Symbol.
+        /// Since the EAN-13 Bar Code Symbol comprises only 12 symbol characters
+        /// but encodes 13 digits of data (including the Check Digit),
+        /// the value of the additional digit (leading digit, implicitly encoded),
+        /// which is the character in the leftmost position in the data string,
+        /// shall be encoded by the variable parity mix of number sets A and B
+        /// for the six symbol characters in the left half of the symbol.
+        /// </summary>
         private static readonly int[][] LeftHalfNumberSets =
-        {
-            new int[]{NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A}, // 0
-            new int[]{NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_B}, // 1
-            new int[]{NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_B}, // 2
-            new int[]{NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_B,NumberSet_A}, // 3
-            new int[]{NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B}, // 4
-            new int[]{NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_A,NumberSet_B}, // 5
-            new int[]{NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_A}, // 6
-            new int[]{NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B}, // 7
-            new int[]{NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A}, // 8
-            new int[]{NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_A}  // 9
-        };
+        [
+            [NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A,NumberSet_A], // 0
+            [NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_B], // 1
+            [NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_B], // 2
+            [NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_B,NumberSet_A], // 3
+            [NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_A,NumberSet_B,NumberSet_B], // 4
+            [NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_A,NumberSet_B], // 5
+            [NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_A], // 6
+            [NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B], // 7
+            [NumberSet_A,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A], // 8
+            [NumberSet_A,NumberSet_B,NumberSet_B,NumberSet_A,NumberSet_B,NumberSet_A]  // 9
+        ];
 
         static EAN13Barcode()
         {
@@ -147,15 +146,15 @@ namespace PdfClown.Documents.Contents.Entities
             // Digit glyph horizontal positions.
             {
                 double[] elementWidths =
-                {
+                [
                     DigitWidth,
                     3,
                     DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth,
                     5,
                     DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth, DigitWidth,
                     3
-                };
-                int[] digitIndexes = { 0, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
+                ];
+                int[] digitIndexes = [0, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14];
                 DigitGlyphXs = new double[13];
                 int digitXIndex = 0;
                 for (int index = 0, length = elementWidths.Length; index < length; index++)
@@ -183,7 +182,7 @@ namespace PdfClown.Documents.Contents.Entities
         {
             ContentObject barcodeObject = composer.BeginLocalState();
             {
-                var font = FontType1.Load(composer.Scanner.Contents.Document, FontName.Helvetica);
+                var font = PdfType1Font.Load(composer.Scanner.Contents.Document, FontName.Helvetica);
                 double fontSize = (DigitGlyphWidth / font.GetWidth(code.Substring(0, 1), 1));
 
                 // 1. Bars.
@@ -197,9 +196,7 @@ namespace PdfClown.Documents.Contents.Entities
                     {
                         double elementWidth = elementWidths[elementIndex];
                         // Dark element?
-                        /*
-                          NOTE: EAN symbol elements alternate bars to spaces.
-                        */
+                        // NOTE: EAN symbol elements alternate bars to spaces.
                         if (isBar)
                         {
                             composer.DrawRectangle(

@@ -24,24 +24,24 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
     ///<summary>Property list resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class PropertyListResources : Dictionary<PropertyList>
+    public sealed class PropertyListResources : PdfDictionary<PropertyList>
     {
-        public class ValueWrapper : IEntryWrapper<PropertyList>
-        {
-            public PropertyList Wrap(PdfDirectObject baseObject) => PropertyList.Wrap(baseObject);
-        }
-
-        private static readonly ValueWrapper Wrapper = new ValueWrapper();
-
-        public PropertyListResources(PdfDocument context) : base(context, Wrapper)
+        public PropertyListResources()
+            : base((PdfDocument)null)
         { }
 
-        public PropertyListResources(PdfDirectObject baseObject) : base(baseObject, Wrapper)
+        public PropertyListResources(PdfDocument context)
+            : base(context)
+        { }
+
+        internal PropertyListResources(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
     }

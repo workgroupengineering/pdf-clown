@@ -24,34 +24,26 @@
 */
 
 using PdfClown.Objects;
-using System;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Device color value [PDF:1.6:4.5.3].</summary>
-    */
+    /// <summary>Device color value [PDF:1.6:4.5.3].</summary>
     public abstract class DeviceColor : LeveledColor
     {
-        /**
-          <summary>Gets the color corresponding to the specified components.</summary>
-          <param name="components">Color components to convert.</param>
-         */
+        /// <summary>Gets the color corresponding to the specified components.</summary>
+        /// <param name="components">Color components to convert.</param>
         public static DeviceColor Get(PdfArray components)
         {
             if (components == null)
                 return null;
-            if (components.Wrapper is DeviceColor wrapped)
-                return wrapped;
-
             switch (components.Count)
             {
                 case 1:
-                    return (DeviceColor)DeviceGrayColorSpace.Default.GetColor(components);
+                    return (DeviceColor)GrayColorSpace.Default.GetColor(components);
                 case 3:
-                    return (DeviceColor)DeviceRGBColorSpace.Default.GetColor(components);
+                    return (DeviceColor)RGBColorSpace.Default.GetColor(components);
                 case 4:
-                    return (DeviceColor)DeviceCMYKColorSpace.Default.GetColor(components);
+                    return (DeviceColor)CMYKColorSpace.Default.GetColor(components);
                 default:
                     return null;
             }

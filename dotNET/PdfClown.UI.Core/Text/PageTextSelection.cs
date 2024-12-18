@@ -8,7 +8,7 @@ namespace PdfClown.UI.Text
 {
     public class PageTextSelection : IDisposable
     {
-        private SKPath path;
+        private SKPath? path;
 
         public List<TextChar> Chars { get; set; } = new List<TextChar>();
 
@@ -29,7 +29,7 @@ namespace PdfClown.UI.Text
             path ??= new SKPath();
             if (!path.IsEmpty)
                 return path;
-            foreach (var textChar in Chars)
+            foreach (var textChar in Chars.ToArray())
             {
                 path.AddPoly(textChar.Quad.GetPoints());
             }

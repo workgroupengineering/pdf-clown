@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-
 namespace PdfClown.Documents.Contents.Objects
 {
     /// <summary>'Begin inline image object' operation [PDF:1.6:4.8.6].</summary>

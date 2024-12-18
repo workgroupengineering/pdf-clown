@@ -14,36 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System.Collections.Generic;
 using System.Collections.Concurrent;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
+    /// <summary>
+    /// An in-memory cache for system fonts.This allows PDFBox to manage caching for a { @link FontProvider}.
+    /// PDFBox is free to purge this cache at will.
+	/// @author John Hewson
+    /// </summary>
+    public sealed class FontCache
+    {
+        private readonly ConcurrentDictionary<FontInfo, BaseFont> cache = new ConcurrentDictionary<FontInfo, BaseFont>();
 
-	/**
-     * An in-memory cache for system fonts. This allows PDFBox to manage caching for a {@link FontProvider}.
-     * PDFBox is free to purge this cache at will.
-     *
-     * @author John Hewson
-     */
-	public sealed class FontCache
-	{
-		private readonly ConcurrentDictionary<FontInfo, BaseFont> cache = new ConcurrentDictionary<FontInfo, BaseFont>();
+        /// <summary>Adds the given FontBox font to the cache.</summary>
+        public void AddFont(FontInfo info, BaseFont font)
+        {
+            cache[info] = font;
+        }
 
-		/**
-         * Adds the given FontBox font to the cache.
-         */
-		public void AddFont(FontInfo info, BaseFont font)
-		{
-			cache[info] = font;
-		}
-
-		/**
-         * Returns the FontBox font associated with the given FontInfo.
-         */
-		public BaseFont GetFont(FontInfo info)
-		{
-			return cache.TryGetValue(info, out BaseFont reference) ? reference : null;
-		}
-	}
+        /// <summary>Returns the FontBox font associated with the given FontInfo.</summary>
+        public BaseFont GetFont(FontInfo info)
+        {
+            return cache.TryGetValue(info, out BaseFont reference) ? reference : null;
+        }
+    }
 }

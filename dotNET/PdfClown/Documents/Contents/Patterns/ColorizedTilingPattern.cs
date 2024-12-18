@@ -23,16 +23,9 @@
   this list of conditions.
 */
 
-using PdfClown.Objects;
-
-using System;
-using SkiaSharp;
-using System.Collections.Generic;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Objects;
-using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Objects;
+using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Patterns
 {
@@ -40,9 +33,9 @@ namespace PdfClown.Documents.Contents.Patterns
     public sealed class ColorizedTilingPattern : Color, IPattern
     {
         private readonly TilingPattern tiling;
-        private readonly Color color;
+        private readonly IColor color;
 
-        internal ColorizedTilingPattern(TilingPattern tiling, Color color)
+        internal ColorizedTilingPattern(TilingPattern tiling, IColor color)
             : base(null)
         {
             this.tiling = tiling;
@@ -50,25 +43,30 @@ namespace PdfClown.Documents.Contents.Patterns
         }
 
         /// <summary>Gets the color applied to the stencil.</summary>
-        public Color Color => color;
+        public IColor Color => color;
 
         public override ColorSpace ColorSpace => tiling.ColorSpace;
 
-        public override PdfArray Components => tiling.Components;
+        public override PdfArray Components => ((Color)color).Components;
 
-        public override PdfDirectObject BaseObject { get => tiling.BaseObject; protected set => base.BaseObject = value; }
+        public override PdfDirectObject RefOrSelf
+        {
+            get => tiling.RefOrSelf;
+            protected set => base.RefOrSelf = value;
+        }
 
         public SKMatrix Matrix
         {
             get => tiling.Matrix;
             set => tiling.Matrix = value;
-        }        
+        }
 
         public SKShader GetShader(GraphicsState state)
         {
             var shader = tiling.GetShader(state);
-            return SKShader.CreateCompose(SKShader.CreateColor(color.GetSkColor()), shader, SKBlendMode.DstIn);
+            var skColor = ((Color)color).GetSkColor();
+            return SKShader.CreateCompose(SKShader.CreateColor(skColor), shader, SKBlendMode.DstIn);
         }
-        
+
     }
 }

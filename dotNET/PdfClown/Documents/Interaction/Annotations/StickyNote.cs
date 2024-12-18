@@ -43,33 +43,33 @@ namespace PdfClown.Documents.Interaction.Annotations
     {
         public const int size = 28;
 
-        private static readonly ImageNameEnum DefaultIconType = ImageNameEnum.Note;
+        private static readonly NoteImageEnum DefaultIconType = NoteImageEnum.Note;
         private static readonly bool DefaultOpen = false;
-        private static readonly Dictionary<ImageNameEnum, PdfName> IconTypeEnumCodes;
+        private static readonly Dictionary<NoteImageEnum, PdfName> IconTypeEnumCodes;
 
         static StickyNote()
         {
-            IconTypeEnumCodes = new Dictionary<ImageNameEnum, PdfName>
+            IconTypeEnumCodes = new Dictionary<NoteImageEnum, PdfName>
             {
-                [ImageNameEnum.Comment] = PdfName.Comment,
-                [ImageNameEnum.Help] = PdfName.Help,
-                [ImageNameEnum.Insert] = PdfName.Insert,
-                [ImageNameEnum.Key] = PdfName.Key,
-                [ImageNameEnum.NewParagraph] = PdfName.NewParagraph,
-                [ImageNameEnum.Note] = PdfName.Note,
-                [ImageNameEnum.Paragraph] = PdfName.Paragraph
+                [NoteImageEnum.Comment] = PdfName.Comment,
+                [NoteImageEnum.Help] = PdfName.Help,
+                [NoteImageEnum.Insert] = PdfName.Insert,
+                [NoteImageEnum.Key] = PdfName.Key,
+                [NoteImageEnum.NewParagraph] = PdfName.NewParagraph,
+                [NoteImageEnum.Note] = PdfName.Note,
+                [NoteImageEnum.Paragraph] = PdfName.Paragraph
             };
         }
 
         /// <summary>Gets the code corresponding to the given value.</summary>
-        private static PdfName ToCode(ImageNameEnum value) => IconTypeEnumCodes[value];
+        private static PdfName ToCode(NoteImageEnum value) => IconTypeEnumCodes[value];
 
         /// <summary>Gets the icon type corresponding to the given value.</summary>
-        private static ImageNameEnum ToIconTypeEnum(string value)
+        private static NoteImageEnum ToIconTypeEnum(string value)
         {
             if (value == null)
                 return DefaultIconType;
-            foreach (KeyValuePair<ImageNameEnum, PdfName> iconType in IconTypeEnumCodes)
+            foreach (KeyValuePair<NoteImageEnum, PdfName> iconType in IconTypeEnumCodes)
             {
                 if (string.Equals(iconType.Value.StringValue, value, StringComparison.Ordinal))
                     return iconType.Key;
@@ -79,22 +79,22 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public StickyNote(PdfPage page, SKPoint location, string text)
             : base(page, PdfName.Text, SKRect.Create(location.X, location.Y, 0, 0), text)
-        {
-        }
+        { }
 
-        public StickyNote(PdfDirectObject baseObject) : base(baseObject)
+        public StickyNote(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
-        public ImageNameEnum ImageName
+        public NoteImageEnum ImageName
         {
-            get => ToIconTypeEnum(BaseDataObject.GetString(PdfName.Name));
+            get => ToIconTypeEnum(GetString(PdfName.Name));
             set
             {
                 var oldValue = ImageName;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.Name] = (value != DefaultIconType ? ToCode(value) : null);
+                    this[PdfName.Name] = (value != DefaultIconType ? ToCode(value) : null);
                     GenerateAppearance();
                     OnPropertyChanged(oldValue, value);
                 }
@@ -104,13 +104,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <summary>Gets/Sets whether the annotation should initially be displayed open.</summary>
         public bool IsOpen
         {
-            get => BaseDataObject.GetBool(PdfName.Open, DefaultOpen);
+            get => GetBool(PdfName.Open, DefaultOpen);
             set
             {
                 var oldValue = IsOpen;
                 if (oldValue != value)
                 {
-                    BaseDataObject.Set(PdfName.Open, value != DefaultOpen ? value : null);
+                    Set(PdfName.Open, value != DefaultOpen ? value : null);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -119,13 +119,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         [PDF(VersionEnum.PDF15)]
         public MarkupState? State
         {
-            get => MarkupStateExtension.Get(BaseDataObject.GetString(PdfName.State));
+            get => GetMarkupState(GetString(PdfName.State));
             set
             {
                 var oldValue = State;
                 if (oldValue != value)
                 {
-                    BaseDataObject.SetName(PdfName.State, MarkupStateExtension.GetCode(value));
+                    SetName(PdfName.State, GetMarkupStateCode(value));
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -133,13 +133,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public MarkupStateModel? StateModel
         {
-            get => MarkupStateModelExtension.Get(BaseDataObject.GetString(PdfName.StateModel));
+            get => GetStateModel(GetString(PdfName.StateModel));
             set
             {
                 var oldValue = StateModel;
                 if (oldValue != value)
                 {
-                    BaseDataObject.SetName(PdfName.StateModel, MarkupStateModelExtension.GetCode(value));
+                    SetName(PdfName.StateModel, GetCode(value));
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -160,8 +160,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             //pathMatrix = pathMatrix.PostConcat(SKMatrix.CreateTranslation(0, bound.Height));
             var composer = new PrimitiveComposer(normalAppearance);
             composer.SetLineWidth(1);
-            composer.SetStrokeColor(DeviceRGBColor.Default);
-            composer.SetFillColor(Color ?? DeviceRGBColor.White);
+            composer.SetStrokeColor(RGBColor.Default);
+            composer.SetFillColor(Color ?? RGBColor.White);
             composer.DrawPath(tempPath);
             composer.FillStroke();
             composer.Flush();
@@ -201,110 +201,5 @@ namespace PdfClown.Documents.Interaction.Annotations
             yield break;
         }
     }
-
-    public enum MarkupState
-    {
-        None,
-        Unmarked,
-        Accepted,
-        Rejected,
-        Cancelled,
-        Completed,
-    }
-
-    public enum MarkupStateModel
-    {
-        Marked,
-        Review
-    }
-    internal static class MarkupStateExtension
-    {
-        private static readonly BiDictionary<MarkupState, string> codes;
-
-        static MarkupStateExtension()
-        {
-            codes = new BiDictionary<MarkupState, string>
-            {
-                [MarkupState.None] = PdfName.None.StringValue,
-                [MarkupState.Unmarked] = PdfName.Unmarked.StringValue,
-                [MarkupState.Accepted] = PdfName.Accepted.StringValue,
-                [MarkupState.Rejected] = PdfName.Rejected.StringValue,
-                [MarkupState.Cancelled] = PdfName.Cancelled.StringValue,
-                [MarkupState.Completed] = PdfName.Completed.StringValue,
-            };
-        }
-
-        public static MarkupState? Get(IPdfString name)
-        {
-            if (name == null)
-                return null;
-
-            return Get(name.StringValue);
-        }
-
-        public static MarkupState? Get(string name)
-        {
-            if (name == null)
-                return null;
-
-            return codes.GetKey(name);
-        }
-
-        public static string GetCode(this MarkupState? intent) => intent == null ? null : codes[intent.Value];
-    }
-
-    internal static class MarkupStateModelExtension
-    {
-        private static readonly BiDictionary<MarkupStateModel, string> codes;
-
-        static MarkupStateModelExtension()
-        {
-            codes = new BiDictionary<MarkupStateModel, string>
-            {
-                [MarkupStateModel.Marked] = PdfName.Marked.StringValue,
-                [MarkupStateModel.Review] = PdfName.Review.StringValue
-            };
-        }
-
-        public static MarkupStateModel? Get(IPdfString name)
-        {
-            if (name == null)
-                return null;
-
-            return Get(name.StringValue);
-        }
-
-        public static MarkupStateModel? Get(string name)
-        {
-            if (name == null)
-                return null;
-
-            return codes.GetKey(name);
-        }
-
-        public static string GetCode(this MarkupStateModel? intent)
-        {
-            return intent == null ? null : codes[intent.Value];
-        }
-    }
-
-    /// <summary>Icon to be used in displaying the annotation [PDF:1.6:8.4.5].</summary>
-    public enum ImageNameEnum
-    {
-        /// <summary>Comment.</summary>
-        Comment,
-        /// <summary>Help.</summary>
-        Help,
-        /// <summary>Insert.</summary>
-        Insert,
-        /// <summary>Key.</summary>
-        Key,
-        /// <summary>New paragraph.</summary>
-        NewParagraph,
-        /// <summary>Note.</summary>
-        Note,
-        /// <summary>Paragraph.</summary>
-        Paragraph
-    };
 
 }

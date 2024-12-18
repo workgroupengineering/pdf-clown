@@ -27,22 +27,21 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. Instantiate a new PDF file!
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Insert the contents into the document!
             BuildContent(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Page coordinates", "manipulating the CTM", "page coordinates, ctm");
+            Serialize(document, "Page coordinates", "manipulating the CTM", "page coordinates, ctm");
         }
 
         private void BuildContent(PdfDocument document)
         {
             // Set default page size (A4)!
-            document.PageSize = PageFormat.GetSize();
+            document.Catalog.PageSize = PageFormat.GetSize();
             // Add a font to the fonts collection!
-            document.Resources.Fonts[ResourceName_DefaultFont] = FontType1.Load(document, FontName.CourierBold);
+            document.Catalog.Resources.Fonts[ResourceName_DefaultFont] = PdfType1Font.Load(document, FontName.CourierBold);
 
             // Add a page to the document!
             var page = new PdfPage(document); // Instantiates the page inside the document context.
@@ -92,7 +91,7 @@ namespace PdfClown.Samples.CLI
             blockComposer.LineSpace = new Length(.25, Length.UnitModeEnum.Relative);
 
             composer.BeginLocalState();
-            composer.SetFillColor(new DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
+            composer.SetFillColor(new RGBColor(115 / 255d, 164 / 255d, 232 / 255d));
             SKRect frame = SKRect.Create(
               18,
               18,
@@ -117,7 +116,7 @@ namespace PdfClown.Samples.CLI
             {
                 composer.SetFillColor(colors[i]);
                 blockComposer.ShowText("Step " + i + ")");
-                composer.SetFillColor(new DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
+                composer.SetFillColor(new RGBColor(115 / 255d, 164 / 255d, 232 / 255d));
                 blockComposer.ShowText(" " + steps[i]);
                 blockComposer.ShowBreak(breakSize);
             }
@@ -133,7 +132,7 @@ namespace PdfClown.Samples.CLI
 
             // Step 0.
             {
-                colors[0] = new DeviceRGBColor(30 / 255d, 10 / 255d, 0);
+                colors[0] = new RGBColor(30 / 255d, 10 / 255d, 0);
                 composer.SetFillColor(colors[0]);
                 composer.SetStrokeColor(colors[0]);
 
@@ -154,7 +153,7 @@ namespace PdfClown.Samples.CLI
 
             // Step 1.
             {
-                colors[1] = new DeviceRGBColor(80 / 255d, 25 / 255d, 0);
+                colors[1] = new RGBColor(80 / 255d, 25 / 255d, 0);
                 composer.SetFillColor(colors[1]);
                 composer.SetStrokeColor(colors[1]);
 
@@ -178,7 +177,7 @@ namespace PdfClown.Samples.CLI
 
             // Step 2.
             {
-                colors[2] = new DeviceRGBColor(130 / 255d, 45 / 255d, 0);
+                colors[2] = new RGBColor(130 / 255d, 45 / 255d, 0);
                 composer.SetFillColor(colors[2]);
                 composer.SetStrokeColor(colors[2]);
 
@@ -205,7 +204,7 @@ namespace PdfClown.Samples.CLI
 
             // Step 3.
             {
-                colors[3] = new DeviceRGBColor(180 / 255d, 60 / 255d, 0);
+                colors[3] = new RGBColor(180 / 255d, 60 / 255d, 0);
                 composer.SetFillColor(colors[3]);
                 composer.SetStrokeColor(colors[3]);
 
@@ -230,7 +229,7 @@ namespace PdfClown.Samples.CLI
 
             // Step 4.
             {
-                colors[4] = new DeviceRGBColor(230 / 255d, 75 / 255d, 0);
+                colors[4] = new RGBColor(230 / 255d, 75 / 255d, 0);
                 composer.SetFillColor(colors[4]);
                 composer.SetStrokeColor(colors[4]);
 

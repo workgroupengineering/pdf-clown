@@ -32,19 +32,19 @@ namespace PdfClown.Util.Math
 {
     public static class PrimitiveExtensions
     {
-        public static SKRect ToSKRect(this Padding padding)
+        public static SKRect ToSKRect(this PdfPadding padding)
         {
             return new SKRect((float)padding.Left, (float)padding.Bottom, (float)padding.Right, (float)padding.Top);
         }
 
-        public static SKRect ToSKRect(this Rectangle rectangle)
+        public static SKRect ToSKRect(this PdfRectangle rectangle)
         {
             return new SKRect((float)rectangle.Left, (float)rectangle.Bottom, (float)rectangle.Right, (float)rectangle.Top);
         }
 
         public static SKRect ToSKRect(this PdfArray array)
         {
-            Rectangle.Normalize(array);
+            PdfRectangle.Normalize(array.items);
             return new SKRect(array.GetFloat(0), array.GetFloat(1), array.GetFloat(2), array.GetFloat(3));
         }
 
@@ -100,19 +100,19 @@ namespace PdfClown.Util.Math
             }
         }
 
-        public static PdfArray ToPdfArray(this SKRect rect)
+        public static PdfRectangle ToPdfRectangle(this SKRect rect)
         {
-            return new PdfArray(4) { rect.Left, rect.Bottom, rect.Right, rect.Top };
+            return new PdfRectangle(rect);
         }
 
         public static PdfArray ToPdfArray(this SKPoint point)
         {
-            return new PdfArray(2) { point.X, point.Y };
+            return new PdfArrayImpl(2) { point.X, point.Y };
         }
 
         public static PdfArray ToPdfArray(this SKMatrix value)
         {
-            return new PdfArray(6)
+            return new PdfArrayImpl(6)
             {
                 value.ScaleX,
                 value.SkewY,
@@ -125,7 +125,7 @@ namespace PdfClown.Util.Math
 
         public static PdfArray ToPdfArray(this ICollection<SKPoint> points, ref SKRect box)
         {
-            var array = new PdfArray();
+            var array = new PdfArrayImpl(points.Count * 2);
             foreach (SKPoint point in points)
             {
                 if (box == SKRect.Empty)
@@ -148,7 +148,7 @@ namespace PdfClown.Util.Math
             array.Set(5, value.TransY);
         }
 
-        public static void Update(this Rectangle rectangle, SKRect skRect)
+        public static void Update(this PdfRectangle rectangle, SKRect skRect)
         {
             rectangle.Left = skRect.Left;
             rectangle.Bottom = skRect.Top;
@@ -425,8 +425,8 @@ namespace PdfClown.Util.Math
         /// <remarks>In particular, the limit matches the largest dimension and proportionally scales the
         /// other one; for example, a limit 300 applied to size Dimension2D(100, 200) returns
         /// Dimension2D(150, 300).</remarks>
-        /// <param name = "size" > Size to scale.</param>
-        /// <param name = "limit" > Scale limit.</param>
+        /// <param name="size"> Size to scale.</param>
+        /// <param name="limit"> Scale limit.</param>
         /// <returns>Scaled size.</returns>
         public static SKSize Scale(this SKSize size, float limit)
         {
@@ -445,8 +445,8 @@ namespace PdfClown.Util.Math
         /// <remarks>In particular, implicit (zero-valued) limit dimensions correspond to proportional
         /// dimensions; for example, a limit Dimension2D(0, 300) means 300 high and proportionally wide.
         /// </remarks>
-        /// <param name = "size" > Size to scale.</param>
-        /// <param name = "limit" > Scale limit.</param>
+        /// <param name="size"> Size to scale.</param>
+        /// <param name="limit"> Scale limit.</param>
         /// <returns>Scaled size.</returns>
         public static SKSize Scale(this SKSize size, SKSize limit)
         {
@@ -471,6 +471,16 @@ namespace PdfClown.Util.Math
         public static SKPoint Scale(this SKPoint point, float scaleX, float scaleY)
         {
             return new SKPoint(point.X * scaleX, point.Y * scaleY);
+        }
+
+        public static SKPoint UnScale(this SKPoint point, float scale)
+        {
+            return point.UnScale(scale, scale);
+        }
+
+        public static SKPoint UnScale(this SKPoint point, float scaleX, float scaleY)
+        {
+            return new SKPoint(point.X / scaleX, point.Y / scaleY);
         }
     }
 }

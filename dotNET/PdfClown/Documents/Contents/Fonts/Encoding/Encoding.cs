@@ -36,7 +36,7 @@ namespace PdfClown.Documents.Contents.Fonts
     {
         protected static readonly int CHAR_CODE = 0;
         protected static readonly int CHAR_NAME = 1;
-        protected static readonly Dictionary<PdfName, Encoding> Encodings = new Dictionary<PdfName, Encoding>();
+        protected static readonly Dictionary<PdfName, Encoding> Encodings = new();
 
         public static Encoding Get(PdfName name)
         {
@@ -67,8 +67,8 @@ namespace PdfClown.Documents.Contents.Fonts
             this.codeToName = codeToName;
         }
 
-        private readonly Dictionary<int, string> codeToName = new Dictionary<int, string>();
-        private readonly Dictionary<string, int> nameToCode = new Dictionary<string, int>(StringComparer.Ordinal);
+        private readonly Dictionary<int, string> codeToName = new(256);
+        private readonly Dictionary<string, int> nameToCode = new(256, StringComparer.Ordinal);
 
 
         public Dictionary<int, string> CodeToNameMap
@@ -91,7 +91,7 @@ namespace PdfClown.Documents.Contents.Fonts
             return codeToName.TryGetValue(key, out var name) ? name : null;
         }
 
-        protected void Put(int charCode, string charName)
+        protected internal void Put(int charCode, string charName)
         {
             codeToName[charCode] = charName;
             if (!nameToCode.ContainsKey(charName))
@@ -100,14 +100,12 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-         * This will add a character encoding. An already existing mapping is overwritten when creating the reverse mapping.
-         * 
-         * @see Encoding#add(int, string)
-         *
-         * @param code character code
-         * @param name PostScript glyph name
-         */
+        /// <summary>
+        /// This will add a character encoding.An already existing mapping is overwritten when creating the reverse mapping.
+        /// @see Encoding.Add(int, string)
+        /// </summary>
+        /// <param name="code">character code</param>
+        /// <param name="name">PostScript glyph name</param>
         protected void Overwrite(int code, string name)
         {
             // remove existing reverse mapping first
@@ -122,11 +120,8 @@ namespace PdfClown.Documents.Contents.Fonts
             codeToName[code] = name;
         }
 
-        /**
-         * Determines if the encoding has a mapping for the given name value.
-         * 
-         * @param name PostScript glyph name
-         */
+        /// <summary>Determines if the encoding has a mapping for the given name value.</summary>
+        /// <param name="name">PostScript glyph name</param>
         public bool Contains(string name) => nameToCode.ContainsKey(name);
 
         public virtual PdfDirectObject GetPdfObject() => null;

@@ -25,13 +25,9 @@
 
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-      <summary>Windows ANSI encoding (Windows Code Page 1252) [PDF:1.6:D].</summary>
-    */
+    /// <summary>Windows ANSI encoding (Windows Code Page 1252) [PDF:1.6:D].</summary>
     internal sealed class WinAnsiEncoding : Encoding
     {
         public static readonly WinAnsiEncoding Instance = new WinAnsiEncoding();

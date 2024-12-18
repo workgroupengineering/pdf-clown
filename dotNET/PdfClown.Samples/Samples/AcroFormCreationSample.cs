@@ -15,14 +15,13 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Content creation.
             Populate(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "AcroForm", "inserting AcroForm fields", "Acroform, creation, annotations, actions, javascript, button, combo, textbox, radio button");
+            Serialize(document, "AcroForm", "inserting AcroForm fields", "Acroform, creation, annotations, actions, javascript, button, combo, textbox, radio button");
         }
 
         private void Populate(PdfDocument document)
@@ -39,7 +38,7 @@ namespace PdfClown.Samples.CLI
             */
 
             // 1. Define the form fields collection!
-            Form form = document.Form;
+            AcroForm form = document.Catalog.Form;
             Fields fields = form.Fields;
 
             // 2. Define the page where to place the fields!
@@ -52,7 +51,7 @@ namespace PdfClown.Samples.CLI
             fieldStyle.GraphicsVisibile = true;
 
             var composer = new PrimitiveComposer(page);
-            composer.SetFont(FontType1.Load(document, FontName.CourierBold), 14);
+            composer.SetFont(PdfType1Font.Load(document, FontName.CourierBold), 14);
 
             // 4. Field creation.
             // 4.a. Push button.
@@ -60,7 +59,7 @@ namespace PdfClown.Samples.CLI
                 composer.ShowText("PushButton:", new SKPoint(140, 68), XAlignmentEnum.Right, YAlignmentEnum.Middle, 0);
 
                 var fieldWidget = new Widget(page, SKRect.Create(150, 50, 136, 36));
-                fieldWidget.Actions.OnActivate = new JavaScript(document,
+                fieldWidget.Action = new JavaScript(document,
                   "app.alert(\"Radio button currently selected: '\" + this.getField(\"myRadio\").value + \"'.\",3,0,\"Activation event\");");
                 var field = new PushButton("okButton", fieldWidget, "Push"); // 4.1. Field instantiation.
                 fields.Add(field); // 4.2. Field insertion into the fields collection.
@@ -112,7 +111,7 @@ namespace PdfClown.Samples.CLI
                 var field = new TextField("myText", new Widget(page, SKRect.Create(150, 200, 200, 36)), "Carmen Consoli"); // 4.1. Field instantiation. // Current value.
 
                 field.SpellChecked = false; // Avoids text spell check.
-                var fieldActions = new FieldActions(document);
+                var fieldActions = new AdditionalActions(document);
                 field.Actions = fieldActions;
                 fieldActions.OnValidate = new JavaScript(document,
                   "app.alert(\"Text '\" + this.getField(\"myText\").value + \"' has changed!\",3,0,\"Validation event\");");

@@ -25,41 +25,27 @@
 
 using PdfClown.Objects;
 
-using System;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>Indexed color value [PDF:1.6:4.5.5].</summary>
-    */
+    /// <summary>Indexed color value [PDF:1.6:4.5.5].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class IndexedColor : Color
     {
         public IndexedColor(ColorSpace colorSpace, int index)
-            : this(colorSpace, new PdfArray(1) { index })
+            : this(colorSpace, new PdfArrayImpl(1) { index })
         { }
 
         internal IndexedColor(ColorSpace colorSpace, PdfArray components)//TODO:consider color space reference!
             : base(colorSpace, components)
         { }
 
+        public override PdfArray Components => (PdfArray)DataObject;
 
-        public override PdfArray Components => (PdfArray)BaseDataObject;
-
-        /**
-          <summary>Gets the color index.</summary>
-        */
+        /// <summary>Gets the color index.</summary>
         public int Index
         {
             get => Components.GetInt(0);
             set => Components.Set(0, value);
-        }
-
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
-
+        }        
     }
 }

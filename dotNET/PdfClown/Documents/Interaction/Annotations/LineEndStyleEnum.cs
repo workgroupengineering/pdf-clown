@@ -23,82 +23,62 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
 using PdfClown.Util;
 
 using System;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
-    /**
-      <summary>Line ending style [PDF:1.6:8.4.5].</summary>
-    */
+    /// <summary>Line ending style [PDF:1.6:8.4.5].</summary>
     public enum LineEndStyleEnum
     {
-        /**
-          Square.
-        */
+        // Square.
         Square,
-        /**
-          Circle.
-        */
+        
+        // Circle.
         Circle,
-        /**
-          Diamond.
-        */
+
+        // Diamond.
         Diamond,
-        /**
-          Open arrow.
-        */
+        
+        // Open arrow.
         OpenArrow,
-        /**
-          Closed arrow.
-        */
+
+        // Closed arrow.
         ClosedArrow,
-        /**
-          None.
-        */
+        
+        // None.
         None,
-        /**
-          Butt.
-        */
+        
+        // Butt.
         Butt,
-        /**
-          Reverse open arrow.
-        */
+        
+        // Reverse open arrow.
         ReverseOpenArrow,
-        /**
-          Reverse closed arrow.
-        */
+        
+        // Reverse closed arrow.
         ReverseClosedArrow,
-        /**
-          Slash.
-        */
+        
+        // Slash.
         Slash
     }
 
     internal static class LineEndStyleEnumExtension
     {
-        private static readonly BiDictionary<LineEndStyleEnum, string> codes;
-
-        static LineEndStyleEnumExtension()
+        private static readonly BiDictionary<LineEndStyleEnum, string> codes = new()
         {
-            codes = new BiDictionary<LineEndStyleEnum, string>
-            {
-                [LineEndStyleEnum.Square] = PdfName.Square.StringValue,
-                [LineEndStyleEnum.Circle] = PdfName.Circle.StringValue,
-                [LineEndStyleEnum.Diamond] = PdfName.Diamond.StringValue,
-                [LineEndStyleEnum.OpenArrow] = PdfName.OpenArrow.StringValue,
-                [LineEndStyleEnum.ClosedArrow] = PdfName.ClosedArrow.StringValue,
-                [LineEndStyleEnum.None] = PdfName.None.StringValue,
-                [LineEndStyleEnum.Butt] = PdfName.Butt.StringValue,
-                [LineEndStyleEnum.ReverseOpenArrow] = PdfName.ROpenArrow.StringValue,
-                [LineEndStyleEnum.ReverseClosedArrow] = PdfName.RClosedArrow.StringValue,
-                [LineEndStyleEnum.Slash] = PdfName.Slash.StringValue
-            };
-        }
+            [LineEndStyleEnum.Square] = PdfName.Square.StringValue,
+            [LineEndStyleEnum.Circle] = PdfName.Circle.StringValue,
+            [LineEndStyleEnum.Diamond] = PdfName.Diamond.StringValue,
+            [LineEndStyleEnum.OpenArrow] = PdfName.OpenArrow.StringValue,
+            [LineEndStyleEnum.ClosedArrow] = PdfName.ClosedArrow.StringValue,
+            [LineEndStyleEnum.None] = PdfName.None.StringValue,
+            [LineEndStyleEnum.Butt] = PdfName.Butt.StringValue,
+            [LineEndStyleEnum.ReverseOpenArrow] = PdfName.ROpenArrow.StringValue,
+            [LineEndStyleEnum.ReverseClosedArrow] = PdfName.RClosedArrow.StringValue,
+            [LineEndStyleEnum.Slash] = PdfName.Slash.StringValue
+        };
 
         public static LineEndStyleEnum Get(string name)
         {
@@ -112,9 +92,6 @@ namespace PdfClown.Documents.Interaction.Annotations
             return lineEndStyle.Value;
         }
 
-        public static string GetName(this LineEndStyleEnum lineEndStyle)
-        {
-            return codes[lineEndStyle];
-        }
+        public static string GetName(this LineEndStyleEnum lineEndStyle) => codes[lineEndStyle];
     }
 }

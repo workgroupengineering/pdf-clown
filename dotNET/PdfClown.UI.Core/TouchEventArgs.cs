@@ -14,8 +14,9 @@ namespace PdfClown.UI
 
         public TouchAction ActionType { get; }
         public MouseButton MouseButton { get; }
-        public int WheelDelta { get; set; }
+        public float WheelDelta { get; set; }
         public SKPoint Location { get; set; }
         public long PointerId { get; set; }
+        public KeyModifiers KeyModifiers { get; set; }
     }
 }

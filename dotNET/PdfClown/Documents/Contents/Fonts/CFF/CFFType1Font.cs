@@ -18,7 +18,6 @@
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using PdfClown.Documents.Contents.Fonts.Type1;
 
 namespace PdfClown.Documents.Contents.Fonts.CCF
@@ -63,12 +62,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             get => topDict.TryGetValue("FontMatrix", out var array) ? (List<float>)array : null;
         }
 
-        /**
-		 * Returns the Type 1 charstring for the given PostScript glyph name.
-		 *
-		 * @param name PostScript glyph name
-		 * @throws IOException if the charstring could not be read
-		 */
+        /// <summary>Returns the Type 1 charstring for the given PostScript glyph name.</summary>
+        /// <param name="name">PostScript glyph name</param>
+        /// <returns></returns>
         public Type1CharString GetType1CharString(string name)
         {
             // lookup via charset
@@ -78,12 +74,9 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return GetType2CharString(gid, name);
         }
 
-        /**
-		 * Returns the GID for the given PostScript glyph name.
-		 * 
-		 * @param name a PostScript glyph name.
-		 * @return GID
-		 */
+        /// <summary>Returns the GID for the given PostScript glyph name.</summary>
+        /// <param name="name">a PostScript glyph name.</param>
+        /// <returns>GID</returns>
         public int NameToGID(string name)
         {
             // some fonts have glyphs beyond their encoding, so we look up by charset SID
@@ -91,13 +84,8 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             return Charset.GetGIDForSID(sid);
         }
 
-        /**
-		 * Returns the Type 1 charstring for the given GID.
-		 *
-		 * @param gid GID
-		 * @throws IOException if the charstring could not be read
-		 */
-
+        /// <summary>Returns the Type 1 charstring for the given GID.</summary>
+        /// <param name="gid">GID</param>
         public override Type2CharString GetType2CharString(int gid)
         {
             string name = "GID+" + gid; // for debugging only
@@ -112,7 +100,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
                 var bytes = gid < charStrings.Length
                     ? charStrings[gid]
                     : charStrings[0];
-                List<object> type2seq = Parser.Parse(bytes, globalSubrIndex, LocalSubrIndex, name);
+                var type2seq = Parser.Parse(bytes, globalSubrIndex, LocalSubrIndex);
                 type2 = new Type2CharString(this, Name, name, gid, type2seq, GetDefaultWidthX(), GetNominalWidthX());
                 charStringCache[gid] = type2;
             }
@@ -124,22 +112,14 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             get => charStringParser ??= new Type2CharStringParser(Name);
         }
 
-        /**
-		 * Returns the private dictionary.
-		 *
-		 * @return the dictionary
-		 */
         public Dictionary<string, object> PrivateDict
         {
             get => privateDict;
         }
 
-        /**
-		 * Adds the given key/value pair to the private dictionary.
-		 *
-		 * @param name the given key
-		 * @param value the given value
-		 */
+        /// <summary>Adds the given key/value pair to the private dictionary.</summary>
+        /// <param name="name">the given key</param>
+        /// <param name="value">the given value</param>
         public void AddToPrivateDict(string name, object value)
         {
             if (value != null)
@@ -148,11 +128,7 @@ namespace PdfClown.Documents.Contents.Fonts.CCF
             }
         }
 
-        /**
-		 * Returns the CFFEncoding of the font.
-		 *
-		 * @return the encoding
-		 */
+        /// <summary>Returns the CFFEncoding of the font.</summary>
         public Encoding Encoding
         {
             get => encoding;

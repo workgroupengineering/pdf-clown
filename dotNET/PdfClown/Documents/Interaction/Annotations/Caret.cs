@@ -47,14 +47,11 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         private static readonly SymbolTypeEnum DefaultSymbolType = SymbolTypeEnum.None;
 
-        private static readonly Dictionary<SymbolTypeEnum, PdfName> SymbolTypeEnumCodes;
-
-        static Caret()
+        private static readonly Dictionary<SymbolTypeEnum, PdfName> SymbolTypeEnumCodes = new()
         {
-            SymbolTypeEnumCodes = new Dictionary<SymbolTypeEnum, PdfName>();
-            SymbolTypeEnumCodes[SymbolTypeEnum.NewParagraph] = PdfName.P;
-            SymbolTypeEnumCodes[SymbolTypeEnum.None] = PdfName.None;
-        }
+            [SymbolTypeEnum.NewParagraph] = PdfName.P,
+            [SymbolTypeEnum.None] = PdfName.None
+        };
 
         /// <summary>Gets the code corresponding to the given value.</summary>
         private static PdfName ToCode(SymbolTypeEnum value)
@@ -75,17 +72,19 @@ namespace PdfClown.Documents.Interaction.Annotations
             return DefaultSymbolType;
         }
 
-        public Caret(PdfPage page, SKRect box, string text) : base(page, PdfName.Caret, box, text)
+        public Caret(PdfPage page, SKRect box, string text)
+            : base(page, PdfName.Caret, box, text)
         { }
 
-        internal Caret(PdfDirectObject baseObject) : base(baseObject)
+        internal Caret(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the symbol to be used in displaying the annotation.</summary>
         public SymbolTypeEnum SymbolType
         {
-            get => ToSymbolTypeEnum((IPdfString)BaseDataObject[PdfName.Sy]);
-            set => BaseDataObject[PdfName.Sy] = value != DefaultSymbolType ? ToCode(value) : null;
+            get => ToSymbolTypeEnum(Get<IPdfString>(PdfName.Sy));
+            set => this[PdfName.Sy] = value != DefaultSymbolType ? ToCode(value) : null;
         }
 
         public override bool AllowSize => false;

@@ -16,22 +16,18 @@
  */
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Ocsp;
-using Org.BouncyCastle.Asn1.Oiw;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Ocsp;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Security.Certificates;
-using Org.BouncyCastle.Utilities.Date;
 using Org.BouncyCastle.X509;
 using PdfClown.Util.IO;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace PdfClown.Documents.Interaction.Forms.Signature.Sertificate

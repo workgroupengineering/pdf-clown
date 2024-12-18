@@ -24,30 +24,36 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
     /// <summary>Field options [PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class ChoiceItems : Array<ChoiceItem>
+    public sealed class ChoiceItems : ArrayWrapper<ChoiceItem>
     {
         public class ItemWrapper : IEntryWrapper<ChoiceItem>
         {
-            private ChoiceItems items;
+            private Dictionary<PdfDirectObject, ChoiceItem> cache = new();
+            internal ChoiceItems items;
 
             public ItemWrapper(ChoiceItems items) => this.items = items;
 
-            public ChoiceItem Wrap(PdfDirectObject baseObject) => ChoiceItem.Wrap(baseObject, items);
+            public ChoiceItem Wrap(PdfDirectObject baseObject) => baseObject?.Resolve() is PdfDirectObject dataObject
+                    ? cache.TryGetValue(baseObject, out var cached) ? cached : cache[baseObject] = new ChoiceItem(baseObject, items)
+                    : null;
         }
 
-        public ChoiceItems(PdfDocument context) : base(context, new PdfArray())
+        public ChoiceItems(PdfDocument context)
+            : base(context, new PdfArrayImpl(), new ItemWrapper(null))
         {
-            itemWrapper = new ItemWrapper(this);
+            ((ItemWrapper)itemWrapper).items = this;
         }
 
-        public ChoiceItems(PdfDirectObject baseObject) : base(baseObject)
+        public ChoiceItems(PdfDirectObject baseObject)
+            : base(baseObject, new ItemWrapper(null))
         {
-            itemWrapper = new ItemWrapper(this);
+            ((ItemWrapper)itemWrapper).items = this;
         }
 
         public ChoiceItem Add(string value)

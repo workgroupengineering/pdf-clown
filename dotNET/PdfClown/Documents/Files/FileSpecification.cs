@@ -24,108 +24,210 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Files;
 using PdfClown.Objects;
+using PdfClown.Util;
 using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Net.Http;
 
 namespace PdfClown.Documents.Files
 {
-    /// <summary>Reference to the contents of another file (file specification) [PDF:1.6:3.10.2].</summary>
+    /// <summary>Extended reference to the contents of another file [PDF:1.6:3.10.2].</summary>
     [PDF(VersionEnum.PDF11)]
-    public abstract class FileSpecification : PdfObjectWrapper<PdfDirectObject>, IPdfNamedObjectWrapper
+    public sealed class FileSpecification : PdfDictionary, IFileSpecification
     {
-        /// <summary>Creates a new reference to an external file.</summary>
-        /// <param name="context">Document context.</param>
-        /// <param name="path">File path.</param>
-        public static SimpleFileSpecification Get(PdfDocument context, string path)
+        private RelatedFiles dependencies;
+        private EmbeddedFile embeddedFile;
+
+        ///  <summary>Standard file system.</summary>
+        public enum StandardFileSystemEnum
         {
-            return (SimpleFileSpecification)Get(context, path, false);
+            /// <summary>Generic platform file system.</summary>
+            Native,
+            /// <summary>Uniform resource locator.</summary>
+            URL
         }
 
-        /// <summary>Creates a new reference to a file.</summary>
-        /// <param name="context">Document context.</param>
-        /// <param name="path">File path.</param>
-        /// <param name="full">Whether the reference is able to support extended dependencies.</param>
-        public static FileSpecification Get(PdfDocument context, string path, bool full)
+        private static readonly BiDictionary<StandardFileSystemEnum, PdfName> stdFScodes = new()
         {
-            return full
-              ? (FileSpecification)new FullFileSpecification(context, path)
-              : (FileSpecification)new SimpleFileSpecification(context, path);
+            [StandardFileSystemEnum.Native] = null,
+            [StandardFileSystemEnum.URL] = PdfName.URL
+        };
+
+        public static StandardFileSystemEnum? GetStdFS(PdfName code) => stdFScodes.GetKey(code);
+
+        public static PdfName GetName(StandardFileSystemEnum standardFileSystem) => stdFScodes[standardFileSystem];
+
+        internal FileSpecification(PdfDocument context, string path)
+            : base(context, new Dictionary<PdfName, PdfDirectObject>(3) {
+                { PdfName.Type, PdfName.Filespec }
+            })
+        {
+            FilePath = path;
         }
 
-        /// <summary>Creates a new reference to an embedded file.</summary>
-        /// <param name="embeddedFile">Embedded file corresponding to the reference.</param>
-        /// <param name="filename">Name corresponding to the reference.</param>
-        public static FullFileSpecification Get(EmbeddedFile embeddedFile, string filename)
+        internal FileSpecification(EmbeddedFile embeddedFile, string filename)
+            : this(embeddedFile.Document, filename)
         {
-            return new FullFileSpecification(embeddedFile, filename);
+            EmbeddedFile = embeddedFile;
         }
 
-        /// <summary>Creates a new reference to a remote file.</summary>
-        /// <param name="context">Document context.</param>
-        /// <param name="url">Remote file location.</param>
-        public static FullFileSpecification Get(PdfDocument context, Uri url)
+        internal FileSpecification(PdfDocument context, Uri url)
+            : this(context, url.ToString())
         {
-            return new FullFileSpecification(context, url);
+            FileSystem = StandardFileSystemEnum.URL;
         }
 
-        /// <summary>Instantiates an existing file reference.</summary>
-        /// <param name="baseObject">Base object.</param>
-        public static FileSpecification Wrap(PdfDirectObject baseObject)
-        {
-            if (baseObject == null)
-                return null;
-            if (baseObject.Wrapper is FileSpecification specification)
-                return specification;
-
-            PdfDataObject baseDataObject = baseObject.Resolve();
-            if (baseDataObject is PdfString)
-                return new SimpleFileSpecification(baseObject);
-            else if (baseDataObject is PdfDictionary)
-                return new FullFileSpecification(baseObject);
-            else
-                return null;
-        }
-
-        protected FileSpecification(PdfDocument context, PdfDirectObject baseDataObject) : base(context, baseDataObject)
+        internal FileSpecification(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
-        protected FileSpecification(PdfDirectObject baseObject) : base(baseObject)
-        { }
-
-        /// <summary>Gets the file absolute path.</summary>
-        public string GetAbsolutePath()
+        /// <summary>Gets/Sets the identifier of the file.</summary>
+        public Identifier ID
         {
-            string path = Path;
-            if (!System.IO.Path.IsPathRooted(path)) // Path needs to be resolved.
+            get => Get<Identifier>(PdfName.ID);
+            set => SetDirect(PdfName.ID, value);
+        }
+
+        public string FilePath
+        {
+            get => GetString(PdfName.F);
+            set => Set(PdfName.F, value);
+        }
+
+        /// <summary>Gets/Sets the related files.</summary>
+        public RelatedFiles Dependencies
+        {
+            get => dependencies ??= GetDependencies(PdfName.F);
+            set => SetDependencies(PdfName.F, dependencies = value);
+        }
+
+        /// <summary>Gets/Sets the description of the file.</summary>
+        public string Description
+        {
+            get => GetString(PdfName.Desc);
+            set => SetText(PdfName.Desc, value);
+        }
+
+        /// <summary>Gets/Sets the embedded file corresponding to this file.</summary>
+        public EmbeddedFile EmbeddedFile
+        {
+            get => embeddedFile ??= GetEmbeddedFile(PdfName.F);
+            set => SetEmbeddedFile(PdfName.F, embeddedFile = value);
+        }
+
+        /// <summary>Gets/Sets the file system to be used to interpret this file specification.</summary>
+        /// <returns>Either <see cref="StandardFileSystemEnum"/> (standard file system) or
+        /// <see cref="String"/> (custom file system).</returns>
+        public object FileSystem
+        {
+            get
             {
-                string basePath = Document.File.Path;
-                if (basePath != null)
-                { path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(basePath), path); }
+                var fileSystemObject = Get<PdfName>(PdfName.FS);
+                StandardFileSystemEnum? standardFileSystem = GetStdFS(fileSystemObject);
+                return standardFileSystem ?? fileSystemObject.Value;
             }
-            return path;
+            set
+            {
+                this[PdfName.FS] = value switch
+                {
+                    StandardFileSystemEnum enumValue => GetName(enumValue),
+                    string stringValue => PdfName.Get(stringValue),
+                    _ => throw new ArgumentException("MUST be either StandardFileSystemEnum (standard file system) or String (custom file system)"),
+                };
+            }
         }
 
-        /// <summary>Gets an input stream to read from the file.</summary>
-        public virtual IInputStream GetInputStream()
+        /// <summary>Gets/Sets whether the referenced file is volatile (changes frequently with time).
+        /// </summary>
+        public bool Volatile
         {
-            return new StreamContainer(
-              new FileStream(GetAbsolutePath(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+            get => GetBool(PdfName.V, false);
+            set => Set(PdfName.V, value);
         }
-
-        /// <summary>Gets an output stream to write into the file.</summary>
-        public virtual IOutputStream GetOutputStream()
-        {
-            return new StreamContainer(
-              new FileStream(GetAbsolutePath(), FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
-        }
-
-        /// <summary>Gets the file path.</summary>
-        public abstract string Path { get; set; }
 
         public PdfString Name => RetrieveName();
 
         public PdfDirectObject NamedBaseObject => RetrieveNamedBaseObject();
+
+        public IInputStream GetInputStream()
+        {
+            if (PdfName.URL.Equals(GetString(PdfName.FS))) // Remote resource [PDF:1.7:3.10.4].
+            {
+                Uri fileUrl;
+                try
+                { fileUrl = new Uri(FilePath); }
+                catch (Exception e)
+                { throw new Exception("Failed to instantiate URL for " + FilePath, e); }
+                using var webClient = new HttpClient();
+                try
+                {
+                    var stream = webClient.GetStreamAsync(fileUrl).GetAwaiter().GetResult();
+                    return new ByteStream(stream);
+                }
+                catch (Exception e)
+                { throw new Exception("Failed to open input stream for " + FilePath, e); }
+            }
+            else // Local resource [PDF:1.7:3.10.1].
+                return ((IFileSpecification)this).GetInputStream();
+        }
+
+        public IOutputStream GetOutputStream()
+        {
+            if (PdfName.URL.Equals(GetString(PdfName.FS))) // Remote resource [PDF:1.7:3.10.4].
+            {
+                Uri fileUrl;
+                try
+                { fileUrl = new Uri(FilePath); }
+                catch (Exception e)
+                { throw new Exception("Failed to instantiate URL for " + FilePath, e); }
+                using var webClient = new HttpClient();
+                try
+                {
+                    var tempStream = webClient.GetStreamAsync(fileUrl).GetAwaiter().GetResult();
+                    return new StreamContainer(tempStream);
+                }
+                catch (Exception e)
+                { throw new Exception("Failed to open output stream for " + FilePath, e); }
+            }
+            else // Local resource [PDF:1.7:3.10.1].
+                return ((IFileSpecification)this).GetOutputStream();
+        }
+
+
+        /// <summary>Gets the related files associated to the given key.</summary>
+        private RelatedFiles GetDependencies(PdfName key)
+        {
+            var dependenciesObject = Get<PdfDictionary>(PdfName.RF);
+            if (dependenciesObject == null)
+                return null;
+
+            return new RelatedFiles(dependenciesObject.Get(key));
+        }
+
+        /// <see cref="GetDependencies(PdfName)"/>
+        private void SetDependencies(PdfName key, RelatedFiles value)
+        {
+            var dependenciesObject = GetOrCreate<PdfDictionary>(PdfName.RF);
+
+            dependenciesObject[key] = value.RefOrSelf;
+        }
+
+        /// <summary>Gets the embedded file associated to the given key.</summary>
+        private EmbeddedFile GetEmbeddedFile(PdfName key)
+        {
+            var embeddedFilesObject = Get<PdfDictionary>(PdfName.EF);
+            return embeddedFilesObject?.Get<EmbeddedFile>(key);
+        }
+
+        /// <see cref="GetEmbeddedFile(PdfName)"/>
+        private void SetEmbeddedFile(PdfName key, EmbeddedFile value)
+        {
+            var embeddedFilesObject = GetOrCreate<PdfDictionary>(PdfName.EF);
+
+            embeddedFilesObject[key] = value.Reference;
+        }
+
     }
 }
-

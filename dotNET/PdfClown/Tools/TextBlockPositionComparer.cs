@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Documents.Contents.Scanner;
-using PdfClown.Util.Math;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;

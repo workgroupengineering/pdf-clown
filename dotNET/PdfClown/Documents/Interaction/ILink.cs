@@ -29,19 +29,11 @@ using PdfClown.Objects;
 
 namespace PdfClown.Documents.Interaction
 {
-    /**
-      <summary>Link.</summary>
-    */
+    /// <summary>Link.</summary>
     public interface ILink
     {
-        /**
-          <summary>Gets/Sets the link target.</summary>
-          <returns>Either a <see cref="Destination"/> or an <see cref="Action"/>.</returns>
-        */
-        PdfObjectWrapper Target
-        {
-            get;
-            set;
-        }
+        /// <summary>Gets/Sets the link target.</summary>
+        /// <returns>Either a <see cref="Destination" /> or an<see cref="PdfAction" />.</ returns >
+        PdfDirectObject Target { get; set; }
     }
 }

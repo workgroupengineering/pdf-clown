@@ -1,5 +1,7 @@
-﻿using PdfClown.Documents.Interaction.Annotations;
+﻿using PdfClown.Documents;
+using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Objects;
 using PdfClown.Util.Invokers;
 using SkiaSharp;
 
@@ -8,6 +10,12 @@ namespace PdfClown.UI.Operations
     public class AnnotationOperation : EditOperation
     {
         private Annotation annotation;
+
+        public AnnotationOperation(Annotation annotation, PdfDocumentViewModel document, EditorOperations operations) 
+            : base(document, operations)
+        {
+            this.annotation = annotation;
+        }
 
         public Annotation Annotation
         {
@@ -27,7 +35,7 @@ namespace PdfClown.UI.Operations
             var cloned = (AnnotationOperation)base.Clone(document);
 
             cloned.Annotation = document.FindAnnotation(Annotation.Name)
-                ?? (Annotation)Annotation.Clone(document.Document);
+                ?? (Annotation)Annotation.RefOrSelf.Clone(document.Document).Resolve(PdfName.Annot);
 
             if (cloned.Property is ControlPoint controlPoint)
                 cloned.Property = controlPoint.Clone(cloned.Annotation);
@@ -35,9 +43,9 @@ namespace PdfClown.UI.Operations
             return cloned;
         }
 
-        public override object EndOperation()
+        public override object? EndOperation()
         {
-            var result = (object)null;
+            var result = (object?)null;
             switch (Type)
             {
                 case OperationType.AnnotationDrag:
@@ -59,7 +67,7 @@ namespace PdfClown.UI.Operations
                 result =
                     NewValue = controlPoint.MappedPoint;
             }
-            OperationList?.OnEndOperation(this, result);
+            Operations.OnEndOperation(this, result);
             return result;
         }
 
@@ -67,63 +75,59 @@ namespace PdfClown.UI.Operations
         {
             if (Annotation.Page?.Annotations.Contains(Annotation) ?? false)
             {
-                OperationList.SelectedAnnotation = Annotation;
+                Operations.SelectedAnnotation = Annotation;
             }
             switch (Type)
             {
                 case OperationType.AnnotationAdd:
-                    Document.AddAnnotation(Annotation.Page ?? Document.GetPageView(PageIndex)?.Page, Annotation);
+                    if ((Annotation.Page ?? Document.GetPageView(PageIndex)?.Page) is PdfPage page)
+                        Document.AddAnnotation(page, Annotation);
                     break;
                 case OperationType.AnnotationRemove:
                     Document.RemoveAnnotation(Annotation);
                     break;
                 case OperationType.AnnotationDrag:
-                    Annotation.SetBounds((SKRect)NewValue);
+                    if (NewValue is SKRect drect)
+                        Annotation.SetBounds(drect);
                     break;
                 case OperationType.AnnotationSize:
-                    Annotation.SetBounds((SKRect)NewValue);
+                    if (NewValue is SKRect srect)
+                        Annotation.SetBounds(srect);
                     break;
                 case OperationType.AnnotationRePage:
-                    Annotation.Page = Document.GetPageView((int)NewValue)?.Page;
+                    if (NewValue is int rIndex)
+                        Annotation.Page = Document.GetPageView(rIndex)?.Page;
                     break;
                 case OperationType.AnnotationProperty:
-                    var invoker = Property as IInvoker;
-                    invoker.SetValue(Annotation, NewValue);
+                    if (Property is IInvoker invoker)
+                        invoker.SetValue(Annotation, NewValue);
                     break;
                 case OperationType.PointMove:
+                    if (Property is ControlPoint mCPoint
+                        && NewValue is SKPoint mPoint)
                     {
-                        if (Property is ControlPoint controlPoint)
-                        {
-                            controlPoint.MappedPoint = (SKPoint)NewValue;
-                        }
-                        break;
+                        mCPoint.MappedPoint = mPoint;
                     }
+                    break;
                 case OperationType.PointAdd:
+                    if (Property is IndexControlPoint aCPoint
+                        && Annotation is VertexShape aVertexShape
+                        && NewValue is SKPoint aPoint)
                     {
-                        if (Property is IndexControlPoint controlPoint)
-                        {
-                            if (Annotation is VertexShape vertexShape)
-                            {
-                                vertexShape.InsertPoint(controlPoint.Index, (SKPoint)NewValue);
-                            }
-                        }
+                        aVertexShape.InsertPoint(aCPoint.Index, aPoint);
                     }
                     break;
                 case OperationType.PointRemove:
+                    if (Property is IndexControlPoint rCPoint
+                        && Annotation is VertexShape rVertexShape)
                     {
-                        if (Property is IndexControlPoint controlPoint)
-                        {
-                            if (Annotation is VertexShape vertexShape)
-                            {
-                                vertexShape.RemovePoint(controlPoint.Index);
-                            }
-                        }
+                        rVertexShape.RemovePoint(rCPoint.Index);
                     }
                     break;
             }
             if (Annotation.Page?.Annotations.Contains(Annotation) ?? false)
             {
-                OperationList.SelectedAnnotation = Annotation;
+                Operations.SelectedAnnotation = Annotation;
             }
         }
 
@@ -131,7 +135,7 @@ namespace PdfClown.UI.Operations
         {
             if (Annotation.Page?.Annotations.Contains(Annotation) ?? false)
             {
-                OperationList.SelectedAnnotation = Annotation;
+                Operations.SelectedAnnotation = Annotation;
             }
             switch (Type)
             {
@@ -139,56 +143,52 @@ namespace PdfClown.UI.Operations
                     Document.RemoveAnnotation(Annotation);
                     break;
                 case OperationType.AnnotationRemove:
-                    Document.AddAnnotation(Annotation.Page ?? Document.GetPageView(PageIndex)?.Page, Annotation);
+                    if ((Annotation.Page ?? Document.GetPageView(PageIndex)?.Page) is PdfPage page)
+                        Document.AddAnnotation(page, Annotation);
                     break;
                 case OperationType.AnnotationDrag:
-                    Annotation.SetBounds((SKRect)OldValue);
+                    if (OldValue is SKRect drect)
+                        Annotation.SetBounds(drect);
                     break;
                 case OperationType.AnnotationSize:
-                    Annotation.SetBounds((SKRect)OldValue);
+                    if (OldValue is SKRect srect)
+                        Annotation.SetBounds(srect);
                     break;
                 case OperationType.AnnotationRePage:
-                    Annotation.Page = Document.Pages[(int)OldValue];
+                    if (OldValue is int rIndex)
+                        Annotation.Page = Document.Pages[rIndex];
                     break;
                 case OperationType.AnnotationProperty:
-                    var invoker = Property as IInvoker;
-                    invoker.SetValue(Annotation, OldValue);
+                    if (Property is IInvoker invoker)
+                        invoker.SetValue(Annotation, OldValue);
                     break;
                 case OperationType.PointMove:
+                    if (Property is ControlPoint mCPoint
+                        && OldValue is SKPoint mPoint)
                     {
-                        if (Property is ControlPoint controlPoint)
-                        {
-                            controlPoint.MappedPoint = (SKPoint)OldValue;
-                        }
-                        break;
+                        mCPoint.MappedPoint = mPoint;
                     }
+                    break;
                 case OperationType.PointAdd:
+                    if (Property is IndexControlPoint aCPoint
+                        && Annotation is VertexShape aVertexShape)
                     {
-                        if (Property is IndexControlPoint controlPoint)
-                        {
-                            if (Annotation is VertexShape vertexShape)
-                            {
-                                vertexShape.RemovePoint(controlPoint.Index);
-                            }
-                        }
+                        aVertexShape.RemovePoint(aCPoint.Index);
                     }
                     break;
                 case OperationType.PointRemove:
+                    if (Property is IndexControlPoint rCPoint
+                        && Annotation is VertexShape rVertexShape
+                        && NewValue is SKPoint rPoint)
                     {
-                        if (Property is IndexControlPoint controlPoint)
-                        {
-                            if (Annotation is VertexShape vertexShape)
-                            {
-                                vertexShape.InsertPoint(controlPoint.Index, (SKPoint)NewValue);
-                            }
-                        }
+                        rVertexShape.InsertPoint(rCPoint.Index, rPoint);
                     }
                     break;
             }
 
             if (Annotation.Page?.Annotations.Contains(Annotation) ?? false)
             {
-                OperationList.SelectedAnnotation = Annotation;
+                Operations.SelectedAnnotation = Annotation;
             }
         }
     }

@@ -40,7 +40,7 @@ namespace PdfClown.Documents.Contents.Objects
         public static readonly string EndOperatorKeyword = EndInlineImage.OperatorKeyword;
 
         private static readonly string DataOperatorKeyword = "ID";
-        private SKBitmap image;
+        private SKImage image;
         private IContentContext Context;
 
         public GraphicsInlineImage(InlineImageHeader header, InlineImageBody body)
@@ -121,14 +121,14 @@ namespace PdfClown.Documents.Contents.Objects
                         using (var paint = new SKPaint())
                         {
                             paint.Color = state.GetFillColor() ?? SKColors.Black;
-                            canvas.DrawBitmap(image, 0, 0, paint);
+                            canvas.DrawImage(image, 0, 0, paint);
                         }
                     }
                     else
                     {
                         using (var paint = state.CreateFillPaint())
                         {
-                            canvas.DrawBitmap(image, 0, 0, paint);
+                            canvas.DrawImage(image, 0, 0, paint);
                         }
                     }
                     //canvas.Restore();
@@ -136,13 +136,13 @@ namespace PdfClown.Documents.Contents.Objects
             }
         }
 
-        public SKBitmap Load(GraphicsState state)
+        public SKImage Load(GraphicsState state)
         {
             if (image != null)
                 return image;
             
             image = BitmapLoader.Load(this, state);
-            state.Scanner.Contents.Document.Cache[(PdfArray)Header.Operands] = image;
+            state.Scanner.Contents.Document.Cache[Header.Operands] = image;
             return image;
         }
 

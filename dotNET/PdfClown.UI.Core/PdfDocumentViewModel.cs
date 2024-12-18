@@ -20,41 +20,58 @@ namespace PdfClown.UI
         public static readonly float DoubleIndent = Indent * 2;
         public static PdfDocumentViewModel LoadFrom(string filePath)
         {
-            var document = new PdfDocumentViewModel();
-            document.Load(filePath);
-            return document;
+            var tempFilePath = GetTempPath(filePath);
+            File.Copy(filePath, tempFilePath, true);
+            var fileStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            return LoadFrom(fileStream, filePath, tempFilePath);
         }
 
-        public static PdfDocumentViewModel LoadFrom(Stream fileStream)
+        public static PdfDocumentViewModel LoadFrom(Stream stream, string? filePath = null, string? tempFilePath = null)
         {
-            var document = new PdfDocumentViewModel();
-            document.Load(fileStream);
-            return document;
+            if (string.IsNullOrEmpty(filePath)
+               && stream is FileStream fileStream)
+            {
+                filePath = fileStream.Name;
+                tempFilePath = GetTempPath(filePath);
+                File.Copy(filePath, tempFilePath, true);
+                fileStream.Close();
+                stream = new FileStream(tempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            }
+            return new PdfDocumentViewModel(new PdfDocument(stream))
+            {
+                FilePath = filePath,
+                TempFilePath = tempFilePath,
+            };
         }
 
-        private readonly List<PdfPageViewModel> pageViews = new List<PdfPageViewModel>();
-        private readonly Dictionary<int, PdfPageViewModel> indexCache = new Dictionary<int, PdfPageViewModel>();
-        private readonly Dictionary<PdfPage, PdfPageViewModel> pageCache = new Dictionary<PdfPage, PdfPageViewModel>();
-        private int iniFieldsCount;
-        private Fields fields;
-        private SKPaint pageBackgroundPaint;
+        private readonly List<PdfPageViewModel> pageViews = new();
+        private readonly Dictionary<int, PdfPageViewModel> indexCache = new();
+        private readonly Dictionary<PdfPage, PdfPageViewModel> pageCache = new();
+        private Fields? fields;
+        private SKPaint? pageBackgroundPaint;
         private SKColor pageBackgroundColor = SKColors.White;
         private SKRect? bounds;
         private SKSize size;
         private SKMatrix matrix = SKMatrix.Identity;
-        private SKPaint pageForegroundPaint;
+        private SKPaint? pageForegroundPaint;        
 
-        public ManualResetEventSlim LockObject => Document?.File.LockObject;
+        public PdfDocumentViewModel(PdfDocument document)
+        {
+            Document = document;
+            LoadPages();
+        }
+
+        public ManualResetEventSlim LockObject => Document.LockObject;
 
         public bool IsPaintComplete => LockObject?.IsSet ?? true;
 
-        public PdfFile File { get; private set; }
+        public PdfDocument Document { get; private set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public PdfDocument Document => File.Document;
+        public PdfCatalog Catalog => Document.Catalog;
 
-        public Pages Pages { get; private set; }
+        public PdfPages Pages => Catalog.Pages;
 
         public int PagesCount => pageViews.Count;
 
@@ -66,20 +83,20 @@ namespace PdfClown.UI
         {
             get
             {
-                if (fields == null || fields != Document.Form.Fields)
+                if (fields == null || fields != Catalog.Form.Fields)
                 {
-                    iniFieldsCount = Document.Form.Fields.Count;
-                    fields = Document.Form.Fields;
+                    var iniFieldsCount = Catalog.Form.Fields.Count;
+                    fields = Catalog.Form.Fields;
                 }
                 return fields;
             }
         }
 
-        IEnumerable<Field> IPdfDocumentViewModel.Fields => Fields;
+        IEnumerable<Field>? IPdfDocumentViewModel.Fields => Fields;
 
-        public string FilePath { get; private set; }
+        public string? FilePath { get; private set; }
 
-        public string TempFilePath { get; set; }
+        public string? TempFilePath { get; set; }
 
         public SKRect Bounds
         {
@@ -144,7 +161,7 @@ namespace PdfClown.UI
 
         public float AvgHeigth { get; private set; }
 
-        public bool IsClosed => File == null;
+        public bool IsClosed => Document == null;
 
         public SKColor PageBackgroundColor
         {
@@ -162,7 +179,8 @@ namespace PdfClown.UI
                     pageForegroundPaint = null;
                     temp?.Dispose();
 
-                    Document.PageAlpha = value.Alpha == 255 ? null : value.Alpha / 255F;
+                    if (Catalog != null)
+                        Catalog.PageAlpha = value.Alpha == 255 ? null : value.Alpha / 255F;
 
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(PageAlpha));
@@ -181,7 +199,7 @@ namespace PdfClown.UI
 
         public SKPaint PageBackgroundPaint => pageBackgroundPaint ??= GetPageBackgroundPaint();
 
-        public SKPaint PageForegroundPaint => pageForegroundPaint ??= GetPageForegroundPaint();
+        public SKPaint? PageForegroundPaint => pageForegroundPaint ??= GetPageForegroundPaint();
 
         public float DefaultXOffset { get; internal set; }
 
@@ -192,13 +210,13 @@ namespace PdfClown.UI
             get => pageViews[index];
         }
 
-        public event PdfAnnotationEventHandler AnnotationAdded;
+        public event PdfAnnotationEventHandler? AnnotationAdded;
 
-        public event PdfAnnotationEventHandler AnnotationRemoved;
+        public event PdfAnnotationEventHandler? AnnotationRemoved;
 
-        public event EventHandler BoundsChanged;
+        public event EventHandler? BoundsChanged;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private SKRect CalculateBounds()
         {
@@ -215,7 +233,7 @@ namespace PdfClown.UI
             };
         }
 
-        private SKPaint GetPageForegroundPaint()
+        private SKPaint? GetPageForegroundPaint()
         {
             if (PageAlpha == 255)
                 return null;
@@ -228,7 +246,6 @@ namespace PdfClown.UI
         public void LoadPages()
         {
             float totalWidth, totalHeight;
-            Pages = Document.Pages;
 
             totalWidth = 0F;
             totalHeight = 0F;
@@ -242,22 +259,22 @@ namespace PdfClown.UI
                 var box = page.RotatedBox;
                 var dpi = 1F;
                 var imageSize = new SKSize(box.Width * dpi, box.Height * dpi);
-                var pageView = new PdfPageViewModel
+                page.Index = order;
+                var pageView = new PdfPageViewModel(this, page)
                 {
-                    Document = this,
-                    Order = order++,
-                    Index = page.Index,
-                    Page = page,
+                    Order = order,
+                    Index = order,
                     Size = imageSize
                 };
                 pageView.Matrix = pageView.Matrix.PostConcat(SKMatrix.CreateTranslation(Indent, totalHeight));
-                indexCache[pageView.Index] = pageView;
+                indexCache[order] = pageView;
                 pageCache[page] = pageView;
                 pageViews.Add(pageView);
                 if (imageSize.Width > totalWidth)
                     totalWidth = imageSize.Width;
 
                 totalHeight += imageSize.Height;
+                order++;
             }
             Size = new SKSize(totalWidth + DoubleIndent, totalHeight);
 
@@ -275,9 +292,9 @@ namespace PdfClown.UI
 
         public PdfDocumentViewModel GetDocumentView(PdfDocument document) => this;
 
-        public PdfPageViewModel GetPageView(int index) => indexCache.TryGetValue(index, out var pageView) ? pageView : null;
+        public PdfPageViewModel? GetPageView(int index) => indexCache.TryGetValue(index, out var pageView) ? pageView : null;
 
-        public PdfPageViewModel GetPageView(PdfPage page) => pageCache.TryGetValue(page, out var pageView) ? pageView : null;
+        public PdfPageViewModel? GetPageView(PdfPage page) => pageCache.TryGetValue(page, out var pageView) ? pageView : null;
 
         private void ClearPages()
         {
@@ -292,16 +309,18 @@ namespace PdfClown.UI
 
         public void Dispose()
         {
-            if (File != null)
+            if (Document != null)
             {
                 pageBackgroundPaint?.Dispose();
                 pageBackgroundPaint = null;
                 ClearPages();
-                File.Dispose();
-                File = null;
+                Document.Dispose();
                 GC.Collect();
-                try { System.IO.File.Delete(TempFilePath); }
-                catch { }
+                if (TempFilePath != null)
+                {
+                    try { File.Delete(TempFilePath); }
+                    catch { }
+                }
             }
         }
 
@@ -314,42 +333,21 @@ namespace PdfClown.UI
                 tempPath = $"{filePath}~{index}";
                 index = (index ?? 0) + 1;
             }
-            while (System.IO.File.Exists(tempPath));
+            while (File.Exists(tempPath));
             return tempPath;
-        }
-
-        public void Load(string filePath)
-        {
-            FilePath = filePath;
-            TempFilePath = GetTempPath(filePath);
-            System.IO.File.Copy(filePath, TempFilePath, true);
-            var fileStream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-            Load(fileStream);
-        }
-
-        public void Load(Stream stream)
-        {
-            if (string.IsNullOrEmpty(FilePath)
-                && stream is FileStream fileStream)
-            {
-                FilePath = fileStream.Name;
-                TempFilePath = GetTempPath(FilePath);
-                System.IO.File.Copy(FilePath, TempFilePath, true);
-                fileStream.Close();
-                stream = new FileStream(TempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-            }
-
-            File = new PdfFile(stream);
-            fields = null;
-            LoadPages();
-        }
+        }        
 
         public void Save(SerializationModeEnum mode = SerializationModeEnum.Standard)
         {
+            if (FilePath == null)
+                throw new Exception("FilePath not specified!");
             var path = FilePath;
-            var tempPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".tmp~");
+            var dir = Path.GetDirectoryName(path);
+            if (dir == null)
+                throw new Exception("FilePath is invalid!");
+            var tempPath = Path.Combine(dir, Path.GetFileNameWithoutExtension(path) + ".tmp~");
             Save(tempPath, mode);
-            System.IO.File.Copy(tempPath, path, true);
+            File.Copy(tempPath, path, true);
         }
 
         public void Save(string path)
@@ -359,7 +357,7 @@ namespace PdfClown.UI
 
         public void Save(string path, SerializationModeEnum mode)
         {
-            File.Save(path, mode);
+            Document.Save(path, mode);
         }
 
         public void SaveTo(Stream stream)
@@ -369,12 +367,12 @@ namespace PdfClown.UI
 
         public void SaveTo(Stream stream, SerializationModeEnum mode)
         {
-            File.Save(stream, mode);
+            Document.Save(stream, mode);
         }
 
         private SerializationModeEnum GetMode()
         {
-            return Document.HasSignatures
+            return Catalog.HasSignatures
                 ? SerializationModeEnum.Incremental
                 : SerializationModeEnum.Standard;
         }
@@ -393,20 +391,11 @@ namespace PdfClown.UI
             return field;
         }
 
-        public IEnumerable<Annotation> GetAllAnnotations()
-        {
-            foreach (var pageView in PageViews)
-            {
-                foreach (var annotation in pageView.GetAnnotations())
-                {
-                    yield return annotation;
-                }
-            }
-        }
+        public IEnumerable<Annotation> GetAllAnnotations() => PageViews.SelectMany(x => x.Annotations);
 
-        public Annotation FindAnnotation(string name, int? pageIndex = null)
+        public Annotation? FindAnnotation(string name, int? pageIndex = null)
         {
-            var annotation = (Annotation)null;
+            var annotation = (Annotation?)null;
             if (pageIndex == null)
             {
                 foreach (var pageView in PageViews)
@@ -497,8 +486,10 @@ namespace PdfClown.UI
             return list;
         }
 
-        public IPdfDocumentViewModel Reload(EditOperationList operations)
+        public IPdfDocumentViewModel Reload(EditorOperations operations)
         {
+            if(FilePath == null)
+                throw new ArgumentNullException(nameof(FilePath));
             var newDocument = LoadFrom(FilePath);
             if (operations.Count > 0 && !IsClosed)
             {
@@ -534,7 +525,7 @@ namespace PdfClown.UI
             BoundsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

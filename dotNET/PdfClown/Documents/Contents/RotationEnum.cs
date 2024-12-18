@@ -30,34 +30,25 @@ using SkiaSharp;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Rotation (clockwise) [PDF:1.6:3.6.2].</summary>
-    */
+    /// <summary>Rotation (clockwise) [PDF:1.6:3.6.2].</summary>
     public enum RotationEnum
     {
-        /**
-          Downward (0° clockwise).
-        */
+        /// <summary>Downward (0° clockwise).</summary>
         Downward = 0,
-        /**
-          Leftward (90° clockwise).
-        */
+
+        /// <summary>Leftward (90° clockwise).</summary>
         Leftward = 90,
-        /**
-          Upward (180° clockwise).
-        */
+        
+        /// <summary>Upward (180° clockwise).</summary>
         Upward = 180,
-        /**
-          Rightward (270° clockwise).
-        */
+
+        /// <summary>Rightward (270° clockwise).</summary>
         Rightward = 270
     }
 
     internal static class RotationEnumExtension
     {
-        /**
-          <summary>Gets the direction corresponding to the given value.</summary>
-        */
+        /// <summary>Gets the direction corresponding to the given value.</summary>
         public static RotationEnum Get(IPdfNumber value)
         {
             if (value == null)

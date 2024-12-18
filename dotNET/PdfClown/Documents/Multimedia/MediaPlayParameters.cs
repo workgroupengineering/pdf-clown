@@ -26,70 +26,21 @@
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
+
     /// <summary>Media play parameters [PDF:1.7:9.1.4].</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class MediaPlayParameters : PdfObjectWrapper<PdfDictionary>
+    public sealed class MediaPlayParameters : PdfDictionary
     {
+        private Viability rpreferences;
+        private Viability requirements;
+
         /// <summary>Media player parameters viability.</summary>
         public class Viability : PdfObjectWrapper<PdfDictionary>
         {
-            private class DurationObject : PdfObjectWrapper<PdfDictionary>
-            {
-                public DurationObject(double value)
-                    : base(new PdfDictionary(2) { { PdfName.Type, PdfName.MediaDuration } })
-                { Value = value; }
-
-                public DurationObject(PdfDirectObject baseObject)
-                    : base(baseObject)
-                { }
-
-                /// <summary>Gets/Sets the temporal duration.</summary>
-                /// <returns>
-                ///   <list type="bullet">
-                ///     <item><code>Double.NEGATIVE_INFINITY</code>: intrinsic duration of the associated media;
-                ///     </item>
-                ///     <item><code>Double.POSITIVE_INFINITY</code>: infinite duration;</item>
-                ///     <item>non-infinite positive: explicit duration.</item>
-                ///   </list>
-                /// </returns>
-                public double Value
-                {
-                    get
-                    {
-                        var durationSubtype = BaseDataObject.Get<PdfName>(PdfName.S);
-                        if (PdfName.I.Equals(durationSubtype))
-                            return Double.NegativeInfinity;
-                        else if (PdfName.F.Equals(durationSubtype))
-                            return Double.PositiveInfinity;
-                        else if (PdfName.T.Equals(durationSubtype))
-                            return new Timespan(BaseDataObject[PdfName.T]).Time;
-                        else
-                            throw new NotSupportedException("Duration subtype '" + durationSubtype + "'");
-                    }
-                    set
-                    {
-                        if (Double.IsNegativeInfinity(value))
-                        {
-                            BaseDataObject[PdfName.S] = PdfName.I;
-                            BaseDataObject.Remove(PdfName.T);
-                        }
-                        else if (Double.IsPositiveInfinity(value))
-                        {
-                            BaseDataObject[PdfName.S] = PdfName.F;
-                            BaseDataObject.Remove(PdfName.T);
-                        }
-                        else
-                        {
-                            BaseDataObject[PdfName.S] = PdfName.T;
-                            new Timespan(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.T)).Time = value;
-                        }
-                    }
-                }
-            }
-
             public enum FitModeEnum
             {
                 /// <summary>The media's width and height are scaled while preserving the aspect ratio so that
@@ -118,14 +69,15 @@ namespace PdfClown.Documents.Multimedia
                 Default
             }
 
-            public Viability(PdfDirectObject baseObject) : base(baseObject)
+            public Viability(PdfDirectObject baseObject)
+                : base(baseObject)
             { }
 
             /// <summary>Gets/Sets whether the media should automatically play when activated.</summary>
             public bool Autoplay
             {
-                get => BaseDataObject.GetBool(PdfName.A, true);
-                set => BaseDataObject.Set(PdfName.A, value);
+                get => DataObject.GetBool(PdfName.A, true);
+                set => DataObject.Set(PdfName.A, value);
             }
 
             /// <summary>Gets/Sets the temporal duration, corresponding to the notion of simple duration in
@@ -140,24 +92,30 @@ namespace PdfClown.Documents.Multimedia
             /// </returns>
             public double Duration
             {
-                get => Wrap<DurationObject>(BaseDataObject[PdfName.D])?.Value ?? Double.NegativeInfinity;
-                set => BaseDataObject[PdfName.D] = new DurationObject(value).BaseObject;
+                get => DurationInstance?.Value ?? Double.NegativeInfinity;
+                set => DurationInstance.Value = value;
+            }
+
+            private MediaDuration DurationInstance
+            {
+                get => DataObject.GetOrCreate<MediaDuration>(PdfName.D);
+                set => DataObject.Set(PdfName.D, value);
             }
 
             /// <summary>Gets/Sets the manner in which the player should treat a visual media type that does
             /// not exactly fit the rectangle in which it plays.</summary>
             public FitModeEnum? FitMode
             {
-                get => (FitModeEnum?)BaseDataObject.GetNInt(PdfName.F);
-                set => BaseDataObject.Set(PdfName.F, (int?)value);
+                get => (FitModeEnum?)DataObject.GetNInt(PdfName.F);
+                set => DataObject.Set(PdfName.F, (int?)value);
             }
 
             /// <summary>Gets/Sets whether to display a player-specific controller user interface (for
             /// example, play/pause/stop controls) when playing.</summary>
             public bool PlayerSpecificControl
             {
-                get => BaseDataObject.GetBool(PdfName.C, false);
-                set => BaseDataObject.Set(PdfName.C, value);
+                get => DataObject.GetBool(PdfName.C, false);
+                set => DataObject.Set(PdfName.C, value);
             }
 
             /// <summary>Gets/Sets the number of iterations of the duration to repeat; similar to SMIL's
@@ -169,55 +127,63 @@ namespace PdfClown.Documents.Multimedia
             /// </returns>
             public double RepeatCount
             {
-                get => BaseDataObject.GetDouble(PdfName.RC, 1d);
-                set => BaseDataObject.Set(PdfName.RC, value);
+                get => DataObject.GetDouble(PdfName.RC, 1d);
+                set => DataObject.Set(PdfName.RC, value);
             }
 
             /// <summary>Gets/Sets the volume level as a percentage of recorded volume level. A zero value
             /// is equivalent to mute.</summary>
             public int Volume
             {
-                get => BaseDataObject.GetInt(PdfName.V, 100);
+                get => DataObject.GetInt(PdfName.V, 100);
                 set
                 {
                     if (value < 0)
                     { value = 0; }
                     else if (value > 100)
                     { value = 100; }
-                    BaseDataObject.Set(PdfName.V, value);
+                    DataObject.Set(PdfName.V, value);
                 }
             }
         }
 
-        public MediaPlayParameters(PdfDocument context)
-            : base(context, new PdfDictionary(4) { { PdfName.Type, PdfName.MediaPlayParams } })
+        public MediaPlayParameters()
+            : base(new Dictionary<PdfName, PdfDirectObject>(4) {
+                { PdfName.Type, PdfName.MediaPlayParams }
+            })
         { }
 
-        public MediaPlayParameters(PdfDirectObject baseObject)
+        public MediaPlayParameters(PdfDocument context)
+            : base(context, new Dictionary<PdfName, PdfDirectObject>(4) {
+                { PdfName.Type, PdfName.MediaPlayParams }
+            })
+        { }
+
+        internal MediaPlayParameters(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the player rules for playing this media.</summary>
         public MediaPlayers Players
         {
-            get => Wrap<MediaPlayers>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PL));
-            set => BaseDataObject[PdfName.PL] = PdfObjectWrapper.GetBaseObject(value);
+            get => GetOrCreate<MediaPlayers>(PdfName.PL);
+            set => Set(PdfName.PL, value);
         }
 
         /// <summary>Gets/Sets the preferred options the renderer should attempt to honor without affecting
         /// its viability.</summary>
         public Viability Preferences
         {
-            get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.BE));
-            set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
+            get => rpreferences ??= new(GetOrCreate<PdfDictionary>(PdfName.BE));
+            set => Set(PdfName.BE, rpreferences = value);
         }
 
         /// <summary>Gets/Sets the minimum requirements the renderer must honor in order to be considered
         /// viable.</summary>
         public Viability Requirements
         {
-            get => Wrap<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MH));
-            set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
+            get => requirements ??= new(GetOrCreate<PdfDictionary>(PdfName.MH));
+            set => Set(PdfName.MH, requirements = value);
         }
     }
 }

@@ -39,20 +39,31 @@ namespace PdfClown.Documents.Contents.Fonts
             CID
         }
 
+        public static string GetTag(EntryTypeEnum entryType)
+        {
+            switch (entryType)
+            {
+                case EntryTypeEnum.BaseFont:
+                    return "bf";
+                case EntryTypeEnum.CID:
+                    return "cid";
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
         public delegate int GetOutCodeDelegate(KeyValuePair<ByteKey, int> entry);
 
         private delegate void BuildEntryDelegate<T>(T entry, IByteStream buffer, GetOutCodeDelegate outCodeFunction, string outCodeFormat);
 
         private static readonly int SubSectionMaxCount = 100;
 
-        /**
-          <summary>Builds a CMap according to the specified arguments.</summary>
-          <param name="entryType"></param>
-          <param name="cmapName">CMap name (<code>null</code> in case no custom name is needed).</param>
-          <param name="codes"></param>
-          <param name="outCodeFunction"></param>
-          <returns>Buffer containing the serialized CMap.</returns>
-        */
+        /// <summary>Builds a CMap according to the specified arguments.</summary>
+        /// <param name="entryType"></param>
+        /// <param name="cmapName">CMap name (<code>null</code> in case no custom name is needed).</param>
+        /// <param name="codes"></param>
+        /// <param name="outCodeFunction"></param>
+        /// <returns>Buffer containing the serialized CMap.</returns>
         public static IByteStream Build(EntryTypeEnum entryType, string cmapName, SortedDictionary<ByteKey, int> codes, GetOutCodeDelegate outCodeFunction)
         {
             IByteStream buffer = new ByteStream();
@@ -223,8 +234,7 @@ namespace PdfClown.Documents.Contents.Fonts
           BuildEntryDelegate<T> buildEntryFunction,
           string operatorSuffix,
           GetOutCodeDelegate outCodeFunction,
-          string outCodeFormat
-          )
+          string outCodeFormat)
         {
             if (items.Count == 0)
                 return;
@@ -236,21 +246,21 @@ namespace PdfClown.Documents.Contents.Fonts
                     if (index > 0)
                     {
                         buffer.Write("end");
-                        buffer.Write(entryType.Tag());
+                        buffer.Write(GetTag(entryType));
                         buffer.Write(operatorSuffix);
                         buffer.Write("\n");
                     }
                     buffer.Write(Math.Min(count - index, SubSectionMaxCount).ToString());
                     buffer.Write(" ");
                     buffer.Write("begin");
-                    buffer.Write(entryType.Tag());
+                    buffer.Write(GetTag(entryType));
                     buffer.Write(operatorSuffix);
                     buffer.Write("\n");
                 }
                 buildEntryFunction(items[index], buffer, outCodeFunction, outCodeFormat);
             }
             buffer.Write("end");
-            buffer.Write(entryType.Tag());
+            buffer.Write(GetTag(entryType));
             buffer.Write(operatorSuffix);
             buffer.Write("\n");
         }
@@ -265,21 +275,5 @@ namespace PdfClown.Documents.Contents.Fonts
             buffer.Write(String.Format(outCodeFormat, outCodeFunction(cidRange[0])));
             buffer.Write("\n");
         }
-    }
-
-    internal static class EntryTypeEnumExtension
-    {
-        public static string Tag(this CMapBuilder.EntryTypeEnum entryType)
-        {
-            switch (entryType)
-            {
-                case CMapBuilder.EntryTypeEnum.BaseFont:
-                    return "bf";
-                case CMapBuilder.EntryTypeEnum.CID:
-                    return "cid";
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-    }
+    }    
 }

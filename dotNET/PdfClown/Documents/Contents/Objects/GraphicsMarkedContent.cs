@@ -54,7 +54,7 @@ namespace PdfClown.Documents.Contents.Objects
             set => header = (BeginMarkedContent)value;
         }
 
-        public string Type => header?.Operands.Count > 0 ? ((header.Operands[0] as PdfName)?.RawValue) : null;
+        public string Type => header?.Operands.Count > 0 ? (header.Operands.Get<PdfName>(0)?.RawValue) : null;
 
         public ContentMarker MarkerHeader { get => header; }
 

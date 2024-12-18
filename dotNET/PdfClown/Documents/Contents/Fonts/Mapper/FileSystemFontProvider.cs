@@ -14,38 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Text;
+using Org.BouncyCastle.Crypto.Digests;
+using Org.BouncyCastle.Utilities.Encoders;
 using PdfClown.Documents.Contents.Fonts.Autodetect;
 using PdfClown.Documents.Contents.Fonts.CCF;
 using PdfClown.Documents.Contents.Fonts.TTF;
 using PdfClown.Documents.Contents.Fonts.Type1;
-using System.Diagnostics;
-using System.Security;
 using PdfClown.Tokens;
-using System.Linq;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities.Encoders;
-using System.Security.Cryptography;
-using System.Buffers;
-using PdfClown.Util.Collections;
 using PdfClown.Util.IO;
-using Org.BouncyCastle.Crypto.Digests;
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Security;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
 
-    /**
-     * A FontProvider which searches for fonts on the local filesystem.
-     *
-     * @author John Hewson
-     */
+    /// <summary>
+    /// A FontProvider which searches for fonts on the local filesystem.
+    /// @author John Hewson
+    /// </summary>
     public sealed class FileSystemFontProvider : FontProvider
     {
-        private readonly List<FSFontInfo> fontInfoList = new List<FSFontInfo>();
+        private readonly List<FSFontInfo> fontInfoList = new();
         private readonly FontCache cache;
 
         private class FSFontInfo : FontInfo
@@ -102,12 +98,6 @@ namespace PdfClown.Documents.Contents.Fonts
                 get => cidSystemInfo;
             }
 
-            /**
-			 * {@inheritDoc}
-			 * <p>
-			 * The method returns null if there is there was an error opening the font.
-			 * 
-			 */
             public override BaseFont Font
             {
                 get
@@ -294,9 +284,6 @@ namespace PdfClown.Documents.Contents.Fonts
             return new FSFontInfo(file, format, postScriptName, null, 0, 0, 0, 0, 0, null, null, hash, file.LastWriteTimeUtc.ToBinary());
         }
 
-        /**
-		 * Constructor.
-		 */
         public FileSystemFontProvider(FontCache cache)
         {
             this.cache = cache;
@@ -559,17 +546,15 @@ namespace PdfClown.Documents.Contents.Fonts
             return results;
         }
 
-        /**
-		 * Adds a TTC or OTC to the file cache. To reduce memory, the parsed font is not cached.
-		 */
+        /// <summary>
+        /// Adds a TTC or OTC to the file cache. To reduce memory, the parsed font is not cached.
+        /// </summary>
         private void AddTrueTypeCollection(FileInfo ttcFile)
         {
             try
             {
-                using (TrueTypeCollection ttc = new TrueTypeCollection(ttcFile))
-                {
-                    ttc.ProcessAllFonts(AddTrueTypeFontImpl, ttcFile);
-                }
+                using var ttc = new TrueTypeCollection(ttcFile);
+                ttc.ProcessAllFonts(AddTrueTypeFontImpl, ttcFile);
             }
             catch (IOException e)
             {
@@ -577,9 +562,9 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-		 * Adds an OTF or TTF font to the file cache. To reduce memory, the parsed font is not cached.
-		 */
+        /// <summary>
+        /// Adds an OTF or TTF font to the file cache. To reduce memory, the parsed font is not cached.
+        /// </summary>
         private void AddTrueTypeFont(FileInfo ttfFile)
         {
             FontFormat fontFormat = (FontFormat)(-1);
@@ -607,9 +592,9 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-		 * Adds an OTF or TTF font to the file cache. To reduce memory, the parsed font is not cached.
-		 */
+        /// <summary>
+        /// Adds an OTF or TTF font to the file cache. To reduce memory, the parsed font is not cached.
+        /// </summary>
         private void AddTrueTypeFontImpl(TrueTypeFont ttf, object tag)
         {
             AddTrueTypeFontImpl(ttf, (FileInfo)tag);
@@ -708,37 +693,35 @@ namespace PdfClown.Documents.Contents.Fonts
             }
         }
 
-        /**
-		 * Adds a Type 1 font to the file cache. To reduce memory, the parsed font is not cached.
-		 */
+        /// <summary>
+        /// Adds a Type 1 font to the file cache. To reduce memory, the parsed font is not cached.
+        /// </summary>
         private void AddType1Font(FileInfo pfbFile)
         {
             try
             {
-                using (var fileStream = pfbFile.OpenRead())
-                using (var input = new Bytes.ByteStream(fileStream))
+                using var fileStream = pfbFile.OpenRead();
+                using var input = new Bytes.ByteStream(fileStream);
+                Type1Font type1 = Type1Font.CreateWithPFB(input);
+                if (type1.Name == null)
                 {
-                    Type1Font type1 = Type1Font.CreateWithPFB(input);
-                    if (type1.Name == null)
-                    {
-                        fontInfoList.Add(CreateFSIgnored(pfbFile, FontFormat.PFB, "*skipnoname*"));
-                        Debug.WriteLine("warn: Missing 'name' entry for PostScript name in font " + pfbFile);
-                        return;
-                    }
-                    if (type1.Name.Contains("|"))
-                    {
-                        fontInfoList.Add(CreateFSIgnored(pfbFile, FontFormat.PFB, "*skippipeinname*"));
-                        Debug.WriteLine($"warn: Skipping font with '|' in name {type1.Name} in file {pfbFile}");
-                        return;
-                    }
-                    string hash = ComputeHash(pfbFile.FullName);
-                    fontInfoList.Add(new FSFontInfo(pfbFile, FontFormat.PFB, type1.Name,
-                                                    null, -1, -1, 0, 0, -1, null, this, hash, pfbFile.LastWriteTimeUtc.ToBinary()));
+                    fontInfoList.Add(CreateFSIgnored(pfbFile, FontFormat.PFB, "*skipnoname*"));
+                    Debug.WriteLine("warn: Missing 'name' entry for PostScript name in font " + pfbFile);
+                    return;
+                }
+                if (type1.Name.Contains("|"))
+                {
+                    fontInfoList.Add(CreateFSIgnored(pfbFile, FontFormat.PFB, "*skippipeinname*"));
+                    Debug.WriteLine($"warn: Skipping font with '|' in name {type1.Name} in file {pfbFile}");
+                    return;
+                }
+                string hash = ComputeHash(pfbFile.FullName);
+                fontInfoList.Add(new FSFontInfo(pfbFile, FontFormat.PFB, type1.Name,
+                                                null, -1, -1, 0, 0, -1, null, this, hash, pfbFile.LastWriteTimeUtc.ToBinary()));
 
 #if TRACE
                     Debug.WriteLine($"trace: PFB: '{type1.Name}' / '{type1.FamilyName}' / '{type1.Weight}'");
 #endif
-                }
             }
             catch (IOException e)
             {

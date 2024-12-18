@@ -23,24 +23,16 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 
-using System;
-
 namespace PdfClown.Documents.Interaction.Forms
 {
-    /**
-      <summary>List box [PDF:1.6:8.6.3].</summary>
-    */
+    /// <summary>List box [PDF:1.6:8.6.3].</summary>
     [PDF(VersionEnum.PDF12)]
     public sealed class ListBox : ChoiceField
     {
-        /**
-          <summary>Creates a new listbox within the given document context.</summary>
-        */
+        /// <summary>Creates a new listbox within the given document context.</summary>
         public ListBox(string name, Widget widget)
             : base(name, widget)
         { }

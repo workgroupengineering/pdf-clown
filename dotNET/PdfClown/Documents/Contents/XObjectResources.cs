@@ -25,25 +25,26 @@
 
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
-    ///<summary>External object resources collection [PDF:1.6:3.7.2].</summary>
+    /// <summary>External object resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class XObjectResources : Dictionary<XObject>
+    public sealed class XObjectResources : PdfDictionary<XObject>
     {
-        public class ValueWrapper : IEntryWrapper<XObject>
-        {
-            public XObject Wrap(PdfDirectObject baseObject) => XObject.Wrap(baseObject);
-        }
-
-        private static readonly ValueWrapper Wrapper = new ValueWrapper();
-
-        public XObjectResources(PdfDocument context) : base(context, Wrapper)
+        public XObjectResources()
+            : base((PdfDocument)null)
         { }
 
-        public XObjectResources(PdfDirectObject baseObject) : base(baseObject, Wrapper)
+        public XObjectResources(PdfDocument context)
+            : base(context)
         { }
 
+        internal XObjectResources(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        public override PdfName ModifyTypeKey(PdfName key) => PdfName.XObject;
     }
 }

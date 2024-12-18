@@ -14,18 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using PdfClown.Bytes.Filters.Jpx;
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-    /**
-     * A CFF charset. A charset is an array of CIDs for all glyphs in the font.
-     *
-     * @author Valery Bokov
-     */
+    /// <summary>
+    /// A CFF charset.A charset is an array of CIDs for all glyphs in the font.
+    /// @author Valery Bokov
+    /// </summary>
     public class CFFCharsetType1 : CFFCharset
     {
         private readonly static string EXCEPTION_MESSAGE = "Not a CIDFont";

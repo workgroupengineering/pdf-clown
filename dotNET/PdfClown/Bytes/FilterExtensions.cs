@@ -31,11 +31,6 @@ namespace PdfClown.Bytes
 {
     public static class FilterExtensions
     {
-        public static PdfDataObject Resolve(PdfObject @object)
-        {
-            return @object == null ? null : @object.Resolve();
-        }
-
         /// <summary>Applies the specified filter to decode the buffer.</summary>
         /// <param name="filter">Filter to use for decoding the buffer.</param>
         /// <param name="parameters">Decoding parameters.</param>
@@ -55,7 +50,7 @@ namespace PdfClown.Bytes
             return new ByteStream(filter.Encode(data, parameters, header));
         }
 
-        public static IInputStream Decode(this IInputStream buffer, PdfDataObject filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
+        public static IInputStream Decode(this IInputStream buffer, PdfDirectObject filter, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             if (filter == null)
             {
@@ -67,8 +62,8 @@ namespace PdfClown.Bytes
             }
             else // Multiple filters.
             {
-                using var filterIterator = ((PdfArray)filter).GetEnumerator();
-                IEnumerator<PdfDirectObject> parametersIterator = (parameters != null ? ((PdfArray)parameters).GetEnumerator() : null);
+                using var filterIterator = ((PdfArray)filter).GetItems().GetEnumerator();
+                IEnumerator<PdfDirectObject> parametersIterator = (parameters != null ? ((PdfArray)parameters).GetItems().GetEnumerator() : null);
                 while (filterIterator.MoveNext())
                 {
                     PdfDictionary filterParameters;
@@ -77,9 +72,9 @@ namespace PdfClown.Bytes
                     else
                     {
                         parametersIterator.MoveNext();
-                        filterParameters = (PdfDictionary)Resolve(parametersIterator.Current);
+                        filterParameters = (PdfDictionary)parametersIterator.Current?.Resolve(PdfName.DecodeParms);
                     }
-                    buffer = buffer.Decode(Filter.Get((PdfName)Resolve(filterIterator.Current)), filterParameters, header);
+                    buffer = buffer.Decode(Filter.Get((PdfName)filterIterator.Current?.Resolve(PdfName.Filter)), filterParameters, header);
                 }
             }
             return buffer;

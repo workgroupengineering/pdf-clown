@@ -15,24 +15,19 @@
  * limitations under the License.
  */
 
-using System.IO;
 using System.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A 'kern' table in a true type font.
-     * 
-     * @author Glenn Adams
-     */
+    /// <summary>
+    /// A 'kern' table in a true type font.
+    /// @author Glenn Adams
+    /// </summary>
     public class KerningSubtable
     {
-        //private static readonly Log LOG = LogFactory.getLog(KerningSubtable.class);
-
         // coverage field bit masks and values
         private static readonly int COVERAGE_HORIZONTAL = 0x0001;
         private static readonly int COVERAGE_MINIMUMS = 0x0002;
@@ -54,16 +49,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private IPairData pairs;
 
         public KerningSubtable()
-        {
-        }
+        { }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param data The stream to read the data from.
-         * @param version The version of the table to be read
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="data">The stream to read the data from.</param>
+        /// <param name="version">The version of the table to be read</param>
+        /// <exception cref="InvalidOperationException"></exception>
         public void Read(IInputStream data, int version)
         {
             if (version == 0)
@@ -80,27 +71,25 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Determine if subtable is designated for use in horizontal writing modes and
-         * contains inline progression kerning pairs (not block progression "cross stream")
-         * kerning pairs.
-         *
-         * @return true if subtable is for horizontal kerning
-         */
+        /// <summary>
+        /// Determine if subtable is designated for use in horizontal writing modes and
+        /// contains inline progression kerning pairs(not block progression "cross stream")
+        /// kerning pairs.
+        /// </summary>
+        /// <returns>true if subtable is for horizontal kerning</returns>
         public bool IsHorizontalKerning()
         {
             return IsHorizontalKerning(false);
         }
 
-        /**
-         * Determine if subtable is designated for use in horizontal writing modes, contains
-         * kerning pairs (as opposed to minimum pairs), and, if CROSS is true, then return
-         * cross stream designator; otherwise, if CROSS is false, return true if cross stream
-         * designator is false.
-         *
-         * @param cross if true, then return cross stream designator in horizontal modes
-         * @return true if subtable is for horizontal kerning in horizontal modes
-         */
+        /// <summary>
+        /// Determine if subtable is designated for use in horizontal writing modes, contains
+        /// kerning pairs (as opposed to minimum pairs), and, if CROSS is true, then return
+        /// cross stream designator; otherwise, if CROSS is false, return true if cross stream
+        /// designator is false.
+        /// </summary>
+        /// <param name="cross">if true, then return cross stream designator in horizontal modes</param>
+        /// <returns>true if subtable is for horizontal kerning in horizontal modes</returns>
         public bool IsHorizontalKerning(bool cross)
         {
             if (!horizontal)
@@ -121,16 +110,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Obtain kerning adjustments for GLYPHS sequence, where the
-         * Nth returned adjustment is associated with the Nth glyph
-         * and the succeeding non-zero glyph in the GLYPHS sequence.
-         *
-         * Kerning adjustments are returned in font design coordinates.
-         *
-         * @param glyphs a (possibly empty) array of glyph identifiers
-         * @return a (possibly empty) array of kerning adjustments
-         */
+        /// <summary>
+        /// Obtain kerning adjustments for GLYPHS sequence, where the
+        /// Nth returned adjustment is associated with the Nth glyph
+        /// and the succeeding non-zero glyph in the GLYPHS sequence.
+        /// Kerning adjustments are returned in font design coordinates.
+        /// </summary>
+        /// <param name="glyphs">a (possibly empty) array of glyph identifiers</param>
+        /// <returns>a (possibly empty) array of kerning adjustments</returns>
         public int[] GetKerning(int[] glyphs)
         {
             int[] kerning = null;
@@ -161,13 +148,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return kerning;
         }
 
-        /**
-         * Obtain kerning adjustment for glyph pair {L,R}.
-         *
-         * @param l left member of glyph pair
-         * @param r right member of glyph pair
-         * @return a (possibly zero) kerning adjustment
-         */
+        /// <summary>Obtain kerning adjustment for glyph pair {L,R}.</summary>
+        /// <param name="l">left member of glyph pair</param>
+        /// <param name="r">right member of glyph pair</param>
+        /// <returns>a (possibly zero) kerning adjustment</returns>
         public int GetKerning(int l, int r)
         {
             if (pairs == null)
@@ -195,15 +179,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             int coverage = data.ReadUInt16();
             if (IsBitsSet(coverage, COVERAGE_HORIZONTAL, COVERAGE_HORIZONTAL_SHIFT))
             {
-                this.horizontal = true;
+                horizontal = true;
             }
             if (IsBitsSet(coverage, COVERAGE_MINIMUMS, COVERAGE_MINIMUMS_SHIFT))
             {
-                this.minimums = true;
+                minimums = true;
             }
             if (IsBitsSet(coverage, COVERAGE_CROSS_STREAM, COVERAGE_CROSS_STREAM_SHIFT))
             {
-                this.crossStream = true;
+                crossStream = true;
             }
             int format = GetBits(coverage, COVERAGE_FORMAT, COVERAGE_FORMAT_SHIFT);
             switch (format)

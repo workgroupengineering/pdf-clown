@@ -28,7 +28,6 @@ using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
-using PdfClown.Util.IO;
 using System.Collections.Generic;
 using System.IO;
 
@@ -45,7 +44,7 @@ namespace PdfClown.Documents.Contents.Entities
             return composer.Add(
               new GraphicsInlineImage(
                 new InlineImageHeader(
-                  new PdfArray
+                  new PdfArrayImpl
                   {
                       PdfName.W, Width,
                       PdfName.H, Height,
@@ -60,23 +59,22 @@ namespace PdfClown.Documents.Contents.Entities
         {
             return new ImageXObject(
               context,
-              new PdfStream(
-                new Dictionary<PdfName, PdfDirectObject>(5)
-                {
+              new Dictionary<PdfName, PdfDirectObject>(5)
+              {
                   { PdfName.Width, PdfInteger.Get(Width) },
                   { PdfName.Height, PdfInteger.Get(Height) },
                   { PdfName.BitsPerComponent, PdfInteger.Get(BitsPerComponent) },
                   { PdfName.ColorSpace, PdfName.DeviceRGB },
                   { PdfName.Filter, PdfName.DCTDecode }
-               },
-                new ByteStream(Stream)));
+              },
+              new ByteStream(Stream));
         }
 
         private void Load()
         {
             // NOTE: Big-endian data expected.
             Stream stream = Stream;
-            BigEndianBinaryReader streamReader = new BigEndianBinaryReader(stream);
+            var streamReader = new StreamContainer(stream);
 
             int index = 4;
             stream.Seek(index, SeekOrigin.Begin);
@@ -86,7 +84,7 @@ namespace PdfClown.Documents.Contents.Entities
                 index += streamReader.ReadUInt16();
                 stream.Seek(index, SeekOrigin.Begin);
 
-                stream.Read(markerBytes, 0, 2);
+                stream.ReadExactly(markerBytes, 0, 2);
                 index += 2;
 
                 // Frame header?

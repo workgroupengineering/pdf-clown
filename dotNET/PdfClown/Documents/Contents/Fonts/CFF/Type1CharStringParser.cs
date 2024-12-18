@@ -20,22 +20,16 @@ using System.IO;
 using System;
 using System.Diagnostics;
 using PdfClown.Bytes;
-using PdfClown.Util;
-using Org.BouncyCastle.Utilities;
-using PdfClown.Documents.Contents.Fonts.Type1;
 using PdfClown.Util.Collections;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
 {
-
-    /**
-     * This class represents a converter for a mapping into a Type 1 sequence.
-     *
-     * @see "Adobe Type 1 Font Format, Adobe Systems (1999)"
-     *
-     * @author Villu Ruusmann
-     * @author John Hewson
-     */
+    /// <summary>
+    /// This class represents a converter for a mapping into a Type 1 sequence.
+    /// @see "Adobe Type 1 Font Format, Adobe Systems (1999)"
+    /// @author Villu Ruusmann
+    /// @author John Hewson
+    /// </summary>
     public class Type1CharStringParser
     {
 
@@ -50,32 +44,25 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         private readonly string fontName;
         private string currentGlyph;
 
-        /**
-         * Constructs a new Type1CharStringParser object.
-         *
-         * @param fontName font name
-         */
+        /// <summary>Constructs a new Type1CharStringParser object.</summary>
+        /// <param name="fontName">font name</param>
         public Type1CharStringParser(string fontName)
         {
             this.fontName = fontName;
         }
 
-        /**
-         * The given byte array will be parsed and converted to a Type1 sequence.
-         *
-         * @param bytes the given mapping as byte array
-         * @param subrs list of local subroutines
-         * @param glyphName name of the current glyph
-         * @return the Type1 sequence
-         * @throws IOException if an error occurs during reading
-         */
-        public List<Object> Parse(Memory<byte> bytes, List<Memory<byte>> subrs, string glyphName)
+        /// <summary>The given byte array will be parsed and converted to a Type1 sequence.</summary>
+        /// <param name="bytes">the given mapping as byte array</param>
+        /// <param name="subrs">list of local subroutines</param>
+        /// <param name="glyphName">name of the current glyph</param>
+        /// <returns>the Type1 sequence</returns>
+        public List<object> Parse(Memory<byte> bytes, List<Memory<byte>> subrs, string glyphName)
         {
             currentGlyph = glyphName;
             return Parse(bytes, subrs, new List<object>());
         }
 
-        private List<Object> Parse(Memory<byte> bytes, List<Memory<byte>> subrs, List<Object> sequence)
+        private List<object> Parse(Memory<byte> bytes, List<Memory<byte>> subrs, List<object> sequence)
 
         {
             var input = new ByteStream(bytes);
@@ -106,27 +93,26 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return sequence;
         }
 
-        private void ProcessCallSubr(List<Memory<byte>> subrs, List<Object> sequence)
+        private void ProcessCallSubr(List<Memory<byte>> subrs, List<object> sequence)
         {
             // callsubr command
-            Object obj = sequence.RemoveAtValue(sequence.Count - 1);
-            if (!(obj is int))
+            object obj = sequence.RemoveAtValue(sequence.Count - 1);
+            if (obj is not int operand)
             {
                 Debug.WriteLine("warn: Parameter {} for CALLSUBR is ignored, integer expected in glyph '{}' of font {}",
                         obj, currentGlyph, fontName);
                 return;
             }
-            int operand = (int)obj;
 
             if (operand >= 0 && operand < subrs.Count)
             {
                 var subrBytes = subrs[operand];
                 Parse(subrBytes, subrs, sequence);
-                Object lastItem = sequence[sequence.Count - 1];
+                var lastItem = sequence[sequence.Count - 1];
                 if (lastItem is CharStringCommand lastCommand
                     && Type1KeyWord.RET == lastCommand.Type1KeyWord)
                 {
-                    sequence.RemoveAtValue(sequence.Count - 1); // RemoveAtValue "return" command
+                    sequence.RemoveAt(sequence.Count - 1); // RemoveAtValue "return" command
                 }
             }
             else
@@ -135,12 +121,12 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 // RemoveAtValue all parameters (there can be more than one)
                 while (sequence[sequence.Count - 1] is int)
                 {
-                    sequence.RemoveAtValue(sequence.Count - 1);
+                    sequence.RemoveAt(sequence.Count - 1);
                 }
             }
         }
 
-        private void ProcessCallOtherSubr(IInputStream input, List<Object> sequence)
+        private void ProcessCallOtherSubr(IInputStream input, List<object> sequence)
         {
             // callothersubr command (needed in order to expand Subrs)
             input.ReadByte();
@@ -155,15 +141,15 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
                 case 0:
                     results.Push(RemoveInteger(sequence));
                     results.Push(RemoveInteger(sequence));
-                    sequence.RemoveAtValue(sequence.Count - 1);
+                    sequence.RemoveAt(sequence.Count - 1);
                     // end flex
                     sequence.Add(0);
-                    sequence.Add(CharStringCommand.COMMAND_CALLOTHERSUBR);
+                    sequence.Add(CharStringCommand.CALLOTHERSUBR);
                     break;
                 case 1:
                     // begin flex
                     sequence.Add(1);
-                    sequence.Add(CharStringCommand.COMMAND_CALLOTHERSUBR);
+                    sequence.Add(CharStringCommand.CALLOTHERSUBR);
                     break;
                 case 3:
                     // allows hint replacement
@@ -194,12 +180,12 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 
         // this method is a workaround for the fact that Type1CharStringParser assumes that subrs and
         // othersubrs can be unrolled without executing the 'div' operator, which isn't true
-        private static int RemoveInteger(List<Object> sequence)
+        private static int RemoveInteger(List<object> sequence)
         {
             var item = sequence.RemoveAtValue(sequence.Count - 1);
-            if (item is int)
+            if (item is int intValue)
             {
-                return (int)item;
+                return intValue;
             }
             var command = (CharStringCommand)item;
 
@@ -215,12 +201,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
 
         private CharStringCommand ReadCommand(IInputStream input, byte b0)
         {
-            if (b0 == 12)
-            {
-                var b1 = input.ReadUByte();
-                return CharStringCommand.GetInstance(b0, b1);
-            }
-            return CharStringCommand.GetInstance(b0);
+            return b0 == 12 ? CharStringCommand.GetInstance(b0, input.ReadUByte()) 
+                            : CharStringCommand.GetInstance(b0);
         }
 
         private int ReadNumber(IInputStream input, int b0)

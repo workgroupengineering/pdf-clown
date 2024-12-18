@@ -15,14 +15,8 @@
  * limitations under the License.
  */
 
-using Org.BouncyCastle.Bcpg.Sig;
-using Org.BouncyCastle.Utilities;
 using PdfClown.Documents.Contents.Fonts.TTF.Model;
-using PdfClown.Documents.Contents.Fonts.TTF;
-using PdfClown.Documents.Contents.Fonts.Type1;
-using PdfClown.Tokens;
 using System.Collections.Generic;
-using System;
 using System.Diagnostics;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
@@ -36,8 +30,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF.GSUB
     public class GsubWorkerForLatin : IGsubWorker
     {
         /// <summary> 
-        /// This sequence is very important.This has been taken from <a href =
-        /// "https://docs.microsoft.com/en-us/typography/script-development/standard" > https://docs.microsoft.com/en-us/typography/script-development/standard</a>
+        /// This sequence is very important.This has been taken from 
+        /// <a href="https://docs.microsoft.com/en-us/typography/script-development/standard"> https://docs.microsoft.com/en-us/typography/script-development/standard</a>
         /// </summary>
         private static readonly List<string> FEATURES_IN_ORDER = new() { "ccmp", "liga", "clig" };
 

@@ -14,26 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System.Diagnostics;
 using SkiaSharp;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
 
-    /**
-     * This class provides a glyph to SKPath conversion for true type fonts.
-     * Based on code from Apache Batik, a subproject of Apache XMLGraphics.
-     *
-     * @see
-     * <a href="http://xmlgraphics.apache.org/batik">http://xmlgraphics.apache.org/batik</a>
-     * 
-     * Contour rendering ported from PDF.js, viewed on 14.2.2015, rev 2e97c0d
-     *
-     * @see
-     * <a href="https://github.com/mozilla/pdf.js/blob/c0d17013a28ee7aa048831560b6494a26c52360c/src/core/font_renderer.js">pdf.js/src/core/font_renderer.js</a>
-     *
-     */
+    /// <summary>
+    /// This class provides a glyph to SKPath conversion for true type fonts.
+    /// Based on code from Apache Batik, a subproject of Apache XMLGraphics.
+    /// <a href="http://xmlgraphics.apache.org/batik">http://xmlgraphics.apache.org/batik</a>
+    /// Contour rendering ported from PDF.js, viewed on 14.2.2015, rev 2e97c0d
+    /// <a href="https://github.com/mozilla/pdf.js/blob/c0d17013a28ee7aa048831560b6494a26c52360c/src/core/font_renderer.js">pdf.js/src/core/font_renderer.js</a>
+    /// </summary>
     public class GlyphRenderer
     {
         //private static readonly Log LOG = LogFactory.getLog(GlyphRenderer.class);
@@ -46,10 +39,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             this.glyphDescription = glyphDescription;
         }
 
-        /**
-         * Returns the path of the glyph.
-         * @return the path
-         */
+        /// <summary>Returns the path of the glyph.</summary>
         public SKPath GetPath()
         {
             if (path == null)
@@ -61,9 +51,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return path;
         }
 
-        /**
-         * Set the points of a glyph from the GlyphDescription.
-         */
+        /// <summary>Set the points of a glyph from the GlyphDescription.</summary>
         private Point[] Describe(IGlyphDescription gd)
         {
             int endPtIndex = 0;
@@ -87,16 +75,12 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return points;
         }
 
-        /**
-         * Use the given points to calculate a SKPath.
-         *
-         * @param points the points to be used to generate the SKPath
-         *
-         * @return the calculated SKPath
-         */
+        /// <summary>Use the given points to calculate a SKPath.</summary>
+        /// <param name="points">the points to be used to generate the SKPath</param>
+        /// <returns>the calculated SKPath</returns>
         private SKPath CalculatePath(Point[] points)
         {
-            SKPath path = new SKPath();
+            var path = new SKPath();
             int start = 0;
             for (int p = 0, len = points.Length; p < len; ++p)
             {
@@ -186,9 +170,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return new Point(MidValue(point1.x, point2.x), MidValue(point1.y, point2.y));
         }
 
-        /**
-         * This class represents one point of a glyph.
-         */
+        /// <summary>This class represents one point of a glyph.</summary>
         private struct Point
         {
             internal int x;
@@ -207,9 +189,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             // this constructs an on-curve, non-endofcountour point
             public Point(int xValue, int yValue)
                 : this(xValue, yValue, true, false)
-            {
-            }
-
+            { }
 
             public override string ToString()
             {

@@ -33,10 +33,6 @@ namespace PdfClown.Documents.Interaction.Forms
     [PDF(VersionEnum.PDF12)]
     public sealed class ChoiceItem : PdfObjectWrapper<PdfDirectObject>
     {
-        public static ChoiceItem Wrap(PdfDirectObject baseObject, ChoiceItems choiceItems) => baseObject != null
-                ? baseObject.Wrapper as ChoiceItem ?? new ChoiceItem(baseObject, choiceItems)
-                : null;
-
         private ChoiceItems items;
 
         public ChoiceItem(string value)
@@ -44,15 +40,12 @@ namespace PdfClown.Documents.Interaction.Forms
         { }
 
         public ChoiceItem(PdfDocument context, string value, string text)
-            : base(context, new PdfArray(2) { new PdfTextString(value), new PdfTextString(text) })
+            : base(context, new PdfArrayImpl(2) { new PdfTextString(value), new PdfTextString(text) })
         { }
 
         internal ChoiceItem(PdfDirectObject baseObject, ChoiceItems items)
             : base(baseObject)
         { Items = items; }
-
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
 
         //TODO:make the class immutable (to avoid needing wiring it up to its collection...)!!!
         /// <summary>Gets/Sets the displayed text.</summary>
@@ -60,7 +53,7 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                PdfDirectObject baseDataObject = BaseDataObject;
+                PdfDirectObject baseDataObject = DataObject;
                 if (baseDataObject is PdfArray array) // <value,text> pair.
                     return array.GetString(1);
                 else // Single text string.
@@ -68,10 +61,10 @@ namespace PdfClown.Documents.Interaction.Forms
             }
             set
             {
-                PdfDirectObject baseDataObject = BaseDataObject;
+                PdfDirectObject baseDataObject = DataObject;
                 if (baseDataObject is PdfTextString pdfString)
                 {
-                    BaseObject = baseDataObject = new PdfArray(2) { pdfString, PdfTextString.Default };
+                    RefOrSelf = baseDataObject = new PdfArrayImpl(2) { pdfString, PdfTextString.Default };
 
                     if (items != null)
                     {
@@ -80,8 +73,8 @@ namespace PdfClown.Documents.Interaction.Forms
                           NOTE: This operation is necessary in order to substitute
                           the previous base object with the new one within the list.
                         */
-                        PdfArray itemsObject = items.BaseDataObject;
-                        itemsObject[itemsObject.IndexOf(pdfString)] = baseDataObject;
+                        PdfArray itemsObject = items.DataObject;
+                        itemsObject.Set(itemsObject.IndexOf(pdfString), baseDataObject);
                     }
                 }
                 ((PdfArray)baseDataObject).SetText(1, value);
@@ -93,19 +86,19 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                var baseDataObject = BaseDataObject;
-                if (BaseDataObject is PdfArray array) // <value,text> pair.
+                var baseDataObject = DataObject;
+                if (DataObject is PdfArray array) // <value,text> pair.
                     return array.GetString(0);
                 else // Single text string.
                     return ((IPdfString)baseDataObject).StringValue;
             }
             set
             {
-                PdfDirectObject baseDataObject = BaseDataObject;
+                var baseDataObject = DataObject;
                 if (baseDataObject is PdfArray array) // <value,text> pair.
                 { array.SetText(0, value); }
                 else // Single text string.
-                { BaseObject = new PdfTextString(value); }
+                { RefOrSelf = new PdfTextString(value); }
             }
         }
 

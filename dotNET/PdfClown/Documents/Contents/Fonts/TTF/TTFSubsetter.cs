@@ -16,7 +16,6 @@
  */
 using PdfClown.Bytes;
 using PdfClown.Tokens;
-using PdfClown.Util;
 using PdfClown.Util.Collections;
 using System;
 using System.Collections.Concurrent;
@@ -27,20 +26,14 @@ using System.Linq;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
-
-    /**
-     * Subsetter for TrueType (TTF) fonts.
-     *
-     * <p>Originally developed by Wolfgang Glas for
-     * <a href="https://clazzes.org/display/SKETCH/Clazzes.org+Sketch+Home">Sketch</a>.
-     *
-     * @author Wolfgang Glas
-     */
+    /// <summary>
+    /// Subsetter for TrueType (TTF) fonts.
+    /// <p>Originally developed by Wolfgang Glas for
+    /// <a href="https://clazzes.org/display/SKETCH/Clazzes.org+Sketch+Home">Sketch</a>.
+    /// @author Wolfgang Glas
+    /// </summary>
     public sealed class TTFSubsetter
     {
-        //private static readonly Log LOG = LogFactory.Log(TTFSubsetter.class);
-
         private static readonly byte[] PAD_BUF = new byte[] { 0, 0, 0 };
         //private static readonly TimeZoneInfo TIMEZONE_UTC = TimeZoneInfo.FromSerializedString("UTC");
         private readonly TrueTypeFont ttf;
@@ -52,22 +45,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private string prefix;
         private bool hasAddedCompoundReferences;
 
-        /**
-         * Creates a subsetter for the given font.
-         *
-         * @param ttf the font to be subset
-         */
+        /// <summary>Creates a subsetter for the given font.</summary>
+        /// <param name="ttf">the font to be subset</param>
         public TTFSubsetter(TrueTypeFont ttf)
                : this(ttf, null)
-        {
-        }
+        { }
 
-        /**
-         * Creates a subsetter for the given font.
-         * 
-         * @param ttf the font to be subset
-         * @param tables optional tables to keep if present
-         */
+        /// <summary>Creates a subsetter for the given font.</summary>
+        /// <param name="ttf">the font to be subset</param>
+        /// <param name="tables">optional tables to keep if present</param>
         public TTFSubsetter(TrueTypeFont ttf, List<string> tables)
         {
             this.ttf = ttf;
@@ -83,21 +69,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             glyphIds.Add(0);
         }
 
-        /**
-         * Sets the prefix to add to the font's PostScript name.
-         *
-         * @param prefix
-         */
+        /// <summary>Sets the prefix to add to the font's PostScript name.</summary>
+        /// <param name="prefix"></param>
         public void SetPrefix(string prefix)
         {
             this.prefix = prefix;
         }
 
-        /**
-         * Add the given character code to the subset.
-         * 
-         * @param unicode character code
-         */
+        /// <summary>Add the given character code to the subset.</summary>
+        /// <param name="unicode">character code</param>
         public void Add(int unicode)
         {
             int gid = unicodeCmap.GetGlyphId(unicode);
@@ -108,19 +88,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Add the given character codes to the subset.
-         *
-         * @param unicodeSet character code set
-         */
+        /// <summary>Add the given character codes to the subset.</summary>
+        /// <param name="unicodeSet">character code set</param>
         public void AddAll(ISet<int> unicodeSet)
         {
             foreach (var item in unicodeSet) { Add(item); }
         }
 
-        /**
-         * Returns the map of new -&gt; old GIDs.
-         */
+        /// <summary>Returns the map of new -&gt; old GIDs.</summary>
         public Dictionary<int, int> GetGIDMap()
         {
             AddCompoundReferences();
@@ -135,12 +110,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return newToOld;
         }
 
-        /**
-         * @param output The data output stream.
-         * @param nTables The number of table.
-         * @return The file offset of the first TTF table to write.
-         * @ Upon errors.
-         */
+        /// <summary>Write File Head</summary>
+        /// <param name="output">The data output stream.</param>
+        /// <param name="nTables">The number of table.</param>
+        /// <returns>The file offset of the first TTF table to write.</returns>
         private long WriteFileHeader(IOutputStream output, int nTables)
         {
             output.Write(0x00010000);
@@ -933,13 +906,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return newOffset + count;
         }
 
-        /**
-         * Write the subfont to the given output stream.
-         *
-         * @param os the stream used for writing. It will be closed by this method.
-         * @ if something went wrong.
-         * @throws IllegalStateException if the subset input empty.
-         */
+        /// <summary>Write the subfont to the given output stream.</summary>
+        /// <param name="os">the stream used for writing. It will be closed by this method.</param>
         public void WriteToStream(Stream os) => WriteToStream((IOutputStream)new StreamContainer(os));
 
         public void WriteToStream(IOutputStream output)

@@ -24,19 +24,16 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents.Contents;
 using PdfClown.Tokens;
-
+using PdfClown.Util;
 using System;
-using System.Collections.Concurrent;
 
 namespace PdfClown.Objects
 {
     /// <summary>Abstract PDF direct object.</summary>
-    public abstract class PdfDirectObject : PdfDataObject, IComparable<PdfDirectObject>
+    public abstract class PdfDirectObject : PdfObject, IComparable<PdfDirectObject>, IPdfDataObject
     {
         private static readonly byte[] NullChunk = BaseEncoding.Pdf.Encode(Keyword.Null);
-        protected static readonly ConcurrentDictionary<PdfDirectObject, IPdfObjectWrapper> cache = new();
 
         /// <summary>Ensures that the given direct object is properly represented as string.</summary>
         /// <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
@@ -44,7 +41,7 @@ namespace PdfClown.Objects
 
         /// <summary>Ensures that the given direct object is properly serialized.</summary>
         /// <remarks>This method is useful to force null pointers to be expressed as PDF null objects.</remarks>
-        internal static void WriteTo(IOutputStream stream, PdfFile context, PdfDirectObject obj)
+        internal static void WriteTo(IOutputStream stream, PdfDocument context, PdfDirectObject obj)
         {
             if (obj == null)
             { stream.Write(NullChunk); }
@@ -59,7 +56,27 @@ namespace PdfClown.Objects
             : base(status)
         { }
 
+        public virtual PdfDirectObject RefOrSelf => Reference ?? this;
+
+        /// <summary>Retrieves the name possibly associated to this object, walking through the document's
+        /// name dictionary.</summary>
+        protected virtual PdfString RetrieveName()
+        {
+            return Document.Catalog.Names.Get(GetType()) is IBiDictionary biDictionary
+                ? biDictionary.GetKey(this) as PdfString
+                : null;
+        }
+
+        /// <summary>Retrieves the object name, if available; otherwise, behaves like
+        /// <see cref="PdfDirectObject.RefOrSelf"/>.</summary>
+        protected PdfDirectObject RetrieveNamedBaseObject()
+        {
+            return RetrieveName() ?? RefOrSelf;
+        }
+
         public abstract int CompareTo(PdfDirectObject obj);
-        
+
+        internal virtual void AfterParse() { }
+
     }
 }

@@ -14,18 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System.IO;
 using System.Diagnostics;
 using System;
 using PdfClown.Bytes;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A table in a true type font.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A table in a true type font.
+    /// @author Ben Litchfield
+    /// </summary>
     public class PostScriptTable : TTFTable
     {
         //private static readonly Log LOG = LogFactory.getLog(PostScriptTable.class);
@@ -40,21 +38,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private uint maxMemType1;
         private string[] glyphNames = null;
 
-        /**
-         * A tag that identifies this table type.
-         */
+        /// <summary>A tag that identifies this table type.</summary>
         public const string TAG = "post";
 
         public PostScriptTable()
         { }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             formatType = data.Read32Fixed();
@@ -69,9 +61,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
             if (formatType.CompareTo(1.0f) == 0)
             {
-                /*
-                 * This TrueType font file contains exactly the 258 glyphs in the standard Macintosh TrueType.
-                 */
+                // This TrueType font file contains exactly the 258 glyphs in the standard Macintosh TrueType.
                 glyphNames = WGL4Names.GetAllNames();
             }
             else if (formatType.CompareTo(2.0f) == 0)
@@ -162,99 +152,68 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             initialized = true;
         }
 
-        /**
-         * @return Returns the formatType.
-         */
         public float FormatType
         {
             get => formatType;
             set => formatType = value;
         }
 
-        /**
-         * @return Returns the isFixedPitch.
-         */
         public uint IsFixedPitch
         {
             get => isFixedPitch;
             set => isFixedPitch = value;
         }
 
-        /**
-         * @return Returns the italicAngle.
-         */
         public float ItalicAngle
         {
             get => italicAngle;
             set => italicAngle = value;
         }
 
-        /**
-         * @return Returns the maxMemType1.
-         */
         public uint MaxMemType1
         {
             get => maxMemType1;
             set => maxMemType1 = value;
         }
 
-        /**
-         * @return Returns the maxMemType42.
-         */
         public uint MaxMemType42
         {
             get => maxMemType42;
             set => maxMemType42 = value;
         }
 
-        /**
-         * @return Returns the mimMemType1.
-         */
         public uint MinMemType1
         {
             get => mimMemType1;
             set => mimMemType1 = value;
         }
 
-        /**
-         * @return Returns the minMemType42.
-         */
         public uint MinMemType42
         {
             get => minMemType42;
             set => minMemType42 = value;
         }
 
-        /**
-         * @return Returns the underlinePosition.
-         */
         public short UnderlinePosition
         {
             get => underlinePosition;
             set => underlinePosition = value;
         }
 
-        /**
-         * @return Returns the underlineThickness.
-         */
         public short UnderlineThickness
         {
             get => underlineThickness;
             set => underlineThickness = value;
         }
 
-        /**
-         * @return Returns the glyphNames.
-         */
         public string[] GlyphNames
         {
             get => glyphNames;
             set => glyphNames = value;
         }
 
-        /**
-         * @return Returns the glyph name.
-         */
+        /// <param name="gid"></param>
+        /// <returns>Returns the glyph name.</returns>
         public string GetName(int gid)
         {
             if (gid < 0 || glyphNames == null || gid >= glyphNames.Length)

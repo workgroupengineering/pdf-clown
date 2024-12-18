@@ -18,10 +18,7 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Functions.Type4
 {
-
-    /**
-     * This class provides all the supported operators.
-     */
+    /// This class provides all the supported operators.
     public static class Operators
     {
 
@@ -77,9 +74,7 @@ namespace PdfClown.Documents.Functions.Type4
 
         public static readonly Dictionary<string, Operator> operators = new();
 
-        /**
-         * Creates a new Operators object with the default set of operators.
-         */
+        /// <summary>Creates a new Operators object with the default set of operators.</summary>
         static Operators()
         {
             operators.Add("add", ADD);
@@ -129,11 +124,9 @@ namespace PdfClown.Documents.Functions.Type4
             operators.Add("roll", ROLL);
         }
 
-        /**
-         * Returns the operator for the given operator name.
-         * @param operatorName the operator name
-         * @return the operator (or null if there's no such operator
-         */
+        /// <summary>Returns the operator for the given operator name.</summary>
+        /// <param name="operatorName">the operator name</param>
+        /// <returns>the operator (or null if there's no such operator</returns>
         public static Operator GetOperator(string operatorName)
         {
             return operators.TryGetValue(operatorName, out var stdOperator) ? stdOperator : null;

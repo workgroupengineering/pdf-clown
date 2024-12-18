@@ -23,18 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections.Generic;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>'Append a rectangle to the current path as a complete subpath' operation
-      [PDF:1.6:4.4.1].</summary>
-    */
+    /// <summary>'Append a rectangle to the current path as a complete subpath' operation
+    /// [PDF:1.6:4.4.1].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class DrawRectangle : Operation
     {
@@ -42,7 +37,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public DrawRectangle(double x, double y, double width, double height)
             : base(OperatorKeyword,
-                  new PdfArray(4) { x, y, width, height })
+                  new PdfArrayImpl(4) { x, y, width, height })
         { }
 
         public DrawRectangle(PdfArray operands) : base(OperatorKeyword, operands)
@@ -73,7 +68,6 @@ namespace PdfClown.Documents.Contents.Objects
         }
 
         public override void Scan(GraphicsState state) => state.Scanner.Path?.AddRect(SKRect.Create(X, Y, Width, Height));
-
 
     }
 }

@@ -30,8 +30,8 @@ namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class SetStrokeColorBase : SetStrokeColor
     {
-        ///<summary>'Set the color to use for stroking operations in a device, CIE-based (other than ICCBased),
-        ///or Indexed color space' operator.</summary>
+        /// <summary>'Set the color to use for stroking operations in a device, CIE-based (other than ICCBased),
+        /// or Indexed color space' operator.</summary>
         [PDF(VersionEnum.PDF11)]
         public static readonly string OperatorKeyword = "SC";
 
@@ -39,24 +39,20 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, operands)
         { }
 
-        internal SetStrokeColorBase(Color value)
+        internal SetStrokeColorBase(IColor value)
             : base(OperatorKeyword, value.Components)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-         */
+        /// <param name="operator">Graphics operator.</param>
+        /// <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
         internal SetStrokeColorBase(PdfName name)
             : this(name, null)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-          <param name="underlyingColor">Color used to colorize the pattern.</param>
-         */
-        internal SetStrokeColorBase(PdfName name, Color underlyingColor)
+        /// <param name="operator">Graphics operator.</param>
+        /// <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
+        /// <param name="underlyingColor">Color used to colorize the pattern.</param>
+        internal SetStrokeColorBase(PdfName name, IColor underlyingColor)
             : base(OperatorKeyword, name, underlyingColor)
         { }
     }

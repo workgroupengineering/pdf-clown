@@ -2,38 +2,30 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Composition;
-using fonts = PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Files;
 using PdfClown.Tools;
-
-using System;
 using SkiaSharp;
-using System.IO;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to insert semi-transparent watermark text into an
-      existing PDF document.</summary>
-      <remarks>
-        <para> The watermark is implemented as a Form XObject [PDF:1.6:4.9] to conveniently achieve a
-        consistent page look -- Form XObjects promote content reuse providing an independent context
-        which encapsulates contents (and resources) in a single stream.</para>
-        <para>The watermark is seamlessly inserted upon each page content using the PageStamper class.
-        </para>
-      </remarks>
-    */
+    /// <summary>This sample demonstrates how to insert semi-transparent watermark text into an
+    /// existing PDF document.</summary>
+    /// <remarks>
+    ///   <para> The watermark is implemented as a Form XObject [PDF:1.6:4.9] to conveniently achieve a
+    ///   consistent page look -- Form XObjects promote content reuse providing an independent context
+    ///   which encapsulates contents (and resources) in a single stream.</para>
+    ///   <para>The watermark is seamlessly inserted upon each page content using the PageStamper class.
+    ///   </para>
+    /// </remarks>
     public class WatermarkSample : Sample
     {
         public override void Run()
         {
             // 1. Open the PDF file!
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
-
                 // 2. Create a watermark!
                 FormXObject watermark = CreateWatermark(document);
 
@@ -41,7 +33,7 @@ namespace PdfClown.Samples.CLI
                 ApplyWatermark(watermark);
 
                 // 4. Serialize the PDF file!
-                Serialize(file, "Watermark", "how to place some content behind existing pages", "watermark, transparent text, background, foreground, page, composition");
+                Serialize(document, "Watermark", "how to place some content behind existing pages", "watermark, transparent text, background, foreground, page, composition");
             }
         }
 
@@ -70,7 +62,7 @@ namespace PdfClown.Samples.CLI
 
         private FormXObject CreateWatermark(PdfDocument document)
         {
-            SKSize size = document.GetSize();
+            SKSize size = document.Catalog.GetSize();
 
             // 1. Create an external form object to represent the watermark!
             var watermark = new FormXObject(document, size);
@@ -80,9 +72,9 @@ namespace PdfClown.Samples.CLI
             var composer = new PrimitiveComposer(watermark);
             // 2.2. Inserting the contents...
             // Set the font to use!
-            composer.SetFont(fonts::FontType1.Load(document, fonts::FontName.TimesBold), 120);
+            composer.SetFont(PdfType1Font.Load(document, FontName.TimesBold), 120);
             // Set the color to fill the text characters!
-            composer.SetFillColor(new DeviceRGBColor(115 / 255d, 164 / 255d, 232 / 255d));
+            composer.SetFillColor(new RGBColor(115 / 255d, 164 / 255d, 232 / 255d));
             // Apply transparency!
             {
                 var state = new ExtGState(document);

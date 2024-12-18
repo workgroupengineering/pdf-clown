@@ -24,29 +24,35 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
     /// <summary>Timespan [PDF:1.7:9.1.5].</summary>
     [PDF(VersionEnum.PDF15)]
-    internal sealed class Timespan : PdfObjectWrapper<PdfDictionary>
+    internal sealed class Timespan : PdfDictionary
     {
-        public Timespan(double time)
-            : base(new PdfDictionary(3)
+        public Timespan()
+            : base(new Dictionary<PdfName, PdfDirectObject>(2)
             {
                 { PdfName.Type, PdfName.Timespan },
                 { PdfName.S, PdfName.S },
             })
+        { }
+
+        public Timespan(double time)
+            : this()
         { Time = time; }
 
-        public Timespan(PdfDirectObject baseObject) : base(baseObject)
+        internal Timespan(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the temporal offset (in seconds).</summary>
         public double Time
         {
-            get => BaseDataObject.GetDouble(PdfName.V);
-            set => BaseDataObject.Set(PdfName.V, value);
+            get => GetDouble(PdfName.V);
+            set => Set(PdfName.V, value);
         }
     }
 }

@@ -26,23 +26,25 @@
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Contents.Tokens;
+using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 using PdfClown.Util;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Text;
 
 namespace PdfClown.Documents.Interaction.Forms
 {
     /// <summary>Interactive form field [PDF:1.6:8.6.2].</summary>
     [PDF(VersionEnum.PDF12)]
-    public abstract class Field : PdfObjectWrapper2<PdfDictionary>
+    public abstract class Field : PdfObjectWrapper<PdfDictionary>
     {
         private SetFont setFontOperation;
         private string fullName;
+        private FieldWidgets widgets;
+        private Field parent;
 
         //NOTE: Inheritable attributes are NOT early-collected, as they are NOT part
         //of the explicit representation of a field -- they are retrieved everytime clients call.
@@ -103,16 +105,12 @@ namespace PdfClown.Documents.Interaction.Forms
         /// <summary>Wraps a field reference into a field object.</summary>
         /// <param name="reference">Reference to a field object.</param>
         /// <returns>Field object associated to the reference.</returns>
-        public static Field Wrap(PdfReference reference)
+        internal static Field Wrap(PdfReference reference)
         {
-            if (reference == null)
-                return null;
-            if (reference.Wrapper2 is Field field)
-                return field;
-
-            var dataObject = (PdfDictionary)reference.DataObject;
-            var fieldType = (PdfName)GetInheritableAttribute(dataObject, PdfName.FT) ?? PdfName.Tx;
-            var fieldFlags = (PdfInteger)GetInheritableAttribute(dataObject, PdfName.Ff);
+            //reference.File.Document.Form.Fields
+            var dataObject = (PdfDictionary)reference.Resolve();
+            var fieldType = (PdfName)dataObject.GetInheritableAttribute(PdfName.FT) ?? PdfName.Tx;
+            var fieldFlags = (PdfInteger)dataObject.GetInheritableAttribute(PdfName.Ff);
             var fieldFlagsValue = (FlagsEnum)(fieldFlags?.IntValue ?? 0);
             if (fieldType.Equals(PdfName.Btn)) // Button.
             {
@@ -138,54 +136,34 @@ namespace PdfClown.Documents.Interaction.Forms
                 throw new NotSupportedException("Unknown field type: " + fieldType);
         }
 
-        private static PdfDirectObject GetInheritableAttribute(PdfDictionary dictionary, PdfName key)
-        {
-            // NOTE: It moves upwards until it finds the inherited attribute.
-            do
-            {
-                PdfDirectObject entry = dictionary[key];
-                if (entry != null)
-                    return entry;
-
-                dictionary = dictionary.Get<PdfDictionary>(PdfName.Parent);
-            } while (dictionary != null);
-            // Default.
-            if (key.Equals(PdfName.Ff))
-                return PdfInteger.Default;
-            else
-                return null;
-        }
-
         /// <summary>Creates a new field within the given document context.</summary>
-        protected Field(PdfName fieldType, string name, Widget widget) : this(widget.BaseObject)
+        protected Field(PdfName fieldType, string name, Widget widget)
+            : this(widget.Reference)
         {
             widget.NewField = this;
             if (!widget.Page.Annotations.Contains(widget))
                 widget.Page.Annotations.Add(widget);
-            var baseDataObject = BaseDataObject;
-            baseDataObject[PdfName.FT] = fieldType;
-            baseDataObject[PdfName.T] = new PdfTextString(name);
+            var dataObject = DataObject;
+            dataObject[PdfName.FT] = fieldType;
+            dataObject[PdfName.T] = new PdfTextString(name);
         }
 
-        public Field(PdfDirectObject baseObject) : base(baseObject)
+        public Field(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the field's behavior in response to trigger events.</summary>
-        public FieldActions Actions
+        public AdditionalActions Actions
         {
-            get
-            {
-                PdfDirectObject actionsObject = BaseDataObject[PdfName.AA];
-                return actionsObject != null ? new FieldActions(actionsObject) : null;
-            }
-            set => BaseDataObject[PdfName.AA] = value.BaseObject;
+            get => DataObject.Get<AdditionalActions>(PdfName.AA);
+            set => DataObject.Set(PdfName.AA, value);
         }
 
         /// <summary>Gets the default value to which this field reverts when a <see cref="ResetForm">reset
         /// -form</see> action} is executed.</summary>
         public object DefaultValue
         {
-            get => ((IPdfValued)PdfObject.Resolve(GetInheritableAttribute(PdfName.DV)))?.Value;
+            get => ((IPdfValued)DataObject.GetInheritableAttribute(PdfName.DV)?.Resolve(PdfName.DV))?.Value;
         }
 
         /// <summary>Gets/Sets whether the field is exported by a submit-form action.</summary>
@@ -200,20 +178,18 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                PdfInteger flagsObject = (PdfInteger)PdfObject.Resolve(GetInheritableAttribute(PdfName.Ff));
-                return (FlagsEnum)Enum.ToObject(
-                  typeof(FlagsEnum),
-                  (flagsObject == null ? 0 : flagsObject.RawValue));
+                var flagsObject = (PdfInteger)DataObject.GetInheritableAttribute(PdfName.Ff, PdfInteger.Default)?.Resolve(PdfName.Ff);
+                return (FlagsEnum)(flagsObject?.RawValue ?? 0);
             }
-            set => BaseDataObject.Set(PdfName.Ff, (int)value);
+            set => DataObject.Set(PdfName.Ff, (int)value);
         }
 
         public Field Parent
         {
-            get => Wrap(BaseDataObject.Get<PdfReference>(PdfName.Parent));
+            get => parent ??= Catalog.Form.Fields.Wrap((PdfReference)DataObject.Get(PdfName.Parent));
             set
             {
-                BaseDataObject[PdfName.Parent] = value?.BaseObject;
+                DataObject.Set(PdfName.Parent, parent = value);
                 fullName = null;
             }
         }
@@ -223,18 +199,19 @@ namespace PdfClown.Documents.Interaction.Forms
 
         private string ResolveFullName()
         {
-            var partialNameStack = new List<string>();
+            var nameStack = new StringBuilder();
             {
                 var parent = this;
                 while (parent != null)
                 {
-                    partialNameStack.Add(parent.GetOrGenerateName());
+                    if (parent != this)
+                        nameStack.Insert(0, '.');
+
+                    nameStack.Insert(0, parent.GetOrGenerateName());
                     parent = parent.Parent;
                 }
             }
-
-            partialNameStack.Reverse();
-            return string.Join('.', partialNameStack);
+            return nameStack.ToString();
         }
 
         private string GetOrGenerateName()
@@ -242,9 +219,9 @@ namespace PdfClown.Documents.Interaction.Forms
             var name = Name;
             if (name == null)
             {
-                BaseDataObject.Updateable = false;
+                DataObject.Updateable = false;
                 name = Name = GetType().Name + Guid.NewGuid().ToString();
-                BaseDataObject.Updateable = true;
+                DataObject.Updateable = true;
             }
             return name;
         }
@@ -252,10 +229,10 @@ namespace PdfClown.Documents.Interaction.Forms
         /// <summary>Gets/Sets the partial field name.</summary>
         public string Name
         {
-            get => BaseDataObject.GetString(PdfName.T);
+            get => DataObject.GetString(PdfName.T);
             set
             {
-                BaseDataObject.SetText(PdfName.T, value);
+                DataObject.SetText(PdfName.T, value);
                 fullName = null;
             }
         }
@@ -290,7 +267,7 @@ namespace PdfClown.Documents.Interaction.Forms
                 // NOTE: Terminal fields MUST be associated at least to one widget annotation.
                 // If there is only one associated widget annotation and its contents
                 // have been merged into the field dictionary, 'Kids' entry MUST be omitted.
-                return FieldWidgets.Wrap(BaseDataObject[PdfName.Kids] ?? BaseObject, this);
+                return widgets ??= new FieldWidgets(DataObject.Get(PdfName.Kids) ?? RefOrSelf, this);
             }
         }
 
@@ -298,8 +275,8 @@ namespace PdfClown.Documents.Interaction.Forms
 
         protected PdfString DAString
         {
-            get => (PdfString)GetInheritableAttribute(PdfName.DA);
-            set => BaseDataObject[PdfName.DA] = value;
+            get => (PdfString)DataObject.GetInheritableAttribute(PdfName.DA);
+            set => DataObject[PdfName.DA] = value;
         }
 
         protected SetFont DAOperation
@@ -331,7 +308,5 @@ namespace PdfClown.Documents.Interaction.Forms
                 }
             }
         }
-
-        protected PdfDirectObject GetInheritableAttribute(PdfName key) => GetInheritableAttribute(BaseDataObject, key);
     }
 }

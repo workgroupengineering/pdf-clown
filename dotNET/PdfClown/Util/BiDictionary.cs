@@ -88,6 +88,8 @@ namespace PdfClown.Util
             }
         }
 
+        public bool ContainsKey(object key) => ContainsKey((TKey)key);
+
         public bool ContainsKey(TKey key) => dictionary.ContainsKey(key);
 
         public ICollection<TKey> Keys => dictionary.Keys;

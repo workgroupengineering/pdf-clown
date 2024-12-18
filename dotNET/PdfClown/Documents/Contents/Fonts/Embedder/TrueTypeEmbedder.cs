@@ -39,15 +39,15 @@ namespace PdfClown.Documents.Contents.Fonts
         private static readonly int OBLIQUE = 512;
         private static readonly string BASE25 = "BCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-        private readonly PdfDocument document;
+        protected readonly PdfDocument document;
         protected TrueTypeFont ttf;
         protected FontDescriptor fontDescriptor;
 
         protected readonly ICmapLookup cmapLookup;
-        private readonly ISet<int> subsetCodePoints = new HashSet<int>();
+        private readonly HashSet<int> subsetCodePoints = new();
         private readonly bool embedSubset;
 
-        private readonly ISet<int> allGlyphIds = new HashSet<int>();
+        private readonly HashSet<int> allGlyphIds = new();
 
         /// <summary>Creates a new TrueType font for embedding.</summary>
         /// <param name="document"></param>
@@ -77,10 +77,8 @@ namespace PdfClown.Documents.Contents.Fonts
                     throw new IOException("Full embedding of TrueType font collections not supported");
                 }
                 iStream.Seek(0);
-                var stream = new PdfStream(new ByteStream(iStream));
-                stream[PdfName.Length] =
-                    stream[PdfName.Length1] = PdfInteger.Get(ttf.OriginalDataSize);
-                fontDescriptor.FontFile2 = new FontFile(document, stream);
+                var stream = new FontFile(document, new ByteStream(iStream));
+                fontDescriptor.FontFile2 = stream;
             }
             dict[PdfName.Type] = PdfName.Font;
             dict[PdfName.BaseFont] = PdfName.Get(ttf.Name);
@@ -91,7 +89,7 @@ namespace PdfClown.Documents.Contents.Fonts
 
         public void BuildFontFile2(IOutputStream ttfStream)
         {
-            var stream = new PdfStream(ttfStream);
+            var stream = new FontFile(document, ttfStream);
 
             // as the stream was closed within the PdfStream constructor, we have to recreate it
             var input = stream.GetInputStream();
@@ -100,18 +98,15 @@ namespace PdfClown.Documents.Contents.Fonts
             {
                 throw new IOException("This font does not permit embedding");
             }
-            if (fontDescriptor == null)
-            {
-                fontDescriptor = CreateFontDescriptor(ttf);
-            }
+            fontDescriptor ??= CreateFontDescriptor(ttf);
             stream.Set(PdfName.Length1, ttf.OriginalDataSize);
-            fontDescriptor.FontFile2 = new FontFile(document, stream);
+            fontDescriptor.FontFile2 = stream;
         }
 
         /// <summary>Returns true if the fsType in the OS/2 table permits embedding.</summary>
         /// <param name="ttf"></param>
         /// <returns></returns>
-        private bool IsEmbeddingPermitted(TrueTypeFont ttf)
+        private static bool IsEmbeddingPermitted(TrueTypeFont ttf)
         {
             if (ttf.OS2Windows != null)
             {
@@ -135,7 +130,7 @@ namespace PdfClown.Documents.Contents.Fonts
         /// <summary>Returns true if the fsType in the OS/2 table permits subsetting.</summary>
         /// <param name="ttf"></param>
         /// <returns></returns>
-        private bool IsSubsettingPermitted(TrueTypeFont ttf)
+        private static bool IsSubsettingPermitted(TrueTypeFont ttf)
         {
             if (ttf.OS2Windows != null)
 
@@ -150,9 +145,8 @@ namespace PdfClown.Documents.Contents.Fonts
             return true;
         }
 
-        /**
-		 * Creates a new font descriptor dictionary for the given TTF.
-		 */
+        /// <summary>Creates a new font descriptor dictionary for the given TTF.</summary>
+        /// <exception cref="IOException"></exception>
         private FontDescriptor CreateFontDescriptor(TrueTypeFont ttf)
         {
             var ttfName = ttf.Name;
@@ -168,8 +162,10 @@ namespace PdfClown.Documents.Contents.Fonts
                 throw new IOException("post table is missing in font " + ttfName);
             }
 
-            var fd = new FontDescriptor(document, new PdfDictionary(14));
-            fd.FontName = ttfName;
+            var fd = new FontDescriptor(document)
+            {
+                FontName = ttfName
+            };
 
             // Flags
             var hHeader = ttf.HorizontalHeader;
@@ -213,7 +209,7 @@ namespace PdfClown.Documents.Contents.Fonts
                 header.XMax * scaling,
                 header.YMax * scaling
                 );
-            fd.FontBBox = new Rectangle(skRect);
+            fd.FontBBox = new PdfRectangle(skRect);
 
             // Ascent, Descent
 
@@ -256,9 +252,7 @@ namespace PdfClown.Documents.Contents.Fonts
             return fd;
         }
 
-        /**
-		 * Returns the font descriptor.
-		 */
+        /// <summary>Returns the font descriptor.</summary>
         public FontDescriptor FontDescriptor
         {
             get => fontDescriptor;
@@ -303,7 +297,7 @@ namespace PdfClown.Documents.Contents.Fonts
             };
 
             // set the GIDs to subset
-            TTFSubsetter subsetter = new TTFSubsetter(ttf, tables);
+            var subsetter = new TTFSubsetter(ttf, tables);
             subsetter.AddAll(subsetCodePoints);
 
             if (allGlyphIds.Count > 0)
@@ -342,7 +336,7 @@ namespace PdfClown.Documents.Contents.Fonts
         /// <summary>Returns an uppercase 6-character unique tag for the given subset.</summary>
         /// <param name="gidToCid"></param>
         /// <returns></returns>
-        public string GetTag(Dictionary<int, int> gidToCid)
+        public static string GetTag(Dictionary<int, int> gidToCid)
         {
             // deterministic
             long num = gidToCid.GetHashCode();
@@ -366,23 +360,6 @@ namespace PdfClown.Documents.Contents.Fonts
             sb.Append('+');
             return sb.ToString();
         }
-    }
-
-    public interface ISubsetter
-    {
-        /**
-         * Adds the given Unicode code point to this subset.
-         * 
-         * @param codePoint Unicode code point
-         */
-        void AddToSubset(int codePoint);
-
-        /**
-         * Subset this font now.
-         * 
-         * @throws IOException if the font could not be read
-         */
-        void Subset();
     }
 
 }

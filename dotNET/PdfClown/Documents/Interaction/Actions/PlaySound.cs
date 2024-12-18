@@ -23,45 +23,40 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Multimedia;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Play a sound' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Play a sound' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class PlaySound : Action
+    public sealed class PlaySound : PdfAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        private Sound sound;
+
+        /// <summary>Creates a new action within the given document context.</summary>
         public PlaySound(PdfDocument context, Sound sound)
             : base(context, PdfName.Sound)
         { Sound = sound; }
 
-        internal PlaySound(PdfDirectObject baseObject)
+        internal PlaySound(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the sound to be played.</summary>
-        */
+        /// <summary>Gets/Sets the sound to be played.</summary>
         public Sound Sound
         {
             //NOTE: 'Sound' entry MUST exist.
-            get => Wrap<Sound>(BaseDataObject.GetOrCreate<PdfStream>(PdfName.Sound));
+            get => sound ??= Get<Sound>(PdfName.Sound);
             set
             {
                 if (value == null)
                     throw new ArgumentException("Sound MUST be defined.");
 
-                BaseDataObject[PdfName.Sound] = value.BaseObject;
+                Set(PdfName.Sound, sound = value);
             }
         }
 

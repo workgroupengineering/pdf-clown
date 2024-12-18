@@ -17,10 +17,9 @@
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Table.Common
 {
-
     /// <summary>
     /// This class models the
-    /// <a href = "https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#lookup-table" > Lookup Sub-Table</a> in the
+    /// <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#lookup-table"> Lookup Sub-Table</a> in the
     /// Open Type layout common tables.
     /// </summary>
     public abstract class LookupSubTable

@@ -23,8 +23,9 @@ namespace PdfClown.UI.WPF
             {
                 e.NewElement.Touch -= OnElementTouch;
             }
-            if (e.NewElement is SKGLView)
+            if (e.NewElement is SKGLScrollView scrollView)
             {
+                scrollView.CapturePointerFunc = CaptureMouse;
                 e.NewElement.Touch += OnElementTouch;
                 if (Control != null)
                 {
@@ -52,16 +53,16 @@ namespace PdfClown.UI.WPF
                     case UI.CursorType.Arrow:
                         Control.Cursor = Cursors.Arrow;
                         break;
-                    case UI.CursorType.SizeWE:
+                    case UI.CursorType.SizeWestEast:
                         Control.Cursor = Cursors.SizeWE;
                         break;
-                    case UI.CursorType.SizeNS:
+                    case UI.CursorType.SizeNorthSouth:
                         Control.Cursor = Cursors.SizeNS;
                         break;
-                    case UI.CursorType.SizeNESW:
+                    case UI.CursorType.BottomLeftCorner:
                         Control.Cursor = Cursors.SizeNESW;
                         break;
-                    case UI.CursorType.SizeNWSE:
+                    case UI.CursorType.BottomRightCorner:
                         Control.Cursor = Cursors.SizeNWSE;
                         break;
                     case UI.CursorType.Hand:
@@ -70,7 +71,7 @@ namespace PdfClown.UI.WPF
                     case UI.CursorType.Wait:
                         Control.Cursor = Cursors.Wait;
                         break;
-                    case UI.CursorType.ScrollAll:
+                    case UI.CursorType.SizeAll:
                         Control.Cursor = Cursors.ScrollAll;
                         break;
                     case UI.CursorType.Cross:
@@ -103,12 +104,13 @@ namespace PdfClown.UI.WPF
         {
             var view = sender as FrameworkElement;
             var pointerPoint = e.MouseDevice.GetPosition(view);
-            if (Element is SKGLScrollView canvas && canvas.ContainsCaptureBox(pointerPoint.X, pointerPoint.Y))
-            {
-                pressed = true;
-                Mouse.Capture(Control);
-            }
             ((SKGLScrollView)Element).KeyModifiers = GetModifiers();
+        }
+
+        public void CaptureMouse()
+        {
+            pressed = true;
+            Mouse.Capture(Control);
         }
 
         private static KeyModifiers GetModifiers()

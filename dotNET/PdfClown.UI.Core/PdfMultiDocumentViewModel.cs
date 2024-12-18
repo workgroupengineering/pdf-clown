@@ -42,17 +42,17 @@ namespace PdfClown.UI
 
         public int PagesCount => pages.Count;
 
-        public IEnumerable<Field> Fields => items.SelectMany(x => (IEnumerable<Field>)x.Fields);
+        public IEnumerable<Field>? Fields => items.SelectMany(x => (IEnumerable<Field>)x.Fields);
 
         public ObservableCollection<PdfDocumentViewModel> Items { get => items; }
 
         public IPdfPageViewModel this[int index] => pages[index];
 
-        public event PdfAnnotationEventHandler AnnotationAdded;
+        public event PdfAnnotationEventHandler? AnnotationAdded;
 
-        public event PdfAnnotationEventHandler AnnotationRemoved;
+        public event PdfAnnotationEventHandler? AnnotationRemoved;
 
-        public event EventHandler BoundsChanged;
+        public event EventHandler? BoundsChanged;
 
         public void Add(PdfDocumentViewModel document)
         {
@@ -76,12 +76,12 @@ namespace PdfClown.UI
             document.AnnotationRemoved -= OnItemAnnotationRemoved;
         }
 
-        private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             BoundsChanged?.Invoke(this, e);
         }
 
-        private void OnItemBoundsChanged(object sender, EventArgs e)
+        private void OnItemBoundsChanged(object? sender, EventArgs e)
         {
             size = null;
             BoundsChanged?.Invoke(this, e);
@@ -91,9 +91,9 @@ namespace PdfClown.UI
 
         private void OnItemAnnotationAdded(PdfAnnotationEventArgs e) => AnnotationAdded?.Invoke(e);
 
-        public PdfDocumentViewModel GetDocumentView(PdfDocument document) => items.FirstOrDefault(x => x.Document == document);
+        public PdfDocumentViewModel? GetDocumentView(PdfDocument document) => items.FirstOrDefault(x => x.Document == document);
 
-        public PdfPageViewModel GetPageView(PdfPage page) => GetDocumentView(page.Document)?.GetPageView(page);
+        public PdfPageViewModel? GetPageView(PdfPage page) => GetDocumentView(page.Document)?.GetPageView(page);
 
         private SKSize CalculateSize()
         {
@@ -118,9 +118,8 @@ namespace PdfClown.UI
                     page.Document.UpdateYOffset(page, maxYOffset);
                 }
 
-                pages.Add(new PdfMultiPageViewModel(iPages)
+                pages.Add(new PdfMultiPageViewModel(this, iPages)
                 {
-                    Document = this,
                     Order = i,
                     Index = i,
                 });
@@ -137,7 +136,7 @@ namespace PdfClown.UI
             AvgHeigth = items.Average(x => x.AvgHeigth);
         }
 
-        public IPdfDocumentViewModel Reload(EditOperationList operations)
+        public IPdfDocumentViewModel Reload(EditorOperations operations)
         {
             return new PdfMultiDocumentViewModel(items.Select(item => (PdfDocumentViewModel)item.Reload(operations)));
         }
@@ -161,7 +160,7 @@ namespace PdfClown.UI
             {
                 page.Swap(index1, index2);
             }
-            BoundsChanged.Invoke(this, EventArgs.Empty);
+            BoundsChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

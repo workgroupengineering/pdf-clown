@@ -1,114 +1,44 @@
-﻿using PdfClown.Tools;
-using PdfClown.UI.Blazor.Internal;
-using SkiaSharp.Views.Blazor;
-using SkiaSharp;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using System.Diagnostics;
+using PdfClown.UI.Blazor.Internal;
+using PdfClown.UI.Other;
+using SkiaSharp;
+using SkiaSharp.Views.Blazor;
+using System.Runtime.Versioning;
 
 namespace PdfClown.UI.Blazor
 {
-    public partial class SKScrollView : ComponentBase, IDisposable
+    [SupportedOSPlatform("browser")]
+    public partial class SKScrollView : ComponentBase, ISKScrollView, IDisposable
     {
-        protected EventHandler<ScrollEventArgs> verticalScrolledHandler;
-        protected EventHandler<ScrollEventArgs> нorizontalScrolledHandler;
-
-
-        private static readonly SKPaint bottonPaint = new SKPaint
-        {
-            Style = SKPaintStyle.StrokeAndFill,
-            StrokeWidth = 1,
-            IsAntialias = true,
-            Color = new SKColor(190, 190, 190)
-        };
-
-        private static readonly SKPaint bottonPaintHover = new SKPaint
-        {
-            Style = SKPaintStyle.StrokeAndFill,
-            StrokeWidth = 1,
-            IsAntialias = true,
-            Color = new SKColor(160, 160, 160)
-        };
-
-        private static readonly SKPaint bottonPaintPressed = new SKPaint
-        {
-            Style = SKPaintStyle.StrokeAndFill,
-            StrokeWidth = 1,
-            IsAntialias = true,
-            Color = new SKColor(120, 120, 120)
-        };
-
-        private static readonly SKPaint scrollPaint = new SKPaint
-        {
-            Style = SKPaintStyle.StrokeAndFill,
-            StrokeWidth = 1,
-            IsAntialias = true,
-            Color = new SKColor(240, 240, 240)
-        };
-
-        private static readonly SKPaint svgPaint = new SKPaint
-        {
-            IsAntialias = true,
-            ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Black, SKBlendMode.SrcIn),
-            FilterQuality = SKFilterQuality.Medium
-        };
-
-        private static readonly SvgImage upSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-up");
-        private static readonly SvgImage downSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-down");
-        private static readonly SvgImage leftSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-left");
-        private static readonly SvgImage rightSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "caret-right");
-        private static readonly SvgImage shiftVSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "line");
-        private static readonly SvgImage shiftHSvg = SvgImage.GetCache(typeof(Orientation).Assembly, "link");
-
-
         private const string ahScroll = "ScrollAnimation";
-        private const string ahVerticalScroll = "VerticalScrollAnimation";
-        private const string ahHorizontalScroll = "HorizontalScrollAnimation";
+        private const string ahVScroll = "VScrollAnimation";
+        private const string ahHScroll = "HScrollAnimation";
 
 #if __FORCE_GL__
-        private SKGLView canvasView = null;
+        private SKGLView canvasView;
 #else
-        private SKCanvasView canvasView = null;
+        private SKCanvasView? canvasView;
 #endif
-        private SKHtmlScrollInterop interop = null;
-
-        private SKPoint nullLocation;
-        private Orientation nullDirection = Orientation.Vertical;
-        private double vHeight;
-        private double vWidth;
-        private double vsHeight;
-        private double hsWidth;
-        private double kWidth;
-        private double kHeight;
-        private bool verticalHovered;
-        private bool нorizontalHovered;
-        private SKRect verticalPadding = new SKRect(0, 0, 0, DefaultSKStyles.StepSize);
-        private SKRect horizontalPadding = new SKRect(0, 0, DefaultSKStyles.StepSize, 0);
-        private bool isDrawing;
-        private SvgImage hoverButton = null;
-        private SvgImage pressedButton = null;
-        private double verticalMaximum;
-        private double horizontalMaximum;
+        private SKHtmlScrollInterop? interop;
         private CursorType cursor;
-        protected double verticalValue;
-        protected double horizontalValue;
-        private double height = 1;
-        private double width = 1;
-        protected float XScaleFactor = 1;
-        protected float YScaleFactor = 1;
+
+        protected ScrollLogic scroll;
 
         public SKScrollView()
         {
+            Envir.Init();
             //EnableTouchEvents = true;
             //this.Tou += OnTouch;
+            scroll = new ScrollLogic(this);
         }
 
         [Inject]
         IJSRuntime JS { get; set; } = null!;
 
         [Parameter(CaptureUnmatchedValues = true)]
-        public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
+        public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
         [Parameter]
         public string CanvasId { get; set; } = Guid.NewGuid().ToString("N");
@@ -127,217 +57,69 @@ namespace PdfClown.UI.Blazor
 
         public virtual double Height
         {
-            get => height;
-            set
-            {
-                if (height != value)
-                {
-                    height = value;
-                }
-            }
+            get => scroll.Height;
+            set => scroll.Height = value;
         }
 
         public virtual double Width
         {
-            get => width;
-            set
-            {
-                if (width != value)
-                {
-                    width = value;
-                }
-            }
+            get => scroll.Width;
+            set => scroll.Width = value;
         }
 
         public bool AllowScrollView { get; set; } = true;
 
-        public event EventHandler<ScrollEventArgs> VerticalScrolled
+        public event EventHandler<CanvasKeyEventArgs>? KeyDown;
+
+        public double VMaximum
         {
-            add => verticalScrolledHandler += value;
-            remove => verticalScrolledHandler -= value;
+            get => scroll.VMaximum;
+            set => scroll.VMaximum = value;
         }
 
-        public event EventHandler<ScrollEventArgs> HorizontalScrolled
+        public double HMaximum
         {
-            add => нorizontalScrolledHandler += value;
-            remove => нorizontalScrolledHandler -= value;
-        }
-        public event EventHandler<CanvasKeyEventArgs> KeyDown;
-
-        public double VerticalMaximum
-        {
-            get => verticalMaximum;
-            set
-            {
-                if (verticalMaximum != value)
-                {
-                    OnVerticalMaximumChanged(verticalMaximum, value);
-                }
-            }
+            get => scroll.HMaximum;
+            set => scroll.HMaximum = value;
         }
 
-        public double HorizontalMaximum
+        public double VValue
         {
-            get => horizontalMaximum;
-            set
-            {
-                if (horizontalMaximum != value)
-                {
-                    OnHorizontalMaximumChanged(horizontalMaximum, value);
-                }
-            }
+            get => scroll.VValue;
+            set => scroll.VValue = value;
         }
 
-        public double VerticalValue
+        public double HValue
         {
-            get => verticalValue;
-            set
-            {
-                value = NormalizeVerticalValue(value);
-                if (verticalValue != value)
-                {
-                    OnVerticalValueChanged(verticalValue, value);
-                }
-            }
+            get => scroll.HValue;
+            set => scroll.HValue = value;
         }
 
-        double NormalizeVerticalValue(double value)
-        {
-            if (!VerticalScrollBarVisible)
-            {
-                return 0;
-            }
+        public bool VBarVisible => scroll.VBarVisible;
 
-            var max = VerticalMaximum - Height;// + DefaultSKStyles.StepSize;
-            return value < 0 || max < 0 ? 0 : value > max ? max : value;
-        }
+        public bool HBarVisible => scroll.HBarVisible;
 
-        public double HorizontalValue
-        {
-            get => horizontalValue;
-            set
-            {
-                value = NormalizeHorizontalValue(value);
-                if (horizontalValue != value)
-                {
-                    OnHorizontalValueChanged(horizontalValue, value);
-                }
-            }
-        }
+        public TimerAnimation? ScrollAnimation { get; private set; }
 
-        private double NormalizeHorizontalValue(double value)
-        {
-            var max = HorizontalMaximum - Width;// + DefaultSKStyles.StepSize;
-            return value < 0 || max < 0 ? 0 : value > max ? max : value;
-        }
+        public TimerAnimation? VScrollAnimation { get; private set; }
 
-        public KeyModifiers KeyModifiers { get; set; }
+        public TimerAnimation? HScrollAnimation { get; private set; }
 
-        public Animation ScrollAnimation { get; private set; }
-        public Animation VerticalScrollAnimation { get; private set; }
-        public Animation HorizontalScrollAnimation { get; private set; }
+        public bool IsVScrollAnimation => (VScrollAnimation ?? ScrollAnimation) != null;
 
-        public double VericalSize => VerticalHovered ? DefaultSKStyles.MaxSize : DefaultSKStyles.MinSize;
-
-        public double HorizontalSize => HorizontalHovered ? DefaultSKStyles.MaxSize : DefaultSKStyles.MinSize;
-
-        public SKRect VerticalPadding
-        {
-            get => verticalPadding;
-            set
-            {
-                if (verticalPadding != value)
-                {
-                    verticalPadding = value;
-                    OnVerticalMaximumChanged(1, VerticalMaximum);
-                }
-            }
-        }
-
-        public SKRect HorizontalPadding
-        {
-            get => horizontalPadding;
-            set
-            {
-                if (horizontalPadding != value)
-                {
-                    horizontalPadding = value;
-                    OnHorizontalMaximumChanged(1, HorizontalMaximum);
-                }
-            }
-        }
-
-        public bool VerticalHovered
-        {
-            get => verticalHovered;
-            set
-            {
-                if (verticalHovered != value)
-                {
-                    verticalHovered = value;
-                    OnVerticalMaximumChanged(1, VerticalMaximum);
-                    InvalidatePaint();
-                }
-            }
-        }
-
-        public bool HorizontalHovered
-        {
-            get => нorizontalHovered;
-            set
-            {
-                if (нorizontalHovered != value)
-                {
-                    нorizontalHovered = value;
-                    OnHorizontalMaximumChanged(1, HorizontalMaximum);
-                    InvalidatePaint();
-                }
-            }
-        }
-
-        protected SvgImage PressedButton
-        {
-            get => pressedButton;
-            set
-            {
-                if (pressedButton != value)
-                {
-                    pressedButton = value;
-                    InvalidatePaint();
-                }
-            }
-        }
-
-        protected SvgImage HoverButton
-        {
-            get => hoverButton;
-            set
-            {
-                if (hoverButton != value)
-                {
-                    hoverButton = value;
-                    InvalidatePaint();
-                }
-            }
-        }
+        public bool IsHScrollAnimation => (HScrollAnimation ?? ScrollAnimation) != null;
 
 #if __FORCE_GL__
-        public event EventHandler<SKPaintGLSurfaceEventArgs> PaintContent;
+        public event EventHandler<SKPaintGLSurfaceEventArgs>? PaintContent;
 
-        public event EventHandler<SKPaintGLSurfaceEventArgs> PaintOver;
+        public event EventHandler<SKPaintGLSurfaceEventArgs>? PaintOver;
 #else
-        public event EventHandler<SKPaintSurfaceEventArgs> PaintContent;
+        public event EventHandler<SKPaintSurfaceEventArgs>? PaintContent;
 
-        public event EventHandler<SKPaintSurfaceEventArgs> PaintOver;
+        public event EventHandler<SKPaintSurfaceEventArgs>? PaintOver;
 #endif
 
-        public bool VerticalScrollBarVisible => VerticalMaximum >= (Height + DefaultSKStyles.StepSize);
-
-        public bool HorizontalScrollBarVisible => HorizontalMaximum >= (Width + DefaultSKStyles.StepSize);
-
-        public bool WheelTouchSupported { get; set; } = true;
-
-        public event EventHandler ScrollComplete;
+        public event EventHandler? ScrollComplete;
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -354,260 +136,15 @@ namespace PdfClown.UI.Blazor
             canvasView?.Invalidate();
         }
 
-        protected virtual void OnTouch(TouchEventArgs e)
+        protected virtual void OnTouch(TouchEventArgs e) => scroll.OnTouch(e);
+
+        protected virtual void OnSizeAllocated(double width, double height) => scroll.OnSizeAllocated(width, height, SKHtmlScrollInterop.GetDPR());
+
+        public virtual void OnScrolled(TouchEventArgs e)
         {
-            if (WheelTouchSupported && e.ActionType == TouchAction.WheelChanged)
-            {
-                OnScrolled(e.WheelDelta);
+            if (e.WheelDelta == 0)
                 return;
-            }
-
-            switch (e.ActionType)
-            {
-                case TouchAction.Released:
-                    PressedButton = null;
-                    if (nullLocation != SKPoint.Empty)
-                    {
-                        nullLocation = SKPoint.Empty;
-                        e.Handled = true;
-                    }
-                    goto case TouchAction.Exited;
-                case TouchAction.Exited:
-                    HoverButton = null;
-                    goto case TouchAction.Moved;
-                case TouchAction.Moved:
-                    if (nullLocation == SKPoint.Empty)
-                    {
-                        VerticalHovered = VerticalScrollBarVisible && GetVerticalScrollBounds().Contains(e.Location);
-                        HorizontalHovered = HorizontalScrollBarVisible && GetHorizontalScrollBounds().Contains(e.Location);
-
-                        if (VerticalHovered)
-                        {
-                            e.Handled = true;
-
-                            if (GetUpBounds().Contains(e.Location))
-                            {
-                                HoverButton = upSvg;
-                            }
-                            else if (GetDownBounds().Contains(e.Location))
-                            {
-                                HoverButton = downSvg;
-                            }
-                            else if (GetVerticalValueBounds().Contains(e.Location))
-                            {
-                                HoverButton = shiftVSvg;
-                            }
-                            else
-                            {
-                                HoverButton = null;
-                            }
-                        }
-                        else if (HorizontalHovered)
-                        {
-                            e.Handled = true;
-
-                            if (GetLeftBounds().Contains(e.Location))
-                            {
-                                HoverButton = leftSvg;
-                            }
-                            else if (GetRightBounds().Contains(e.Location))
-                            {
-                                HoverButton = rightSvg;
-                            }
-                            else if (GetHorizontalValueBounds().Contains(e.Location))
-                            {
-                                HoverButton = shiftHSvg;
-                            }
-                            else
-                            {
-                                HoverButton = null;
-                            }
-                        }
-                        else
-                            HoverButton = null;
-                    }
-                    break;
-                case TouchAction.WheelChanged:
-                    //if (VerticalScrollBarVisible)
-                    //{
-                    //    var temp = VerticalValue;
-                    //    VerticalValue = VerticalValue - step * Math.Sign(e.WheelDelta);
-                    //    if (temp != VerticalValue)
-                    //    {
-                    //        e.Handled = true;
-                    //    }
-                    //}
-                    break;
-            }
-
-            if ((!VerticalScrollBarVisible && !HorizontalScrollBarVisible)
-                || e.MouseButton != MouseButton.Left)
-                return;
-            switch (e.ActionType)
-            {
-                case TouchAction.Moved:
-                    if (nullLocation != SKPoint.Empty)
-                    {
-                        var newLocation = e.Location - nullLocation;
-                        if (nullDirection == Orientation.Vertical)
-                        {
-                            VerticalValue += newLocation.Y / kHeight;
-                        }
-                        else if (nullDirection == Orientation.Horizontal)
-                        {
-                            HorizontalValue += newLocation.X / kWidth;
-                        }
-                        nullLocation = e.Location;
-                        e.Handled = true;
-                    }
-                    break;
-                case TouchAction.Pressed:
-                    var verticalScrollBound = GetVerticalScrollBounds();
-                    var нorizontalScrollBound = GetHorizontalScrollBounds();
-                    if (verticalScrollBound.Contains(e.Location))
-                    {
-                        e.Handled = true;
-                        var upBound = GetUpBounds();
-                        if (upBound.Contains(e.Location))
-                        {
-                            VerticalValue -= DefaultSKStyles.StepSize;
-                            PressedButton = upSvg;
-                            return;
-                        }
-
-                        var downBound = GetDownBounds();
-                        if (downBound.Contains(e.Location))
-                        {
-                            VerticalValue += DefaultSKStyles.StepSize;
-                            PressedButton = downSvg;
-                            return;
-                        }
-
-                        var valueBound = GetVerticalValueBounds();
-                        if (valueBound.Contains(e.Location))
-                        {
-                            nullLocation = e.Location;
-                            nullDirection = Orientation.Vertical;
-                            PressedButton = shiftVSvg;
-
-                            interop.SetCapture(e.PointerId);
-                            return;
-                        }
-
-                        VerticalValue = e.Location.Y / kHeight - Height / 2;
-                    }
-                    if (нorizontalScrollBound.Contains(e.Location))
-                    {
-                        e.Handled = true;
-                        var leftBound = GetLeftBounds();
-                        if (leftBound.Contains(e.Location))
-                        {
-                            HorizontalValue -= DefaultSKStyles.StepSize;
-                            PressedButton = leftSvg;
-                            return;
-                        }
-
-                        var rightBound = GetRightBounds();
-                        if (rightBound.Contains(e.Location))
-                        {
-                            HorizontalValue += DefaultSKStyles.StepSize;
-                            PressedButton = rightSvg;
-                            return;
-                        }
-
-                        var valueBound = GetHorizontalValueBounds();
-                        if (valueBound.Contains(e.Location))
-                        {
-                            nullLocation = e.Location;
-                            nullDirection = Orientation.Horizontal;
-                            PressedButton = shiftHSvg;
-                            return;
-                        }
-
-                        HorizontalValue = e.Location.X / kWidth - Width / 2;
-                    }
-                    break;
-            }
-        }
-
-        protected virtual void OnSizeAllocated(float width, float height)
-        {
-            Width = width;
-            Height = height;
-            OnVerticalMaximumChanged(1, VerticalMaximum);
-            OnHorizontalMaximumChanged(1, HorizontalMaximum);
-        }
-
-        private void OnVerticalMaximumChanged(double oldValue, double newValue)
-        {
-            verticalMaximum = newValue;
-            vsHeight = (Height - (verticalPadding.Top + verticalPadding.Bottom)) - VericalSize * 2;
-            kHeight = vsHeight / newValue;
-            vHeight = (float)((Height - DefaultSKStyles.StepSize) * kHeight);
-
-            if (vHeight < VericalSize)
-            {
-                vHeight = VericalSize;
-                vsHeight = (Height - (verticalPadding.Top + verticalPadding.Bottom)) - (VericalSize * 2 + vHeight);
-                kHeight = vsHeight / newValue;
-            }
-            //else
-            //{
-            //    vHeight += VericalSize;
-            //}
-
-            VerticalValue = VerticalValue;
-        }
-
-        private void OnHorizontalMaximumChanged(double oldValue, double newValue)
-        {
-            horizontalMaximum = newValue;
-            hsWidth = (Width - (horizontalPadding.Left + horizontalPadding.Right)) - HorizontalSize * 2;
-            kWidth = hsWidth / newValue;
-            vWidth = (float)((Width - DefaultSKStyles.StepSize) * kWidth);
-
-            //if (vWidth < HorizontalSize)
-            //{
-            //    vWidth = HorizontalSize;
-            //    hsWidth = (Width - horizontalPadding.HorizontalThickness) - (HorizontalSize * 2 + vWidth);
-            //    kWidth = hsWidth / newValue;
-            //}
-            //else
-            //{
-            //    vWidth += HorizontalSize;
-            //}
-
-            HorizontalValue = HorizontalValue;
-        }
-
-        protected virtual void OnVerticalValueChanged(double oldValue, double newValue)
-        {
-            verticalValue = newValue;
-            //_ = JS.InvokeVoidAsync("console.log", $"Vertical: {Math.Round(newValue)}");
-            if (VerticalScrollAnimation == null)
-            {
-                verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
-            }
-            InvalidatePaint();
-        }
-
-        protected virtual void OnHorizontalValueChanged(double oldValue, double newValue)
-        {
-            horizontalValue = newValue;
-            if (HorizontalScrollAnimation == null)
-            {
-                нorizontalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)newValue));
-            }
-            InvalidatePaint();
-        }
-
-        public virtual bool OnScrolled(double delta)
-        {
-            if (delta == 0)
-                return false;
-            var temp = VerticalValue;
-            VerticalAnimateScroll(delta * 1.5, 16, 160);
-            return temp != VerticalValue;
+            VAnimateScroll(e.WheelDelta * 1.5, 16, 160);
         }
 
 #if __FORCE_GL__
@@ -616,70 +153,14 @@ namespace PdfClown.UI.Blazor
         protected virtual void OnPaintSurface(SKPaintSurfaceEventArgs e)
 #endif
         {
-            XScaleFactor = (float)(e.Info.Width / Width);
-            YScaleFactor = (float)(e.Info.Height / Height);
-
             var canvas = e.Surface.Canvas;
 
-            canvas.Scale(XScaleFactor, YScaleFactor);
+            canvas.Scale(scroll.WindowScale, scroll.WindowScale);
             canvas.Clear(SKColors.Silver);
 
-            if (isDrawing)
-                return;
-            isDrawing = true;
-            try
-            {
-                OnPaintContent(e);
-                PaintScrollBars(canvas);
-                PaintOver?.Invoke(this, e);
-            }
-            finally
-            {
-                isDrawing = false;
-            }
-        }
-
-        private void PaintScrollBars(SKCanvas canvas)
-        {
-            if (VerticalScrollBarVisible)
-            {
-                canvas.DrawRect(GetVerticalScrollBounds(), scrollPaint);
-                // if (Hovered)
-                {
-                    var upBound = GetUpBounds();
-                    if (HoverButton == upSvg)
-                        canvas.DrawRect(upBound, PressedButton == upSvg ? bottonPaintPressed : bottonPaintHover);
-                    SvgImage.DrawImage(canvas, upSvg, svgPaint, upBound, 0.5F);
-
-                    var downBound = GetDownBounds();
-                    if (HoverButton == downSvg)
-                        canvas.DrawRect(downBound, PressedButton == downSvg ? bottonPaintPressed : bottonPaintHover);
-                    SvgImage.DrawImage(canvas, downSvg, svgPaint, downBound, 0.5F);
-                }
-                var valueBound = GetVerticalValueBounds();
-                valueBound.Inflate(-1, -1);
-                canvas.DrawRect(valueBound, HoverButton == shiftVSvg ? PressedButton == shiftVSvg ? bottonPaintPressed : bottonPaintHover : bottonPaint);
-            }
-
-            if (HorizontalScrollBarVisible)
-            {
-                canvas.DrawRect(GetHorizontalScrollBounds(), scrollPaint);
-                // if (Hovered)
-                {
-                    var leftBound = GetLeftBounds();
-                    if (HoverButton == leftSvg)
-                        canvas.DrawRect(leftBound, PressedButton == leftSvg ? bottonPaintPressed : bottonPaintHover);
-                    SvgImage.DrawImage(canvas, leftSvg, svgPaint, leftBound, 0.5F);
-
-                    var rightBound = GetRightBounds();
-                    if (HoverButton == rightSvg)
-                        canvas.DrawRect(rightBound, PressedButton == rightSvg ? bottonPaintPressed : bottonPaintHover);
-                    SvgImage.DrawImage(canvas, rightSvg, svgPaint, rightBound, 0.5F);
-                }
-                var valueBound = GetHorizontalValueBounds();
-                valueBound.Inflate(-1, -1);
-                canvas.DrawRect(valueBound, HoverButton == shiftHSvg ? PressedButton == shiftHSvg ? bottonPaintPressed : bottonPaintHover : bottonPaint);
-            }
+            OnPaintContent(e);
+            scroll.PaintScrollBars(canvas);
+            PaintOver?.Invoke(this, e);
         }
 
 #if __FORCE_GL__
@@ -691,153 +172,81 @@ namespace PdfClown.UI.Blazor
             PaintContent?.Invoke(this, e);
         }
 
-        public SKRect GetVerticalScrollBounds()
+        public void HAnimateScroll(double delta, uint rate = DefaultSKStyles.MaxSize, uint legth = 400)
         {
-            return SKRect.Create((float)(Width - VericalSize),
-                (float)verticalPadding.Top,
-                (float)VericalSize,
-                (float)(Height - (verticalPadding.Top + verticalPadding.Bottom)));
-        }
-
-        public SKRect GetHorizontalScrollBounds()
-        {
-            return SKRect.Create((float)horizontalPadding.Left,
-                (float)(Height - HorizontalSize),
-                (float)(Width - (horizontalPadding.Left + horizontalPadding.Right)),
-                (float)HorizontalSize);
-        }
-
-        private SKRect GetUpBounds()
-        {
-            return SKRect.Create((float)(Width - VericalSize),
-                (float)verticalPadding.Top,
-                (float)VericalSize, (float)VericalSize);
-        }
-
-        private SKRect GetDownBounds()
-        {
-            return SKRect.Create((float)(Width - VericalSize),
-                (float)(Height - (VericalSize + verticalPadding.Bottom)),
-                (float)VericalSize, (float)VericalSize);
-        }
-
-        private SKRect GetLeftBounds()
-        {
-            return SKRect.Create((float)horizontalPadding.Left,
-                (float)(Height - HorizontalSize),
-                (float)HorizontalSize, (float)HorizontalSize);
-        }
-
-        private SKRect GetRightBounds()
-        {
-            return SKRect.Create((float)(Width - (HorizontalSize + horizontalPadding.Right)),
-                (float)(Height - HorizontalSize),
-                (float)HorizontalSize, (float)HorizontalSize);
-        }
-
-        private SKRect GetVerticalValueBounds()
-        {
-            var top = VericalSize + verticalPadding.Top + (float)(VerticalValue * kHeight);
-            return SKRect.Create((float)(Width - VericalSize),
-                (float)top, (float)VericalSize, (float)vHeight);
-        }
-
-        private SKRect GetHorizontalValueBounds()
-        {
-            var left = HorizontalSize + horizontalPadding.Left + (HorizontalValue * kWidth);
-            return SKRect.Create((float)left, (float)(Height - HorizontalSize), (float)vWidth, (float)HorizontalSize);
-        }
-
-        public void SetVerticalScrolledPosition(double top)
-        {
-            VerticalValue = top;
-        }
-
-        public void HorizontalAnimateScroll(double delta, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = Easing.SinOut)
-        {
-            if (HorizontalScrollAnimation != null)
+            if (HScrollAnimation != null)
             {
-                AbortAnimation(ahHorizontalScroll);
+                AbortAnimation(ahHScroll);
             }
-            var newValue = NormalizeHorizontalValue(VerticalValue + delta);
-            HorizontalScrollAnimation = new Animation(v => HorizontalValue = v, HorizontalValue, newValue, asing);
-            HorizontalScrollAnimation.Commit(this, ahHorizontalScroll, rate, legth, finished: OnScrollComplete);
+            var newValue = scroll.NormalizeHValue(HValue + delta);
+            HScrollAnimation = new TimerAnimation(v => HValue = v, HValue, newValue);
+            HScrollAnimation.Commit(this, ahHScroll, rate, legth, finished: OnScrollComplete);
         }
 
-        public void VerticalAnimateScroll(double delta, uint rate = DefaultSKStyles.MaxSize, uint legth = 400, Easing asing = Easing.SinOut)
+        public void VAnimateScroll(double delta, uint rate = DefaultSKStyles.MaxSize, uint legth = 400)
         {
-            if (VerticalScrollAnimation != null)
+            if (VScrollAnimation != null)
             {
-                AbortAnimation(ahVerticalScroll);
+                AbortAnimation(ahVScroll);
             }
-            var newValue = NormalizeVerticalValue(VerticalValue + delta);
-            //_ = JS.InvokeVoidAsync("console.log", $"Scroll Animation: from {Math.Round(VerticalValue)} to {Math.Round(newValue)}");
-            VerticalScrollAnimation = new Animation(v => VerticalValue = v, VerticalValue, newValue, asing);
-            VerticalScrollAnimation.Commit(this, ahVerticalScroll, rate, legth, finished: OnScrollComplete);
+            var newValue = scroll.NormalizeVValue(VValue + delta);
+            VScrollAnimation = new TimerAnimation(v => VValue = v, VValue, newValue);
+            VScrollAnimation.Commit(this, ahVScroll, rate, legth, finished: OnScrollComplete);
         }
 
         protected void AnimateScroll(float top, double left)
         {
-            if (VerticalValue == top
-                && HorizontalValue == left)
+            if (VValue == top
+                && HValue == left)
                 return;
             if (ScrollAnimation != null)
             {
                 AbortAnimation(ahScroll);
             }
-            ScrollAnimation = new Animation();
-            ScrollAnimation.Add(0, 1, new Animation(v => VerticalValue = v, VerticalValue, top, Easing.SinOut));
-            ScrollAnimation.Add(0, 1, new Animation(v => HorizontalValue = v, HorizontalValue, left, Easing.SinOut));
+            ScrollAnimation = new TimerAnimation();
+            ScrollAnimation.Add(0, 1, new TimerAnimation(v => VValue = v, VValue, top));
+            ScrollAnimation.Add(0, 1, new TimerAnimation(v => HValue = v, HValue, left));
             ScrollAnimation.Commit(this, ahScroll, 16, 270, finished: OnScrollComplete);
         }
 
         private void AbortAnimation(string ahScroll)
         {
-            Animation.Abort(this, ahScroll);
+            TimerAnimation.Abort(this, ahScroll);
+        }
+
+        protected virtual void OnScrollComplete(double arg1, bool arg2)
+        {
+            if (HScrollAnimation != null)
+            {
+                HScrollAnimation = null;
+                scroll.RaiseHScroll();
+            }
+            if (VScrollAnimation != null)
+            {
+                VScrollAnimation = null;
+                scroll.RaiseVScroll();
+            }
+            if (ScrollAnimation != null)
+            {
+                ScrollAnimation = null;
+                scroll.RaiseHScroll();
+                scroll.RaiseVScroll();
+            }
+            ScrollComplete?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnCursorChanged(CursorType oldValue, CursorType newValue)
         {
             cursor = newValue;
-            interop.ChangeCursor(newValue);
+            interop?.ChangeCursor(newValue);
         }
 
         public virtual bool OnKeyDown(string keyName, KeyModifiers modifiers)
         {
-            KeyModifiers = modifiers;
             var args = new CanvasKeyEventArgs(keyName, modifiers);
             KeyDown?.Invoke(this, args);
             return args.Handled;
         }
-
-        protected virtual void OnScrollComplete(double arg1, bool arg2)
-        {
-            if (HorizontalScrollAnimation != null)
-            {
-                HorizontalScrollAnimation = null;
-                нorizontalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)HorizontalValue));
-            }
-            if (VerticalScrollAnimation != null)
-            {
-                VerticalScrollAnimation = null;
-                verticalScrolledHandler?.Invoke(this, new ScrollEventArgs((int)VerticalValue));
-            }
-            if (ScrollAnimation != null)
-            {
-                ScrollAnimation = null;
-            }
-            ScrollComplete?.Invoke(this, EventArgs.Empty);
-        }
-
-        public virtual bool ContainsCaptureBox(double x, double y)
-        {
-            var baseValue = CheckCaptureBox?.Invoke(x, y) ?? false;
-            return baseValue
-                || (VerticalScrollBarVisible && GetVerticalValueBounds().Contains((float)x, (float)y))
-                || (HorizontalScrollBarVisible && GetHorizontalValueBounds().Contains((float)x, (float)y));
-        }
-
-        public Func<double, double, bool> CheckCaptureBox;        
 
         private static KeyModifiers GetKeyModifiers(MouseEventArgs e)
         {
@@ -883,7 +292,13 @@ namespace PdfClown.UI.Blazor
 
         private static MouseButton GetMouseButton(MouseEventArgs e)
         {
-            return e.Button switch
+            var button = e.Button;
+            return GetMouseButton(button);
+        }
+
+        private static MouseButton GetMouseButton(long button)
+        {
+            return button switch
             {
                 0 => MouseButton.Left,
                 1 => MouseButton.Middle,
@@ -909,57 +324,71 @@ namespace PdfClown.UI.Blazor
 
         private void OnMouseWheel(WheelEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
-            OnScrolled(e.DeltaY);
+            OnScrolled(new TouchEventArgs(TouchAction.Released, GetMouseButton(e))
+            {
+                Location = GetMouseLocation(e),
+                WheelDelta = (float)e.DeltaY,
+                KeyModifiers = GetKeyModifiers(e),
+            });
         }
 
         private void OnPointerUp(PointerEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
             OnTouch(new TouchEventArgs(TouchAction.Released, GetMouseButton(e))
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
+                KeyModifiers = GetKeyModifiers(e),
             });
         }
 
         private void OnPointerDown(PointerEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
             OnTouch(new TouchEventArgs(TouchAction.Pressed, GetMouseButton(e))
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
+                KeyModifiers = GetKeyModifiers(e),
+            });
+        }
+
+        private void OnPointerMove(int[] args)
+        {
+            OnTouch(new TouchEventArgs(TouchAction.Moved, GetMouseButton(args[1]))
+            {
+                Location = new SKPoint(args[2], args[3]),
+                PointerId = args[0],
+                KeyModifiers = (KeyModifiers)args[4],
             });
         }
 
         private void OnPointerMove(PointerEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
             OnTouch(new TouchEventArgs(TouchAction.Moved, GetMouseButton(e))
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
+                KeyModifiers = GetKeyModifiers(e),
             });
         }
 
         private void OnPointerEnter(PointerEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
             OnTouch(new TouchEventArgs(TouchAction.Entered, GetMouseButton(e))
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
+                KeyModifiers = GetKeyModifiers(e),
             });
         }
 
         private void OnPointerLeave(PointerEventArgs e)
         {
-            KeyModifiers = GetKeyModifiers(e);
             OnTouch(new TouchEventArgs(TouchAction.Exited, GetMouseButton(e))
             {
                 Location = GetMouseLocation(e),
                 PointerId = e.PointerId,
+                KeyModifiers = GetKeyModifiers(e),
             });
         }
 
@@ -968,25 +397,16 @@ namespace PdfClown.UI.Blazor
             OnKeyDown(e.Key, GetKeyModifiers(e));
         }
 
-        private void OnPointerCancel(PointerEventArgs e)
-        {
-        }
-
-        private void OnDragStart(DragEventArgs e)
-        {
-        }
-
         public void Dispose()
         {
             interop?.DeInit();
+            interop?.Dispose();
+            interop = null;
         }
-        private async Task OnLostPointerCapture(PointerEventArgs e)
+
+        public void CapturePointer(long pointerId)
         {
-            await JS.InvokeVoidAsync("console.log", "LostPointerCapture");
-        }
-        private async Task OnGotPointerCapture(PointerEventArgs e)
-        {
-            await JS.InvokeVoidAsync("console.log", "GotPointerCapture");
+            interop?.SetCapture((int)pointerId);
         }
     }
 }

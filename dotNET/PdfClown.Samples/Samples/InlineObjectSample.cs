@@ -1,25 +1,20 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
-using entities = PdfClown.Documents.Contents.Entities;
+using PdfClown.Documents.Contents.Entities;
 using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Files;
-
-using System;
 using SkiaSharp;
 using System.IO;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to embed an image object within a PDF content
-      stream.</summary>
-      <remarks>
-        <para>Inline objects should be used sparingly, as they easily clutter content
-        streams.</para>
-        <para>The alternative (and preferred) way to insert an image object is via external
-        object (XObject); its main advantage is to allow content reuse.</para>
-      </remarks>
-    */
+    /// <summary>This sample demonstrates how to embed an image object within a PDF content
+    /// stream.</summary>
+    /// <remarks>
+    ///   <para>Inline objects should be used sparingly, as they easily clutter content
+    ///   streams.</para>
+    ///   <para>The alternative (and preferred) way to insert an image object is via external
+    ///   object (XObject); its main advantage is to allow content reuse.</para>
+    /// </remarks>
     public class InlineObjectSample : Sample
     {
         private const float Margin = 36;
@@ -27,14 +22,13 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Content creation.
             Populate(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Inline image", "embedding an image within a content stream", "inline image");
+            Serialize(document, "Inline image", "embedding an image within a content stream", "inline image");
         }
 
         private void Populate(PdfDocument document)
@@ -55,7 +49,7 @@ namespace PdfClown.Samples.CLI
                     (float)pageSize.Height - Margin * 2),
                   XAlignmentEnum.Justify,
                   YAlignmentEnum.Top);
-                var bodyFont = FontType1.Load(document, FontName.CourierBold);
+                var bodyFont = PdfType1Font.Load(document, FontName.CourierBold);
                 composer.SetFont(bodyFont, 32);
                 blockComposer.ShowText("Inline image sample"); blockComposer.ShowBreak();
                 composer.SetFont(bodyFont, 16);
@@ -65,7 +59,7 @@ namespace PdfClown.Samples.CLI
             // Showing the 'GNU' image...
             {
                 // Instantiate a jpeg image object!
-                var image = entities::Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")); // Abstract image (entity).
+                var image = Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")); // Abstract image (entity).
                                                                                                                       // Set the position of the image in the page!
                 composer.ApplyMatrix(200, 0, 0, 200, (pageSize.Width - 200) / 2, (pageSize.Height - 200) / 2);
                 // Show the image!

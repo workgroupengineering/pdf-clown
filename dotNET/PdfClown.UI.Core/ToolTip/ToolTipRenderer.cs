@@ -9,17 +9,12 @@ namespace PdfClown.UI.ToolTip
     {
         public const int Indent = 3;
         public static readonly float MaxWidth = 360;
-        private static readonly char[] rnSplitters = new char[] { '\r', '\n' };
-        private static readonly Dictionary<SKPaint, SKFont> fontCache = new Dictionary<SKPaint, SKFont>();
 
-        protected List<LineOfText> ContentLines;
+        protected List<LineOfText>? ContentLines;
         protected SKRect ContentBound;
 
         protected ToolTipRenderer()
-        {
-        }
-
-        public SKFont GetFont(SKPaint paint) => fontCache.TryGetValue(paint, out var font) ? font : (font = fontCache[paint] = paint.ToFont());
+        { }
 
         protected virtual void Clear()
         {
@@ -30,21 +25,21 @@ namespace PdfClown.UI.ToolTip
             }
         }
 
-        public virtual void Free()
+        public virtual void Dispose()
         {
             Clear();
         }
 
-        public List<LineOfText> MeasureText(string text, SKPaint paint, ref SKRect totalBounds)
+        public List<LineOfText> MeasureText(string text, SKPaint paint, SKFont font, ref SKRect totalBounds)
         {
             var result = new List<LineOfText>();
             if (string.IsNullOrEmpty(text))
                 return result;
 
-            var enumerator = new StringSegmentEnumerator(text, paint, MaxWidth);
+            var enumerator = new StringSegmentEnumerator(text, font, paint, MaxWidth);
             while (enumerator.MoveNext())
             {
-                var lof = MeasureLine(enumerator.Current, paint);
+                var lof = MeasureLine(enumerator.Current, paint, font);
 
                 lof.Bound.Offset(0, totalBounds.Bottom);
 
@@ -55,9 +50,9 @@ namespace PdfClown.UI.ToolTip
             return result;
         }
 
-        public LineOfText MeasureLine(ReadOnlySpan<char> text, SKPaint paint)
+        public LineOfText MeasureLine(ReadOnlySpan<char> text, SKPaint paint, SKFont font)
         {
-            var textBlob = text.Length > 0 ? SKTextBlob.Create(text, GetFont(paint)) : null;
+            var textBlob = text.Length > 0 ? SKTextBlob.Create(text, font) : null;
             var contentBound = textBlob?.Bounds ?? new SKRect(0, 0, 0, 10);
 
             return new LineOfText
@@ -71,24 +66,26 @@ namespace PdfClown.UI.ToolTip
 
         public abstract SKRect Measure();
 
-        public void Draw(PdfViewState state)
+        public void Draw(SKCanvas canvas, PdfViewState state, SKRect bound)
         {
             if (ContentLines == null)
                 return;
 
-            state.Canvas.Save();
-            state.Canvas.SetMatrix(state.WindowScaleMatrix);
+            canvas.Save();
+            canvas.SetMatrix(state.WindowMatrix);
 
-            var mapped = state.ToolTipBounds;
-            state.Canvas.Translate(mapped.Left, mapped.Top);
+            canvas.Translate(bound.Left, bound.Top);
 
-            DrawContent(state.Canvas);
+            DrawContent(canvas);
 
-            state.Canvas.Restore();
+            canvas.Restore();
         }
 
-        public virtual void DrawContent(SKCanvas canvas)
+        private void DrawContent(SKCanvas canvas)
         {
+            if (ContentLines == null)
+                return;
+
             canvas.DrawRect(ContentBound, DefaultSKStyles.PaintToolTipBackground);
             canvas.DrawRect(ContentBound, DefaultSKStyles.PaintToolTipBorder);
             canvas.Translate(Indent, Indent);
@@ -104,36 +101,41 @@ namespace PdfClown.UI.ToolTip
         public class LineOfText : IDisposable
         {
             public SKRect Bound;
-            public SKTextBlob Text { get; set; }
+            public SKTextBlob? Text { get; set; }
             public SKPoint Start { get; set; }
-            public SKPaint Paint { get; set; }
-
+            public SKPaint? Paint { get; set; }
+            
             public void Dispose()
             {
                 Text?.Dispose();
                 Text = null;
-                Paint = null;
             }
 
             public void Draw(SKCanvas canvas)
             {
                 if (Text == null)
                     return;
+#if NET9_0_OR_GREATER
                 canvas.DrawText(Text, Start.X + Bound.Left, Start.Y + Bound.Top, Paint);
+#else
+                canvas.DrawText(Text, Start.X + Bound.Left, Start.Y + Bound.Top, Paint);
+#endif
             }
         }
 
         private struct StringSegmentEnumerator
         {
             private readonly string _s;
+            private readonly SKFont _font;
             private readonly SKPaint _paint;
             private int _start;
             private int _length;
             private float _maxWidth;
 
-            public StringSegmentEnumerator(string s, SKPaint paint, float maxWidth)
+            public StringSegmentEnumerator(string s, SKFont font, SKPaint paint, float maxWidth)
             {
                 _s = s;
+                _font = font;
                 _paint = paint;
                 _start = 0;
                 _length = 0;
@@ -168,7 +170,11 @@ namespace PdfClown.UI.ToolTip
                 if ((currentPosition - start) > 0 && float.IsFinite(_maxWidth))
                 {
                     var span = _s.AsSpan(start, currentPosition - start);
+#if NET9_0_OR_GREATER
+                    var breakLength = (int)_font.BreakText(span, _maxWidth);
+#else
                     var breakLength = (int)_paint.BreakText(span, _maxWidth);
+#endif
                     currentPosition -= span.Length - breakLength;
                 }
 

@@ -16,21 +16,16 @@
  */
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Fonts
 {
-
-    /**
-     * This is the Mac OS Roman encoding, which is similar to the
-     * MacRomanEncoding with the addition of 15 entries
-     */
+    /// <summary>
+    /// This is the Mac OS Roman encoding, which is similar to the
+    /// MacRomanEncoding with the addition of 15 entries
+    /// </summary>
     internal class MacOSRomanEncoding : MacRomanEncoding
     {
-        public new static readonly MacOSRomanEncoding Instance = new MacOSRomanEncoding();
-        /**
-		 * Constructor.
-		 */
+        public new static readonly MacOSRomanEncoding Instance = new();
+        
         public MacOSRomanEncoding() 
         {
             Put(255, "notequal");

@@ -23,22 +23,12 @@
   this list of conditions.
 */
 
-using System;
-
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Object that can be associated to a layer.</summary>
-    */
+    /// <summary>Object that can be associated to a layer.</summary>
     public interface ILayerable
     {
-        /**
-          <summary>Gets/Sets the layer associated to this object.</summary>
-        */
-        LayerEntity Layer
-        {
-            get;
-            set;
-        }
+        /// <summary>Gets/Sets the layer associated to this object.</summary>
+        LayerEntity Layer { get; set; }
     }
 }

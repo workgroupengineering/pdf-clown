@@ -40,37 +40,37 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
 
         public string Name
         {
-            get => BaseDataObject.GetString(PdfName.Name);
-            set => BaseDataObject.SetName(PdfName.Name, value);
+            get => DataObject.GetString(PdfName.Name);
+            set => DataObject.SetName(PdfName.Name, value);
         }
 
         public DateTime? Date
         {
-            get => BaseDataObject.GetDate(PdfName.Date);
-            set => BaseDataObject.Set(PdfName.Date, value);
+            get => DataObject.GetDate(PdfName.Date);
+            set => DataObject.Set(PdfName.Date, value);
         }
 
         public string Version
         {
-            get => BaseDataObject.GetString(PdfName.REx);
-            set => BaseDataObject.SetName(PdfName.REx, value);
+            get => DataObject.GetString(PdfName.REx);
+            set => DataObject.SetName(PdfName.REx, value);
         }
 
         public int Revision
         {
-            get => BaseDataObject.GetInt(PdfName.R);
-            set => BaseDataObject.Set(PdfName.R, value);
+            get => DataObject.GetInt(PdfName.R);
+            set => DataObject.Set(PdfName.R, value);
         }
 
         public bool PrePelease
         {
-            get => BaseDataObject.GetBool(PdfName.PreRelease);
-            set => BaseDataObject.Set(PdfName.PreRelease, value);
+            get => DataObject.GetBool(PdfName.PreRelease);
+            set => DataObject.Set(PdfName.PreRelease, value);
         }
 
         public string OS
         {
-            get => BaseDataObject.Resolve(PdfName.REx) is PdfDirectObject directObject
+            get => DataObject.Get(PdfName.REx) is PdfDirectObject directObject
                 ? directObject is PdfArray array 
                     ? array.GetString(0) 
                     : directObject is IPdfString pdfString 
@@ -79,21 +79,21 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
                 : null;
             set
             {
-                var array = BaseDataObject.Resolve<PdfArray>(PdfName.REx);
+                var array = DataObject.GetOrCreateInderect<PdfArrayImpl>(PdfName.REx);
                 array.SetName(0, value);
             }
         }
 
         public bool NonEFontNoWarn
         {
-            get => BaseDataObject.GetBool(PdfName.NonEFontNoWarn, true);
-            set => BaseDataObject.Set(PdfName.NonEFontNoWarn, value);
+            get => DataObject.GetBool(PdfName.NonEFontNoWarn, true);
+            set => DataObject.Set(PdfName.NonEFontNoWarn, value);
         }
 
         public bool TrustedMode
         {
-            get => BaseDataObject.GetBool(PdfName.TrueType, false);
-            set => BaseDataObject.Set(PdfName.TrustedMode, value);
+            get => DataObject.GetBool(PdfName.TrueType, false);
+            set => DataObject.Set(PdfName.TrustedMode, value);
         }
     }
 }

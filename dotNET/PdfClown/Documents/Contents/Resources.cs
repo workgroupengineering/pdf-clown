@@ -26,71 +26,82 @@
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Patterns;
-using PdfClown.Documents.Contents.Patterns.Shadings;
+using PdfClown.Documents.Contents.Shadings;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Objects;
+using PdfClown.Tokens;
 using PdfClown.Util;
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
     /// <summary>Resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class Resources : PdfObjectWrapper<PdfDictionary>, ICompositeDictionary<PdfName>
+    public sealed class Resources : PdfDictionary, ICompositeDictionary<PdfName>
     {
-        public Resources(PdfDocument context) : base(context, new PdfDictionary())
+        public Resources()
+            : base()
         { }
 
-        public Resources(PdfDirectObject baseObject) : base(baseObject)
+        public Resources(PdfDocument context)
+            : base(context, new())
+        { }
+
+        internal Resources(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         public ColorSpaceResources ColorSpaces
         {
-            get => Wrap<ColorSpaceResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.ColorSpace));
-            set => BaseDataObject[PdfName.ColorSpace] = value.BaseObject;
+            get => GetOrCreate<ColorSpaceResources>(PdfName.ColorSpace);
+            set => SetDirect(PdfName.ColorSpace, value);
         }
 
         public ExtGStateResources ExtGStates
         {
-            get => Wrap<ExtGStateResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.ExtGState));
-            set => BaseDataObject[PdfName.ExtGState] = value.BaseObject;
+            get => GetOrCreate<ExtGStateResources>(PdfName.ExtGState);
+            set => SetDirect(PdfName.ExtGState, value);
         }
 
         public FontResources Fonts
         {
-            get => Wrap<FontResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Font));
-            set => BaseDataObject[PdfName.Font] = value.BaseObject;
+            get => GetOrCreate<FontResources>(PdfName.Font);
+            set => SetDirect(PdfName.Font, value);
         }
 
         public PatternResources Patterns
         {
-            get => Wrap<PatternResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Pattern));
-            set => BaseDataObject[PdfName.Pattern] = value.BaseObject;
+            get => GetOrCreate<PatternResources>(PdfName.Pattern);
+            set => SetDirect(PdfName.Pattern, value);
         }
 
         [PDF(VersionEnum.PDF12)]
         public PropertyListResources PropertyLists
         {
-            get => Wrap<PropertyListResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Properties));
+            get => GetOrCreate<PropertyListResources>(PdfName.Properties);
             set
             {
-                CheckCompatibility(VersionEnum.PDF12);
-                BaseDataObject[PdfName.Properties] = value.BaseObject;
+                Document?.CheckCompatibility(VersionEnum.PDF12);
+                SetDirect(PdfName.Properties, value);
             }
         }
 
         [PDF(VersionEnum.PDF13)]
         public ShadingResources Shadings
         {
-            get => Wrap<ShadingResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Shading));
-            set => BaseDataObject[PdfName.Shading] = value.BaseObject;
+            get => GetOrCreate<ShadingResources>(PdfName.Shading);
+            set => SetDirect(PdfName.Shading, value);
         }
 
         public XObjectResources XObjects
         {
-            get => Wrap<XObjectResources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.XObject));
-            set => BaseDataObject[PdfName.XObject] = value.BaseObject;
+            get => GetOrCreate<XObjectResources>(PdfName.XObject);
+            set => SetDirect(PdfName.XObject, value);
         }
+
+        public override PdfName ModifyTypeKey(PdfName key)
+            => PdfFactory.MapResKeys.TryGetValue(key, out var resKeys) ? resKeys : key;
 
         public IBiDictionary Get(Type type)
         {
@@ -98,7 +109,7 @@ namespace PdfClown.Documents.Contents
                 return ColorSpaces;
             else if (typeof(ExtGState).IsAssignableFrom(type))
                 return ExtGStates;
-            else if (typeof(Font).IsAssignableFrom(type))
+            else if (typeof(PdfFont).IsAssignableFrom(type))
                 return Fonts;
             else if (typeof(Pattern).IsAssignableFrom(type))
                 return Patterns;
@@ -112,7 +123,7 @@ namespace PdfClown.Documents.Contents
                 throw new ArgumentException(type.Name + " does NOT represent a valid resource class.");
         }
 
-        public T Get<T>(PdfName key) where T : PdfObjectWrapper
+        public T GetRes<T>(PdfName key)
         {
             return (T)Get(typeof(T))?[key] ?? default(T);
         }

@@ -50,20 +50,21 @@ namespace PdfClown.Documents.Interaction.Annotations
             Color = color;
         }
 
-        public Scribble(PdfDirectObject baseObject) : base(baseObject)
+        public Scribble(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         {
             paths = new List<SKPath>();
         }
 
         public PdfArray InkList
         {
-            get => BaseDataObject.Get<PdfArray>(PdfName.InkList);
+            get => Get<PdfArray>(PdfName.InkList);
             set
             {
                 var oldValue = InkList;
                 if (!PdfArray.SequenceEquals(oldValue, value))
                 {
-                    BaseDataObject[PdfName.InkList] = value;
+                    this[PdfName.InkList] = value;
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -76,7 +77,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             {
                 ClearPath(pagePaths);
                 pagePaths = value;
-                var pathsObject = new PdfArray();
+                var pathsObject = new PdfArrayImpl();
                 newbox = SKRect.Empty;
                 foreach (var path in value)
                 {
@@ -100,7 +101,6 @@ namespace PdfClown.Documents.Interaction.Annotations
                 paths = value;
             }
         }
-
 
         protected override FormXObject GenerateAppearance()
         {
@@ -201,7 +201,7 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         private IList<SKPath> TransformPaths(IList<SKPath> fromPaths, SKMatrix sKMatrix)
         {
-            IList<SKPath> toPaths = new List<SKPath>();
+            var toPaths = new List<SKPath>();
             TransformPaths(fromPaths, toPaths, sKMatrix);
             return toPaths;
         }

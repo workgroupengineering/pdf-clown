@@ -27,7 +27,6 @@ using PdfClown.Objects;
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace PdfClown.Bytes.Filters
 {
@@ -43,8 +42,7 @@ namespace PdfClown.Bytes.Filters
             var chunks = new List<ImageChunk>();
             if (parameters is PdfDictionary parametersDict)
             {
-                var globalsStream = parametersDict.Resolve(PdfName.JBIG2Globals);
-                if (globalsStream is PdfStream pdfStream)
+                if (parametersDict.Get<PdfStream>(PdfName.JBIG2Globals) is PdfStream pdfStream)
                 {
                     var globals = pdfStream.GetInputStream();
                     chunks.Add(new ImageChunk(data: globals));

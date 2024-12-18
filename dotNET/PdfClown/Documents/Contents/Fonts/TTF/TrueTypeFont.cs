@@ -25,7 +25,6 @@ using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
     /// <summary>
     /// A TrueType font file.
     /// @author Ben Litchfield
@@ -35,7 +34,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private float version;
         private int? numberOfGlyphs;
         private ushort? unitsPerEm;
-        protected Dictionary<string, TTFTable> tables = new Dictionary<string, TTFTable>(StringComparer.Ordinal);
+        protected Dictionary<string, TTFTable> tables = new(StringComparer.Ordinal);
         private readonly IInputStream data;
         private volatile Dictionary<string, int> postScriptNames;
         private List<float> fontMatrix;
@@ -43,7 +42,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private CmapTableLookup cmapTableLookup;
         private readonly object lockReadtable = new object();
         private readonly object lockPSNames = new object();
-        private readonly List<string> enabledGsubFeatures = new List<string>();
+        private readonly List<string> enabledGsubFeatures = new();
 
         internal TrueTypeFont(IInputStream fontData)
         {
@@ -125,158 +124,89 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             get => (PostScriptTable)GetTable(PostScriptTable.TAG);
         }
 
-        /**
-         * Get the OS/2 table for this TTF.
-         * 
-         * @return The OS/2 table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the OS/2 table for this TTF.</summary>
         public OS2WindowsMetricsTable OS2Windows
         {
             get => (OS2WindowsMetricsTable)GetTable(OS2WindowsMetricsTable.TAG);
         }
 
-        /**
-         * Get the maxp table for this TTF.
-         * 
-         * @return The maxp table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the maxp table for this TTF.</summary>
         public MaximumProfileTable MaximumProfile
         {
             get => (MaximumProfileTable)GetTable(MaximumProfileTable.TAG);
         }
 
-        /**
-         * Get the head table for this TTF.
-         * 
-         * @return The head table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the head table for this TTF.</summary>
         public HeaderTable Header
         {
             get => (HeaderTable)GetTable(HeaderTable.TAG);
         }
 
-        /**
-         * Get the hhea table for this TTF.
-         * 
-         * @return The hhea table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the hhea table for this TTF.</summary>
         public HorizontalHeaderTable HorizontalHeader
         {
             get => (HorizontalHeaderTable)GetTable(HorizontalHeaderTable.TAG);
         }
 
-        /**
-         * Get the hmtx table for this TTF.
-         * 
-         * @return The hmtx table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the hmtx table for this TTF.</summary>
         public HorizontalMetricsTable HorizontalMetrics
         {
             get => (HorizontalMetricsTable)GetTable(HorizontalMetricsTable.TAG);
         }
 
-        /**
-         * Get the loca table for this TTF.
-         * 
-         * @return The loca table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the loca table for this TTF.</summary>
         public IndexToLocationTable IndexToLocation
         {
             get => (IndexToLocationTable)GetTable(IndexToLocationTable.TAG);
         }
 
-        /**
-         * Get the glyf table for this TTF.
-         * 
-         * @return The glyf table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the glyf table for this TTF.</summary>
         public virtual GlyphTable Glyph
         {
             get => (GlyphTable)GetTable(GlyphTable.TAG);
         }
 
-        /**
-         * Get the "cmap" table for this TTF.
-         * 
-         * @return The "cmap" table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the "cmap" table for this TTF.</summary>
         public CmapTable Cmap
         {
             get => (CmapTable)GetTable(CmapTable.TAG);
         }
 
-        /**
-         * Get the vhea table for this TTF.
-         * 
-         * @return The vhea table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the vhea table for this TTF.</summary>
         public VerticalHeaderTable VerticalHeader
         {
             get => (VerticalHeaderTable)GetTable(VerticalHeaderTable.TAG);
         }
 
-        /**
-         * Get the vmtx table for this TTF.
-         * 
-         * @return The vmtx table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the vmtx table for this TTF.</summary>
         public VerticalMetricsTable VerticalMetrics
         {
             get => (VerticalMetricsTable)GetTable(VerticalMetricsTable.TAG);
         }
 
-        /**
-         * Get the VORG table for this TTF.
-         * 
-         * @return The VORG table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the VORG table for this TTF.</summary>
         public VerticalOriginTable VerticalOrigin
         {
             get => (VerticalOriginTable)GetTable(VerticalOriginTable.TAG);
         }
 
-        /**
-         * Get the "kern" table for this TTF.
-         * 
-         * @return The "kern" table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the "kern" table for this TTF.</summary>
         public KerningTable Kerning
         {
             get => (KerningTable)GetTable(KerningTable.TAG);
         }
 
-        /**
-         * Get the "gsub" table for this TTF.
-         *
-         * @return The "gsub" table or null if it doesn't exist.
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Get the "gsub" table for this TTF.</summary>
         public GlyphSubstitutionTable Gsub
         {
             get => (GlyphSubstitutionTable)GetTable(GlyphSubstitutionTable.TAG);
         }
 
-        /**
-         * Get the data of the TrueType Font
-         * program representing the stream used to build this 
-         * object (normally from the TTFParser object).
-         * 
-         * @return COSStream TrueType font program stream
-         * 
-         * @ If there is an error getting the font data.
-         */
+        /// <summary>Get the data of the TrueType Font
+        /// program representing the stream used to build this 
+        /// object (normally from the TTFParser object).</summary>
+        /// <param name="pos"></param>
+        /// <returns>IInputStream TrueType font program stream</returns>
         public IInputStream GetOriginalData(out long pos)
         {
             pos = data.Position;
@@ -284,24 +214,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return data;
         }
 
-        /**
-         * Get the data size of the TrueType Font program representing the stream used to build this
-         * object (normally from the TTFParser object).
-         *
-         * @return the size.
-         */
+        /// <summary>Get the data size of the TrueType Font program representing the stream used to build this
+        /// object (normally from the TTFParser object)</summary>
         public long OriginalDataSize
         {
             get => data.Length;
         }
 
-        /**
-         * Read the given table if necessary. Package-private, used by TTFParser only.
-         * 
-         * @param table the table to be initialized
-         * 
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Read the given table if necessary. Package-private, used by TTFParser only.</summary>
+        /// <param name="table">the table to be initialized</param>
         public void ReadTable(TTFTable table)
         {
             // PDFBOX-4219: synchronize on data because it is accessed by several threads
@@ -318,30 +239,20 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         }
 
         /// <summary>The number of glyphs(MaximumProfile.numGlyphs).</summary>
-
         public int NumberOfGlyphs
         {
             get => numberOfGlyphs ??= (MaximumProfile?.NumGlyphs ?? 0);
         }
 
-        /**
-         * Returns the units per EM (Header.unitsPerEm).
-         * 
-         * @return units per EM
-         * @ if there was an error reading the table.
-         */
+        /// <summary>Returns the units per EM (Header.unitsPerEm).</summary>
         public ushort UnitsPerEm
         {
             get => unitsPerEm ??= (Header?.UnitsPerEm ?? 1000);
         }
 
-        /**
-         * Returns the width for the given GID.
-         * 
-         * @param gid the GID
-         * @return the width
-         * @ if there was an error reading the metrics table.
-         */
+        /// <summary>Returns the width for the given GID.</summary>
+        /// <param name="gid">the GID</param>
+        /// <returns>the width</returns>
         public int GetAdvanceWidth(int gid)
         {
             HorizontalMetricsTable hmtx = HorizontalMetrics;
@@ -356,13 +267,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Returns the height for the given GID.
-         * 
-         * @param gid the GID
-         * @return the height
-         * @ if there was an error reading the metrics table.
-         */
+        /// <summary>Returns the height for the given GID.</summary>
+        /// <param name="gid">the GID</param>
+        /// <returns>the height</returns>
         public int GetAdvanceHeight(int gid)
         {
             VerticalMetricsTable vmtx = VerticalMetrics;
@@ -384,7 +291,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
         private void ReadPostScriptNames()
         {
-            Dictionary<string, int> psnames = postScriptNames;
+            var psnames = postScriptNames;
             if (psnames == null)
             {
                 // the getter is already synchronized
@@ -413,28 +320,21 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Returns the best Unicode from the font (the most general). The PDF spec says that "The means
-         * by which this is accomplished are implementation-dependent."
-         *
-         * The returned cmap will perform glyph substitution.
-         *
-         * @ if the font could not be read
-         */
+        /// <summary>Returns the best Unicode from the font (the most general). The PDF spec says that "The means
+        /// by which this is accomplished are implementation-dependent."
+        /// The returned cmap will perform glyph substitution.</summary>
         public ICmapLookup GetUnicodeCmapLookup()
         {
             return GetUnicodeCmapLookup(true);
         }
 
-        /**
-         * Returns the best Unicode from the font (the most general). The PDF spec says that "The means
-         * by which this is accomplished are implementation-dependent."
-         *
-         * The returned cmap will perform glyph substitution.
-         *
-         * @param isStrict False if we allow falling back to any cmap, even if it's not Unicode.
-         * @ if the font could not be read, or there is no Unicode cmap
-         */
+        /// <summary>
+        /// Returns the best Unicode from the font (the most general). The PDF spec says that "The means
+        /// by which this is accomplished are implementation-dependent."
+        /// The returned cmap will perform glyph substitution.
+        /// </summary>
+        /// <param name="isStrict">False if we allow falling back to any cmap, even if it's not Unicode.</param>
+        /// <returns></returns>
         public ICmapLookup GetUnicodeCmapLookup(bool isStrict)
         {
             CmapSubtable cmap = GetUnicodeCmapImpl(isStrict);
@@ -513,10 +413,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return cmap;
         }
 
-        /**
-         * Returns the GID for the given PostScript name, if the "post" table is present.
-         * @param name the PostScript name.
-         */
+        /// <summary>Returns the GID for the given PostScript name, if the "post" table is present.</summary>
+        /// <param name="name">the PostScript name.</param>
         public int NameToGID(string name)
         {
             // look up in 'post' table
@@ -564,9 +462,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Parses a Unicode PostScript name in the format uniXXXX.
-         */
+        /// <summary>Parses a Unicode PostScript name in the format uniXXXX.</summary>
         private int ParseUniName(string name)
         {
             if (name.StartsWith("uni", StringComparison.Ordinal)
@@ -642,30 +538,22 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return new List<float>(6) { 0.001f * scale, 0, 0, 0.001f * scale, 0, 0 };
         }
 
-        /**
-         * Enable a particular glyph substitution feature. This feature might not be supported by the
-         * font, or might not be implemented in PDFBox yet.
-         *
-         * @param featureTag The GSUB feature to enable
-         */
+        /// <summary>Enable a particular glyph substitution feature. This feature might not be supported by the
+        /// font, or might not be implemented in PDFBox yet.</summary>
+        /// <param name="featureTag">The GSUB feature to enable</param>
         public void EnableGsubFeature(string featureTag)
         {
             enabledGsubFeatures.Add(featureTag);
         }
 
-        /**
-         * Disable a particular glyph substitution feature.
-         *
-         * @param featureTag The GSUB feature to disable
-         */
+        /// <summary>Disable a particular glyph substitution feature.</summary>
+        /// <param name="featureTag">The GSUB feature to disable</param>
         public void DisableGsubFeature(string featureTag)
         {
             enabledGsubFeatures.Remove(featureTag);
         }
 
-        /**
-         * Enable glyph substitutions for vertical writing.
-         */
+        /// <summary>Enable glyph substitutions for vertical writing.</summary>
         public void EnableVerticalSubstitutions()
         {
             EnableGsubFeature("vrt2");

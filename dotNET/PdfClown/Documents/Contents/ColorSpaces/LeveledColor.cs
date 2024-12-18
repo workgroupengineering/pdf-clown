@@ -25,17 +25,16 @@
 
 using PdfClown.Objects;
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    ///<summary>Color value defined by numeric-level components.</summary>
+    /// <summary>Color value defined by numeric-level components.</summary>
     public abstract class LeveledColor : Color
     {
-        protected LeveledColor(ColorSpace colorSpace, PdfDirectObject baseObject) : base(colorSpace, baseObject)
+        protected LeveledColor(ColorSpace colorSpace, PdfDirectObject baseObject) 
+            : base(colorSpace, baseObject)
         { }
 
-        public sealed override PdfArray Components => (PdfArray)BaseDataObject;
+        public sealed override PdfArray Components => (PdfArray)DataObject;
 
         public override bool Equals(object obj)
         {
@@ -49,13 +48,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         public sealed override int GetHashCode()
         {
             int hashCode = 0;
-            foreach (var component in Components)
-            { hashCode ^= component.GetHashCode(); }
+            foreach (var component in Components.GetItems())
+            {
+                hashCode ^= component.GetHashCode();
+            }
             return hashCode;
         }
 
-        ///<summary>Gets the specified color component.</summary>
-        ///<param name="index">Component index.</param>
+        /// <summary>Gets the specified color component.</summary>
+        /// <param name="index">Component index.</param>
         protected float this[int index]
         {
             get => Components.GetFloat(index);

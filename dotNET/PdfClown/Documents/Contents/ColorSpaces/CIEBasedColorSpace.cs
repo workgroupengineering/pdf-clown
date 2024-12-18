@@ -23,8 +23,8 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
@@ -37,13 +37,14 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         //TODO:IMPL new element constructor!
 
-        protected CIEBasedColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        protected CIEBasedColorSpace(List<PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets the tristimulus value, in the CIE 1931 XYZ space, of the diffuse black point.</summary>
         public float[] BlackPoint
         {
-            get => blackPoint ??= Dictionary.Resolve(PdfName.BlackPoint) is PdfArray array
+            get => blackPoint ??= Dictionary.Get<PdfArray>(PdfName.BlackPoint) is PdfArray array
                       ? new float[] { array.GetFloat(0), array.GetFloat(1), array.GetFloat(2) }
                       : new float[] { 0, 0, 0 };
         }
@@ -51,13 +52,13 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         /// <summary>Gets the tristimulus value, in the CIE 1931 XYZ space, of the diffuse white point.</summary>
         public float[] WhitePoint
         {
-            get => whitePoint ??= Dictionary.Resolve(PdfName.WhitePoint) is PdfArray array
+            get => whitePoint ??= Dictionary.Get<PdfArray>(PdfName.WhitePoint) is PdfArray array
                   ? new float[] { array.GetFloat(0), array.GetFloat(1), array.GetFloat(2) }
                   : new float[] { 0, 0, 0 };
         }
 
         /// <summary>Gets this color space's dictionary.</summary>
-        protected override PdfDictionary Dictionary => ((PdfArray)BaseDataObject).Get<PdfDictionary>(1);
+        protected PdfDictionary Dictionary => Get<PdfDictionary>(1);
 
     }
 }

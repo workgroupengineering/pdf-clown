@@ -27,7 +27,11 @@ namespace PdfClown.Util
 {
     public interface IBiDictionary
     {
+        int Count { get; }
+
         object GetKey(object value);
+
+        bool ContainsKey(object value);
 
         object this[object key] { get; set; }
     }

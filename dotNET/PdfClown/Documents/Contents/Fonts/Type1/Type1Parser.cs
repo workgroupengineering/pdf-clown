@@ -20,22 +20,18 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using PdfClown.Util;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
 {
-    /**
-     * Parses an Adobe Type 1 (.pfb) font. It is used exclusively by Type1Font.
-     *
-     * The Type 1 font format is a free-text format which is somewhat difficult
-     * to parse. This is made worse by the fact that many Type 1 font files do
-     * not conform to the specification, especially those embedded in PDFs. This
-     * parser therefore tries to be as forgiving as possible.
-     *
-     * @see "Adobe Type 1 Font Format, Adobe Systems (1999)"
-     *
-     * @author John Hewson
-     */
+    /// <summary>
+    /// Parses an Adobe Type 1 (.pfb) font. It is used exclusively by Type1Font.
+    /// The Type 1 font format is a free-text format which is somewhat difficult
+    /// to parse. This is made worse by the fact that many Type 1 font files do
+    /// not conform to the specification, especially those embedded in PDFs. This
+    /// parser therefore tries to be as forgiving as possible.
+    /// @see "Adobe Type 1 Font Format, Adobe Systems (1999)"
+    /// @author John Hewson
+    /// </summary>
     sealed class Type1Parser
     {
         // constants for encryption
@@ -46,13 +42,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         private Type1Lexer lexer;
         private Type1Font font;
 
-        /**
-		 * Parses a Type 1 font and returns a Type1Font class which represents it.
-		 *
-		 * @param segment1 Segment 1: ASCII
-		 * @param segment2 Segment 2: Binary
-		 * @throws IOException
-		 */
+        /// <summary>
+        /// Parses a Type 1 font and returns a Type1Font class which represents it.
+        /// </summary>
+        /// <param name="segment1">Segment 1: ASCII</param>
+        /// <param name="segment2">Segment 2: Binary</param>
         public Type1Font Parse(Memory<byte> segment1, Memory<byte> segment2)
         {
             font = new Type1Font(segment1, segment2);
@@ -64,9 +58,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return font;
         }
 
-        /**
-		 * Parses the ASCII portion of a Type 1 font.
-		 */
+        /// <summary>Parses the ASCII portion of a Type 1 font.</summary>
+        /// <exception cref="IOException"></exception>
         private void ParseASCII(Memory<byte> bytes)
         {
             if (bytes.Length == 0)
@@ -231,9 +224,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
         }
 
-        /**
-		 * Extracts values from an array as numbers.
-		 */
+        /// <summary>Extracts values from an array as numbers.</summary>
         private List<float> ArrayToNumbers(List<Token> value)
         {
             var numbers = new List<float>(value.Count - 2);
@@ -256,9 +247,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return numbers;
         }
 
-        /**
-		 * Extracts values from the /FontInfo dictionary.
-		 */
+        /// <summary>Extracts values from the /FontInfo dictionary.</summary>
         private void ReadFontInfo(Dictionary<string, List<Token>> fontInfo)
         {
             foreach (KeyValuePair<string, List<Token>> entry in fontInfo)
@@ -301,10 +290,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
         }
 
-        /**
-		 * Reads a dictionary whose values are simple, i.e., do not contain
-		 * nested dictionaries.
-		 */
+        /// <summary>Reads a dictionary whose values are simple, i.e., do not contain
+        /// nested dictionaries</summary>
         private Dictionary<string, List<Token>> ReadSimpleDict()
         {
             var dict = new Dictionary<string, List<Token>>(StringComparer.Ordinal);
@@ -349,9 +336,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return dict;
         }
 
-        /**
-		 * Reads a simple value from a dictionary.
-		 */
+        /// <summary>Reads a simple value from a dictionary.</summary>
         private List<Token> ReadDictValue()
         {
             List<Token> value = ReadValue();
@@ -359,11 +344,11 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return value;
         }
 
-        /**
-		 * Reads a simple value. This is either a number, a string,
-		 * a name, a literal name, an array, a procedure, or a charstring.
-		 * This method does not support reading nested dictionaries unless they're empty.
-		 */
+        /// <summary>
+        /// Reads a simple value.This is either a number, a string,
+        /// a name, a literal name, an array, a procedure, or a charstring.
+        /// This method does not support reading nested dictionaries unless they're empty.
+        /// </summary>
         private List<Token> ReadValue()
         {
             List<Token> value = new List<Token>();
@@ -444,9 +429,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
         }
 
-        /**
-		 * Reads a procedure.
-		 */
+        /// <summary>Reads a procedure.</summary>
         private List<Token> ReadProc()
         {
             List<Token> value = new List<Token>();
@@ -481,9 +464,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
         }
 
 
-        /**
-         * Reads a procedure but without returning anything.
-         */
+        /// <summary>Reads a procedure but without returning anything.</summary>
         private void ReadProcVoid()
         {
             int openProc = 1;
@@ -508,9 +489,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             ReadMaybe(TokenKind.NAME, "executeonly");
         }
 
-        /**
-		 * Parses the binary portion of a Type 1 font.
-		 */
+        /// <summary>Parses the binary portion of a Type 1 font.</summary>
         private void ParseBinary(Memory<byte> bytes)
         {
             // Sometimes, fonts use the hex format, so this needs to be converted before decryption
@@ -617,9 +596,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             ReadCharStrings(lenIV);
         }
 
-        /**
-		 * Extracts values from the /Private dictionary.
-		 */
+        /// <summary>Extracts values from the /Private dictionary.</summary>
         private void ReadPrivate(string key, List<Token> value)
         {
             switch (key)
@@ -669,10 +646,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
         }
 
-        /**
-		 * Reads the /Subrs array.
-		 * @param lenIV The number of random bytes used in charstring encryption.
-		 */
+        /// <summary>Reads the /Subrs array.</summary>
+        /// <param name="lenIV">The number of random bytes used in charstring encryption.</param>
         private void ReadSubrs(int lenIV)
         {
             // allocate size (array indexes may not be in-order)
@@ -712,7 +687,9 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             ReadDef();
         }
 
-        // OtherSubrs are embedded PostScript procedures which we can safely ignore
+        /// <summary>
+        /// OtherSubrs are embedded PostScript procedures which we can safely ignore
+        /// </summary>
         private void ReadOtherSubrs()
         {
             if (lexer.PeekKind(TokenKind.START_ARRAY))
@@ -737,10 +714,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
         }
 
-        /**
-		 * Reads the /CharStrings dictionary.
-		 * @param lenIV The number of random bytes used in charstring encryption.
-		 */
+        /// <summary>Reads the /CharStrings dictionary.</summary>
+        /// <param name="lenIV">The number of random bytes used in charstring encryption.</param>
         private void ReadCharStrings(int lenIV)
         {
             int Length = Read(TokenKind.INTEGER).IntValue;
@@ -779,9 +754,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             // and expect a "def" somewhere, otherwise a "put"
         }
 
-        /**
-		 * Reads the sequence "noaccess def" or equivalent.
-		 */
+        /// <summary>Reads the sequence "noaccess def" or equivalent.</summary>
         private void ReadDef()
         {
             ReadMaybe(TokenKind.NAME, "readonly");
@@ -807,9 +780,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             throw new IOException("Found " + token + " but expected ND");
         }
 
-        /**
-		 * Reads the sequence "noaccess put" or equivalent.
-		 */
+        /// <summary>Reads the sequence "noaccess put" or equivalent.</summary>
         private void ReadPut()
         {
             ReadMaybe(TokenKind.NAME, "readonly");
@@ -834,9 +805,7 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             throw new IOException("Found " + token + " but expected NP");
         }
 
-        /**
-		 * Reads the next token and throws an error if it is not of the given kind.
-		 */
+        /// <summary>Reads the next token and throws an error if it is not of the given kind.</summary>
         private Token Read(TokenKind kind)
         {
             Token token = lexer.NextToken();
@@ -847,10 +816,8 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return token;
         }
 
-        /**
-		 * Reads the next token and throws an error if it is not of the given kind
-		 * and does not have the given value.
-		 */
+        /// <summary>Reads the next token and throws an error if it is not of the given kind
+        /// and does not have the given value.</summary>
         private void Read(TokenKind kind, string name)
         {
             Token token = Read(kind);
@@ -860,28 +827,22 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             }
         }
 
-        /**
-		 * Reads the next token if and only if it is of the given kind and
-		 * has the given value.
-		 */
+        /// <summary>Reads the next token if and only if it is of the given kind and
+        /// has the given value.</summary>
         private Token ReadMaybe(TokenKind kind, string name)
         {
             if (lexer.PeekKind(kind) && lexer.PeekToken.Text.Equals(name, StringComparison.Ordinal))
-
             {
                 return lexer.NextToken();
             }
             return null;
         }
 
-        /**
-		 * Type 1 Decryption (eexec, charstring).
-		 *
-		 * @param cipherBytes cipher text
-		 * @param r key
-		 * @param n number of random bytes (lenIV)
-		 * @return plain text
-		 */
+        /// <summary>Type 1 Decryption(eexec, charstring).</summary>
+        /// <param name="cipherBytes">cipher text</param>
+        /// <param name="r">key</param>
+        /// <param name="n">number of random bytes(lenIV)</param>
+        /// <returns>plain text</returns>
         private Memory<byte> Decrypt(Memory<byte> cipherBytes, int r, int n)
         {
             // lenIV of -1 means no encryption (not documented)
@@ -912,8 +873,10 @@ namespace PdfClown.Documents.Contents.Fonts.Type1
             return plainBytes;
         }
 
-        // Check whether binary or hex encoded. See Adobe Type 1 Font Format specification
-        // 7.2 eexec encryption
+        /// <summary>
+        /// Check whether binary or hex encoded. See Adobe Type 1 Font Format specification
+        /// 7.2 eexec encryption
+        /// </summary>
         private bool IsBinary(ReadOnlySpan<byte> bytes)
         {
             if (bytes.Length < 4)

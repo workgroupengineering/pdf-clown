@@ -1,33 +1,23 @@
-using PdfClown.Documents;
-using PdfClown.Documents.Contents.Composition;
-using PdfClown.Documents.Contents.Entities;
-using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Documents.Contents.XObjects;
-using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Forms;
-using PdfClown.Files;
 
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to fill AcroForm fields of a PDF document.</summary>
-    */
+    /// <summary>This sample demonstrates how to fill AcroForm fields of a PDF document.</summary>
     public class AcroFormFillingSample : Sample
     {
         public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            var file = new PdfFile(filePath);
-            PdfDocument document = file.Document;
+            var document = new PdfDocument(filePath);
+            var catalog = document.Catalog;
 
             // 2. Get the acroform!
-            Form form = document.Form;
-            if (!form.Exists())
+            AcroForm form = catalog.Form;
+            if ((form.Status & Objects.PdfObjectStatus.Virtual) != 0)
             { Console.WriteLine("\nNo acroform available."); }
             else
             {
@@ -52,8 +42,8 @@ namespace PdfClown.Samples.CLI
                             String value;
                             if (field is RadioButton)
                             { value = field.Widgets[0].Value; } // Selects the first widget in the group.
-                            else if (field is ChoiceField)
-                            { value = ((ChoiceField)field).Items[0].Value; } // Selects the first item in the list.
+                            else if (field is ChoiceField choiceField)
+                            { value = choiceField.Items[0].Value; } // Selects the first item in the list.
                             else
                             { value = field.Name; } // Arbitrary value (just to get something to fill with).
                             field.Value = value;
@@ -64,7 +54,7 @@ namespace PdfClown.Samples.CLI
 
                         foreach (Field field in form.Fields.Values)
                         {
-                            Console.WriteLine("* " + field.GetType().Name + " '" + field.FullName + "' (" + field.BaseObject + "): ");
+                            Console.WriteLine("* " + field.GetType().Name + " '" + field.FullName + "' (" + field.RefOrSelf + "): ");
                             Console.WriteLine("    Current Value:" + field.Value);
                             string newValue = PromptChoice("    New Value:");
                             if (newValue != null && newValue.Equals("quit"))
@@ -77,7 +67,7 @@ namespace PdfClown.Samples.CLI
             }
 
             // 4. Serialize the PDF file!
-            Serialize(file);
+            Serialize(document);
         }
     }
 }

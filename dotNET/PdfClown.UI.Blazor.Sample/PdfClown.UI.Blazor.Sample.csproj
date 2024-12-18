@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <!--<Nullable>enable</Nullable>-->
+    <ImplicitUsings>enable</ImplicitUsings>
+	<!--<WasmEnableThreads>true</WasmEnableThreads>-->
+	<!--<WasmProfilers>browser;</WasmProfilers>-->
+	<!--<WasmNativeStrip>true</WasmNativeStrip>-->
+	<WasmBuildNative>true</WasmBuildNative>
+	<InvariantTimezone>true</InvariantTimezone>
+	<InvariantGlobalization>true</InvariantGlobalization>  
+	<!--<RunAOTCompilation>true</RunAOTCompilation>-->
+	<SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+	<PublishTrimmed>true</PublishTrimmed>
+	<!--<TrimMode>link</TrimMode>-->
+	<!--<TrimMode>full</TrimMode>-->
+	<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup> 
+	
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PdfClown.UI.Blazor\PdfClown.UI.Blazor.csproj" />	
+  </ItemGroup>
+
+	<!--<ItemGroup>
+		 --><!--remove all previous native files--><!-- 
+		<NativeFileReference Remove="@(SkiaSharpStaticLibrary)" />
+		 --><!--include the multi-threaded build if WasmEnableThreads=true--><!-- 
+		<NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\3.1.56\mt\*.a" Condition="'$(WasmEnableThreads)' == 'True'" />
+		 --><!--otherwise use the single threaded build--><!-- 
+		<NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\3.1.56\st\*.a" Condition="'$(WasmEnableThreads)' != 'True'" />
+	</ItemGroup>-->
+
+</Project>

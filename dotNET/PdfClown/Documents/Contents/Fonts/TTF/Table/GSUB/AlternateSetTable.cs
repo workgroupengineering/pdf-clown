@@ -17,10 +17,9 @@
 
 namespace PdfClown.Documents.Contents.Fonts.TTF.Table.GSUB
 {
-
     /// <summary>
     /// LookupType 3: Alternate Substitution Subtable
-    /// as described in OpenType spec: <a href = "https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#31-alternate-substitution-format-1" > ...</a>
+    /// as described in OpenType spec: <a href="https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#31-alternate-substitution-format-1"> ...</a>
     /// </summary>
     public class AlternateSetTable
     {

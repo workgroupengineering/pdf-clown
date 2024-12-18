@@ -115,10 +115,7 @@ namespace PdfClown.Objects
             date = value;
         }
 
-        public override PdfObject Accept(IVisitor visitor, object data)
-        {
-            return visitor.Visit(this, data);
-        }
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
         internal static DateTime? Trimm(DateTime? value)
         {

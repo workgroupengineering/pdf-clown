@@ -45,27 +45,27 @@ namespace PdfClown.Tools
         /// <param name="layers">Layers to remove (they MUST belong to the same document).</param>
         public void Remove(bool preserveContent, params Layer[] layers)
         {
-            var document = layers[0].Document;
+            var catalog = layers[0].Catalog;
 
             // 1. Page contents.
             var removedLayers = new HashSet<Layer>(layers);
             var layerEntities = new HashSet<LayerEntity>(removedLayers);
             var layerXObjects = new HashSet<XObject>();
-            foreach (var page in document.Pages)
+            foreach (var page in catalog.Pages)
             { RemoveLayerContents(page, removedLayers, layerEntities, layerXObjects, preserveContent); }
 
             // 2. Layer definitions.
             var removedLayerReferences = new HashSet<PdfReference>();
             foreach (var removedLayer in removedLayers)
-            { removedLayerReferences.Add((PdfReference)removedLayer.BaseObject); }
-            var layerDefinition = document.Layer;
+            { removedLayerReferences.Add((PdfReference)removedLayer.RefOrSelf); }
+            var layerDefinition = catalog.Layers;
             // 2.1. Clean default layer configuration!
             RemoveLayerReferences(layerDefinition.DefaultConfiguration, removedLayerReferences);
             // 2.2. Clean alternate layer configurations!
             foreach (var layerConfiguration in layerDefinition.AlternateConfigurations)
             { RemoveLayerReferences(layerConfiguration, removedLayerReferences); }
             // 2.3. Clean global layer collection!
-            RemoveLayerReferences(layerDefinition.Layers.BaseDataObject, removedLayerReferences);
+            RemoveLayerReferences(layerDefinition.Layers.DataObject, removedLayerReferences);
 
             // 3. Entities.
             // 3.1. Clean the xobjects!
@@ -81,7 +81,7 @@ namespace PdfClown.Tools
             { layerEntity.Delete(); }
 
             // 4. Reference cleanup.
-            Optimizer.RemoveOrphanedObjects(document.File);
+            Optimizer.RemoveOrphanedObjects(catalog.Document);
         }
 
         private void RemoveLayerContents(PdfPage page, ICollection<Layer> removedLayers, ICollection<LayerEntity> layerEntities, ICollection<XObject> layerXObjects, bool preserveContent)
@@ -212,18 +212,19 @@ namespace PdfClown.Tools
             if (layerConfiguration == null)
                 return;
 
-            var layerConfigurationDictionary = layerConfiguration.BaseDataObject;
-            var usageArrayObject = layerConfigurationDictionary.Get<PdfArray>(PdfName.AS);
+            var usageArrayObject = layerConfiguration.Get<PdfArray>(PdfName.AS);
             if (usageArrayObject != null)
             {
-                foreach (var usageItemObject in usageArrayObject)
-                { RemoveLayerReferences((PdfDictionary)usageItemObject.Resolve(), PdfName.OCGs, layerReferences); }
+                foreach (var usageItemObject in usageArrayObject.GetItems())
+                {
+                    RemoveLayerReferences((PdfDictionary)usageItemObject.Resolve(PdfName.AS), PdfName.OCGs, layerReferences);
+                }
             }
-            RemoveLayerReferences(layerConfigurationDictionary, PdfName.Locked, layerReferences);
-            RemoveLayerReferences(layerConfigurationDictionary, PdfName.OFF, layerReferences);
-            RemoveLayerReferences(layerConfigurationDictionary, PdfName.ON, layerReferences);
-            RemoveLayerReferences(layerConfigurationDictionary, PdfName.Order, layerReferences);
-            RemoveLayerReferences(layerConfigurationDictionary, PdfName.RBGroups, layerReferences);
+            RemoveLayerReferences(layerConfiguration, PdfName.Locked, layerReferences);
+            RemoveLayerReferences(layerConfiguration, PdfName.OFF, layerReferences);
+            RemoveLayerReferences(layerConfiguration, PdfName.ON, layerReferences);
+            RemoveLayerReferences(layerConfiguration, PdfName.Order, layerReferences);
+            RemoveLayerReferences(layerConfiguration, PdfName.RBGroups, layerReferences);
         }
 
         private static void RemoveLayerReferences(PdfDictionary dictionaryObject, PdfName key, ICollection<PdfReference> layerReferences)
@@ -241,7 +242,7 @@ namespace PdfClown.Tools
 
             for (int index = arrayObject.Count - 1; index >= 0; index--)
             {
-                PdfDataObject itemObject = arrayObject[index];
+                var itemObject = arrayObject.Get(index);
                 if (itemObject is PdfReference pdfReference)
                 {
                     if (layerReferences.Contains(pdfReference))
@@ -250,9 +251,10 @@ namespace PdfClown.Tools
 
                         if (index < arrayObject.Count)
                         {
-                            var nextObject = arrayObject.Resolve(index);
-                            if (nextObject is PdfArray) // Children array.
-                            { arrayObject.RemoveAt(index); }
+                            if (arrayObject.Get<PdfArray>(index) != null) // Children array.
+                            {
+                                arrayObject.RemoveAt(index);
+                            }
                         }
                         continue;
                     }
@@ -260,7 +262,9 @@ namespace PdfClown.Tools
                     { itemObject = itemObject.Resolve(); }
                 }
                 if (itemObject is PdfArray pdfArray)
-                { RemoveLayerReferences(pdfArray, layerReferences); }
+                {
+                    RemoveLayerReferences(pdfArray, layerReferences);
+                }
             }
         }
     }

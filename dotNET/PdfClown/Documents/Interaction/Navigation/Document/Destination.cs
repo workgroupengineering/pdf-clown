@@ -28,6 +28,7 @@ using PdfClown.Objects;
 using PdfClown.Util;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
@@ -41,7 +42,7 @@ namespace PdfClown.Documents.Interaction.Navigation
     ///   </list>
     /// </remarks>
     [PDF(VersionEnum.PDF10)]
-    public abstract class Destination : PdfObjectWrapper<PdfArray>, IPdfNamedObjectWrapper, ITextDisplayable
+    public abstract class Destination : PdfArray, IPdfNamedObject, ITextDisplayable
     {
         /// <summary>Destination mode [PDF:1.6:8.2.1].</summary>
         public enum ModeEnum
@@ -120,22 +121,46 @@ namespace PdfClown.Documents.Interaction.Navigation
             FitBoundingBoxVertical
         }
 
+        private static readonly BiDictionary<ModeEnum, PdfName> modeCodes = new()
+        {
+            [ModeEnum.Fit] = PdfName.Fit,
+            [ModeEnum.FitBoundingBox] = PdfName.FitB,
+            [ModeEnum.FitBoundingBoxHorizontal] = PdfName.FitBH,
+            [ModeEnum.FitBoundingBoxVertical] = PdfName.FitBV,
+            [ModeEnum.FitHorizontal] = PdfName.FitH,
+            [ModeEnum.FitRectangle] = PdfName.FitR,
+            [ModeEnum.FitVertical] = PdfName.FitV,
+            [ModeEnum.XYZ] = PdfName.XYZ
+        };
+
+        public static bool IsMatch(List<PdfDirectObject> list)
+        {
+            return list.Count > 1
+                && list[1] is PdfName name
+                && modeCodes.ContainsValue(name);
+        }
+
+        public static ModeEnum? GetMode(PdfName name)
+        {
+            return name != null
+                ? modeCodes.GetKey(name) is ModeEnum modeEnum
+                    ? modeEnum
+                    : throw new NotSupportedException("Mode unknown: " + name)
+                : null;
+        }
+
+        public static PdfName GetName(ModeEnum mode) => modeCodes[mode];
+
         /// <summary>Wraps a destination base object into a destination object.</summary>
         /// <param name="baseObject">Destination base object.</param>
         /// <returns>Destination object associated to the base object.</returns>
-        public static Destination Wrap(PdfDirectObject baseObject)
+        internal static Destination Create(List<PdfDirectObject> array)
         {
-            if (baseObject == null)
-                return null;
-            if (baseObject.Wrapper is Destination destination)
-                return destination;
-
-            var dataObject = (PdfArray)baseObject.Resolve();
-            var pageObject = dataObject[0];
+            var pageObject = array[0];
             if (pageObject is PdfReference)
-                return new LocalDestination(baseObject);
+                return new LocalDestination(array);
             else if (pageObject is PdfInteger)
-                return new RemoteDestination(baseObject);
+                return new RemoteDestination(array);
             else
                 throw new ArgumentException("Not a valid destination object.", "baseObject");
         }
@@ -148,7 +173,7 @@ namespace PdfClown.Documents.Interaction.Navigation
         /// <param name="location">Destination location.</param>
         /// <param name="zoom">Magnification factor to use when displaying the page.</param>
         protected Destination(PdfDocument context, object page, ModeEnum mode, object location, double? zoom)
-            : base(context, new PdfArray(2) { (string)null, (string)null })
+            : base(context, new(2) { null, null })
         {
             Page = page;
             Mode = mode;
@@ -156,7 +181,8 @@ namespace PdfClown.Documents.Interaction.Navigation
             Zoom = zoom;
         }
 
-        public Destination(PdfDirectObject baseObject) : base(baseObject)
+        public Destination(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the page location.</summary>
@@ -171,48 +197,47 @@ namespace PdfClown.Documents.Interaction.Navigation
                     case ModeEnum.FitBoundingBoxVertical:
                     case ModeEnum.FitHorizontal:
                     case ModeEnum.FitVertical:
-                        return BaseDataObject.GetFloat(2, float.NaN);
+                        return GetFloat(2, float.NaN);
                     case ModeEnum.FitRectangle:
                         {
-                            float left = BaseDataObject.GetFloat(2, float.NaN);
-                            float top = BaseDataObject.GetFloat(5, float.NaN);
-                            float width = BaseDataObject.GetFloat(4, float.NaN) - left;
-                            float height = BaseDataObject.GetFloat(3, float.NaN) - top;
+                            float left = GetFloat(2, float.NaN);
+                            float top = GetFloat(5, float.NaN);
+                            float width = GetFloat(4, float.NaN) - left;
+                            float height = GetFloat(3, float.NaN) - top;
                             return SKRect.Create(left, top, width, height);
                         }
                     case ModeEnum.XYZ:
                         return new SKPoint(
-                          BaseDataObject.GetFloat(2, float.NaN),
-                          BaseDataObject.GetFloat(3, float.NaN));
+                          GetFloat(2, float.NaN),
+                          GetFloat(3, float.NaN));
                     default:
                         return null;
                 }
             }
             set
             {
-                PdfArray baseDataObject = BaseDataObject;
                 switch (Mode)
                 {
                     case ModeEnum.FitBoundingBoxHorizontal:
                     case ModeEnum.FitBoundingBoxVertical:
                     case ModeEnum.FitHorizontal:
                     case ModeEnum.FitVertical:
-                        baseDataObject.Set(2, Convert.ToDouble(value));
+                        Set(2, Convert.ToDouble(value));
                         break;
                     case ModeEnum.FitRectangle:
                         {
                             SKRect rectangle = (SKRect)value;
-                            baseDataObject.Set(2, rectangle.Left);
-                            baseDataObject.Set(3, rectangle.Top);
-                            baseDataObject.Set(4, rectangle.Right);
-                            baseDataObject.Set(5, rectangle.Bottom);
+                            Set(2, rectangle.Left);
+                            Set(3, rectangle.Top);
+                            Set(4, rectangle.Right);
+                            Set(5, rectangle.Bottom);
                             break;
                         }
                     case ModeEnum.XYZ:
                         {
                             SKPoint point = (SKPoint)value;
-                            baseDataObject.Set(2, point.X);
-                            baseDataObject.Set(3, point.Y);
+                            Set(2, point.X);
+                            Set(3, point.Y);
                             break;
                         }
                     default:
@@ -225,12 +250,10 @@ namespace PdfClown.Documents.Interaction.Navigation
         /// <summary>Gets the destination mode.</summary>
         public ModeEnum Mode
         {
-            get => ModeEnumExtension.Get(BaseDataObject.Get<PdfName>(1)).Value;
+            get => GetMode(Get<PdfName>(1)).Value;
             set
             {
-                PdfArray baseDataObject = BaseDataObject;
-
-                baseDataObject[1] = value.GetName();
+                Set(1, GetName(value));
 
                 // Adjusting parameter list...
                 int parametersCount;
@@ -255,10 +278,10 @@ namespace PdfClown.Documents.Interaction.Navigation
                     default:
                         throw new NotSupportedException("Mode unknown: " + value);
                 }
-                while (baseDataObject.Count < parametersCount)
-                { baseDataObject.AddDirect(null); }
-                while (baseDataObject.Count > parametersCount)
-                { baseDataObject.RemoveAt(baseDataObject.Count - 1); }
+                while (Count < parametersCount)
+                { AddSimple(null); }
+                while (Count > parametersCount)
+                { RemoveAt(Count - 1); }
             }
         }
 
@@ -277,7 +300,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                 switch (Mode)
                 {
                     case ModeEnum.XYZ:
-                        return PdfSimpleObject<object>.GetDoubleValue(BaseDataObject[4]);
+                        return PdfSimpleObject<object>.GetDoubleValue(Get(4));
                     default:
                         return null;
                 }
@@ -287,7 +310,7 @@ namespace PdfClown.Documents.Interaction.Navigation
                 switch (Mode)
                 {
                     case ModeEnum.XYZ:
-                        BaseDataObject.Set(4, value);
+                        Set(4, value);
                         break;
                     default:
                         /* NOOP */
@@ -306,37 +329,5 @@ namespace PdfClown.Documents.Interaction.Navigation
         }
     }
 
-    internal static class ModeEnumExtension
-    {
-        private static readonly BiDictionary<Destination.ModeEnum, PdfName> codes;
 
-        static ModeEnumExtension()
-        {
-            codes = new BiDictionary<Destination.ModeEnum, PdfName>
-            {
-                [Destination.ModeEnum.Fit] = PdfName.Fit,
-                [Destination.ModeEnum.FitBoundingBox] = PdfName.FitB,
-                [Destination.ModeEnum.FitBoundingBoxHorizontal] = PdfName.FitBH,
-                [Destination.ModeEnum.FitBoundingBoxVertical] = PdfName.FitBV,
-                [Destination.ModeEnum.FitHorizontal] = PdfName.FitH,
-                [Destination.ModeEnum.FitRectangle] = PdfName.FitR,
-                [Destination.ModeEnum.FitVertical] = PdfName.FitV,
-                [Destination.ModeEnum.XYZ] = PdfName.XYZ
-            };
-        }
-
-        public static Destination.ModeEnum? Get(PdfName name)
-        {
-            if (name == null)
-                return null;
-
-            Destination.ModeEnum? mode = codes.GetKey(name);
-            if (!mode.HasValue)
-                throw new NotSupportedException("Mode unknown: " + name);
-
-            return mode;
-        }
-
-        public static PdfName GetName(this Destination.ModeEnum mode) => codes[mode];
-    }
 }

@@ -57,6 +57,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected virtual void PostScan(GraphicsState state)
         {
+            state.Scanner.Path?.Dispose();
             state.Scanner.Path = null;
         }
 

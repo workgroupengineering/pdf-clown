@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using Microsoft.Win32.SafeHandles;
 using PdfClown.Objects;
 
 using System;
@@ -31,15 +30,13 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Functions
 {
-    /**
-      <summary>Exponential interpolation of one input value and <code>n</code> output values
-      [PDF:1.6:3.9.2].</summary>
-      <remarks>Each input value <code>x</code> will return <code>n</code> values, given by <code>
-      y[j] = C0[j] + x^N × (C1[j] − C0[j])</code>, for <code>0 ≤ j < n</code>, where <code>C0</code>
-      and <code>C1</code> are the {@link #getBoundOutputValues() function results} when, respectively,
-      <code>x = 0</code> and <code>x = 1</code>, and <code>N</code> is the {@link #getExponent()
-      interpolation exponent}.</remarks>
-    */
+    /// <summary>Exponential interpolation of one input value and <code>n</code> output values
+    /// [PDF:1.6:3.9.2].</summary>
+    /// <remarks>Each input value <code>x</code> will return <code>n</code> values, given by <code>
+    /// y[j] = C0[j] + x^N × (C1[j] − C0[j])</code>, for <code>0 ≤ j < n</code>, where <code>C0</code>
+    /// and <code>C1</code> are the {@link #getBoundOutputValues() function results} when, respectively,
+    /// <code>x = 0</code> and <code>x = 1</code>, and <code>N</code> is the {@link #getExponent()
+    /// interpolation exponent}.</remarks>
     [PDF(VersionEnum.PDF13)]
     public sealed class Type2Function : Function
     {
@@ -47,7 +44,8 @@ namespace PdfClown.Documents.Functions
         private float[] _c1;
         //TODO:implement function creation!
 
-        internal Type2Function(PdfDirectObject baseObject) : base(baseObject)
+        internal Type2Function(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         public override ReadOnlySpan<float> Calculate(ReadOnlySpan<float> inputs)
@@ -67,19 +65,17 @@ namespace PdfClown.Documents.Functions
         }
 
 
-        /**
-          <summary>Gets the interpolation exponent.</summary>
-        */
-        public float Exponent => Dictionary.GetFloat(PdfName.N);
+        /// <summary>Gets the interpolation exponent.</summary>
+        public float Exponent => GetFloat(PdfName.N);
 
         public float[] C0
         {
-            get => _c0 ??= Dictionary.Get<PdfArray>(PdfName.C0)?.ToFloatArray() ?? new float[] { 0, 0 };
+            get => _c0 ??= Get<PdfArray>(PdfName.C0)?.ToFloatArray() ?? new float[] { 0, 0 };
         }
 
         public float[] C1
         {
-            get => _c1 ??= Dictionary.Get<PdfArray>(PdfName.C1)?.ToFloatArray() ?? new float[] { 1, 0 };
+            get => _c1 ??= Get<PdfArray>(PdfName.C1)?.ToFloatArray() ?? new float[] { 1, 0 };
         }
     }
 }

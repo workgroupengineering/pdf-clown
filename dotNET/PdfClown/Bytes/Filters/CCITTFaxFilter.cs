@@ -18,24 +18,22 @@ using PdfClown.Bytes.Filters.CCITT;
 using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace PdfClown.Bytes.Filters
 {
-    /**
-     * Decodes image data that has been encoded using either Group 3 or Group 4
-     * CCITT facsimile (fax) encoding, and encodes image data to Group 4.
-     *
-     * @author Ben Litchfield
-     * @author Marcel Kammer
-     * @author Paul King
-     */
+    /// <summary>
+    /// Decodes image data that has been encoded using either Group 3 or Group 4
+    /// CCITT facsimile (fax) encoding, and encodes image data to Group 4.
+    /// @author Ben Litchfield
+    /// @author Marcel Kammer
+    /// @author Paul King
+    /// </summary>
     public class CCITTFaxFilter : Filter
     {
         public override Memory<byte> Decode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             // get decode parameters
-            PdfDictionary decodeParms = parameters as PdfDictionary;
+            var decodeParms = parameters as PdfDictionary;
             var ccittFaxParams = new CCITTFaxParams(
                 K: decodeParms.GetInt(PdfName.K),
                 endOfLine: decodeParms.GetBool(PdfName.EndOfLine),

@@ -27,16 +27,15 @@ using PdfClown.Objects;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    ///<summary>Color value [PDF:1.6:4.5.1].</summary>
-    public abstract class Color : PdfObjectWrapper<PdfDataObject>
+    /// <summary>Color value [PDF:1.6:4.5.1].</summary>
+    public abstract class Color : PdfObjectWrapper<PdfDirectObject>, IColor
     {
-        ///<summary>Gets the normalized value of a color component [PDF:1.6:4.5.1].</summary>
-        ///<param name="value">Color component value to normalize.</param>
-        ///<returns>Normalized color component value.</returns>
+        /// <summary>Gets the normalized value of a color component [PDF:1.6:4.5.1].</summary>
+        /// <param name="value">Color component value to normalize.</param>
+        /// <returns>Normalized color component value.</returns>
 
         //NOTE: Further developments may result in a color-space family-specific
         //implementation of this method; currently this implementation focuses on
@@ -65,11 +64,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         public virtual ColorSpace ColorSpace => colorSpace;
 
-        ///<summary>Gets the components defining this color value.</summary>
-        public abstract PdfArray Components
-        {
-            get;
-        }
+        /// <summary>Gets the components defining this color value.</summary>
+        public abstract PdfArray Components { get; }
 
         public float[] Floats => floats ??= Components.ToFloatArray();
 

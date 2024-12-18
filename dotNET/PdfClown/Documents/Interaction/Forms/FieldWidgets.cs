@@ -35,18 +35,16 @@ namespace PdfClown.Documents.Interaction.Forms
 {
     /// <summary>Field widget annotations [PDF:1.6:8.6].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class FieldWidgets : PdfObjectWrapper3<PdfDataObject>, IList<Widget>
+    public sealed class FieldWidgets : PdfObjectWrapper<PdfDirectObject>, IList<Widget>
     {
-        public static FieldWidgets Wrap(PdfDirectObject baseObject, Field field) => baseObject != null
-                ? baseObject.Wrapper3 as FieldWidgets ?? new FieldWidgets(baseObject, field)
-                : null;
         // NOTE: Widget annotations may be singular (either merged to their field or within an array)
         // or multiple (within an array).
         // This implementation hides such a complexity to the user, smoothly exposing just the most
         // general case (array) yet preserving its internal state.
         private Field field;
 
-        internal FieldWidgets(PdfDirectObject baseObject, Field field) : base(baseObject)
+        internal FieldWidgets(PdfDirectObject baseObject, Field field)
+            : base(baseObject)
         {
             this.field = field;
         }
@@ -59,19 +57,19 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public int IndexOf(Widget value)
         {
-            var baseDataObject = BaseDataObject;
+            var baseDataObject = DataObject;
             if (baseDataObject is PdfDictionary) // Single annotation.
             {
-                if (value.BaseObject.Equals(BaseObject))
+                if (value.Reference.Equals(RefOrSelf))
                     return 0;
                 else
                     return -1;
             }
 
-            return ((PdfArray)baseDataObject).IndexOf(value.BaseObject);
+            return ((PdfArray)baseDataObject).IndexOf(value.Reference);
         }
 
-        public void Insert(int index, Widget value) => EnsureArray().Insert(index, value.BaseObject);
+        public void Insert(int index, Widget value) => EnsureArray().Insert(index, value.Reference);
 
         public void RemoveAt(int index) => EnsureArray().RemoveAt(index);
 
@@ -79,25 +77,25 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                PdfDataObject baseDataObject = BaseDataObject;
-                if (baseDataObject is PdfDictionary) // Single annotation.
+                var baseDataObject = DataObject;
+                if (baseDataObject is Widget widget) // Single annotation.
                 {
                     if (index != 0)
                         throw new ArgumentException("Index: " + index + ", Size: 1");
 
-                    return NewWidget(BaseObject);
+                    return widget;
                 }
 
-                return NewWidget(((PdfArray)baseDataObject)[index]);
+                return ((PdfArray)baseDataObject).Get<Widget>(index, PdfName.Action);
             }
-            set => EnsureArray()[index] = value.BaseObject;
+            set => EnsureArray().Set(index, value);
         }
 
         public void Add(Widget value)
         {
-            value.BaseDataObject[PdfName.Parent] = Field.BaseObject;
+            value[PdfName.Parent] = Field.RefOrSelf;
             EnsureAnnotations(value);
-            EnsureArray().Add(value.BaseObject);
+            EnsureArray().Add(value.Reference);
         }
 
         private static void EnsureAnnotations(Widget value)
@@ -110,11 +108,11 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public bool Contains(Widget value)
         {
-            PdfDataObject baseDataObject = BaseDataObject;
+            PdfDirectObject baseDataObject = DataObject;
             if (baseDataObject is PdfDictionary) // Single annotation.
-                return value.BaseObject.Equals(BaseObject);
+                return value.Reference.Equals(RefOrSelf);
 
-            return ((PdfArray)baseDataObject).Contains(value.BaseObject);
+            return ((PdfArray)baseDataObject).Contains(value.Reference);
         }
 
         public void CopyTo(Widget[] values, int index)
@@ -129,7 +127,7 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                PdfDataObject baseDataObject = BaseDataObject;
+                PdfDirectObject baseDataObject = DataObject;
                 if (baseDataObject is PdfDictionary) // Single annotation.
                     return 1;
 
@@ -139,7 +137,7 @@ namespace PdfClown.Documents.Interaction.Forms
 
         public bool IsReadOnly => false;
 
-        public bool Remove(Widget value) => EnsureArray().Remove(value.BaseObject);
+        public bool Remove(Widget value) => EnsureArray().Remove(value.Reference);
 
         IEnumerator<Widget> IEnumerable<Widget>.GetEnumerator()
         {
@@ -151,14 +149,25 @@ namespace PdfClown.Documents.Interaction.Forms
 
         private PdfArray EnsureArray()
         {
-            PdfDataObject baseDataObject = BaseDataObject;
-            if (baseDataObject is PdfDictionary fieldDictionary) // Merged annotation.
+            var baseDataObject = DataObject;
+            if (baseDataObject is Widget mergedDictionary) // Merged annotation.
             {
-                var widgetsArray = new PdfArray();
+                var widgetsArray = new PdfArrayImpl();
                 {
-                    PdfDictionary widgetDictionary = null;
+                    var separetedDictionary = new Widget(mergedDictionary.Page);
+
+                    // Remove the field from the page annotations (as the widget annotation is decoupled from it)!
+                    var pageAnnotationsArray = mergedDictionary.Page.Annotations;
+                    pageAnnotationsArray.Remove(mergedDictionary);
+
+                    // Add the widget to the page annotations!
+                    pageAnnotationsArray.Add(separetedDictionary);
+                    // Add the widget to the field widgets!
+                    widgetsArray.Add(separetedDictionary.Reference);
+                    // Associate the field to the widget!
+                    separetedDictionary[PdfName.Parent] = Field.RefOrSelf;
                     // Extracting widget entries from the field...
-                    foreach (PdfName key in fieldDictionary.Keys.ToList())
+                    foreach (PdfName key in mergedDictionary.Keys.ToList())
                     {
                         // Is it a widget entry?
                         if (key.Equals(PdfName.Type)
@@ -181,31 +190,15 @@ namespace PdfClown.Documents.Interaction.Forms
                           || key.Equals(PdfName.H)
                           || key.Equals(PdfName.MK))
                         {
-                            if (widgetDictionary == null)
-                            {
-                                widgetDictionary = new PdfDictionary();
-                                PdfReference widgetReference = File.Register(widgetDictionary);
-
-                                // Remove the field from the page annotations (as the widget annotation is decoupled from it)!
-                                var pageAnnotationsArray = fieldDictionary.Get<PdfDictionary>(PdfName.P).Get<PdfArray>(PdfName.Annots);
-                                pageAnnotationsArray.Remove(Field.BaseObject);
-
-                                // Add the widget to the page annotations!
-                                pageAnnotationsArray.Add(widgetReference);
-                                // Add the widget to the field widgets!
-                                widgetsArray.Add(widgetReference);
-                                // Associate the field to the widget!
-                                widgetDictionary[PdfName.Parent] = Field.BaseObject;
-                            }
 
                             // Transfer the entry from the field to the widget!
-                            widgetDictionary[key] = fieldDictionary[key];
-                            fieldDictionary.Remove(key);
+                            separetedDictionary.Set(key, mergedDictionary.Get(key));
+                            mergedDictionary.Remove(key);
                         }
                     }
                 }
-                BaseObject = widgetsArray;
-                Field.BaseDataObject[PdfName.Kids] = widgetsArray;
+                RefOrSelf = widgetsArray;
+                Field.DataObject[PdfName.Kids] = widgetsArray;
 
                 baseDataObject = widgetsArray;
             }
@@ -213,6 +206,5 @@ namespace PdfClown.Documents.Interaction.Forms
             return (PdfArray)baseDataObject;
         }
 
-        private Widget NewWidget(PdfDirectObject baseObject) => (Widget)Annotation.Wrap(baseObject);
     }
 }

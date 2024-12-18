@@ -27,20 +27,15 @@ using System;
 using System.Linq;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Objects;
-using PdfClown.Util;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents
 {
-    /**
-      <summary>Line Dash Pattern [PDF:1.6:4.3.2].</summary>
-    */
+    /// <summary>Line Dash Pattern [PDF:1.6:4.3.2].</summary>
     [PDF(VersionEnum.PDF10)]
     public sealed class LineDash : IEquatable<LineDash>
     {
-        /**
-          <summary>Gets the pattern corresponding to the specified components.</summary>
-        */
+        /// <summary>Gets the pattern corresponding to the specified components.</summary>
         public static LineDash Get(PdfArray dashArray, IPdfNumber dashPhase)
         {
             if (dashArray == null)

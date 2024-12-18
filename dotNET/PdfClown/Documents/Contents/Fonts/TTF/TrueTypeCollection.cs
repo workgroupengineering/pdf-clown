@@ -14,22 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    using PdfClown.Bytes;
-    using PdfClown.Documents.Interaction.Annotations;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
 
-
-    /**
-     * A TrueType Collection, now more properly known as a "Font Collection" as it may contain either
-     * TrueType or OpenType fonts.
-     * 
-     * @author John Hewson
-     */
+    /// <summary>
+    /// A TrueType Collection, now more properly known as a "Font Collection" as it may contain either
+    /// TrueType or OpenType fonts.
+    /// @author John Hewson
+    /// </summary>
     public class TrueTypeCollection : IDisposable
     {
         public static readonly string TAG = "ttcf";
@@ -38,23 +35,14 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private long[] fontOffsets;
         private readonly Dictionary<int, TrueTypeFont> fontCache = new Dictionary<int, TrueTypeFont>();
 
-        /**
-         * Creates a new TrueTypeCollection from a .ttc file.
-         *
-         * @param file The TTC file.
-         * @ If the font could not be parsed.
-         */
+        /// <summary>Creates a new TrueTypeCollection from a.ttc file.</summary>
+        /// <param name="file">The TTC file.</param>
         public TrueTypeCollection(FileInfo file)
             : this(new ByteStream(new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-        {
-        }
+        { }
 
-        /**
-         * Creates a new TrueTypeCollection from a TTC stream.
-         *
-         * @param stream The TTF file.
-         * @ If the font could not be parsed.
-         */
+        /// <summary>Creates a new TrueTypeCollection from a TTC stream.</summary>
+        /// <param name="stream">The TTF file.</param>
         public TrueTypeCollection(IInputStream stream)
         {
             this.stream = stream;
@@ -89,12 +77,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * Run the callback for each TT font in the collection.
-         * 
-         * @param trueTypeFontProcessor the object with the callback method.
-         * @ 
-         */
+        /// <summary>Run the callback for each TT font in the collection.</summary>
+        /// <param name="trueTypeFontProcessor">the object with the callback method.</param>
+        /// <param name="tag"></param>
         public void ProcessAllFonts(ITrueTypeFontProcessor trueTypeFontProcessor, object tag)
         {
             for (int i = 0; i < numFonts; i++)
@@ -124,13 +109,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return font;
         }
 
-        /**
-         * Get a TT font from a collection.
-         * 
-         * @param name The postscript name of the font.
-         * @return The found font, nor null if none is found.
-         * @ 
-         */
+        /// <summary>Get a TT font from a collection.</summary>
+        /// <param name="name">The postscript name of the font.</param>
+        /// <returns>The found font, nor null if none is found.</returns>
         public TrueTypeFont GetFontByName(string name)
         {
             for (int i = 0; i < numFonts; i++)
@@ -144,10 +125,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             return null;
         }
 
-        /**
-         * Implement the callback method to call {@link TrueTypeCollection#processAllFonts(TrueTypeFontProcessor)}.
-         */
-        //@FunctionalInterface
+        /// <summary>Implement the callback method to 
+        /// call {@link TrueTypeCollection#processAllFonts(TrueTypeFontProcessor)}.
+        /// </summary>
         public delegate void ITrueTypeFontProcessor(TrueTypeFont ttf, object tag);
 
         public void Dispose()

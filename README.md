@@ -6,7 +6,7 @@ https://sourceforge.net/projects/clown/ mirror.
 - Pdf rendering by [SkiaSharp](https://github.com/mono/SkiaSharp).
 - UI integrations 
   - [Blazor](https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/webassembly?view=aspnetcore-8.0) (alfa)
-  - [Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms) (pre-release)
+  - [Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms) (expired)
   - [Avalonia UI](https://avaloniaui.net/) (todo 1)
   - [Uno Platform](https://platform.uno/) (todo)
   - [MAUI](https://learn.microsoft.com/ru-ru/dotnet/maui/what-is-maui?view=net-maui-8.0) (todo)
@@ -21,11 +21,11 @@ https://sourceforge.net/projects/clown/ mirror.
 
 - Change Code amd Docs formatting
 - Rendering and Editing Pdf Annotations
-- Move core projects to .net6 (Blazor on .net8)
+- Move core projects to .net8 (Blazor on .net9)
 - Performance improvements
   - PdfName cached globbaly
   - Suppress reflections invocation
-  - PdfObjects Wrappers caching
+  - A lot of PdfObjectWrappers replaced by direct PdfObject enhiritance
   - Force use of Memory\<byte\>, Span\<byte\>
 - Fonts, Encryption, Functions, Shadings by integrate [Apache PdfBox Project](https://pdfbox.apache.org/) from [mirror](https://github.com/apache/pdfbox).
   - Source code translated from java to C#
@@ -42,11 +42,10 @@ https://sourceforge.net/projects/clown/ mirror.
 ## TODO
 - Release Nuget packages (maybe PdfClown.Skia, PdfClown.Skia.UI.Core, PdfClown.Skia.UI.Blazor)
 - Rendering
-  - Try to move from SKPicture to to SKImage with rescan on each scale change, without in-memory bitmaps caching(maybe tempFile cache or redecoding)
-  - Streaming Decoding and optimization
-  - Masking won't work correctly after my refactoring	
+  - Streaming decode filters and optimization
+  - Alpha Masking won't work correctly after my refactoring	  
 - Encryption.
   - Encryption not tested
   - Public key Certificat - requer completly rework PdfBox solution
-  - Digital Signature
+  - Digital Signatures (MDS, DSS)
 

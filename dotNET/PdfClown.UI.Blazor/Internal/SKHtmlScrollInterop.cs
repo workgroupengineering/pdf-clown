@@ -1,86 +1,107 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace PdfClown.UI.Blazor.Internal
 {
-    internal class SKHtmlScrollInterop : JSModuleInterop
+    [SupportedOSPlatform("browser")]
+    internal partial class SKHtmlScrollInterop : JSModuleInterop
     {
-        private const string JsFilename = "./_content/PdfClown.UI.Blazor/SKHtmlScroll.js";
-        private const string InitSymbol = "SKHtmlScroll.initById";
-        private const string RequestLockSymbol = "SKHtmlScroll.requestLockById";
-        private const string SetCaptureSymbol = "SKHtmlScroll.setCaptureById";
-        private const string ReleaseCaptureSymbol = "SKHtmlScroll.releaseCaptureById";
-        private const string ChangeCursorSymbol = "SKHtmlScroll.changeCursorById";
+        private const string ModuleName = "SKHtmlScroll";
+        private const string JsFilename = ".././_content/PdfClown.UI.Blazor/SKHtmlScroll.js";
+        private const string InitSymbol = "SKHtmlScroll.init";
+        private const string GetDPRSymbol = "SKHtmlScroll.getDPR";
+        private const string RequestLockSymbol = "SKHtmlScroll.requestLock";
+        private const string SetCaptureSymbol = "SKHtmlScroll.setCapture";
+        private const string ReleaseCaptureSymbol = "SKHtmlScroll.releaseCapture";
+        private const string ChangeCursorSymbol = "SKHtmlScroll.changeCursor";
         private const string DeinitSymbol = "SKHtmlScroll.deinit";
+        private const string UnwrappSymbol = "SKHtmlScroll.unwrapp";
 
-        private readonly string htmlElementId;
-        private readonly PointerActionHelper moveCallback;
-        private readonly SizeActionHelper sizeCallback;
-        private DotNetObjectReference<PointerActionHelper> moveCallbackReference;
-        private DotNetObjectReference<SizeActionHelper> sizeCallbackReference;
+        [JSImport(InitSymbol, ModuleName)]
+        static partial void Init(string elementId,
+            //[JSMarshalAs<JSType.Function<JSType.Array<JSType.Number>>>] Action<int[]> moveAction,
+            [JSMarshalAs<JSType.Function<JSType.Object>>] Action<JSObject> moveAction,
+            [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number>>] Action<double, double> sizeAction);
 
-        public static async Task<SKHtmlScrollInterop> ImportAsync(IJSRuntime js, string elementId, 
-            Action<PointerEventArgs> moveAction,
-            Action<float, float> sizeAction)
-        {
-            var interop = new SKHtmlScrollInterop(js, elementId, moveAction, sizeAction);
-            await interop.ImportAsync();
-            return interop;
-        }
+        [JSImport(DeinitSymbol, ModuleName)]
+        static partial void DeInit(string elementId);
 
-        public SKHtmlScrollInterop(IJSRuntime js, string elementId, Action<PointerEventArgs> moveAction, Action<float, float> sizeAction)
-            : base(js, JsFilename)
-        {
-            htmlElementId = elementId;
-            moveCallback = new PointerActionHelper(moveAction);
-            sizeCallback = new SizeActionHelper(sizeAction);
-        }
+        [JSImport(GetDPRSymbol, ModuleName)]
+        public static partial float GetDPR();
 
-        protected override void OnDisposingModule()
-        { }
+        [JSImport(RequestLockSymbol, ModuleName)]
+        static partial void RequestLock(string elementId);
 
-        public void Init()
-        {
-            moveCallbackReference = DotNetObjectReference.Create(moveCallback);
-            sizeCallbackReference = DotNetObjectReference.Create(sizeCallback);
-            Invoke(InitSymbol, htmlElementId, moveCallbackReference, sizeCallbackReference);
-        }
-        public void RequestLock() =>
-            Invoke(RequestLockSymbol, htmlElementId);
+        [JSImport(SetCaptureSymbol, ModuleName)]
+        static partial void SetCapture(string elementId, [JSMarshalAs<JSType.Number>] int pointerId);
 
-        public void SetCapture(long pointerId) =>
-            Invoke(SetCaptureSymbol, htmlElementId, pointerId);
+        [JSImport(ReleaseCaptureSymbol, ModuleName)]
+        static partial void ReleaseCapture(string elementId, [JSMarshalAs<JSType.Number>] int pointerId);
 
-        public void ReleaseCapture(long pointerId) =>
-            Invoke(ReleaseCaptureSymbol, htmlElementId, pointerId);
+        [JSImport(ChangeCursorSymbol, ModuleName)]
+        static partial void ChangeCursor(string elementId, string cursorName);
 
-        public void ChangeCursor(CursorType cursor)
-        {
-            var cursorName = GetCursorName(cursor);
-            Invoke(ChangeCursorSymbol, htmlElementId, cursorName);
-        }
+        [JSImport(UnwrappSymbol, ModuleName)]
+        [return: JSMarshalAs<JSType.Array<JSType.Number>>]
+        internal static partial int[] Unwrapp(JSObject jsObject);
 
         private static string GetCursorName(CursorType cursor)
         {
             return cursor switch
             {
-                CursorType.SizeWE => "ew-resize",
-                CursorType.SizeNESW => "nesw-resize",
-                CursorType.SizeNS => "ns-resize",
-                CursorType.SizeNWSE => "nwse-resize",
+                CursorType.SizeWestEast => "ew-resize",
+                CursorType.BottomLeftCorner => "nesw-resize",
+                CursorType.SizeNorthSouth => "ns-resize",
+                CursorType.BottomRightCorner => "nwse-resize",
                 CursorType.Hand => "pointer",
                 CursorType.Wait => "wait",
-                CursorType.ScrollAll => "all-scroll",
+                CursorType.SizeAll => "all-scroll",
                 CursorType.Cross => "crosshair",
                 CursorType.IBeam => "text",
                 _ => "default",
             };
         }
 
-        public void DeInit()
+        private readonly string htmlElementId;
+        private readonly Action<JSObject> moveCallback;
+        private readonly Action<double, double> sizeCallback;
+
+        public static async Task<SKHtmlScrollInterop> ImportAsync(IJSRuntime js, string elementId,
+            Action<int[]> moveAction,
+            Action<double, double> sizeAction)
         {
-            Invoke(DeinitSymbol, htmlElementId);
-            moveCallbackReference.Dispose();
+            var interop = new SKHtmlScrollInterop(js, elementId, moveAction, sizeAction);
+            await interop.ImportAsync();
+            return interop;
         }
+
+        public SKHtmlScrollInterop(IJSRuntime js, string elementId, Action<int[]> moveAction, Action<double, double> sizeAction)
+            : base(js, ModuleName, JsFilename)
+        {
+            htmlElementId = elementId;
+            moveCallback = (jsObject) =>
+            {
+                var intArray = Unwrapp(jsObject);
+                moveAction(intArray);
+            };
+            sizeCallback = sizeAction;
+        }
+
+        protected override void OnDisposingModule() => DeInit();
+
+        public void Init() => Init(htmlElementId, moveCallback, sizeCallback);
+
+        public void RequestLock() => RequestLock(htmlElementId);
+
+        public void SetCapture(int pointerId) => SetCapture(htmlElementId, pointerId);
+
+        public void ReleaseCapture(int pointerId) => ReleaseCapture(htmlElementId, pointerId);
+
+        public void ChangeCursor(CursorType cursor) => ChangeCursor(htmlElementId, GetCursorName(cursor));
+
+        public void DeInit() => DeInit(htmlElementId);
+
     }
 }

@@ -23,60 +23,53 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Files;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>Abstract 'go to non-local destination' action.</summary>
-    */
+    /// <summary>Abstract 'go to non-local destination' action.</summary>
     [PDF(VersionEnum.PDF11)]
     public abstract class GotoNonLocal<T> : GoToDestination<T>
       where T : Destination
     {
+        private IFileSpecification fileSpec;
+
         protected GotoNonLocal(PdfDocument context, PdfName actionType, FileSpecification destinationFile, T destination)
             : base(context, actionType, destination)
         { DestinationFile = destinationFile; }
 
-        protected GotoNonLocal(PdfDirectObject baseObject)
+        protected GotoNonLocal(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the file in which the destination is located.</summary>
-        */
-        public virtual FileSpecification DestinationFile
+        /// <summary>Gets/Sets the file in which the destination is located.</summary>
+        public virtual IFileSpecification DestinationFile
         {
-            get => FileSpecification.Wrap(BaseDataObject[PdfName.F]);
-            set => BaseDataObject[PdfName.F] = value?.BaseObject;
+            get => fileSpec ??= IFileSpecification.Wrap(Get(PdfName.F));
+            set => Set(PdfName.F, (fileSpec = value)?.RefOrSelf);
         }
 
-        /**
-          <summary>Gets/Sets the action options.</summary>
-        */
+        /// <summary>Gets/Sets the action options.</summary>
         public OptionsEnum Options
         {
             get
             {
                 OptionsEnum options = 0;
-                if (BaseDataObject.GetBool(PdfName.NewWindow))
+                if (this.GetBool(PdfName.NewWindow))
                 { options |= OptionsEnum.NewWindow; }
                 return options;
             }
             set
             {
                 if ((value & OptionsEnum.NewWindow) == OptionsEnum.NewWindow)
-                { BaseDataObject[PdfName.NewWindow] = PdfBoolean.True; }
+                { this[PdfName.NewWindow] = PdfBoolean.True; }
                 else if ((value & OptionsEnum.SameWindow) == OptionsEnum.SameWindow)
-                { BaseDataObject[PdfName.NewWindow] = PdfBoolean.False; }
+                { this[PdfName.NewWindow] = PdfBoolean.False; }
                 else
-                { BaseDataObject.Remove(PdfName.NewWindow); } // NOTE: Forcing the absence of this entry ensures that the viewer application should behave in accordance with the current user preference.
+                { this.Remove(PdfName.NewWindow); } // NOTE: Forcing the absence of this entry ensures that the viewer application should behave in accordance with the current user preference.
             }
         }
     }

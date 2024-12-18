@@ -6,9 +6,9 @@ namespace PdfClown.UI
 
     public class PdfDocumentEventArgs : EventArgs
     {
-        public IPdfDocumentViewModel Document { get; }
+        public IPdfDocumentViewModel? Document { get; }
 
-        public PdfDocumentEventArgs(IPdfDocumentViewModel document)
+        public PdfDocumentEventArgs(IPdfDocumentViewModel? document)
         {
             Document = document;
         }

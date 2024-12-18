@@ -30,7 +30,6 @@
 
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using PdfClown.Objects;
-using PdfClown.Util.IO;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -70,17 +69,15 @@ namespace PdfClown.Bytes.Filters
         public override Memory<byte> Encode(IInputStream data, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
         {
             data.Position = 0;
-            using (var outputStream = new MemoryStream())
-            using (var outputFilter = new DeflaterOutputStream(outputStream))
-            {
-                // Add zlib's 2-byte header [RFC 1950] [FIX:0.0.8:JCT]!
-                //outputStream.WriteByte(0x78); // CMF = {CINFO (bits 7-4) = 7; CM (bits 3-0) = 8} = 0x78.
-                //outputStream.WriteByte(0xDA); // FLG = {FLEVEL (bits 7-6) = 3; FDICT (bit 5) = 0; FCHECK (bits 4-0) = {31 - ((CMF * 256 + FLG - FCHECK) Mod 31)} = 26} = 0xDA.
-                Transform((Stream)data, outputFilter);
-                outputFilter.Flush();
-                outputFilter.Finish();
-                return outputStream.AsMemory();
-            }
+            using var outputStream = new MemoryStream();
+            using var outputFilter = new DeflaterOutputStream(outputStream);
+            // Add zlib's 2-byte header [RFC 1950] [FIX:0.0.8:JCT]!
+            //outputStream.WriteByte(0x78); // CMF = {CINFO (bits 7-4) = 7; CM (bits 3-0) = 8} = 0x78.
+            //outputStream.WriteByte(0xDA); // FLG = {FLEVEL (bits 7-6) = 3; FDICT (bit 5) = 0; FCHECK (bits 4-0) = {31 - ((CMF * 256 + FLG - FCHECK) Mod 31)} = 26} = 0xDA.
+            Transform((Stream)data, outputFilter);
+            outputFilter.Flush();
+            outputFilter.Finish();
+            return outputStream.AsMemory();
         }
 
         protected Memory<byte> DecodePredictor(Stream input, PdfDirectObject parameters, IDictionary<PdfName, PdfDirectObject> header)
@@ -129,15 +126,12 @@ namespace PdfClown.Bytes.Filters
                             {
                                 currentRowBytePredictions.CopyTo(previousRowBytePredictions);
                                 leftBytePredictions.Fill(0);
-                                for (
-                                  int rowSampleByteIndex = sampleBytesCount; // Starts after the leading upper-left sample (see Paeth method).
-                                  rowSampleByteIndex < rowSampleBytesCount;
-                                  rowSampleByteIndex++
-                                  )
+                                // Starts after the leading upper-left sample (see Paeth method).
+                                for (int rowIndex = sampleBytesCount; rowIndex < rowSampleBytesCount; rowIndex++)
                                 {
                                     int byteDelta = input.ReadByte();
 
-                                    int sampleByteIndex = rowSampleByteIndex % sampleBytesCount;
+                                    int sampleByteIndex = rowIndex % sampleBytesCount;
 
                                     int sampleByte;
                                     switch (predictionMethod)
@@ -149,18 +143,18 @@ namespace PdfClown.Bytes.Filters
                                             sampleByte = byteDelta + leftBytePredictions[sampleByteIndex];
                                             break;
                                         case 2: // Up (predicts the same as the sample above).
-                                            sampleByte = byteDelta + previousRowBytePredictions[rowSampleByteIndex];
+                                            sampleByte = byteDelta + previousRowBytePredictions[rowIndex];
                                             break;
                                         case 3: // Average (predicts the average of the sample to the left and the sample above).
-                                            sampleByte = byteDelta + (int)Math.Floor(((leftBytePredictions[sampleByteIndex] + previousRowBytePredictions[rowSampleByteIndex])) / 2d);
+                                            sampleByte = byteDelta + (int)Math.Floor(((leftBytePredictions[sampleByteIndex] + previousRowBytePredictions[rowIndex])) / 2d);
                                             break;
                                         case 4: // Paeth (a nonlinear function of the sample above, the sample to the left, and the sample to the upper left).
                                             {
                                                 int paethPrediction;
                                                 {
                                                     int leftBytePrediction = leftBytePredictions[sampleByteIndex];
-                                                    int topBytePrediction = previousRowBytePredictions[rowSampleByteIndex];
-                                                    int topLeftBytePrediction = previousRowBytePredictions[rowSampleByteIndex - sampleBytesCount];
+                                                    int topBytePrediction = previousRowBytePredictions[rowIndex];
+                                                    int topLeftBytePrediction = previousRowBytePredictions[rowIndex - sampleBytesCount];
                                                     int initialPrediction = leftBytePrediction + topBytePrediction - topLeftBytePrediction;
                                                     int leftPrediction = Math.Abs(initialPrediction - leftBytePrediction);
                                                     int topPrediction = Math.Abs(initialPrediction - topBytePrediction);
@@ -181,7 +175,7 @@ namespace PdfClown.Bytes.Filters
                                     }
                                     output.WriteByte((byte)sampleByte);
 
-                                    leftBytePredictions[sampleByteIndex] = currentRowBytePredictions[rowSampleByteIndex] = (byte)sampleByte;
+                                    leftBytePredictions[sampleByteIndex] = currentRowBytePredictions[rowIndex] = (byte)sampleByte;
                                 }
                             }
                             break;
@@ -191,7 +185,7 @@ namespace PdfClown.Bytes.Filters
             }
         }
 
-        protected void Transform(Stream input, Stream output)
+        protected static void Transform(Stream input, Stream output)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
             int bufferRead;

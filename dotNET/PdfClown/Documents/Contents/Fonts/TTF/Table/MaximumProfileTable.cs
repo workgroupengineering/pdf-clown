@@ -15,20 +15,16 @@
  * limitations under the License.
  */
 using PdfClown.Bytes;
-using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A table in a true type font.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A table in a true type font.
+    /// @author Ben Litchfield
+    /// </summary>
     public class MaximumProfileTable : TTFTable
     {
-        /**
-         * A tag that identifies this table type.
-         */
+        /// <summary>A tag that identifies this table type.</summary>
         public const string TAG = "maxp";
 
         private float version;
@@ -50,148 +46,99 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public MaximumProfileTable()
         { }
 
-        /**
-         * @return Returns the maxComponentDepth.
-         */
         public ushort MaxComponentDepth
         {
             get => maxComponentDepth;
             set => maxComponentDepth = value;
         }
 
-        /**
-         * @return Returns the maxComponentElements.
-         */
         public ushort MaxComponentElements
         {
             get => maxComponentElements;
             set => maxComponentElements = value;
         }
 
-        /**
-         * @return Returns the maxCompositeContours.
-         */
         public ushort MaxCompositeContours
         {
             get => maxCompositeContours;
             set => maxCompositeContours = value;
         }
 
-        /**
-         * @return Returns the maxCompositePoints.
-         */
         public ushort MaxCompositePoints
         {
             get => maxCompositePoints;
             set => maxCompositePoints = value;
         }
 
-        /**
-         * @return Returns the maxContours.
-         */
         public ushort MaxContours
         {
             get => maxContours;
             set => maxContours = value;
         }
 
-        /**
-         * @return Returns the maxFunctionDefs.
-         */
         public ushort MaxFunctionDefs
         {
             get => maxFunctionDefs;
             set => maxFunctionDefs = value;
         }
 
-        /**
-         * @return Returns the maxInstructionDefs.
-         */
         public ushort MaxInstructionDefs
         {
             get => maxInstructionDefs;
             set => maxInstructionDefs = value;
         }
 
-        /**
-         * @return Returns the maxPoints.
-         */
         public ushort MaxPoints
         {
             get => maxPoints;
             set => maxPoints = value;
         }
 
-        /**
-         * @return Returns the maxSizeOfInstructions.
-         */
         public ushort MaxSizeOfInstructions
         {
             get => maxSizeOfInstructions;
             set => maxSizeOfInstructions = value;
         }
 
-        /**
-         * @return Returns the maxStackElements.
-         */
         public ushort MaxStackElements
         {
             get => maxStackElements;
             set => maxStackElements = value;
         }
 
-        /**
-         * @return Returns the maxStorage.
-         */
         public ushort MaxStorage
         {
             get => maxStorage;
             set => maxStorage = value;
         }
 
-        /**
-         * @return Returns the maxTwilightPoints.
-         */
         public ushort MaxTwilightPoints
         {
             get => maxTwilightPoints;
             set => maxTwilightPoints = value;
         }
 
-        /**
-         * @return Returns the maxZones.
-         */
         public ushort MaxZones
         {
             get => maxZones;
             set => maxZones = value;
         }
 
-        /**
-         * @return Returns the numGlyphs.
-         */
         public ushort NumGlyphs
         {
             get => numGlyphs;
             set => numGlyphs = value;
         }
 
-        /**
-         * @return Returns the version.
-         */
         public float Version
         {
             get => version;
             set => version = value;
         }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             version = data.Read32Fixed();

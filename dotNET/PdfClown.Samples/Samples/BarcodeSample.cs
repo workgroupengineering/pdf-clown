@@ -2,15 +2,12 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Entities;
 using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Util.Math;
 using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to show bar codes in a PDF document.</summary>
-    */
+    /// <summary>This sample demonstrates how to show bar codes in a PDF document.</summary>
     public class BarcodeSample : Sample
     {
         private const float Margin = 36;
@@ -18,14 +15,13 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Content creation.
             Populate(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Barcode", "showing barcodes", "barcodes, creation, EAN13");
+            Serialize(document, "Barcode", "showing barcodes", "barcodes, creation, EAN13");
         }
 
         /**
@@ -34,9 +30,9 @@ namespace PdfClown.Samples.CLI
         private void Populate(PdfDocument document)
         {
             // Get the abstract barcode entity!
-            EAN13Barcode barcode = new EAN13Barcode("8012345678901");
+            var barcode = new EAN13Barcode("8012345678901");
             // Create the reusable barcode within the document!
-            XObject barcodeXObject = barcode.ToXObject(document);
+            var barcodeXObject = barcode.ToXObject(document);
 
             var pages = document.Pages;
             // Page 1.
@@ -57,7 +53,7 @@ namespace PdfClown.Samples.CLI
                         pageSize.Height - Margin * 2),
                       XAlignmentEnum.Left,
                       YAlignmentEnum.Top);
-                    var bodyFont = FontType1.Load(document, FontName.CourierBold);
+                    var bodyFont = PdfType1Font.Load(document, FontName.CourierBold);
                     composer.SetFont(bodyFont, 32);
                     blockComposer.ShowText("Barcode sample"); blockComposer.ShowBreak();
                     composer.SetFont(bodyFont, 16);
@@ -85,7 +81,7 @@ namespace PdfClown.Samples.CLI
                 pages.Add(page);
                 SKSize pageSize = page.Size;
 
-                PrimitiveComposer composer = new PrimitiveComposer(page);
+                var composer = new PrimitiveComposer(page);
                 // Show the barcode!
                 composer.ShowXObject(
                   barcodeXObject,
@@ -103,7 +99,7 @@ namespace PdfClown.Samples.CLI
                 pages.Add(page);
                 SKSize pageSize = page.Size;
 
-                PrimitiveComposer composer = new PrimitiveComposer(page);
+                var composer = new PrimitiveComposer(page);
                 // Show the barcode!
                 composer.ShowXObject(
                   barcodeXObject,

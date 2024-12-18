@@ -23,26 +23,16 @@
   this list of conditions.
 */
 
-using System;
-
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Encoding behavior in case of missing character mapping.</summary>
-    */
+    /// <summary>Encoding behavior in case of missing character mapping.</summary>
     public enum EncodingFallbackEnum
     {
-        /**
-          <summary>Missing character is silently ignored.</summary>
-        */
+        /// <summary>Missing character is silently ignored.</summary>
         Exclusion,
-        /**
-          <summary>Missing character is replaced with default glyph.</summary>
-        */
+        /// <summary>Missing character is replaced with default glyph.</summary>
         Substitution,
-        /**
-          <summary>Missing character causes an exception to be thrown.</summary>
-        */
+        /// <summary>Missing character causes an exception to be thrown.</summary>
         Exception
     }
 }

@@ -23,18 +23,12 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
-
-using System.Collections;
-using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Objects
 {
-    /**
-      <summary>Weakly-typed operation.</summary>
-      <remarks>This is used to model operations which do not have a dedicated type.</remarks>
-    */
+    /// <summary>Weakly-typed operation.</summary>
+    /// <remarks>This is used to model operations which do not have a dedicated type.</remarks>
     public sealed class GenericOperation : Operation
     {
         public GenericOperation(string @operator)

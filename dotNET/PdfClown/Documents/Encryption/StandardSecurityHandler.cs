@@ -19,27 +19,24 @@ using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
 using PdfClown.Bytes;
-using PdfClown.Documents.Contents.Composition;
 using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Tokens;
-using PdfClown.Util;
 using PdfClown.Util.IO;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 
 namespace PdfClown.Documents.Encryption
 {
-    /**
-     * The standard security handler. This security handler protects document with password.
-     * @see StandardProtectionPolicy to see how to protect document with this security handler.
-     * @author Ben Litchfield
-     * @author Benoit Guillon
-     * @author Manuel Kasper
-     */
+    /// <summary>
+    /// The standard security handler.This security handler protects document with password.
+    /// @see StandardProtectionPolicy to see how to protect document with this security handler.
+    /// @author Ben Litchfield
+    /// @author Benoit Guillon
+    /// @author Manuel Kasper
+    /// </summary>
     public sealed class StandardSecurityHandler : SecurityHandler<StandardProtectionPolicy>
     {
         private const int Revision1 = 1;
@@ -56,46 +53,38 @@ namespace PdfClown.Documents.Encryption
         public static readonly Type PROTECTION_POLICY_CLASS = typeof(StandardProtectionPolicy);
 
         /** Standard padding for encryption. */
-        private static readonly byte[] ENCRYPT_PADDING = new byte[]
-        {
-            (byte)0x28, (byte)0xBF, (byte)0x4E, (byte)0x5E, (byte)0x4E,
-            (byte)0x75, (byte)0x8A, (byte)0x41, (byte)0x64, (byte)0x00,
-            (byte)0x4E, (byte)0x56, (byte)0xFF, (byte)0xFA, (byte)0x01,
-            (byte)0x08, (byte)0x2E, (byte)0x2E, (byte)0x00, (byte)0xB6,
-            (byte)0xD0, (byte)0x68, (byte)0x3E, (byte)0x80, (byte)0x2F,
-            (byte)0x0C, (byte)0xA9, (byte)0xFE, (byte)0x64, (byte)0x53,
-            (byte)0x69, (byte)0x7A
-        };
+        private static readonly byte[] ENCRYPT_PADDING =
+        [
+            0x28, 0xBF, 0x4E, 0x5E, 0x4E,
+            0x75, 0x8A, 0x41, 0x64, 0x00,
+            0x4E, 0x56, 0xFF, 0xFA, 0x01,
+            0x08, 0x2E, 0x2E, 0x00, 0xB6,
+            0xD0, 0x68, 0x3E, 0x80, 0x2F,
+            0x0C, 0xA9, 0xFE, 0x64, 0x53,
+            0x69, 0x7A
+        ];
 
         // hashes used for Algorithm 2.B, depending on remainder from E modulo 3
-        private static readonly string[] HASHES_2B = new string[] { "SHA256", "SHA384", "SHA512" };
+        private static readonly string[] HASHES_2B = ["SHA256", "SHA384", "SHA512"];
 
-        private static readonly DateTime Jan1st1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime Jan1st1970 = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        /**
-		 * Constructor.
-		 */
         public StandardSecurityHandler() : base()
         { }
 
-        /**
-		 * Constructor used for encryption.
-		 *
-		 * @param p The protection policy.
-		 */
+        /// <summary>Constructor used for encryption.</summary>
+        /// <param name="policy">The protection policy.</param>
         public StandardSecurityHandler(StandardProtectionPolicy policy)
             : base(policy)
         { }
 
-        /**
-		 * Computes the revision version of the StandardSecurityHandler to
-		 * use regarding the version number and the permissions bits set.
-		 * See PDF Spec 1.6 p98
-		 * 
-		 * @param version The version number.
-		 *
-		 * @return The computed revision number.
-		 */
+        /// <summary>
+        /// Computes the revision version of the standardsecurityhandler to
+        /// use regarding the version number and the permissions bits set.
+        /// see pdf spec 1.6 p98
+        /// </summary>
+        /// <param name="version">the version number.</param>
+        /// <returns>the computed revision number.</returns>
         private int ComputeRevisionNumber(int version)
         {
             var protectionPolicy = ProtectionPolicy;
@@ -120,22 +109,18 @@ namespace PdfClown.Documents.Encryption
             return Revision4;
         }
 
-        /**
-		 * Prepares everything to decrypt the document.
-		 *
-		 * Only if decryption of single objects is needed this should be called.
-		 *
-		 * @param encryption  encryption dictionary
-		 * @param documentIDArray  document id
-		 * @param decryptionMaterial Information used to decrypt the document.
-		 *
-		 * @throws InvalidPasswordException If the password is incorrect.
-		 * @ If there is an error accessing data.
-		 */
-
-        public override void PrepareForDecryption(PdfEncryption encryption, PdfArray documentIDArray, DecryptionMaterial decryptionMaterial)
+        /// <summary>
+        /// Prepares everything to decrypt the document.
+        /// Only if decryption of single objects is needed this should be called.
+        /// </summary>
+        /// <param name="encryption">encryption dictionary</param>
+        /// <param name="identifier">document id</param>
+        /// <param name="decryptionMaterial">Information used to decrypt the document.</param>
+        /// <exception cref="IOException">If there is an error accessing data</exception>
+        /// <exception cref="InvalidPasswordException">If the password is incorrect.</exception>
+        public override void PrepareForDecryption(PdfEncryption encryption, Identifier identifier, DecryptionMaterial decryptionMaterial)
         {
-            if (!(decryptionMaterial is StandardDecryptionMaterial material))
+            if (decryptionMaterial is not StandardDecryptionMaterial material)
             {
                 throw new IOException("Decryption material is not compatible with the document");
             }
@@ -159,7 +144,7 @@ namespace PdfClown.Documents.Encryption
                 // detect whether AES encryption is used. This assumes that the encryption algo is 
                 // stored in the PDCryptFilterDictionary
                 // However, crypt filters are used only when V is 4 or 5.
-                var stdCryptFilterDictionary = encryption.StdCryptFilterDictionary;
+                var stdCryptFilterDictionary = encryption.StdCryptFilter;
                 if (stdCryptFilterDictionary != null)
                 {
                     var cryptFilterMethod = stdCryptFilterDictionary.CryptFilterMethod;
@@ -167,7 +152,7 @@ namespace PdfClown.Documents.Encryption
                     {
                         dicLength = 128 / 8;
                         IsAES = true;
-                        if (encryption.BaseDataObject.ContainsKey(PdfName.Length))
+                        if (encryption.ContainsKey(PdfName.Length))
                         {
                             // PDFBOX-5345
                             int newLength = encryption.Length / 8;
@@ -182,7 +167,7 @@ namespace PdfClown.Documents.Encryption
                     {
                         dicLength = 256 / 8;
                         IsAES = true;
-                        if (encryption.BaseDataObject.ContainsKey(PdfName.Length))
+                        if (encryption.ContainsKey(PdfName.Length))
                         {
                             // PDFBOX-5345
                             int newLength = encryption.Length / 8;
@@ -197,7 +182,9 @@ namespace PdfClown.Documents.Encryption
             }
 
 
-            var documentIDBytes = GetDocumentIDBytes(documentIDArray);
+            var documentIDBytes = identifier?.BaseID != null
+                ? identifier.BaseID.RawValue.Span
+                : ReadOnlySpan<byte>.Empty;
 
             // we need to know whether the meta data was encrypted for password calculation
             bool encryptMetadata = encryption.IsEncryptMetaData;
@@ -270,24 +257,6 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        private ReadOnlySpan<byte> GetDocumentIDBytes(PdfArray documentIDArray)
-        {
-            //some documents may not have document id, see
-            //test\encryption\encrypted_doc_no_id.pdf
-            ReadOnlySpan<byte> documentIDBytes;
-            if (documentIDArray != null
-                && documentIDArray.Count >= 1
-                && documentIDArray.Resolve(0) is PdfString id)
-            {
-                documentIDBytes = id.RawValue.Span;
-            }
-            else
-            {
-                documentIDBytes = ReadOnlySpan<byte>.Empty;
-            }
-            return documentIDBytes;
-        }
-
         // Algorithm 13: validate permissions ("Perms" field). Relaxed to accommodate buggy encoders
         // https://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/adobe_supplement_iso32000.pdf
         private void ValidatePerms(PdfEncryption encryption, int dicPermissions, bool encryptMetadata)
@@ -338,20 +307,13 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        /**
-		 * Prepare document for encryption.
-		 *
-		 * @param document The document to encrypt.
-		 *
-		 * @ If there is an error accessing data.
-		 */
+        /// <summary>Prepare document for encryption.</summary>
+        /// <param name="document">The document to encrypt.</param>
         public override void PrepareDocumentForEncryption(PdfDocument document)
         {
-            PdfEncryption encryptionDictionary = document.File.Encryption;
-            if (encryptionDictionary == null)
-            {
-                encryptionDictionary = new PdfEncryption(document.File);
-            }
+            var encryptionDictionary = document.Encryption
+                ?? new PdfEncryption(document);
+
             int version = ComputeVersionNumber();
             int revision = ComputeRevisionNumber(version);
             encryptionDictionary.Filter = FILTER;
@@ -392,7 +354,7 @@ namespace PdfClown.Documents.Encryption
                         document, revision, length);
             }
 
-            document.File.Encryption = encryptionDictionary;
+            document.Encryption = encryptionDictionary;
         }
 
         private void PrepareEncryptionDictRev6(string ownerPassword, string userPassword,
@@ -474,10 +436,10 @@ namespace PdfClown.Documents.Encryption
                 PdfEncryption encryptionDictionary, int permissionInt, PdfDocument document,
                 int revision, int length)
         {
-            var idArray = document.File.ID;
+            var idArray = document.ID;
 
             //check if the document has an id yet.  If it does not then generate one
-            if (idArray == null || idArray.BaseDataObject.Count < 2)
+            if (idArray == null || idArray.Count < 2)
             {
 #if __BC_HASH__
                 var md = new MD5Digest();
@@ -493,10 +455,12 @@ namespace PdfClown.Documents.Encryption
                 var finBlock = Charset.ISO88591.GetBytes(this.ToString());
                 var idString = new PdfString(md.Digest(finBlock));
 
-                idArray = new FileIdentifier();
-                idArray.BaseID = idString;
-                idArray.VersionID = idString;
-                document.File.ID = idArray;
+                idArray = new Identifier
+                {
+                    BaseID = idString,
+                    VersionID = idString
+                };
+                document.ID = idArray;
             }
 
             var id = idArray.BaseID;
@@ -524,48 +488,38 @@ namespace PdfClown.Documents.Encryption
 
         private void PrepareEncryptionDictAES(PdfEncryption encryptionDictionary, PdfName aesVName)
         {
-            var cryptFilterDictionary = new PdfCryptFilterDictionary(encryptionDictionary.File);
-            cryptFilterDictionary.CryptFilterMethod = aesVName;
-            cryptFilterDictionary.Length = KeyLength;
-            encryptionDictionary.StdCryptFilterDictionary = cryptFilterDictionary;
+            var cryptFilterDictionary = new PdfCryptFilter()
+            {
+                CryptFilterMethod = aesVName,
+                Length = KeyLength
+            };
+            encryptionDictionary.StdCryptFilter = cryptFilterDictionary;
             encryptionDictionary.StreamFilterName = PdfName.StdCF;
             encryptionDictionary.StringFilterName = PdfName.StdCF;
             IsAES = true;
         }
 
-        /**
-		 * Check for owner password.
-		 *
-		 * @param ownerPassword The owner password.
-		 * @param user The u entry of the encryption dictionary.
-		 * @param owner The o entry of the encryption dictionary.
-		 * @param permissions The set of permissions on the document.
-		 * @param id The document id.
-		 * @param encRevision The encryption algorithm revision.
-		 * @param keyLengthInBytes The encryption key length in bytes.
-		 * @param encryptMetadata The encryption metadata
-		 *
-		 * @return True If the ownerPassword param is the owner password.
-		 *
-		 * @ If there is an error accessing data.
-		 */
+        /// <summary>Check for owner password.</summary>
+        /// <param name="ownerPassword">The owner password</param>
+        /// <param name="user">The u entry of the encryption dictionary.</param>
+        /// <param name="owner">The o entry of the encryption dictionary.</param>
+        /// <param name="permissions">The set of permissions on the document.</param>
+        /// <param name="id">The document id.</param>
+        /// <param name="encRevision">The encryption algorithm revision.</param>
+        /// <param name="keyLengthInBytes">The encryption key length in bytes.</param>
+        /// <param name="encryptMetadata">The encryption metadata</param>
+        /// <returns>True If the ownerPassword param is the owner password.</returns>
+        /// <exception cref="IOException">If there is an error accessing data.</exception>
         public bool IsOwnerPassword(ReadOnlySpan<byte> ownerPassword, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner,
                                        int permissions, ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes,
                                        bool encryptMetadata)
         {
-            switch (encRevision)
+            return encRevision switch
             {
-                case Revision2:
-                case Revision3:
-                case Revision4:
-                    return IsOwnerPassword234(ownerPassword, user, owner, permissions, id, encRevision, keyLengthInBytes, encryptMetadata);
-                case Revision6:
-                case Revision5:
-                    return IsOwnerPassword56(ownerPassword, user, owner, encRevision);
-                default:
-                    throw new IOException("Unknown Encryption Revision " + encRevision);
-
-            }
+                Revision2 or Revision3 or Revision4 => IsOwnerPassword234(ownerPassword, user, owner, permissions, id, encRevision, keyLengthInBytes, encryptMetadata),
+                Revision6 or Revision5 => IsOwnerPassword56(ownerPassword, user, owner, encRevision),
+                _ => throw new IOException("Unknown Encryption Revision " + encRevision),
+            };
         }
 
         private bool IsOwnerPassword234(ReadOnlySpan<byte> ownerPassword, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner, int permissions,
@@ -596,25 +550,19 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        /**
-     * Get the user password based on the owner password.
-     *
-     * @param ownerPassword The plaintext owner password.
-     * @param owner The o entry of the encryption dictionary.
-     * @param encRevision The encryption revision number.
-     * @param length The key length.
-     *
-     * @return The u entry of the encryption dictionary.
-     *
-     * @throws IOException If there is an error accessing data while generating the user password.
-     */
+        /// <summary>Get the user password based on the owner password.</summary>
+        /// <param name="ownerPassword">The plaintext owner password.</param>
+        /// <param name="owner">The o entry of the encryption dictionary.</param>
+        /// <param name="encRevision">The encryption revision number.</param>
+        /// <param name="length">The key length.</param>
+        /// <returns>The u entry of the encryption dictionary.</returns>
         public ReadOnlySpan<byte> GetUserPassword(ReadOnlySpan<byte> ownerPassword, ReadOnlySpan<byte> owner, int encRevision,
                                        int length)
         {
             // TODO ?!?!
             if (encRevision == Revision5 || encRevision == Revision6)
             {
-                return new byte[0];
+                return Array.Empty<byte>();
             }
             else
             {
@@ -653,26 +601,19 @@ namespace PdfClown.Documents.Encryption
             return result.AsSpan();
         }
 
-
-        /**
-		 * Compute the encryption key.
-		 *
-		 * @param password The password to compute the encrypted key.
-		 * @param o The O entry of the encryption dictionary.
-		 * @param u The U entry of the encryption dictionary.
-		 * @param oe The OE entry of the encryption dictionary.
-		 * @param ue The UE entry of the encryption dictionary.
-		 * @param permissions The permissions for the document.
-		 * @param id The document id.
-		 * @param encRevision The revision of the encryption algorithm.
-		 * @param keyLengthInBytes The length of the encryption key in bytes.
-		 * @param encryptMetadata The encryption metadata
-		 * @param isOwnerPassword whether the password given is the owner password (for revision 6)
-		 *
-		 * @return The encrypted key bytes.
-		 *
-		 * @ If there is an error with encryption.
-		 */
+        /// <summary>Compute the encryption key.</summary>
+        /// <param name="password">The password to compute the encrypted key.</param>
+        /// <param name="o">The O entry of the encryption dictionary.</param>
+        /// <param name="u">The U entry of the encryption dictionary.</param>
+        /// <param name="oe">The OE entry of the encryption dictionary.</param>
+        /// <param name="ue">The UE entry of the encryption dictionary.</param>
+        /// <param name="permissions">The permissions for the document.</param>
+        /// <param name="id">The document id.</param>
+        /// <param name="encRevision">The revision of the encryption algorithm.</param>
+        /// <param name="keyLengthInBytes">The length of the encryption key in bytes.</param>
+        /// <param name="encryptMetadata">The encryption metadata</param>
+        /// <param name="isOwnerPassword">whether the password given is the owner password (for revision 6)</param>
+        /// <returns>The encrypted key bytes.</returns>
         public ReadOnlySpan<byte> ComputeEncryptedKey(ReadOnlySpan<byte> password, ReadOnlySpan<byte> o, ReadOnlySpan<byte> u, ReadOnlySpan<byte> oe, ReadOnlySpan<byte> ue,
                                           int permissions, ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes,
                                           bool encryptMetadata, bool isOwnerPassword)
@@ -710,7 +651,7 @@ namespace PdfClown.Documents.Encryption
             //see 7.6.3.3 Algorithm 2 Step f of PDF 32000-1:2008
             if (encRevision == Revision4 && !encryptMetadata)
             {
-                md.Update(new byte[] { (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff });
+                md.Update(new byte[] { 0xff, 0xff, 0xff, 0xff });
             }
             byte[] digest = md.Digest();
 
@@ -759,13 +700,11 @@ namespace PdfClown.Documents.Encryption
                 cipher.Padding = PaddingMode.None;
                 cipher.Key = hash.ToArray();
                 cipher.IV = new byte[16];
-                using (var tempStream = new ByteStream(bufferKey))
-                using (var outStream = new MemoryStream())
-                using (var cryptoStream = new CryptoStream(tempStream, cipher.CreateDecryptor(), CryptoStreamMode.Read))
-                {
-                    cryptoStream.CopyTo(outStream);
-                    return outStream.AsSpan();
-                }
+                using var tempStream = new ByteStream(bufferKey);
+                using var outStream = new MemoryStream();
+                using var cryptoStream = new CryptoStream(tempStream, cipher.CreateDecryptor(), CryptoStreamMode.Read);
+                cryptoStream.CopyTo(outStream);
+                return outStream.AsSpan();
             }
             catch (Exception e)
             {
@@ -774,21 +713,15 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        /**
-		 * This will compute the user password hash.
-		 *
-		 * @param password The plain text password.
-		 * @param owner The owner password hash.
-		 * @param permissions The document permissions.
-		 * @param id The document id.
-		 * @param encRevision The revision of the encryption.
-		 * @param keyLengthInBytes The length of the encryption key in bytes.
-		 * @param encryptMetadata The encryption metadata
-		 *
-		 * @return The user password.
-		 *
-		 * @ if the password could not be computed
-		 */
+        /// <summary>This will compute the user password hash.</summary>
+        /// <param name="password">The plain text password.</param>
+        /// <param name="owner">The owner password hash.</param>
+        /// <param name="permissions">The document permissions.</param>
+        /// <param name="id">The document id.</param>
+        /// <param name="encRevision">The revision of the encryption.</param>
+        /// <param name="keyLengthInBytes">The length of the encryption key in bytes.</param>
+        /// <param name="encryptMetadata"> The encryption metadata</param>
+        /// <returns>The user password.</returns>
         public ReadOnlySpan<byte> ComputeUserPassword(ReadOnlySpan<byte> password, ReadOnlySpan<byte> owner, int permissions,
                                           ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes,
                                           bool encryptMetadata)
@@ -796,7 +729,7 @@ namespace PdfClown.Documents.Encryption
             // TODO!?!?
             if (encRevision == Revision5 || encRevision == Revision6)
             {
-                return new byte[0];
+                return Array.Empty<byte>();
             }
 
             using var result = new ByteStream(32);
@@ -839,18 +772,13 @@ namespace PdfClown.Documents.Encryption
             return result.AsSpan();
         }
 
-        /**
-		 * Compute the owner entry in the encryption dictionary.
-		 *
-		 * @param ownerPassword The plaintext owner password.
-		 * @param userPassword The plaintext user password.
-		 * @param encRevision The revision number of the encryption algorithm.
-		 * @param length The length of the encryption key.
-		 *
-		 * @return The o entry of the encryption dictionary.
-		 *
-		 * @ if the owner password could not be computed
-		 */
+        /// <summary>Compute the owner entry in the encryption dictionary.</summary>
+        /// <param name="ownerPassword">The plaintext owner password.</param>
+        /// <param name="userPassword">The plaintext user password.</param>
+        /// <param name="encRevision">The revision number of the encryption algorithm.</param>
+        /// <param name="length">The length of the encryption key.</param>
+        /// <returns>The o entry of the encryption dictionary.</returns>
+        /// <exception cref="IOException">if the owner password could not be computed</exception>
         public ReadOnlySpan<byte> ComputeOwnerPassword(ReadOnlySpan<byte> ownerPassword, ReadOnlySpan<byte> userPassword,
                                            int encRevision, int length)
         {
@@ -920,22 +848,17 @@ namespace PdfClown.Documents.Encryption
             return padded;
         }
 
-        /**
-		 * Check if a plaintext password is the user password.
-		 *
-		 * @param password The plaintext password.
-		 * @param user The u entry of the encryption dictionary.
-		 * @param owner The o entry of the encryption dictionary.
-		 * @param permissions The permissions set in the PDF.
-		 * @param id The document id used for encryption.
-		 * @param encRevision The revision of the encryption algorithm.
-		 * @param keyLengthInBytes The length of the encryption key in bytes.
-		 * @param encryptMetadata The encryption metadata.
-		 *
-		 * @return true If the plaintext password is the user password.
-		 *
-		 * @ If there is an error accessing data.
-		 */
+        /// <summary>Check if a plaintext password is the user password.</summary>
+        /// <param name="password">The plaintext password.</param>
+        /// <param name="user">The u entry of the encryption dictionary.</param>
+        /// <param name="owner">The o entry of the encryption dictionary.</param>
+        /// <param name="permissions">The permissions set in the PDF.</param>
+        /// <param name="id">The document id used for encryption.</param>
+        /// <param name="encRevision">The revision of the encryption algorithm.</param>
+        /// <param name="keyLengthInBytes">The length of the encryption key in bytes.</param>
+        /// <param name="encryptMetadata">The encryption metadata.</param>
+        /// <returns>true If the plaintext password is the user password.</returns>
+        /// <exception cref="IOException">If there is an error accessing data.</exception>
         public bool IsUserPassword(ReadOnlySpan<byte> password, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner, int permissions,
                                       ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes, bool encryptMetadata)
         {
@@ -966,7 +889,7 @@ namespace PdfClown.Documents.Encryption
             };
         }
 
-        private bool IsUserPassword56(ReadOnlySpan<byte> password, ReadOnlySpan<byte> user, int encRevision)
+        private static bool IsUserPassword56(ReadOnlySpan<byte> password, ReadOnlySpan<byte> user, int encRevision)
         {
             var truncatedPassword = Truncate127(password);
             var uHash = user.Slice(0, 32);
@@ -978,22 +901,16 @@ namespace PdfClown.Documents.Encryption
             return hash.SequenceEqual(uHash);
         }
 
-        /**
-		 * Check if a plaintext password is the user password.
-		 *
-		 * @param password The plaintext password.
-		 * @param user The u entry of the encryption dictionary.
-		 * @param owner The o entry of the encryption dictionary.
-		 * @param permissions The permissions set in the PDF.
-		 * @param id The document id used for encryption.
-		 * @param encRevision The revision of the encryption algorithm.
-		 * @param keyLengthInBytes The length of the encryption key in bytes.
-		 * @param encryptMetadata The encryption metadata
-		 *
-		 * @return true If the plaintext password is the user password.
-		 *
-		 * @ If there is an error accessing data.
-		 */
+        /// <summary>Check if a plaintext password is the user password.</summary>
+        /// <param name="password">The plaintext password.</param>
+        /// <param name="user">The u entry of the encryption dictionary.</param>
+        /// <param name="owner">The o entry of the encryption dictionary.</param>
+        /// <param name="permissions">The permissions set in the PDF.</param>
+        /// <param name="id">The document id used for encryption.</param>
+        /// <param name="encRevision">The revision of the encryption algorithm.</param>
+        /// <param name="keyLengthInBytes">The length of the encryption key in bytes.</param>
+        /// <param name="encryptMetadata">The encryption metadata</param>
+        /// <returns>true If the plaintext password is the user password.</returns>
         public bool IsUserPassword(string password, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner, int permissions,
                                       ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes, bool encryptMetadata)
         {
@@ -1004,22 +921,16 @@ namespace PdfClown.Documents.Encryption
                     encRevision, keyLengthInBytes, encryptMetadata);
         }
 
-        /**
-		 * Check for owner password.
-		 *
-		 * @param password The owner password.
-		 * @param user The u entry of the encryption dictionary.
-		 * @param owner The o entry of the encryption dictionary.
-		 * @param permissions The set of permissions on the document.
-		 * @param id The document id.
-		 * @param encRevision The encryption algorithm revision.
-		 * @param keyLengthInBytes The encryption key length in bytes.
-		 * @param encryptMetadata The encryption metadata
-		 *
-		 * @return True If the ownerPassword param is the owner password.
-		 *
-		 * @ If there is an error accessing data.
-		 */
+        /// <summary>Check for owner password.</summary>
+        /// <param name="password">The owner password.</param>
+        /// <param name="user">The u entry of the encryption dictionary.</param>
+        /// <param name="owner">The o entry of the encryption dictionary.</param>
+        /// <param name="permissions">The set of permissions on the document.</param>
+        /// <param name="id">The document id.</param>
+        /// <param name="encRevision">The encryption algorithm revision.</param>
+        /// <param name="keyLengthInBytes">The encryption key length in bytes.</param>
+        /// <param name="encryptMetadata">The encryption metadata</param>
+        /// <returns>True If the ownerPassword param is the owner password.</returns>
         public bool IsOwnerPassword(string password, ReadOnlySpan<byte> user, ReadOnlySpan<byte> owner, int permissions,
                                        ReadOnlySpan<byte> id, int encRevision, int keyLengthInBytes, bool encryptMetadata)
         {
@@ -1028,7 +939,7 @@ namespace PdfClown.Documents.Encryption
         }
 
         // Algorithm 2.A from ISO 32000-1
-        private ReadOnlySpan<byte> ComputeHash2A(ReadOnlySpan<byte> password, ReadOnlySpan<byte> salt, ReadOnlySpan<byte> u)
+        private static ReadOnlySpan<byte> ComputeHash2A(ReadOnlySpan<byte> password, ReadOnlySpan<byte> salt, ReadOnlySpan<byte> u)
         {
             var userKey = AdjustUserKey(u);
             var truncatedPassword = Truncate127(password);
@@ -1051,7 +962,7 @@ namespace PdfClown.Documents.Encryption
                 byte[] e = null;
                 for (int round = 0; round < 64 || (e[^1] & 0xFF) > round - 32; round++)
                 {
-                    byte[] k1 = (!userKey.IsEmpty && userKey.Length >= 48)
+                    byte[] k1 = (userKey.Length >= 48)
                         ? new byte[64 * (password.Length + k.Length + 48)]
                         : new byte[64 * (password.Length + k.Length)];
 
@@ -1062,7 +973,7 @@ namespace PdfClown.Documents.Encryption
                         pos += password.Length;
                         k.CopyTo(k1.AsSpan(pos, k.Length));
                         pos += k.Length;
-                        if (userKey != null && userKey.Length >= 48)
+                        if (userKey.Length >= 48)
                         {
                             userKey.CopyTo(k1.AsSpan(pos, 48));
                             pos += 48;
@@ -1080,10 +991,10 @@ namespace PdfClown.Documents.Encryption
 
                     var bi = new BigInteger(1, e.AsSpan(0, 16).ToArray());
                     var remainder = bi.Mod(new BigInteger("3"));
-                    string nextHash = HASHES_2B[remainder.IntValue];                    
+                    string nextHash = HASHES_2B[remainder.IntValue];
                     md.Dispose();
                     md = GetDigest(nextHash);
-                    
+
                     k = md.Digest(e);
                 }
                 md.Dispose();
@@ -1101,20 +1012,14 @@ namespace PdfClown.Documents.Encryption
 #if __BC_HASH__
         private static IDigest GetDigest(string hashName)
         {
-            switch (hashName)
+            return hashName switch
             {
-                case "SHA1":
-                    return new Sha256Digest();    
-                case "SHA256":
-                    return new Sha256Digest();    
-                case "SHA384":
-                    return new Sha384Digest(); 
-                case "SHA512":
-                    return new Sha512Digest(); 
-                case "MD5":
-                default:
-                    return new MD5Digest(); 
-            }
+                "SHA1" => new Sha256Digest(),
+                "SHA256" => new Sha256Digest(),
+                "SHA384" => new Sha384Digest(),
+                "SHA512" => new Sha512Digest(),
+                _ => new MD5Digest(),
+            };
         }
 #else
         private static IncrementalHash GetDigest(string hashName)

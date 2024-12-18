@@ -27,12 +27,15 @@ using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Functions;
 using PdfClown.Objects;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.XObjects
 {
     [PDF(VersionEnum.PDF14)]
-    public class SoftMask : GroupXObject
+    public class SoftMask : PdfDictionary
     {
+        private Function function;
+
         public static SoftMask WrapSoftMask(PdfDirectObject baseObject)
         {
             if (baseObject is PdfName name)
@@ -40,33 +43,42 @@ namespace PdfClown.Documents.Contents.XObjects
                 if(name.Equals(PdfName.None))
                     return null;
             }
-            return Wrap<SoftMask>(baseObject);
+            return (SoftMask)baseObject.Resolve(PdfName.SMask);
         }
 
-        public SoftMask(PdfDocument context, PdfDictionary baseDataObject) : base(context, baseDataObject)
-        {
-            Type = PdfName.Mask;
-        }
-
-        public SoftMask(PdfDirectObject baseObject) : base(baseObject)
+        public SoftMask(PdfDocument context) 
+            : base(context, new Dictionary<PdfName, PdfDirectObject>
+            {
+                { PdfName.Type, PdfName.Mask }
+            })
         { }
+
+        internal SoftMask(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
+        { }
+
+        public PdfName SubType
+        {
+            get => Get<PdfName>(PdfName.S);
+            set => SetSimple(PdfName.S, value);
+        }
 
         public FormXObject Group
         {
-            get => FormXObject.Wrap(BaseDataObject[PdfName.G]);
-            set => BaseDataObject[PdfName.G] = value?.BaseObject;
+            get => Get<FormXObject>(PdfName.G);
+            set => Set(PdfName.G, value);
         }
 
         public PdfArray BackColor
         {
-            get => BaseDataObject.Get<PdfArray>(PdfName.BC);
-            set => BaseDataObject[PdfName.BC] = value;
+            get => Get<PdfArray>(PdfName.BC);
+            set => Set(PdfName.BC, value);
         }
 
         public Function Function
         {
-            get => Function.Wrap(BaseDataObject[PdfName.TR]);
-            set => BaseDataObject[PdfName.TR] = value.BaseObject;
+            get => function ??= Function.Wrap(Get(PdfName.TR));
+            set => Set(PdfName.TR, function = value);
         }
 
         public SKMatrix InitialMatrix { get; internal set; }

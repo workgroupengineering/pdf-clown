@@ -24,7 +24,7 @@
 */
 
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Documents.Contents.Patterns.Shadings;
+using PdfClown.Documents.Contents.Shadings;
 using PdfClown.Objects;
 using SkiaSharp;
 
@@ -57,8 +57,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         public PdfName Name
         {
-            get => (PdfName)operands[0];
-            set => operands[0] = value;
+            get => (PdfName)operands.Get(0);
+            set => operands.SetSimple(0, value);
         }
 
         public override void Scan(GraphicsState state)
@@ -73,21 +73,11 @@ namespace PdfClown.Documents.Contents.Objects
                 {
                     paint.Color = backColor.GetSkColor(state.FillAlpha);
                 }
+                var box = shading.Box ?? canvas.LocalClipBounds;//state.Ctm.MapRect();
+                box = SKRect.Intersect(box, canvas.LocalClipBounds);
                 paint.Shader = shading.GetShader(SKMatrix.Identity, state);
-                canvas.DrawPaint(paint);
+                canvas.DrawRect(box, paint);
             }
-        }
-
-        public static SKMatrix GenerateMatrix(ContentScanner scanner, Shading shading)
-        {
-            var matrix = SKMatrix.Identity;
-            if (scanner.Canvas.GetLocalClipBounds(out var clipBound))
-            {
-                matrix = SKMatrix.CreateScale(shading.Box.Width == 0 ? 1 : clipBound.Width / shading.Box.Width,
-                                                  shading.Box.Height == 0 ? 1 : clipBound.Width / shading.Box.Height);
-            }
-
-            return matrix;
-        }
+        }        
     }
 }

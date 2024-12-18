@@ -35,43 +35,33 @@ namespace PdfClown.Documents
     [PDF(VersionEnum.PDF10)]
     public sealed class PageAnnotations : PageElements<Annotation>
     {
-        public class AnnotationWrapper : IEntryWrapper<Annotation>
+        private Dictionary<string, Annotation> nameIndex;
+
+        public PageAnnotations()
+            : this((PdfDocument)null)
+        { }
+
+        public PageAnnotations(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PageAnnotations(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         {
-            public AnnotationWrapper(PdfPage page)
-            {
-                Page = page;
-            }
-
-            public PdfPage Page { get; }
-
-            public Annotation Wrap(PdfDirectObject baseObject)
-            {
-                var annotation = Annotation.Wrap(baseObject);
-                if (annotation != null)
-                {
-                    Page.Annotations.AddIndex(annotation);
-                }
-                return annotation;
-            }
+            
         }
 
-        public static PageAnnotations Wrap(PdfDirectObject baseObject, PdfPage page) => baseObject != null
-                ? baseObject.Wrapper as PageAnnotations ?? new PageAnnotations(baseObject, page)
-                : null;
+        public override PdfName TypeKey => PdfName.Annot;
 
+        private Dictionary<string, Annotation> NameIndex => nameIndex ?? RefreshCache();
 
-        private readonly Dictionary<string, Annotation> nameIndex = new Dictionary<string, Annotation>(StringComparer.Ordinal);
+        public Annotation this[string name] => NameIndex.TryGetValue(name, out var annotation) ? annotation : null;
 
-        internal PageAnnotations(PdfDirectObject baseObject, PdfPage page)
-            : base(new AnnotationWrapper(page), baseObject, page)
+        private Dictionary<string, Annotation> RefreshCache()
         {
-            RefreshCache();
-        }
-
-        public Annotation this[string name] => nameIndex.TryGetValue(name, out var annotation) ? annotation : null;
-
-        private void RefreshCache()
-        {
+            if (nameIndex != null)
+                return nameIndex;
+            nameIndex = new Dictionary<string, Annotation>(StringComparer.Ordinal);
             for (int i = 0, length = Count; i < length; i++)
             {
                 var item = this[i];
@@ -82,20 +72,25 @@ namespace PdfClown.Documents
                     i--;
                     continue;
                 }
-                //Recovery
-                if (item is Markup markup
-                    && markup.Popup != null
-                    && !Contains(markup.Popup))
-                {
-                    Add(markup.Popup);
-                }
-                if (item is Popup popup
-                       && popup.Parent != null
-                       && !Contains(popup.Parent))
-                {
-                    Add(popup.Parent);
-                }
+                Recover(item);
                 AddIndex(item);
+            }
+            return nameIndex;
+        }
+
+        private void Recover(Annotation item)
+        {
+            if (item is Markup markup
+                && markup.Popup != null
+                && !Contains(markup.Popup))
+            {
+                Add(markup.Popup);
+            }
+            if (item is Popup popup
+                && popup.Parent != null
+                && !Contains(popup.Parent))
+            {
+                Add(popup.Parent);
             }
         }
 
@@ -111,47 +106,43 @@ namespace PdfClown.Documents
                 }
 
                 if (string.IsNullOrEmpty(annotation.Name)
-                    || (nameIndex.TryGetValue(annotation.Name, out var existing)
+                    || (NameIndex.TryGetValue(annotation.Name, out var existing)
                     && existing != annotation))
                 {
                     annotation.GenerateExistingName();
                 }
-                nameIndex[annotation.Name] = annotation;
+                NameIndex[annotation.Name] = annotation;
             }
-            else if(annotation.Page == null)
+            else if (annotation.Page == null)
             {
                 annotation.page = Page;
             }
         }
 
-        public override void Add(Annotation item)
+        protected override Annotation CheckIn(Annotation item)
         {
+            item = base.CheckIn(item);
+            AddIndex(item);
             if (item.IsQueueRefreshAppearance)
             {
                 item.RefreshAppearance();
             }
-            AddIndex(item);
-            base.Add(item);
+            return item;
         }
 
-        public override void Insert(int index, Annotation item)
+        protected override Annotation CheckOut(Annotation item)
         {
-            AddIndex(item);
-            base.Insert(index, item);
-        }
-
-        public override bool Remove(Annotation item)
-        {
-            nameIndex.Remove(item.Name);
-            return base.Remove(item);
-        }
-
-        public override void RemoveAt(int index)
-        {
-            var item = this[index];
             if (item != null)
-                nameIndex.Remove(item.Name);
-            base.RemoveAt(index);
+                NameIndex.Remove(item.Name);
+            return base.CheckOut(item);
         }
+
+        internal PageAnnotations WithPage(PdfPage pdfPage)
+        {
+            Page = pdfPage;
+            RefreshCache();
+            return this;
+        }
+
     }
 }

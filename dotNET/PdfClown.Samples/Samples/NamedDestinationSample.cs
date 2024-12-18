@@ -2,6 +2,7 @@ using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Navigation;
+using PdfClown.Documents.Names;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -15,13 +16,12 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
-                Pages pages = document.Pages;
+                PdfPages pages = document.Pages;
 
                 // 2. Inserting page destinations...
-                NamedDestinations destinations = document.Names.Destinations;
+                NamedDestinations destinations = document.Catalog.Names.Destinations;
                 // NOTE: Here we are registering page 1 multiple times to test tree structure sorting and splitting.
                 Destination page1Destination = new LocalDestination(pages[0]);
                 destinations[new PdfString("d31e1142")] = page1Destination;
@@ -41,7 +41,7 @@ namespace PdfClown.Samples.CLI
 
                     // Let the viewer go to the second page on document opening!
                     // NOTE: Any time a named destination is applied, its name is retrieved and used as reference.
-                    document.Actions.OnOpen = new GoToLocal(
+                    document.Catalog.OnOpen = new GoToLocal(
                       document,
                       // Its name ("N84afaba6") is retrieved behind the scenes.
                       page2Destination);
@@ -58,7 +58,7 @@ namespace PdfClown.Samples.CLI
                 }
 
                 // 3. Serialize the PDF file!
-                Serialize(file, "Named destinations", "manipulating named destinations", "named destinations, creation");
+                Serialize(document, "Named destinations", "manipulating named destinations", "named destinations, creation");
             }
         }
     }

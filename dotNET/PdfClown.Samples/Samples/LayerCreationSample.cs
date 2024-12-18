@@ -1,6 +1,6 @@
 using PdfClown.Documents;
-using colors = PdfClown.Documents.Contents.ColorSpaces;
-using entities = PdfClown.Documents.Contents.Entities;
+using PdfClown.Documents.Contents.ColorSpaces;
+using PdfClown.Documents.Contents.Entities;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Layers;
@@ -9,7 +9,6 @@ using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Documents.Interaction.Viewer;
 using PdfClown.Documents.Interchange.Access;
-using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 
@@ -20,27 +19,22 @@ using System.IO;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to define layers to control content visibility.</summary>
-    */
+    /// <summary>This sample demonstrates how to define layers to control content visibility.</summary>
     public class LayerCreationSample : Sample
     {
         public override void Run()
         {
             // 1. PDF file instantiation.
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Content creation.
             Populate(document);
 
             // 3. PDF file serialization.
-            Serialize(file, "Layer", "inserting layers", "layers, optional content");
+            Serialize(document, "Layer", "inserting layers", "layers, optional content");
         }
 
-        /**
-          <summary>Populates a PDF file with contents.</summary>
-        */
+        /// <summary>Populates a PDF file with contents.</summary>
         private void Populate(PdfDocument document)
         {
             // Initialize a new page!
@@ -49,14 +43,14 @@ namespace PdfClown.Samples.CLI
 
             // Initialize the primitive composer (within the new page context)!
             var composer = new PrimitiveComposer(page);
-            composer.SetFont(FontType1.Load(document, FontName.HelveticaBold), 12);
+            composer.SetFont(PdfType1Font.Load(document, FontName.HelveticaBold), 12);
 
             // Initialize the block composer (wrapping the primitive one)!
             var blockComposer = new BlockComposer(composer);
 
             // Initialize the document layer configuration!
-            LayerDefinition layerDefinition = document.Layer;
-            document.ViewerPreferences.PageMode = ViewerPreferences.PageModeEnum.Layers; // Shows the layers tab on document opening.
+            LayerDefinition layerDefinition = document.Catalog.Layers;
+            document.Catalog.ViewerPreferences.PageMode = ViewerPreferences.PageModeEnum.Layers; // Shows the layers tab on document opening.
 
             // Get the root collection of the layers displayed to the user!
             UILayers uiLayers = layerDefinition.UILayers;
@@ -81,7 +75,7 @@ namespace PdfClown.Samples.CLI
                   2) associating annotations and external objects (XObject) to the layers.
                 */
 
-                XObject imageXObject = entities::Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")).ToXObject(document);
+                XObject imageXObject = Image.Get(GetResourcePath("images" + Path.DirectorySeparatorChar + "gnu.jpg")).ToXObject(document);
                 imageXObject.Layer = childLayer1; // Associates the image to the layer.
 
                 composer.ShowXObject(imageXObject, new SKPoint(200, 75));
@@ -108,13 +102,13 @@ namespace PdfClown.Samples.CLI
                 simpleLayer1 = new Layer(document, "Simple layer 1");
                 simpleLayerCollection.Add(simpleLayer1);
 
-                var simpleLayer2 = new Layer(document, "Simple layer 2 (Design)");
-                /*
-                  NOTE: Intent limits layer use in determining visibility to specific use contexts. In this
-                  case, we want to mark content as intended to represent a document designer's structural
-                  organization of artwork, hence it's outside the interactive use by document consumers.
-                */
-                simpleLayer2.Intents = new HashSet<PdfName> { IntentEnum.Design.Name() };
+                //NOTE: Intent limits layer use in determining visibility to specific use contexts. In this
+                //case, we want to mark content as intended to represent a document designer's structural
+                //organization of artwork, hence it's outside the interactive use by document consumers.
+                var simpleLayer2 = new Layer(document, "Simple layer 2 (Design)")
+                {
+                    Intents = new HashSet<PdfName> { IntentEnum.Design.Name() }
+                };
                 simpleLayerCollection.Add(simpleLayer2);
 
                 var simpleLayer3 = new Layer(document, "Simple layer 3");
@@ -191,7 +185,7 @@ namespace PdfClown.Samples.CLI
 
                 composer.BeginLayer(actionLayer);
                 composer.BeginLocalState();
-                composer.SetFillColor(colors::DeviceRGBColor.Get(SKColors.Blue));
+                composer.SetFillColor(RGBColor.Get(SKColors.Blue));
                 composer.ShowText(
                   "Layer state action:\n * deselect \"" + simpleLayer1.Title + "\"\n   and \"" + radioLayer2.Title + "\"\n * toggle \"" + parentLayer.Title + "\"",
                   new SKPoint(400, 200),
@@ -201,9 +195,7 @@ namespace PdfClown.Samples.CLI
                   new SetLayerState(
                     document,
                     new SetLayerState.LayerState(SetLayerState.StateModeEnum.Off, simpleLayer1, radioLayer2),
-                    new SetLayerState.LayerState(SetLayerState.StateModeEnum.Toggle, parentLayer)
-                    )
-                  );
+                    new SetLayerState.LayerState(SetLayerState.StateModeEnum.Toggle, parentLayer)));
                 composer.End();
                 composer.End();
             }
@@ -214,13 +206,14 @@ namespace PdfClown.Samples.CLI
                 { ZoomRange = new Interval<double>(.75, 1.251) }; // NOTE: Change this interval to test other magnification ranges.
 
                 composer.BeginLayer(zoomRestrictedLayer);
-                new TextMarkup(
+                page.Annotations.Add(new TextMarkup(
                   page,
                   composer.ShowText(zoomRestrictedLayer.Title + ": this text is only visible if zoom between 75% and 125%", new SKPoint(50, 290)),
                   "This is a highlight annotation visible only if zoom is between 75% and 125%",
-                  TextMarkupType.Highlight
-                  )
-                { Layer = zoomRestrictedLayer /* Associates the annotation to the layer. */ };
+                  TextMarkupType.Highlight)
+                {
+                    Layer = zoomRestrictedLayer /* Associates the annotation to the layer. */
+                });
                 composer.End();
             }
 
@@ -234,7 +227,7 @@ namespace PdfClown.Samples.CLI
 
                 composer.BeginLayer(printOnlyLayer);
                 composer.BeginLocalState();
-                composer.SetFillColor(colors::DeviceRGBColor.Get(SKColors.Red));
+                composer.SetFillColor(RGBColor.Get(SKColors.Red));
                 composer.ShowText(printOnlyLayer.Title, new SKPoint(25, 300), XAlignmentEnum.Left, YAlignmentEnum.Top, 90);
                 composer.End();
                 composer.End();
@@ -295,11 +288,8 @@ namespace PdfClown.Samples.CLI
                         document,
                         VisibilityExpression.OperatorEnum.Or,
                         simpleLayer1,
-                        radioLayer2
-                        )
-                      ),
-                    parentLayer
-                    ),
+                        radioLayer2)),
+                    parentLayer),
                     VisibilityPolicy = LayerMembership.VisibilityPolicyEnum.AnyOff,
                     VisibilityMembers = new List<Layer> { simpleLayer1, radioLayer2, parentLayer }
                 };

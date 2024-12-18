@@ -34,22 +34,18 @@ using SkiaSharp;
 
 namespace PdfClown.Tools
 {
-    /**
-      <summary>Tool to flatten Acroforms.</summary>
-    */
+    /// <summary>Tool to flatten Acroforms.</summary>
     public sealed class FormFlattener
     {
         private bool hiddenRendered;
         private bool nonPrintableRendered;
 
-        /**
-          <summary>Replaces the Acroform fields with their corresponding graphics representation.</summary>
-          <param name="document">Document to flatten.</param>
-        */
+        /// <summary>Replaces the Acroform fields with their corresponding graphics representation.</summary>
+        /// <param name="document">Document to flatten.</param>
         public void Flatten(PdfDocument document)
         {
             var pageStampers = new Dictionary<PdfPage, PageStamper>();
-            Form form = document.Form;
+            AcroForm form = document.Catalog.Form;
             Fields formFields = form.Fields;
             foreach (Field field in formFields.Values)
             {
@@ -62,7 +58,7 @@ namespace PdfClown.Tools
                       && ((flags & AnnotationFlagsEnum.Print) > 0 || nonPrintableRendered))
                     {
                         // Stamping the current state appearance of the widget...
-                        var widgetCurrentState = widget.BaseDataObject.Get<PdfName>(PdfName.AS);
+                        var widgetCurrentState = widget.Get<PdfName>(PdfName.AS);
                         FormXObject widgetCurrentAppearance = widget.Appearance.Normal[widgetCurrentState];
                         if (widgetCurrentAppearance != null)
                         {
@@ -85,7 +81,7 @@ namespace PdfClown.Tools
                     }
 
                     // Removing the field references relating the widget...
-                    PdfDictionary fieldPartDictionary = widget.BaseDataObject;
+                    PdfDictionary fieldPartDictionary = widget;
                     while (fieldPartDictionary != null)
                     {
                         var parentFieldPartDictionary = fieldPartDictionary.Get<PdfDictionary>(PdfName.Parent);
@@ -94,7 +90,7 @@ namespace PdfClown.Tools
                         if (parentFieldPartDictionary != null)
                         { kidsArray = parentFieldPartDictionary.Get<PdfArray>(PdfName.Kids); }
                         else
-                        { kidsArray = formFields.BaseDataObject; }
+                        { kidsArray = formFields.DataObject; }
 
                         kidsArray.Remove(fieldPartDictionary.Reference);
                         fieldPartDictionary.Delete();
@@ -108,25 +104,21 @@ namespace PdfClown.Tools
             if (formFields.Count == 0)
             {
                 // Removing the form root...
-                document.Form = null;
+                document.Catalog.Form = null;
                 form.Delete();
             }
             foreach (PageStamper pageStamper in pageStampers.Values)
             { pageStamper.Flush(); }
         }
 
-        /**
-          <summary>Gets/Sets whether hidden fields have to be rendered.</summary>
-        */
+        /// <summary>Gets/Sets whether hidden fields have to be rendered.</summary>
         public bool HiddenRendered
         {
             get => hiddenRendered;
             set => hiddenRendered = value;
         }
 
-        /**
-          <summary>Gets/Sets whether non-printable fields have to be rendered.</summary>
-        */
+        /// <summary>Gets/Sets whether non-printable fields have to be rendered.</summary>
         public bool NonPrintableRendered
         {
             get => nonPrintableRendered;

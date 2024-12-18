@@ -29,7 +29,6 @@ using PdfClown.Tokens;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace PdfClown.Files
@@ -54,7 +53,7 @@ namespace PdfClown.Files
     public sealed class IndirectObjects : IList<PdfIndirectObject>
     {
         /// <summary>Associated file.</summary>
-        private readonly PdfFile file;
+        private readonly PdfDocument document;
 
         /// <summary>Map of matching references of imported indirect objects.</summary>
         /// <remarks>
@@ -79,11 +78,11 @@ namespace PdfClown.Files
         /// (to say: implicit collection of the original indirect objects).</summary>
         /// <remarks>This information is vital to randomly retrieve the indirect-object
         /// persistent representation inside the associated file.</remarks>
-        private readonly IDictionary<int, XRefEntry> xrefEntries;
+        private readonly Dictionary<int, XRefEntry> xrefEntries;
 
-        internal IndirectObjects(PdfFile file, IDictionary<int, XRefEntry> xrefEntries)
+        internal IndirectObjects(PdfDocument document, Dictionary<int, XRefEntry> xrefEntries)
         {
-            this.file = file;
+            this.document = document;
             this.xrefEntries = xrefEntries;
             if (this.xrefEntries == null) // No original indirect objects.
             {
@@ -92,7 +91,7 @@ namespace PdfClown.Files
                 // at object number 0 [PDF:1.6:3.4.3].
                 lastObjectNumber = 0;
                 modifiedObjects[lastObjectNumber] = new PdfIndirectObject(
-                  this.file,
+                  this.document,
                   null,
                   new XRefEntry(lastObjectNumber, XRefEntry.GenerationUnreusable, 0, XRefEntry.UsageEnum.Free));
             }
@@ -107,11 +106,11 @@ namespace PdfClown.Files
         /// <remarks>To register an external indirect object, use <see
         /// cref="AddExternal(PdfIndirectObject)"/>.</remarks>
         /// <returns>Indirect object corresponding to the registered data object.</returns>
-        public PdfIndirectObject Add(PdfDataObject obj)
+        public PdfIndirectObject Add(PdfDirectObject obj)
         {
             // Register a new indirect object wrapping the data object inside!
             var indirectObject = new PdfIndirectObject(
-              file,
+              document,
               obj,
               new XRefEntry(++lastObjectNumber, 0));
             modifiedObjects[lastObjectNumber] = indirectObject;
@@ -122,41 +121,41 @@ namespace PdfClown.Files
         /// <remarks>
         ///   <para>External indirect objects come from alien PDF files; therefore, this is a powerful way
         ///   to import contents from a file into another one.</para>
-        ///   <para>To register an internal data object, use<see cref = "Add(PdfDataObject)" />.</ para >
-        /// </ remarks >
-        /// < param nme="obj">External indirect object to import.</param>
+        ///   <para>To register an internal data object, use <see cref="Add(PdfDirectObject)"/>.</para>
+        /// </remarks >
+        /// <param name="obj">External indirect object to import.</param>
         /// <returns>Indirect object imported from the external indirect object.</returns>
-        public PdfIndirectObject AddExternal(PdfIndirectObject obj) => AddExternal(obj, file.Cloner);
+        public PdfIndirectObject AddExternal(PdfIndirectObject obj, PdfName parentKey) => AddExternal(obj, document.Cloner, parentKey);
 
         /// <summary>Registers an<i>external</i> indirect object.</summary>
         /// <remarks>
         ///   <para>External indirect objects come from alien PDF files; therefore, this is a powerful way
         ///   to import contents from a file into another one.</para>
-        ///   <para>To register an internal data object, use<see cref = "Add(PdfDataObject)" />.</ para >
-        /// </ remarks >
-        /// < param nme="obj">External indirect object to import.</param>
-        /// <param nme = "cloner" > Import rules.</param>
+        ///   <para>To register an internal data object, use <see cref="Add(PdfDirectObject)"/>.</para>
+        /// </remarks >
+        /// <param name="obj">External indirect object to import.</param>
+        /// <param name = "cloner"> Import rules.</param>
         /// <returns>Indirect object imported from the external indirect object.</returns>
-        public PdfIndirectObject AddExternal(PdfIndirectObject obj, Cloner cloner)
+        public PdfIndirectObject AddExternal(PdfIndirectObject obj, Cloner cloner, PdfName parentKey)
         {
-            if (cloner.Context != file)
+            if (cloner.Context != document)
                 throw new ArgumentException("cloner file context incompatible");
 
+            var objId = obj.GetHashCode();
             // Hasn't the external indirect object been imported yet?
-            if (!importedObjects.TryGetValue(obj.GetHashCode(), out var indirectObject))
+            if (!importedObjects.TryGetValue(objId, out var indirectObject))
             {
                 // Keep track of the imported indirect object!
-                importedObjects.Add(
-                  obj.GetHashCode(),
-                  indirectObject = Add((PdfDataObject)null) // [DEV:AP] Circular reference issue solved.
-                  );
-                indirectObject.DataObject = (PdfDataObject)obj.DataObject.Accept(cloner, null);
+                indirectObject = Add((PdfDirectObject)null);// [DEV:AP] Circular reference issue solved.;
+                importedObjects.Add(objId, indirectObject);
+
+                indirectObject.DataObject = (PdfDirectObject)obj.GetDataObject(parentKey).Accept(cloner, parentKey, null);
             }
             return indirectObject;
         }
 
         /// <summary>Gets the file associated to this collection.</summary>
-        public PdfFile File => file;
+        public PdfDocument Document => document;
 
         public bool IsEmpty()
         {
@@ -173,14 +172,13 @@ namespace PdfClown.Files
         public int IndexOf(PdfIndirectObject obj)
         {
             // Is this indirect object associated to this file?
-            if (obj.File != file)
+            if (obj.Document != document)
                 return -1;
 
-            return obj.Reference.ObjectNumber;
+            return obj.Reference.Number;
         }
 
-        public void Insert(int index, PdfIndirectObject obj)
-        { throw new NotSupportedException(); }
+        public void Insert(int index, PdfIndirectObject obj) => throw new NotSupportedException();
 
         public void RemoveAt(int index)
         {
@@ -193,7 +191,7 @@ namespace PdfClown.Files
                 // increment by 1 its generation number.
                 Update(
                   new PdfIndirectObject(
-                    file,
+                    document,
                     null,
                     new XRefEntry(index, XRefEntry.GenerationUnreusable, 0, XRefEntry.UsageEnum.Free)));
             }
@@ -229,7 +227,7 @@ namespace PdfClown.Files
                         // Awake the object!
                         // NOTE: This operation allows to keep a consistent state across the whole session,
                         // avoiding multiple incoherent instantiations of the same original indirect object.
-                        wokenObjects[index] = obj = new PdfIndirectObject(file, null, xrefEntry);
+                        wokenObjects[index] = obj = new PdfIndirectObject(document, null, xrefEntry);
                     }
                 }
                 return obj;
@@ -245,7 +243,7 @@ namespace PdfClown.Files
         ///   cref="AddExternal(PdfIndirectObject)"/></para>
         /// </remarks>
         /// <returns>Whether the indirect object was successfully registered.</returns>
-        public void Add(PdfIndirectObject obj) => AddExternal(obj);
+        public void Add(PdfIndirectObject obj) => AddExternal(obj, null);
 
         public void Clear()
         {
@@ -253,7 +251,7 @@ namespace PdfClown.Files
             { RemoveAt(index); }
         }
 
-        public bool Contains(PdfIndirectObject obj) => obj != null && this[obj.Reference.ObjectNumber] == obj;
+        public bool Contains(PdfIndirectObject obj) => obj != null && this[obj.Reference.Number] == obj;
 
         public void CopyTo(PdfIndirectObject[] objs, int index) => throw new NotSupportedException();
 
@@ -269,7 +267,7 @@ namespace PdfClown.Files
             if (!Contains(obj))
                 return false;
 
-            RemoveAt(obj.Reference.ObjectNumber);
+            RemoveAt(obj.Reference.Number);
             return true;
         }
 
@@ -292,11 +290,11 @@ namespace PdfClown.Files
             return obj;
         }
 
-        internal IDictionary<int, PdfIndirectObject> ModifiedObjects => modifiedObjects;
+        internal Dictionary<int, PdfIndirectObject> ModifiedObjects => modifiedObjects;
 
         internal PdfIndirectObject Update(PdfIndirectObject obj)
         {
-            int index = obj.Reference.ObjectNumber;
+            int index = obj.Reference.Number;
 
             // Get the old indirect object to be replaced!
             PdfIndirectObject old = this[index];

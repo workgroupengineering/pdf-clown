@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace PdfClown.Bytes.Filters
 {
     internal class ImageChunk

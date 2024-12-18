@@ -25,22 +25,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace PdfClown.Util.Metadata
 {
-    /**
-      <summary>Generic software version number.</summary>
-    */
+    /// <summary>Generic software version number.</summary>
     public interface IVersion
       : IComparable<IVersion>
     {
-        /**
-          <summary>Gets the version numbers.</summary>
-        */
-        IList<int> Numbers
-        {
-            get;
-        }
+        /// <summary>Gets the version numbers.</summary>
+        IList<int> Numbers { get; }
     }
 }

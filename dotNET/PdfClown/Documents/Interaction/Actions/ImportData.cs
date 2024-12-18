@@ -23,29 +23,22 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Import FDF (Forms Data Format) data into the document's interactive form
-      from a specified file' action [PDF:1.6:8.6.4].</summary>
-    */
+    /// <summary>'Import FDF (Forms Data Format) data into the document's interactive form
+    /// from a specified file' action [PDF:1.6:8.6.4].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class ImportData : Action
+    public sealed class ImportData : PdfAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public ImportData(PdfDocument context)
             : base(context, PdfName.ImportData)
         { }
 
-        internal ImportData(PdfDirectObject baseObject)
+        internal ImportData(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 

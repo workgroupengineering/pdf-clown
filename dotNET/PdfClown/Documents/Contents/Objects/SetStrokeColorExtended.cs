@@ -38,27 +38,23 @@ namespace PdfClown.Documents.Contents.Objects
             : base(OperatorKeyword, operands)
         { }
 
-        internal SetStrokeColorExtended(Color value)
+        internal SetStrokeColorExtended(IColor value)
             : base(OperatorKeyword, value.Components)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-         */
+        /// <param name="operator"> Graphics operator.</param>
+        /// <param name="name"> Name of the color resource entry(see<see cref="Patterns" />).</param>
         internal SetStrokeColorExtended(PdfName name)
             : this(name, null)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-          <param name="underlyingColor">Color used to colorize the pattern.</param>
-         */
-        internal SetStrokeColorExtended(PdfName name, Color underlyingColor)
+        /// <param name="operator"> Graphics operator.</param>
+        /// <param name="name"> Name of the color resource entry(see<see cref="Patterns" />).</param>
+        /// <param name="underlyingColor"> Color used to colorize the pattern.</param>
+        internal SetStrokeColorExtended(PdfName name, IColor underlyingColor)
             : base(OperatorKeyword, name, underlyingColor)
         { }
-       
+
     }
 
 }

@@ -7,14 +7,13 @@ namespace PdfClown.UI.ToolTip
 {
     public class LinkToolTipRenderer : AnnotationToolTipRenderer
     {
-        public LinkToolTipRenderer()
-            : base()
-        {
-        }
+        public LinkToolTipRenderer(Link link)
+            : base(link)
+        { }
 
         public Link Link
         {
-            get => Annotation as Link;
+            get => (Link)Annotation;
             set => Annotation = value;
         }
 
@@ -26,7 +25,7 @@ namespace PdfClown.UI.ToolTip
             if (string.IsNullOrEmpty(target))
                 return SKRect.Empty;
 
-            var text = MeasureLine(target, DefaultSKStyles.PaintToolTipText);
+            var text = MeasureLine(target, DefaultSKStyles.PaintToolTipText, DefaultSKStyles.FontToolTipText);
             ContentLines = new List<LineOfText> { text };
 
             var contentBound = text.Bound;

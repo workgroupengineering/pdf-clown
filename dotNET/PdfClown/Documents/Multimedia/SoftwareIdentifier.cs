@@ -35,7 +35,7 @@ namespace PdfClown.Documents.Multimedia
 {
     /// <summary>Software identifier [PDF:1.7:9.1.6].</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class SoftwareIdentifier : PdfObjectWrapper<PdfDictionary>
+    public sealed class SoftwareIdentifier : PdfDictionary
     {
         private IList<string> oSes;
         private Uri url;
@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Multimedia
         {
             private int[] numbers;
 
-            public VersionObject(params int[] numbers) : base(new PdfArray(numbers))
+            public VersionObject(params int[] numbers) : base(new PdfArrayImpl(numbers))
             { }
 
             public VersionObject(PdfDirectObject baseObject) : base(baseObject)
@@ -57,11 +57,11 @@ namespace PdfClown.Documents.Multimedia
 
             public IList<int> Numbers
             {
-                get => numbers ??= BaseDataObject.ToIntArray();
+                get => numbers ??= DataObject.ToIntArray();
                 set
                 {
-                    BaseDataObject.Clear();
-                    BaseDataObject.AddRangeDirect(value.Select(x => PdfInteger.Get(x)));
+                    DataObject.Clear();
+                    DataObject.AddRangeDirect(value.Select(x => PdfInteger.Get(x)));
                 }
             }
 
@@ -69,10 +69,14 @@ namespace PdfClown.Documents.Multimedia
             { return VersionUtils.ToString(this); }
         }
 
-        public SoftwareIdentifier(PdfDocument context) : base(context, new PdfDictionary())
+        public SoftwareIdentifier(PdfDocument context)
+            : base(context, new(){
+                { PdfName.Type, PdfName.SoftwareIdentifier}
+            })
         { }
 
-        public SoftwareIdentifier(PdfDirectObject baseObject) : base(baseObject)
+        internal SoftwareIdentifier(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets the operating system identifiers that indicate which operating systems this
@@ -81,8 +85,8 @@ namespace PdfClown.Documents.Multimedia
         /// attribute.An empty list is considered to represent all operating systems.</remarks>
         public IList<string> OSes
         {
-            get => oSes ??= BaseDataObject.Get<PdfArray>(PdfName.OS)?.ToStringArray();
-            set => BaseDataObject[PdfName.OS] = new PdfArray(oSes = value);
+            get => oSes ??= Get<PdfArray>(PdfName.OS)?.ToStringArray();
+            set => this[PdfName.OS] = new PdfArrayImpl(oSes = value);
         }
 
         /// <summary>Gets the URI that identifies a piece of software.</summary>
@@ -93,25 +97,25 @@ namespace PdfClown.Documents.Multimedia
         /// Internet RFC 2396, Uniform Resource Identifiers (URI): Generic Syntax.</remarks>
         public Uri URI
         {
-            get => url ??= BaseDataObject.GetString(PdfName.U) is string stringValue ? new Uri(stringValue) : null;
-            set => BaseDataObject.Set(PdfName.U, value?.ToString());
+            get => url ??= GetString(PdfName.U) is string stringValue ? new Uri(stringValue) : null;
+            set => Set(PdfName.U, value?.ToString());
         }
 
         /// <summary>Gets the software version bounds.</summary>
         public Interval<VersionObject> Version
         {
             get => version ??= new Interval<VersionObject>(
-                  Wrap<VersionObject>(BaseDataObject.Get<PdfArray>(PdfName.L)),
-                  Wrap<VersionObject>(BaseDataObject.Get<PdfArray>(PdfName.H)),
-                  BaseDataObject.GetBool(PdfName.LI, true),
-                  BaseDataObject.GetBool(PdfName.HI, true));
+                  new VersionObject(Get(PdfName.L)),
+                  new VersionObject(Get(PdfName.H)),
+                  GetBool(PdfName.LI, true),
+                  GetBool(PdfName.HI, true));
             set
             {
                 version = value;
-                BaseDataObject[PdfName.L] = value.Low.BaseDataObject;
-                BaseDataObject[PdfName.H] = value.High.BaseDataObject;
-                BaseDataObject.Set(PdfName.LI, value.LowInclusive);
-                BaseDataObject.Set(PdfName.HI, value.HighInclusive);
+                Set(PdfName.L, value.Low.DataObject);
+                Set(PdfName.H, value.High.DataObject);
+                Set(PdfName.LI, value.LowInclusive);
+                Set(PdfName.HI, value.HighInclusive);
             }
         }
     }

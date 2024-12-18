@@ -25,34 +25,25 @@
 
 using PdfClown.Objects;
 
-using System;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    ///<summary>Single-component CIE-based color value [PDF:1.6:4.5.4].</summary>
+    /// <summary>Single-component CIE-based color value [PDF:1.6:4.5.4].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class CalGrayColor : LeveledColor
     {
         public CalGrayColor(CalGrayColorSpace colorSpace, double g)
-            : this(null, new PdfArray(1) { NormalizeComponent(g) })
+            : this(null, new PdfArrayImpl(1) { NormalizeComponent(g) })
         { }
 
         internal CalGrayColor(CalGrayColorSpace colorSpace, PdfArray components)
             : base(colorSpace, components)
         { }
 
-        ///<summary>Gets/Sets the gray component.</summary>
+        /// <summary>Gets/Sets the gray component.</summary>
         public float G
         {
             get => this[0];
             set => this[0] = value;
         }
-
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
-
     }
 }

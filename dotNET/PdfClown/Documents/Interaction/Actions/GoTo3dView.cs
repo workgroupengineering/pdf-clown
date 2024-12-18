@@ -23,28 +23,21 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Change the view to a specified 3D annotation' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Change the view to a specified 3D annotation' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF16)]
-    public sealed class GoTo3dView : Action, IGoToAction
+    public sealed class GoTo3dView : PdfAction, IGoToAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public GoTo3dView(PdfDocument context)
             : base(context, PdfName.GoTo3DView)
         { }
 
-        internal GoTo3dView(PdfDirectObject baseObject)
+        internal GoTo3dView(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 

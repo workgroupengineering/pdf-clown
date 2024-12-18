@@ -16,20 +16,17 @@
  * limitations under the License.
  */
 
-using System;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.Type1
 {
-	/**
-     * Thrown when a font is damaged and cannot be read.
-     *
-     * @author John Hewson
-     */
-	public class DamagedFontException : IOException
+    /// <summary>
+	/// Thrown when a font is damaged and cannot be read.
+	/// @author John Hewson
+	/// </summary>
+    public class DamagedFontException : IOException
 	{
 		public DamagedFontException(string message) : base(message)
-		{
-		}
+		{ }
 	}
 }

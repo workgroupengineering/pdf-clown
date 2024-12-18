@@ -34,10 +34,8 @@ namespace PdfClown.Documents.Contents.Layers
 {
     /// <summary>Optional content configuration [PDF:1.7:4.10.3].</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class LayerConfiguration : PdfObjectWrapper<PdfDictionary>, ILayerConfiguration
+    public sealed class LayerConfiguration : PdfDictionary, ILayerConfiguration
     {
-        private ISet<PdfName> intents;
-
         /// <summary>Base state used to initialize the states of all the layers in a document when this
         /// configuration is applied.</summary>
         internal enum BaseStateEnum
@@ -50,17 +48,82 @@ namespace PdfClown.Documents.Contents.Layers
             Unchanged
         }
 
+        private static readonly BiDictionary<BaseStateEnum, string> baseStateCodes = new()
+        {
+            [BaseStateEnum.On] = PdfName.ON.StringValue,
+            [BaseStateEnum.Off] = PdfName.OFF.StringValue,
+            [BaseStateEnum.Unchanged] = PdfName.Unchanged.StringValue
+        };
 
-        public LayerConfiguration(PdfDocument context) : base(context, new PdfDictionary())
+        private static readonly BiDictionary<UIModeEnum, string> uiModeCodes = new()
+        {
+            [UIModeEnum.AllPages] = PdfName.AllPages.StringValue,
+            [UIModeEnum.VisiblePages] = PdfName.VisiblePages.StringValue
+        };
+
+        public static UIModeEnum GetUIMode(string name)
+        {
+            if (name == null)
+                return UIModeEnum.AllPages;
+
+            UIModeEnum? uiMode = uiModeCodes.GetKey(name);
+            if (!uiMode.HasValue)
+                throw new NotSupportedException("UI mode unknown: " + name);
+
+            return uiMode.Value;
+        }
+
+        public static PdfName GetName(UIModeEnum uiMode) => PdfName.Get(uiModeCodes[uiMode], true);
+
+        internal static BaseStateEnum GetBaseState(string name)
+        {
+            if (name == null)
+                return BaseStateEnum.On;
+
+            BaseStateEnum? baseState = baseStateCodes.GetKey(name);
+            if (!baseState.HasValue)
+                throw new NotSupportedException("Base state unknown: " + name);
+
+            return baseState.Value;
+        }
+
+        internal static BaseStateEnum GetBaseState(bool? enabled) => enabled.HasValue
+            ? (enabled.Value ? BaseStateEnum.On : BaseStateEnum.Off)
+            : BaseStateEnum.Unchanged;
+
+        internal static PdfName GetName(BaseStateEnum baseState) => PdfName.Get(baseStateCodes[baseState], true);
+
+        internal static bool? IsEnabled(BaseStateEnum baseState)
+        {
+            return baseState switch
+            {
+                BaseStateEnum.On => true,
+                BaseStateEnum.Off => false,
+                BaseStateEnum.Unchanged => null,
+                _ => throw new NotSupportedException(),
+            };
+        }
+
+        private ISet<PdfName> intents;
+        private OptionGroups optionGroups;
+        private UILayers uiLayers;
+
+        public LayerConfiguration()
+            : this((PdfDocument)null)
         { }
 
-        public LayerConfiguration(PdfDirectObject baseObject) : base(baseObject)
+        public LayerConfiguration(PdfDocument context)
+            : base(context, new())
+        { }
+
+        internal LayerConfiguration(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         public string Creator
         {
-            get => BaseDataObject.GetString(PdfName.Creator);
-            set => BaseDataObject.SetText(PdfName.Creator, value);
+            get => GetString(PdfName.Creator);
+            set => SetText(PdfName.Creator, value);
         }
 
         public ISet<PdfName> Intents
@@ -80,59 +143,73 @@ namespace PdfClown.Documents.Contents.Layers
                     }
                     else // Multiple intents.
                     {
-                        var intentArray = new PdfArray();
+                        var intentArray = new PdfArrayImpl();
                         foreach (PdfName valueItem in value)
-                        { intentArray.Add(valueItem); }
+                        { intentArray.AddSimple(valueItem); }
                     }
                 }
-                BaseDataObject[PdfName.Intent] = intentObject;
+                this[PdfName.Intent] = intentObject;
             }
         }
 
-        private ISet<PdfName> GetIntents()
+        private HashSet<PdfName> GetIntents()
         {
-            ISet<PdfName> intents = new HashSet<PdfName>();
-            PdfDataObject intentObject = BaseDataObject.Resolve(PdfName.Intent);
+            var intents = new HashSet<PdfName>();
+            var intentObject = Get<PdfDirectObject>(PdfName.Intent);
             if (intentObject != null)
             {
                 if (intentObject is PdfArray array) // Multiple intents.
                 {
-                    foreach (var intentItem in array.OfType<PdfName>())
-                    { intents.Add(intentItem); }
+                    foreach (var intentItem in array.GetItems().Select(x => (PdfName)x.Resolve(PdfName.Intent)))
+                    {
+                        intents.Add(intentItem);
+                    }
                 }
                 else // Single intent.
-                { intents.Add((PdfName)intentObject); }
+                {
+                    intents.Add((PdfName)intentObject);
+                }
             }
             else
-            { intents.Add(IntentEnum.View.Name()); }
+            {
+                intents.Add(IntentEnum.View.Name());
+            }
             return intents;
         }
 
-        public Array<OptionGroup> OptionGroups => Wrap<Array<OptionGroup>>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.RBGroups));
+        public OptionGroups OptionGroups
+        {
+            get => optionGroups ??= new OptionGroups(GetOrCreate<PdfArrayImpl>(PdfName.RBGroups));
+        }
 
         public string Title
         {
-            get => BaseDataObject.GetString(PdfName.Name);
-            set => BaseDataObject.SetText(PdfName.Name, value);
+            get => GetString(PdfName.Name);
+            set => SetText(PdfName.Name, value);
         }
 
-        public UILayers UILayers => Wrap<UILayers>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.Order));
+        public UILayers UILayers
+        {
+            get => uiLayers ??= new UILayers(GetOrCreate<PdfArrayImpl>(PdfName.Order));
+        }
 
         public UIModeEnum UIMode
         {
-            get => UIModeEnumExtension.Get(BaseDataObject.GetString(PdfName.ListMode));
-            set => BaseDataObject[PdfName.ListMode] = value.GetName();
+            get => GetUIMode(GetString(PdfName.ListMode));
+            set => this[PdfName.ListMode] = GetName(value);
         }
 
         public bool? Visible
         {
-            get => BaseStateEnumExtension.Get(BaseDataObject.GetString(PdfName.BaseState)).IsEnabled();
+            get => IsEnabled(GetBaseState(GetString(PdfName.BaseState)));
             set
             {
                 // NOTE: Base state can be altered only in case of alternate configuration; default ones MUST
                 // be set to default state (that is ON).
-                if (!(BaseObject.Parent is PdfDictionary)) // Not the default configuration?
-                { BaseDataObject[PdfName.BaseState] = BaseStateEnumExtension.Get(value).GetName(); }
+                if (RefOrSelf.ParentObject is not PdfDictionary) // Not the default configuration?
+                {
+                    this[PdfName.BaseState] = GetName(GetBaseState(value));
+                }
             }
         }
 
@@ -140,9 +217,9 @@ namespace PdfClown.Documents.Contents.Layers
         {
             bool? visible = Visible;
             if (!visible.HasValue || visible.Value)
-                return !OffLayersObject.Contains(layer.BaseObject);
+                return !OffLayersObject.Contains(layer.Reference);
             else
-                return OnLayersObject.Contains(layer.BaseObject);
+                return OnLayersObject.Contains(layer.Reference);
         }
 
         /// <summary>Sets the usage application for the specified factors.</summary>
@@ -157,42 +234,42 @@ namespace PdfClown.Documents.Contents.Layers
         internal void SetUsageApplication(PdfName @event, PdfName category, Layer layer, bool retain)
         {
             bool matched = false;
-            var usages = BaseDataObject.Resolve<PdfArray>(PdfName.AS);
+            var usages = GetOrCreate<PdfArrayImpl>(PdfName.AS);
             foreach (var usage in usages)
             {
-                var usageDictionary = (PdfDictionary)usage;
-                if (usageDictionary[PdfName.Event].Equals(@event)
+                var usageDictionary = (PdfDictionary)usage.Resolve(PdfName.AS);
+                if (usageDictionary.Get(PdfName.Event).Equals(@event)
                   && usageDictionary.Get<PdfArray>(PdfName.Category).Contains(category))
                 {
-                    PdfArray usageLayers = usageDictionary.Resolve<PdfArray>(PdfName.OCGs);
-                    if (usageLayers.Contains(layer.BaseObject))
+                    var usageLayers = usageDictionary.GetOrCreate<PdfArrayImpl>(PdfName.OCGs);
+                    if (usageLayers.Contains(layer.Reference))
                     {
                         if (!retain)
-                        { usageLayers.Remove(layer.BaseObject); }
+                            usageLayers.Remove(layer.Reference);
                     }
                     else
                     {
                         if (retain)
-                        { usageLayers.Add(layer.BaseObject); }
+                            usageLayers.Add(layer.Reference);
                     }
                     matched = true;
                 }
             }
             if (!matched && retain)
             {
-                var usageDictionary = new PdfDictionary();
+                var usageDictionary = new PdfDictionary()
                 {
-                    usageDictionary[PdfName.Event] = @event;
-                    usageDictionary.Resolve<PdfArray>(PdfName.Category).Add(category);
-                    usageDictionary.Resolve<PdfArray>(PdfName.OCGs).Add(layer.BaseObject);
-                }
+                    [PdfName.Event] = @event
+                };
+                usageDictionary.GetOrCreate<PdfArrayImpl>(PdfName.Category).Add(category);
+                usageDictionary.GetOrCreate<PdfArrayImpl>(PdfName.OCGs).Add(layer.Reference);
                 usages.Add(usageDictionary);
             }
         }
 
         internal void SetVisible(Layer layer, bool value)
         {
-            PdfDirectObject layerObject = layer.BaseObject;
+            var layerObject = layer.Reference;
             PdfArray offLayersObject = OffLayersObject;
             PdfArray onLayersObject = OnLayersObject;
             bool? visible = Visible;
@@ -222,56 +299,9 @@ namespace PdfClown.Documents.Contents.Layers
         }
 
         /// <summary>Gets the collection of the layer objects whose state is set to OFF.</summary>
-        private PdfArray OffLayersObject => BaseDataObject.Resolve<PdfArray>(PdfName.OFF);
+        private PdfArray OffLayersObject => GetOrCreate<PdfArrayImpl>(PdfName.OFF);
 
         /// <summary>Gets the collection of the layer objects whose state is set to ON.</summary>
-        private PdfArray OnLayersObject => BaseDataObject.Resolve<PdfArray>(PdfName.ON);
-    }
-
-    internal static class BaseStateEnumExtension
-    {
-        private static readonly BiDictionary<LayerConfiguration.BaseStateEnum, string> codes;
-
-        static BaseStateEnumExtension()
-        {
-            codes = new BiDictionary<LayerConfiguration.BaseStateEnum, string>
-            {
-                [LayerConfiguration.BaseStateEnum.On] = PdfName.ON.StringValue,
-                [LayerConfiguration.BaseStateEnum.Off] = PdfName.OFF.StringValue,
-                [LayerConfiguration.BaseStateEnum.Unchanged] = PdfName.Unchanged.StringValue
-            };
-        }
-
-        public static LayerConfiguration.BaseStateEnum Get(string name)
-        {
-            if (name == null)
-                return LayerConfiguration.BaseStateEnum.On;
-
-            LayerConfiguration.BaseStateEnum? baseState = codes.GetKey(name);
-            if (!baseState.HasValue)
-                throw new NotSupportedException("Base state unknown: " + name);
-
-            return baseState.Value;
-        }
-
-        public static LayerConfiguration.BaseStateEnum Get(bool? enabled)
-        { return enabled.HasValue ? (enabled.Value ? LayerConfiguration.BaseStateEnum.On : LayerConfiguration.BaseStateEnum.Off) : LayerConfiguration.BaseStateEnum.Unchanged; }
-
-        public static PdfName GetName(this LayerConfiguration.BaseStateEnum baseState) => PdfName.Get(codes[baseState], true);
-
-        public static bool? IsEnabled(this LayerConfiguration.BaseStateEnum baseState)
-        {
-            switch (baseState)
-            {
-                case LayerConfiguration.BaseStateEnum.On:
-                    return true;
-                case LayerConfiguration.BaseStateEnum.Off:
-                    return false;
-                case LayerConfiguration.BaseStateEnum.Unchanged:
-                    return null;
-                default:
-                    throw new NotSupportedException();
-            }
-        }
+        private PdfArray OnLayersObject => GetOrCreate<PdfArrayImpl>(PdfName.ON);
     }
 }

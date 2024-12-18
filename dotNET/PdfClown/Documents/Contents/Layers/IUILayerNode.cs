@@ -23,26 +23,17 @@
   this list of conditions.
 */
 
-using PdfClown.Files;
 using PdfClown.Objects;
-
-using System;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Object that can be part of a hierarchical layer structure.</summary>
-    */
+    /// <summary>Object that can be part of a hierarchical layer structure.</summary>
     public interface IUILayerNode : IPdfObjectWrapper
     {
-        /**
-          <summary>Gets the sublayers.</summary>
-        */
+        /// <summary>Gets the sublayers.</summary>
         UILayers Children { get; }
 
-        /**
-          <summary>Gets/Sets the text label.</summary>
-        */
+        /// <summary>Gets/Sets the text label.</summary>
         string Title { get; set; }
     }
 }

@@ -36,7 +36,6 @@ namespace PdfClown.Documents.Contents.Objects
     public sealed class PaintXObject : Operation, IResourceReference<XObject>, IBoxed
     {
         public static readonly string OperatorKeyword = "Do";
-        public static readonly SKPaint ImagePaint = new SKPaint { FilterQuality = SKFilterQuality.Low, BlendMode = SKBlendMode.SrcOver };
 
         public PaintXObject(PdfName name) : base(OperatorKeyword, name)
         { }
@@ -46,8 +45,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         public PdfName Name
         {
-            get => (PdfName)operands[0];
-            set => operands[0] = value;
+            get => (PdfName)operands.Get(0);
+            set => operands.SetSimple(0, value);
         }
 
         /// <summary>Gets the scanner for the contents of the painted external object.</summary>
@@ -94,23 +93,21 @@ namespace PdfClown.Documents.Contents.Objects
                     {
                         var imageMatrix = imageObject.Matrix;
                         imageMatrix.ScaleY *= -1;
-                        imageMatrix = imageMatrix.PreConcat(SKMatrix.CreateTranslation(0, -size.Height));
+#if NET9_0_OR_GREATER
+                        canvas.Concat(in imageMatrix);
+#else
                         canvas.Concat(ref imageMatrix);
+#endif
 
                         if (imageObject.ImageMask)
                         {
-                            using (var paint = state.CreateFillPaint())
-                            {
-                                canvas.DrawBitmap(image, 0, 0, paint);
-                            }
+                            using var paint = state.CreateFillPaint();
+                            canvas.DrawImage(image, 0, -size.Height, paint);
                         }
                         else
                         {
-                            using (var paint = state.CreateFillPaint())
-                            {
-                                paint.FilterQuality = SKFilterQuality.Medium;
-                                canvas.DrawBitmap(image, 0, 0, paint);
-                            }
+                            using var paint = state.CreateFillPaint();
+                            canvas.DrawImage(image, 0, -size.Height, paint);
                         }
                     }
                 }

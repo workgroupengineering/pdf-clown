@@ -16,12 +16,8 @@
 
 using Org.BouncyCastle.Cms;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Utilities.Collections;
 using Org.BouncyCastle.X509;
-using Org.BouncyCastle.X509.Store;
-using PdfClown.Bytes;
-using PdfClown.Util.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,18 +32,10 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
         private X509Certificate cert;
         private string tsaUrl;
 
-        /**
-         * Initialize the signature creator with a keystore (pkcs12) and pin that should be used for the
-         * signature.
-         *
-         * @param keystore is a pkcs12 keystore.
-         * @param pin is the pin for the keystore / private key
-         * @throws KeyStoreException if the keystore has not been initialized (loaded)
-         * @throws NoSuchAlgorithmException if the algorithm for recovering the key cannot be found
-         * @throws UnrecoverableKeyException if the given password is wrong
-         * @throws CertificateException if the certificate is not valid as signing time
-         * @throws IOException if no certificate could be found
-         */
+        /// <summary>Initialize the signature creator with a keystore (pkcs12) and pin that should be used for the
+        /// signature.</summary>
+        /// <param name="cert"></param>
+        /// <exception cref="IOException"></exception>
         public CreateSignatureBase(X509Certificate cert)
         {
             this.cert = cert;
@@ -57,7 +45,7 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
                 // avoid expired certificate
                 cert.CheckValidity();
 
-                SigUtils.CheckCertificateUsage((X509Certificate)cert);
+                SigUtils.CheckCertificateUsage(cert);
             }
 
             if (cert == null)
@@ -84,21 +72,21 @@ namespace PdfClown.Documents.Interaction.Forms.Signature
             set => tsaUrl = value;
         }
 
-        /**
-         * SignatureInterface sample implementation.
-         *<p>
-         * This method will be called from inside of the pdfbox and create the PKCS #7 signature.
-         * The given InputStream contains the bytes that are given by the byte range.
-         *<p>
-         * This method is for internal use only.
-         *<p>
-         * Use your favorite cryptographic library to implement PKCS #7 signature creation.
-         * If you want to create the hash and the signature separately (e.g. to transfer only the hash
-         * to an external application), read <a href="https://stackoverflow.com/questions/41767351">this
-         * answer</a> or <a href="https://stackoverflow.com/questions/56867465">this answer</a>.
-         *
-         * @throws IOException
-         */
+        /// <summary>
+        /// SignatureInterface sample implementation.
+        /// <p>This method will be called from inside of the pdfbox and create the PKCS #7 signature.
+        /// The given InputStream contains the bytes that are given by the byte range./// </p>
+        /// <p>This method is for internal use only.</p>
+        /// <p>Use your favorite cryptographic library to implement PKCS #7 signature creation.
+        /// If you want to create the hash and the signature separately (e.g. to transfer only the hash
+        /// to an external application), read <a href="https://stackoverflow.com/questions/41767351">this
+        /// answer</a> or <a href="https://stackoverflow.com/questions/56867465">this answer</a>.
+        /// </p>
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        /// <exception cref="IOException"></exception>
+
         public async Task<byte[]> Sign(Stream content)
         {
             // cannot be done private (interface)

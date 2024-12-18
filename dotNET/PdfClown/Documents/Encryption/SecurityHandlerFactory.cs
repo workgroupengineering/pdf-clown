@@ -15,24 +15,19 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Xml.Linq;
-
 namespace PdfClown.Documents.Encryption
 {
-    /**
-     * Manages security handlers for the application.
-     * It follows the singleton pattern.
-     * To be usable, security managers must be registered in it.
-     * Security managers are retrieved by the application when necessary.
-     *
-     * @author Benoit Guillon
-     * @author John Hewson
-     */
+    /// <summary>
+    /// Manages security handlers for the application.
+    /// It follows the singleton pattern.
+    /// To be usable, security managers must be registered in it.
+    /// Security managers are retrieved by the application when necessary.
+    /// @author Benoit Guillon
+    /// @author John Hewson
+    /// </summary>
     public sealed class SecurityHandlerFactory
     {
-        /** Singleton instance */
+        /// <summary>Singleton instance</summary>
         public static readonly SecurityHandlerFactory INSTANCE = new SecurityHandlerFactory();
         
 

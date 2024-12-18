@@ -27,31 +27,33 @@ using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
     /// <summary>Abstract 'go to destination' action.</summary>
     [PDF(VersionEnum.PDF11)]
-    public abstract class GoToDestination<T> : Action, IGoToAction
+    public abstract class GoToDestination<T> : PdfAction, IGoToAction
       where T : Destination
     {
         protected GoToDestination(PdfDocument context, PdfName actionType, T destination)
             : base(context, actionType)
         { Destination = destination; }
 
-        protected GoToDestination(PdfDirectObject baseObject) : base(baseObject)
+        protected GoToDestination(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the destination to jump to.</summary>
         public T Destination
         {
-            get => Document.ResolveName<T>(BaseDataObject[PdfName.D]);
+            get => Catalog.ResolveName<T>(Get(PdfName.D));
             set
             {
                 if (value == null)
                     throw new ArgumentException("Destination MUST be defined.");
 
-                BaseDataObject[PdfName.D] = value.NamedBaseObject;
+                Set(PdfName.D, value.NamedBaseObject);
             }
         }
     }

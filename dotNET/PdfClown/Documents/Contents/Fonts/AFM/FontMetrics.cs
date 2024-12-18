@@ -20,17 +20,13 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Fonts.AFM
 {
-
-    /**
-     * This is the outermost AFM type.  This can be created by the afmparser with a valid AFM document.
-     *
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// This is the outermost AFM type.This can be created by the afmparser with a valid AFM document.
+    /// @author Ben Litchfield
+    /// </summary>
     public class FontMetrics
     {
-        /**
-         * This is the version of the FontMetrics.
-         */
+        /// <summary>This is the version of the FontMetrics.</summary>
         private float afmVersion;
         private int metricSets = 0;
         private string fontName;
@@ -52,7 +48,7 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
         private float xHeight;
         private float ascender;
         private float descender;
-        private readonly List<string> comments = new List<string>();
+        private readonly List<string> comments = new();
 
         private float underlinePosition;
         private float underlineThickness;
@@ -62,64 +58,33 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
         private float standardHorizontalWidth;
         private float standardVerticalWidth;
 
-        private List<CharMetric> charMetrics = new List<CharMetric>();
-        private Dictionary<string, CharMetric> charMetricsMap = new Dictionary<string, CharMetric>(StringComparer.Ordinal);
-        private List<TrackKern> trackKern = new List<TrackKern>();
-        private List<Composite> composites = new List<Composite>();
-        private List<KernPair> kernPairs = new List<KernPair>();
-        private List<KernPair> kernPairs0 = new List<KernPair>();
-        private List<KernPair> kernPairs1 = new List<KernPair>();
+        private List<CharMetric> charMetrics = new();
+        private Dictionary<string, CharMetric> charMetricsMap = new(StringComparer.Ordinal);
+        private List<TrackKern> trackKern = new();
+        private List<Composite> composites = new();
+        private List<KernPair> kernPairs = new();
+        private List<KernPair> kernPairs0 = new();
+        private List<KernPair> kernPairs1 = new();
 
-        /**
-         * Constructor.
-         */
         public FontMetrics()
-        {
-        }
+        { }
 
-        /**
-         * This will get the width of a character.
-         *
-         * @param name The character to get the width for.
-         *
-         * @return The width of the character.
-         */
-        public float GetCharacterWidth(string name)
-        {
-            float result = 0;
-            if (charMetricsMap.TryGetValue(name, out CharMetric metric))
-            {
-                result = metric.Wx;
-            }
-            return result;
-        }
+        /// <summary>This will get the width of a character.</summary>
+        /// <param name="name">The character to get the width for.</param>
+        /// <returns>The width of the character.</returns>
+        public float GetCharacterWidth(string name) => charMetricsMap.TryGetValue(name, out CharMetric metric) ? metric.Wx : 0;
 
-        /**
-         * This will get the width of a character.
-         *
-         * @param name The character to get the width for.
-         * @return The width of the character.
-         */
+        /// <summary>This will get the width of a character.</summary>
+        /// <param name="name">The character to get the width for.</param>
+        /// <returns>The height of the character.</returns>
         public float GetCharacterHeight(string name)
         {
-            float result = 0;
-            if (charMetricsMap.TryGetValue(name, out CharMetric metric))
-            {
-                result = metric.Wy;
-                if (result.CompareTo(0) == 0)
-                {
-                    result = metric.BoundingBox.Height;
-                }
-            }
-            return result;
+            float result = charMetricsMap.TryGetValue(name, out CharMetric metric) ? metric.Wy : 0;
+            return result == 0 ? metric.BoundingBox.Height: result;
         }
 
-
-        /**
-         * This will get the average width of a character.
-         *
-         * @return The width of the character.
-         */
+        /// <summary>This will get the average width of a character.</summary>
+        /// <returns>The width of the character.</returns>
         public float GetAverageCharacterWidth()
         {
             float average = 0;
@@ -140,42 +105,27 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             return average;
         }
 
-        /**
-         * This will add a new comment.
-         *
-         * @param comment The comment to add to this metric.
-         */
+        /// <summary>This will add a new comment.</summary>
+        /// <param name="comment">The comment to add to this metric.</param>
         public void AddComment(string comment)
         {
             comments.Add(comment);
         }
 
-        /**
-         * This will get all comments.
-         *
-         * @return The list of all comments.
-         */
+        /// <summary>This will get all comments.</summary>
         public List<string> Comments
         {
             get => comments;
         }
 
-        /**
-         * This will get the version of the AFM document.
-         *
-         * @return The version of the document.
-         */
+        /// <summary>This will get the version of the AFM document.</summary>
         public float AFMVersion
         {
             get => afmVersion;
             set => afmVersion = value;
         }
 
-        /**
-         * This will get the metricSets attribute.
-         *
-         * @return The value of the metric sets.
-         */
+        /// <summary>This will get the metricSets attribute.</summary>
         public int MetricSets
         {
             get => metricSets;
@@ -190,273 +140,150 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             }
         }
 
-        /**
-         * Getter for property fontName.
-         *
-         * @return Value of property fontName.
-         */
         public string FontName
         {
             get => fontName;
             set => fontName = value;
         }
 
-        /**
-         * Getter for property fullName.
-         *
-         * @return Value of property fullName.
-         */
         public string FullName
         {
             get => fullName;
             set => fullName = value;
         }
 
-        /**
-         * Getter for property familyName.
-         *
-         * @return Value of property familyName.
-         */
         public string FamilyName
         {
             get => familyName;
             set => familyName = value;
         }
 
-        /**
-         * Getter for property weight.
-         *
-         * @return Value of property weight.
-         */
         public string Weight
         {
             get => weight;
             set => weight = value;
         }
 
-        /**
-         * Getter for property fontBBox.
-         *
-         * @return Value of property fontBBox.
-         */
         public SKRect FontBBox
         {
             get => fontBBox;
             set => fontBBox = value;
         }
 
-        /**
-         * Getter for property notice.
-         *
-         * @return Value of property notice.
-         */
         public string Notice
         {
             get => notice;
             set => notice = value;
         }
 
-        /**
-         * Getter for property encodingScheme.
-         *
-         * @return Value of property encodingScheme.
-         */
         public string EncodingScheme
         {
             get => encodingScheme;
             set => encodingScheme = value;
         }
 
-        /**
-         * Getter for property mappingScheme.
-         *
-         * @return Value of property mappingScheme.
-         */
         public int MappingScheme
         {
             get => mappingScheme;
             set => mappingScheme = value;
         }
 
-        /**
-         * Getter for property escChar.
-         *
-         * @return Value of property escChar.
-         */
         public int EscChar
         {
             get => escChar;
             set => escChar = value;
         }
 
-        /**
-         * Getter for property characterSet.
-         *
-         * @return Value of property characterSet.
-         */
         public string CharacterSet
         {
             get => characterSet;
             set => characterSet = value;
         }
 
-        /**
-         * Getter for property characters.
-         *
-         * @return Value of property characters.
-         */
         public int Characters
         {
             get => characters;
             set => characters = value;
         }
 
-        /**
-         * Getter for property isBaseFont.
-         *
-         * @return Value of property isBaseFont.
-         */
         public bool IsBaseFont
         {
             get => isBaseFont;
             set => isBaseFont = value;
         }
 
-        /**
-         * Getter for property vVector.
-         *
-         * @return Value of property vVector.
-         */
         public float[] VVector
         {
             get => vVector;
             set => vVector = value;
         }
 
-        /**
-         * Getter for property isFixedV.
-         *
-         * @return Value of property isFixedV.
-         */
         public bool IsFixedV
         {
             get => isFixedV ?? vVector != null;
             set => isFixedV = value;
         }
 
-        /**
-         * Getter for property capHeight.
-         *
-         * @return Value of property capHeight.
-         */
         public float CapHeight
         {
             get => capHeight;
             set => capHeight = value;
         }
 
-        /**
-         * Getter for property xHeight.
-         *
-         * @return Value of property xHeight.
-         */
         public float XHeight
         {
             get => xHeight;
             set => xHeight = value;
         }
 
-        /**
-         * Getter for property ascender.
-         *
-         * @return Value of property ascender.
-         */
         public float Ascender
         {
             get => ascender;
             set => ascender = value;
         }
 
-        /**
-         * Getter for property descender.
-         *
-         * @return Value of property descender.
-         */
         public float Descender
         {
             get => descender;
             set => descender = value;
         }
 
-        /**
-         * Getter for property fontVersion.
-         *
-         * @return Value of property fontVersion.
-         */
         public string FontVersion
         {
             get => fontVersion;
             set => fontVersion = value;
         }
 
-        /**
-         * Getter for property underlinePosition.
-         *
-         * @return Value of property underlinePosition.
-         */
         public float UnderlinePosition
         {
             get => underlinePosition;
             set => underlinePosition = value;
         }
 
-        /**
-         * Getter for property underlineThickness.
-         *
-         * @return Value of property underlineThickness.
-         */
         public float UnderlineThickness
         {
             get => underlineThickness;
             set => underlineThickness = value;
         }
 
-        /**
-         * Getter for property italicAngle.
-         *
-         * @return Value of property italicAngle.
-         */
         public float ItalicAngle
         {
             get => italicAngle;
             set => italicAngle = value;
         }
 
-        /**
-         * Getter for property charWidth.
-         *
-         * @return Value of property charWidth.
-         */
         public float[] CharWidth
         {
             get => charWidth;
             set => charWidth = value;
         }
 
-        /**
-         * Getter for property isFixedPitch.
-         *
-         * @return Value of property isFixedPitch.
-         */
         public bool IsFixedPitch
         {
             get => isFixedPitch;
             set => isFixedPitch = value;
         }
 
-        /** Getter for property charMetrics.
-         * @return Value of property charMetrics.
-         */
         public List<CharMetric> CharMetrics
         {
             get => charMetrics;
@@ -469,50 +296,35 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             }
         }
 
-        /**
-         * This will add another character metric.
-         *
-         * @param metric The character metric to add.
-         */
+        /// <summary>This will add another character metric.</summary>
+        /// <param name="metric">The character metric to add.</param>
         public void AddCharMetric(CharMetric metric)
         {
             charMetrics.Add(metric);
             charMetricsMap[metric.Name] = metric;
         }
 
-        /** Getter for property trackKern.
-         * @return Value of property trackKern.
-         */
         public List<TrackKern> TrackKern
         {
             get => trackKern;
             set => trackKern = value;
         }
 
-        /**
-         * This will add another track kern.
-         *
-         * @param kern The track kerning data.
-         */
+        /// <summary>This will add another track kern.</summary>
+        /// <param name="kern">The track kerning data.</param>
         public void AddTrackKern(TrackKern kern)
         {
             trackKern.Add(kern);
         }
 
-        /** Getter for property composites.
-         * @return Value of property composites.
-         */
         public List<Composite> Composites
         {
             get => composites;
             set => composites = value;
         }
 
-        /**
-         * This will add a single composite part to the picture.
-         *
-         * @param composite The composite info to add.
-         */
+        /// <summary>This will add a single composite part to the picture.</summary>
+        /// <param name="composite">The composite info to add.</param>
         public void AddComposite(Composite composite)
         {
             composites.Add(composite);
@@ -524,66 +336,45 @@ namespace PdfClown.Documents.Contents.Fonts.AFM
             set => kernPairs = value;
         }
 
-        /**
-         * This will add a kern pair.
-         *
-         * @param kernPair The kern pair to add.
-         */
+        /// <summary>This will add a kern pair.</summary>
+        /// <param name="kernPair">The kern pair to add.</param>
         public void AddKernPair(KernPair kernPair)
         {
             kernPairs.Add(kernPair);
         }
 
-        /** Getter for property kernPairs0.
-         * @return Value of property kernPairs0.
-         */
         public List<KernPair> KernPairs0
         {
             get => kernPairs0;
             set => kernPairs0 = value;
         }
 
-        /**
-         * This will add a kern pair.
-         *
-         * @param kernPair The kern pair to add.
-         */
+        /// <summary>This will add a kern pair.</summary>
+        /// <param name="kernPair">The kern pair to add.</param>
         public void AddKernPair0(KernPair kernPair)
         {
             kernPairs0.Add(kernPair);
         }
 
-        /** Getter for property kernPairs1.
-         * @return Value of property kernPairs1.
-         */
         public List<KernPair> KernPairs1
         {
             get => kernPairs1;
             set => kernPairs1 = value;
         }
 
-        /**
-         * This will add a kern pair.
-         *
-         * @param kernPair The kern pair to add.
-         */
+        /// <summary>This will add a kern pair.</summary>
+        /// <param name="kernPair">The kern pair to add.</param>
         public void AddKernPair1(KernPair kernPair)
         {
             kernPairs1.Add(kernPair);
         }
 
-        /** Getter for property standardHorizontalWidth.
-         * @return Value of property standardHorizontalWidth.
-         */
         public float StandardHorizontalWidth
         {
             get => standardHorizontalWidth;
             set => standardHorizontalWidth = value;
         }
 
-        /** Getter for property standardVerticalWidth.
-         * @return Value of property standardVerticalWidth.
-         */
         public float StandardVerticalWidth
         {
             get => standardVerticalWidth;

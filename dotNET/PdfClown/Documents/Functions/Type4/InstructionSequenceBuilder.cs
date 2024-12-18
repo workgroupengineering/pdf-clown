@@ -19,14 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text.RegularExpressions;
 
 namespace PdfClown.Documents.Functions.Type4
 {
-    /**
-	 * Basic parser for Type 4 functions which is used to build up instruction sequences.
-	 *
-	 */
+    /// <summary>Basic parser for Type 4 functions which is used to build up instruction sequences.</summary>
     public sealed class InstructionSequenceBuilder : Parser.AbstractSyntaxHandler
     {
         private readonly InstructionSequence mainSequence = new();
@@ -37,21 +33,16 @@ namespace PdfClown.Documents.Functions.Type4
             this.seqStack.Push(this.mainSequence);
         }
 
-        /**
-		 * Returns the instruction sequence that has been build from the syntactic elements.
-		 * @return the instruction sequence
-		 */
+        /// <summary>Returns the instruction sequence that has been build from the syntactic elements.</summary>		 
         public InstructionSequence InstructionSequence
         {
             get => this.mainSequence;
         }
 
-        /**
-		 * Parses the given text into an instruction sequence representing a Type 4 function
-		 * that can be executed.
-		 * @param text the Type 4 function text
-		 * @return the instruction sequence
-		 */
+        /// <summary>Parses the given text into an instruction sequence representing a Type 4 function
+        /// that can be executed.</summary>
+        /// <param name="text">the Type 4 function text</param>
+        /// <returns>the instruction sequence</returns>
         public static InstructionSequence Parse(StreamReader text)
         {
             var builder = new InstructionSequenceBuilder();
@@ -99,21 +90,17 @@ namespace PdfClown.Documents.Functions.Type4
             }
         }
 
-        /**
-		 * Parses a value of type "int".
-		 * @param token the token to be parsed
-		 * @return the parsed value
-		 */
+        /// <summary>Parses a value of type "int".</summary>
+        /// <param name="token">the token to be parsed</param>
+        /// <returns>the parsed value</returns>
         public static int ParseInt(ReadOnlySpan<char> token)
         {
             return int.Parse(token);
         }
 
-        /**
-		 * Parses a value of type "real".
-		 * @param token the token to be parsed
-		 * @return the parsed value
-		 */
+        /// <summary>Parses a value of type "real".</summary>
+        /// <param name="token">the token to be parsed</param>
+        /// <returns>the parsed value</returns>
         public static float ParseReal(ReadOnlySpan<char> token)
         {
             return float.Parse(token);

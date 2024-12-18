@@ -42,7 +42,7 @@ namespace PdfClown.Documents.Contents.Objects
         /// <param name="pointX">Final endpoint X.</param>
         /// <param name="pointY">Final endpoint Y.</param>
         public DrawLine(double pointX, double pointY)
-            : base(OperatorKeyword, new PdfArray(2) { pointX, pointY })
+            : base(OperatorKeyword, new PdfArrayImpl(2) { pointX, pointY })
         { }
 
         public DrawLine(PdfArray operands) : base(OperatorKeyword, operands)

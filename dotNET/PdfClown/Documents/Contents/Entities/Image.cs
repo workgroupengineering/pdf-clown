@@ -24,16 +24,11 @@
 */
 
 using PdfClown.Bytes;
-using PdfClown.Documents.Contents.Objects;
-
-using System;
 using System.IO;
 
 namespace PdfClown.Documents.Contents.Entities
 {
-    /**
-      <summary>Abstract image object [PDF:1.6:4.8].</summary>
-    */
+    /// <summary>Abstract image object [PDF:1.6:4.8].</summary>
     public abstract class Image : Entity
     {
         public static Image Get(string path)
@@ -46,12 +41,10 @@ namespace PdfClown.Documents.Contents.Entities
         {
             // Get the format identifier!
             byte[] formatMarkerBytes = new byte[2];
-            stream.Read(formatMarkerBytes, 0, 2);
+            stream.ReadExactly(formatMarkerBytes, 0, 2);
 
             // Is JPEG?
-            /*
-              NOTE: JPEG files are identified by a SOI (Start Of Image) marker [ISO 10918-1].
-            */
+            // NOTE: JPEG files are identified by a SOI (Start Of Image) marker [ISO 10918-1].
             if (formatMarkerBytes[0] == 0xFF
               && formatMarkerBytes[1] == 0xD8) // JPEG.
             { return new JpegImage(stream); }
@@ -68,37 +61,29 @@ namespace PdfClown.Documents.Contents.Entities
         protected Image(Stream stream)
         { this.stream = stream; }
 
-        /**
-          <summary>Gets/Sets the number of bits per color component
-          [PDF:1.6:4.8.2].</summary>
-        */
+        /// <summary>Gets/Sets the number of bits per color component
+        /// [PDF:1.6:4.8.2].</summary>
         public int BitsPerComponent
         {
             get => bitsPerComponent;
             protected set => bitsPerComponent = value;
         }
 
-        /**
-          <summary>Gets/Sets the height of the image in samples [PDF:1.6:4.8.2].</summary>
-        */
+        /// <summary>Gets/Sets the height of the image in samples [PDF:1.6:4.8.2].</summary>
         public int Height
         {
             get => height;
             protected set => height = value;
         }
 
-        /**
-          <summary>Gets/Sets the width of the image in samples [PDF:1.6:4.8.2].</summary>
-        */
+        /// <summary>Gets/Sets the width of the image in samples [PDF:1.6:4.8.2].</summary>
         public int Width
         {
             get => width;
             protected set => width = value;
         }
 
-        /**
-          <summary>Gets the underlying stream.</summary>
-        */
+        /// <summary>Gets the underlying stream.</summary>
         protected Stream Stream => stream;
     }
 }

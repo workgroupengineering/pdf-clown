@@ -23,29 +23,22 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Transmit the names and values of selected interactive form fields
-      to a specified URL (Uniform Resource Locator)' action [PDF:1.6:8.6.4].</summary>
-    */
+    /// <summary>'Transmit the names and values of selected interactive form fields
+    /// to a specified URL (Uniform Resource Locator)' action [PDF:1.6:8.6.4].</summary>k
     [PDF(VersionEnum.PDF12)]
-    public sealed class SubmitForm : Action
+    public sealed class SubmitForm : PdfAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public SubmitForm(PdfDocument context)
             : base(context, PdfName.SubmitForm)
         { }
 
-        internal SubmitForm(PdfDirectObject baseObject)
+        internal SubmitForm(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 

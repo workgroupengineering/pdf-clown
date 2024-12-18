@@ -26,24 +26,27 @@
 using PdfClown.Objects;
 using PdfClown.Util.Math;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
     /// <summary>Article bead [PDF:1.7:8.3.2].</summary>
     [PDF(VersionEnum.PDF11)]
-    public sealed class ArticleElement : PdfObjectWrapper<PdfDictionary>
+    public sealed class ArticleElement : PdfDictionary, IPdfObjectWrapper
     {
         private SKRect? box;
 
-        public ArticleElement(PdfPage page, SKRect box) : base(
-            page.Document,
-            new PdfDictionary(1) { { PdfName.Type, PdfName.Bead } })
+        public ArticleElement(PdfPage page, SKRect box)
+            : base(page.Document, new Dictionary<PdfName, PdfDirectObject>(1) {
+                { PdfName.Type, PdfName.Bead }
+            })
         {
             page.ArticleElements.Add(this);
             Box = box;
         }
 
-        public ArticleElement(PdfDirectObject baseObject) : base(baseObject)
+        internal ArticleElement(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets the thread article this bead belongs to.</summary>
@@ -51,10 +54,10 @@ namespace PdfClown.Documents.Interaction.Navigation
         {
             get
             {
-                PdfDictionary bead = BaseDataObject;
+                var bead = this;
                 Article article;
-                while ((article = Wrap<Article>(bead[PdfName.T])) == null)
-                { bead = bead.Get<PdfDictionary>(PdfName.V); }
+                while ((article = bead.Get<Article>(PdfName.T)) == null)
+                { bead = bead.Get<ArticleElement>(PdfName.V); }
                 return article;
             }
         }
@@ -67,13 +70,13 @@ namespace PdfClown.Documents.Interaction.Navigation
             {
                 box = null;
                 var newValue = Page.InvertRotateMatrix.MapRect(value);
-                BaseDataObject[PdfName.R] = newValue.ToPdfArray();
+                this[PdfName.R] = newValue.ToPdfRectangle();
             }
         }
 
         private SKRect GetUserSpaceBox()
         {
-            var box = BaseDataObject.Get<PdfArray>(PdfName.R)?.ToSKRect() ?? SKRect.Empty;
+            var box = Get<PdfArray>(PdfName.R)?.ToSKRect() ?? SKRect.Empty;
             return Page.RotateMatrix.MapRect(box);
         }
 
@@ -94,17 +97,17 @@ namespace PdfClown.Documents.Interaction.Navigation
         /// <summary>Gets whether this is the first bead in its thread.</summary>
         public bool IsHead()
         {
-            PdfDictionary thread = BaseDataObject.Get<PdfDictionary>(PdfName.T);
-            return thread != null && BaseObject.Equals(thread[PdfName.F]);
+            var thread = Get<PdfDictionary>(PdfName.T);
+            return thread != null && Reference.Equals(thread.Get(PdfName.F));
         }
 
         /// <summary>Gets the next bead.</summary>
-        public ArticleElement Next => Wrap<ArticleElement>(BaseDataObject[PdfName.N]);
-
+        public ArticleElement Next => Get<ArticleElement>(PdfName.N);
+        
         /// <summary>Gets the location page.</summary>
-        public PdfPage Page => Wrap<PdfPage>(BaseDataObject[PdfName.P]);
+        public PdfPage Page => Get<PdfPage>(PdfName.P);
 
         /// <summary>Gets the previous bead.</summary>
-        public ArticleElement Previous => Wrap<ArticleElement>(BaseDataObject[PdfName.V]);
+        public ArticleElement Previous => Get<ArticleElement>(PdfName.V);
     }
 }

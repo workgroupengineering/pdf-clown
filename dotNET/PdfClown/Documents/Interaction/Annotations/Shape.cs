@@ -41,7 +41,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, subtype, box, text)
         { }
 
-        protected Shape(PdfDirectObject baseObject)
+        protected Shape(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
@@ -73,7 +73,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             }
             if (Border != null)
             {
-                canvas.SetStrokeColor(Color ?? DeviceRGBColor.Default);
+                canvas.SetStrokeColor(Color ?? RGBColor.Default);
                 Border.Apply(canvas);
             }
             var effectPath = BorderEffect?.Apply(canvas, path) ?? path;

@@ -23,25 +23,19 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Tokens;
 using PdfClown.Util.IO;
 
 using System;
-using System.Buffers.Binary;
 using System.Globalization;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace PdfClown.Util
 {
-    /**
-      <summary>Data convertion utility.</summary>
-      <remarks>This class is a specialized adaptation from the original <a href="http://commons.apache.org/codec/">
-      Apache Commons Codec</a> project, licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">
-      Apache License, Version 2.0</a>.</remarks>
-    */
+    /// <summary>Data convertion utility.</summary>
+    /// <remarks>This class is a specialized adaptation from the original <a href="http://commons.apache.org/codec/">
+    /// Apache Commons Codec</a> project, licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">
+    /// Apache License, Version 2.0</a>.</remarks>
     public static class ConvertUtils
     {
         private static readonly char[] HexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
@@ -100,8 +94,8 @@ namespace PdfClown.Util
 
             foreach (byte B in bytes)
             {
-                Result.Append(HexAlphabet[(int)(B >> 4)]);
-                Result.Append(HexAlphabet[(int)(B & 0xF)]);
+                Result.Append(HexAlphabet[B >> 4]);
+                Result.Append(HexAlphabet[B & 0xF]);
             }
 
             return Result.ToString();
@@ -157,8 +151,6 @@ namespace PdfClown.Util
         //        _ => ReadIntByLength(data, byteOrder),
         //    };
         //}
-
-        
 
         public static int ParseAsIntInvariant(string value) => (int)ParseFloatInvariant(value);
 

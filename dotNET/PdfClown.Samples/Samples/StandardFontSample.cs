@@ -1,22 +1,18 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
-using PdfClown.Files;
-using PdfClown.Tokens;
 
 using System;
-using System.Collections.Generic;
 using SkiaSharp;
 using System.Linq;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates the use of standard Type 1 fonts, which are the 14 built-in fonts
-      prescribed by the PDF specification to be shipped along with any conformant PDF viewer.</summary>
-      <remarks>In particular, this sample displays the complete glyphset of each standard font,
-      iterating through character codes and glyph styles (regular, italic, bold).</remarks>
-    */
+    /// <summary>This sample demonstrates the use of standard Type 1 fonts, which are the 14 built-in fonts
+    /// prescribed by the PDF specification to be shipped along with any conformant PDF viewer.</summary>
+    /// <remarks>In particular, this sample displays the complete glyphset of each standard font,
+    /// iterating through character codes and glyph styles (regular, italic, bold).</remarks>
+    
     public class StandardFontSample : Sample
     {
         private static readonly int FontBaseSize = 20;
@@ -25,14 +21,13 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            var file = new PdfFile();
-            PdfDocument document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Content creation.
             Populate(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Standard Type 1 fonts", "applying standard Type 1 fonts", "Standard Type1 fonts");
+            Serialize(document, "Standard Type 1 fonts", "applying standard Type 1 fonts", "Standard Type1 fonts");
         }
 
         private void Populate(PdfDocument document)
@@ -46,15 +41,15 @@ namespace PdfClown.Samples.CLI
               character; in this case, we want to force an exception to be thrown so we can explicitly
               handle the issue.
             */
-            document.Configuration.EncodingFallback = EncodingFallbackEnum.Exception;
+            document.CatalogConfiguration.EncodingFallback = EncodingFallbackEnum.Exception;
 
             var composer = new PrimitiveComposer(page);
 
             int x = Margin, y = Margin;
-            var titleFont = FontType1.Load(document, FontName.TimesBoldItalic);
-            FontType1 font = null;
+            var titleFont = PdfType1Font.Load(document, FontName.TimesBoldItalic);
+            PdfType1Font font = null;
             // Iterating through the standard Type 1 fonts...
-            foreach (FontType1.FamilyEnum fontFamily in Enum.GetValues<FontType1.FamilyEnum>())
+            foreach (PdfType1Font.FamilyEnum fontFamily in Enum.GetValues<PdfType1Font.FamilyEnum>())
             {
                 // Iterating through the font styles...
                 for (int styleIndex = 0; styleIndex < 4; styleIndex++)
@@ -63,15 +58,15 @@ namespace PdfClown.Samples.CLI
                       NOTE: Symbol and Zapf Dingbats are available just as regular fonts (no italic or bold variant).
                     */
                     if (styleIndex > 0
-                      && (fontFamily == FontType1.FamilyEnum.Symbol
-                        || fontFamily == FontType1.FamilyEnum.ZapfDingbats))
+                      && (fontFamily == PdfType1Font.FamilyEnum.Symbol
+                        || fontFamily == PdfType1Font.FamilyEnum.ZapfDingbats))
                         break;
 
                     bool bold = (styleIndex & 1) > 0;
                     bool italic = (styleIndex & 2) > 0;
 
                     // Define the font used to show its character set!
-                    font = FontType1.Load(document, fontFamily, bold, italic);
+                    font = PdfType1Font.Load(document, fontFamily, bold, italic);
 
                     if (y > pageSize.Height - Margin)
                     {

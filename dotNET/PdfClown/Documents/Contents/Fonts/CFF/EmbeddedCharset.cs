@@ -15,14 +15,9 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-    /**
-     * Class representing an embedded CFF charset.
-     *
-     */
+    /// <summary>Class representing an embedded CFF charset.</summary>
     class EmbeddedCharset : CFFCharset
     {
         private readonly CFFCharset charset;

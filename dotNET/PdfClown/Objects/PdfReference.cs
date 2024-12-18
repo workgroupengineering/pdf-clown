@@ -31,53 +31,52 @@ using System;
 namespace PdfClown.Objects
 {
     /// <summary>PDF indirect reference object [PDF:1.6:3.2.9].</summary>
-    public sealed class PdfReference : PdfDirectObject, IPdfIndirectObject
+    public sealed class PdfReference : PdfDirectObject, IPdfIndirectObject, IEquatable<PdfReference>, IComparable<PdfReference>
     {
         private const int DelegatedReferenceNumber = -1;
 
-        private readonly int generationNumber;
-        private readonly int objectNumber;
+        private readonly int generation;
+        private readonly int number;
 
         private PdfIndirectObject indirectObject;
 
-        private readonly PdfFile file;
+        private readonly PdfDocument document;
         private PdfObject parent;
-        private string id;
         private PdfObjectStatus status;
 
         internal PdfReference(PdfIndirectObject indirectObject)
         {
-            this.objectNumber = DelegatedReferenceNumber;
-            this.generationNumber = DelegatedReferenceNumber;
+            this.number = DelegatedReferenceNumber;
+            this.generation = DelegatedReferenceNumber;
 
             this.indirectObject = indirectObject;
         }
 
-        internal PdfReference(int objectNumber, int generationNumber, PdfFile file)
+        internal PdfReference(int number, int generation, PdfDocument document)
         {
-            this.objectNumber = objectNumber;
-            this.generationNumber = generationNumber;
+            this.number = number;
+            this.generation = generation;
 
-            this.file = file;
+            this.document = document;
         }
 
-        public override PdfFile File => file ?? base.File;
+        public override PdfDocument Document => document ?? base.Document;
 
         /// <summary>Gets the generation number.</summary>
-        public int GenerationNumber => generationNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Generation : generationNumber;
+        public int Generation => generation == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Generation : generation;
 
         /// <summary>Gets the object identifier.</summary>
         /// <remarks>This corresponds to the serialized representation of an object identifier within a PDF file.</remarks>
-        public string Id => id ??= $"{ObjectNumber}{Symbol.Space}{GenerationNumber}";
+        public string Id => $"{Number}{Symbol.Space}{Generation}";
 
         /// <summary>Gets the object reference.</summary>
         /// <remarks>This corresponds to the serialized representation of a reference within a PDF file.</remarks>
-        public string IndirectReference => ($"{Id}{Symbol.Space}{Symbol.CapitalR}");
+        public string IndirectReference => $"{Id}{Symbol.Space}{Symbol.CapitalR}";
 
         /// <summary>Gets the object number.</summary>
-        public int ObjectNumber => objectNumber == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Number : objectNumber;
+        public int Number => number == DelegatedReferenceNumber ? IndirectObject.XrefEntry.Number : number;
 
-        public override PdfObject Parent
+        public override PdfObject ParentObject
         {
             get => parent;
             internal set => parent = value;
@@ -96,42 +95,17 @@ namespace PdfClown.Objects
             set => IndirectObject.Updateable = value;
         }
 
-        protected internal override bool Virtual
+        public override bool Virtual
         {
             get => IndirectObject?.Virtual ?? false;
             //NOTE: Fail fast if the referenced indirect object is undefined.
-            set => IndirectObject.Virtual = value;
-        }
-
-        public PdfDataObject DataObject
-        {
-            get => IndirectObject?.DataObject;
-            //NOTE: Fail fast if the referenced indirect object is undefined.
-            set => IndirectObject.DataObject = value;
+            protected internal set => IndirectObject.Virtual = value;
         }
 
         /// <returns><code>null</code>, if the indirect object is undefined.</returns>
-        public override PdfIndirectObject IndirectObject => indirectObject ??= file.IndirectObjects[objectNumber];
+        public override PdfIndirectObject IndirectObject => indirectObject ??= document.IndirectObjects[number];
 
         public override PdfReference Reference => this;
-
-        public override IPdfObjectWrapper Wrapper
-        {
-            get => IndirectObject?.Wrapper;
-            internal set => IndirectObject.Wrapper = value;
-        }
-
-        public override IPdfObjectWrapper Wrapper2
-        {
-            get => IndirectObject?.Wrapper2;
-            internal set => IndirectObject.Wrapper2 = value;
-        }
-
-        public override IPdfObjectWrapper Wrapper3
-        {
-            get => IndirectObject?.Wrapper3;
-            internal set => IndirectObject.Wrapper3 = value;
-        }
 
         public override PdfObject Swap(PdfObject other)
         {
@@ -141,15 +115,22 @@ namespace PdfClown.Objects
 
         //NOTE: Uniqueness should be achieved XORring the (local) reference hash-code with the (global)
         //file hash-code.
-        public override int GetHashCode() => HashCode.Combine(File, ObjectNumber, GenerationNumber);
+        public override int GetHashCode() => HashCode.Combine(Document, Number, Generation);
 
         public override string ToString() => IndirectReference;
 
-        public override void WriteTo(IOutputStream stream, PdfFile context) => stream.Write(IndirectReference);
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
+        {            
+            stream.WriteAsString(Number);
+            stream.Write(Chunk.Space);
+            stream.WriteAsString(Generation);
+            stream.Write(Chunk.Space);
+            stream.Write(PdfIndirectObject.CapitalRChunk);
+        }
 
-        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
-        public override PdfDataObject Resolve() => DataObject;
+        public override PdfDirectObject Resolve(PdfName parentKey = null) => IndirectObject?.GetDataObject(parentKey);
 
         public override int CompareTo(PdfDirectObject obj)
         {
@@ -157,14 +138,14 @@ namespace PdfClown.Objects
                 return 1;
             if (ReferenceEquals(this, obj))
                 return 0;
-            if (obj is PdfReference reference)
-            {
-                var result = ObjectNumber.CompareTo(reference.ObjectNumber);
-                return result == 0 ? GenerationNumber.CompareTo(reference.GenerationNumber)
-                    : result;
-            }
-            else
-                return GetHashCode().CompareTo(obj.GetHashCode());
+            return obj is PdfReference reference ? CompareTo(reference) : GetHashCode().CompareTo(obj.GetHashCode());
+        }
+
+        public int CompareTo(PdfReference reference)
+        {
+            var result = Number.CompareTo(reference.Number);
+            return result == 0 ? Generation.CompareTo(reference.Generation)
+                : result;
         }
 
         public override bool Equals(object other)
@@ -173,12 +154,14 @@ namespace PdfClown.Objects
             // the same identifier within the same file instance.
             if (ReferenceEquals(this, other))
                 return true;
-            else if (other is PdfReference otherReference)
-                return otherReference.File == File
-                && otherReference.ObjectNumber.Equals(ObjectNumber)
-                && otherReference.GenerationNumber.Equals(GenerationNumber);
+            return other is PdfReference otherReference && Equals(otherReference);
+        }
 
-            return false;
+        public bool Equals(PdfReference otherReference)
+        {
+            return otherReference.Document == Document
+                && otherReference.Number.Equals(Number)
+                && otherReference.Generation.Equals(Generation);
         }
     }
 }

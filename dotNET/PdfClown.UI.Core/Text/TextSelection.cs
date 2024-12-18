@@ -1,6 +1,5 @@
 ﻿using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Scanner;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,15 +15,15 @@ namespace PdfClown.UI.Text
             textBuilder.Append('\f');
         }
 
-        private string selectedString;
-        private IContentContext startPage;
-        private PageTextSelection startPageSelection;
+        private string? selectedString;
+        private IContentContext? startPage;
+        private PageTextSelection? startPageSelection;
         private TextChar hoverChar;
-        private ITextString hoverString;
+        private ITextString? hoverString;
         private TextChar startChar;
-        private ITextString startString;
-        private ITextBlock startBlock;
-        private TextSelectionEventArgs args;
+        private ITextString? startString;
+        private ITextBlock? startBlock;
+        private TextSelectionEventArgs? args;
 
         private TextSelectionEventArgs Args => args ??= new TextSelectionEventArgs(this);
 
@@ -37,7 +36,7 @@ namespace PdfClown.UI.Text
                 if (selectedString == null)
                 {
                     var textBuilder = new StringBuilder();
-                    IContentContext prevPage = null;
+                    IContentContext? prevPage = null;
 
                     foreach (var entry in Chars.OrderBy(x => x.Key))
                     {
@@ -59,17 +58,17 @@ namespace PdfClown.UI.Text
 
         public TextChar StartChar { get => startChar; }
 
-        public ITextString StartString { get => startString; }
+        public ITextString? StartString { get => startString; }
 
-        public ITextBlock StartBlock { get => startBlock; }
+        public ITextBlock? StartBlock { get => startBlock; }
 
-        public IContentContext StartPage => startPage;
+        public IContentContext? StartPage => startPage;
 
-        public PageTextSelection StartSelection => startPageSelection;
+        public PageTextSelection? StartSelection => startPageSelection;
 
         public bool Any => Chars.Count > 0;// && Chars.Values.Any(c => c.Chars.Count > 0);
 
-        public event TextSelectionEventHandler Changed;
+        public event TextSelectionEventHandler? Changed;
 
 
         public bool SetHoverChar(IContentContext page, ITextBlock textBlock, ITextString textString, TextChar textChar)
@@ -107,7 +106,7 @@ namespace PdfClown.UI.Text
             startPage = null;
         }
 
-        public PageTextSelection GetPageSelection(IContentContext page) =>
+        public PageTextSelection? GetPageSelection(IContentContext page) =>
             Chars.TryGetValue(page, out var contextTextSelection) ? contextTextSelection : null;
 
         public PageTextSelection GetOrCreatePageSelection(IContentContext page)

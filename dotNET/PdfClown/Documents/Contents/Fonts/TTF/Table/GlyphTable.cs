@@ -14,42 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using PdfClown.Bytes;
+using System.Collections.Generic;
+using System.IO;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    using PdfClown.Bytes;
-    using System.Collections.Generic;
-    using System.IO;
-
-    /**
-     * A table in a true type font.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A table in a true type font.
+    /// @author Ben Litchfield
+    /// </summary>
     public class GlyphTable : TTFTable
     {
-        /**
-         * Tag to identify this table.
-         */
+        /// <summary>Tag to identify this table.</summary>
         public const string TAG = "glyf";
 
-        private Dictionary<int, GlyphData> glyphs = new Dictionary<int, GlyphData>();
+        private Dictionary<int, GlyphData> glyphs = new();
 
         // lazy table reading
         private IInputStream data;
         private IndexToLocationTable loca;
         private int numGlyphs;
         private HorizontalMetricsTable hmt = null;
+        private MaximumProfileTable maxp;
 
         public GlyphTable()
         { }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             loca = ttf.IndexToLocation;
@@ -66,15 +60,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             // and then locks TrueTypeFont to read this table, while another thread
             // locks TrueTypeFont and then tries to lock "data"
             hmt = ttf.HorizontalMetrics;
+            maxp = ttf.MaximumProfile;
 
             initialized = true;
         }
 
-        /**
-         * Returns all glyphs. This method can be very slow.
-         *
-         * @ If there is an error reading the data.
-         */
         //public Dictionary<int, GlyphData> Glyphs
         //{
         //    get
@@ -127,13 +117,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         //    set => glyphs = value;
         //}
 
-        /**
-         * Returns the data for the glyph with the given GID.
-         *
-         * @param gid GID
-         * @ if the font cannot be read
-         */
-        public GlyphData GetGlyph(int gid)
+        /// <summary>Returns the data for the glyph with the given GID.</summary>
+        /// <param name="gid">GID</param>
+        public GlyphData GetGlyph(int gid) => GetGlyph(gid, 0);
+
+        public GlyphData GetGlyph(int gid, int level)
         {
             if (gid < 0 || gid >= numGlyphs)
             {
@@ -168,7 +156,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
 
                     data.Seek(offsets[gid]);
 
-                    glyph = GetGlyphData(gid);
+                    glyph = GetGlyphData(gid, level);
 
                     // restore
                     data.Seek(currentPosition);
@@ -182,11 +170,15 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        private GlyphData GetGlyphData(int gid)
+        private GlyphData GetGlyphData(int gid, int level)
         {
+            if (level > maxp.MaxComponentDepth)
+            {
+                throw new IOException("composite glyph maximum level reached");
+            }
             GlyphData glyph = new GlyphData();
             int leftSideBearing = hmt == null ? 0 : hmt.GetLeftSideBearing(gid);
-            glyph.InitData(this, data, leftSideBearing);
+            glyph.InitData(this, data, leftSideBearing, level);
             // resolve composite glyph
             if (glyph.Description.IsComposite)
             {

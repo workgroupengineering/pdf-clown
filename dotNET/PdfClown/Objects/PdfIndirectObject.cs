@@ -31,20 +31,21 @@ using System.Text;
 
 namespace PdfClown.Objects
 {
-    ///<summary>PDF indirect object [PDF:1.6:3.2.9].</summary>
+    /// <summary>PDF indirect object [PDF:1.6:3.2.9].</summary>
     public class PdfIndirectObject : PdfObject, IPdfIndirectObject
     {
         private static readonly byte[] BeginIndirectObjectChunk = BaseEncoding.Pdf.Encode(Symbol.Space + Keyword.BeginIndirectObject + Symbol.LineFeed);
         private static readonly byte[] EndIndirectObjectChunk = BaseEncoding.Pdf.Encode(Symbol.LineFeed + Keyword.EndIndirectObject + Symbol.LineFeed);
+        public static readonly byte[] CapitalRChunk = BaseEncoding.Pdf.Encode(new char[] { Symbol.CapitalR });
 
-        private PdfDataObject dataObject;
-        private PdfFile file;
+        private PdfDirectObject dataObject;
+        private PdfDocument document;
         private PdfReference reference;
         private XRefEntry xrefEntry;
         private PdfObjectStatus status;
 
 
-        /// <param name="file">Associated file.</param>
+        /// <param name="document">Associated file.</param>
         /// <param name="dataObject">
         ///   <para>Data object associated to the indirect object. It MUST be</para>
         ///   <list type="bullet">
@@ -54,10 +55,10 @@ namespace PdfClown.Objects
         /// </param>
         /// <param name="xrefEntry">Cross-reference entry associated to the indirect object. If the
         ///   indirect object is new, its offset field MUST be set to 0.</param>
-        internal PdfIndirectObject(PdfFile file, PdfDataObject dataObject, XRefEntry xrefEntry)
+        internal PdfIndirectObject(PdfDocument document, PdfDirectObject dataObject, XRefEntry xrefEntry)
             : base(PdfObjectStatus.Updateable)
         {
-            this.file = file;
+            this.document = document;
             this.dataObject = Include(dataObject);
             this.xrefEntry = xrefEntry;
 
@@ -65,12 +66,9 @@ namespace PdfClown.Objects
             reference = new PdfReference(this);
         }
 
-        public override PdfObject Accept(IVisitor visitor, object data)
-        {
-            return visitor.Visit(this, data);
-        }
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
-        public override PdfDataObject Resolve() => DataObject;
+        public override PdfDirectObject Resolve(PdfName parentKey) => GetDataObject(parentKey);
 
         /// <summary>Adds the <see cref="DataObject">data object</see> to the specified object stream
         /// [PDF:1.6:3.4.6].</summary>
@@ -87,17 +85,17 @@ namespace PdfClown.Objects
                 objectStream[xrefEntry.Number] = DataObject;
                 // Update its xref entry!
                 xrefEntry.Usage = XRefEntry.UsageEnum.InUseCompressed;
-                xrefEntry.StreamNumber = objectStream.Reference.ObjectNumber;
+                xrefEntry.StreamNumber = objectStream.Reference.Number;
                 xrefEntry.Offset = XRefEntry.UndefinedOffset; // Internal object index unknown (to set on object stream serialization -- see ObjectStream).
             }
         }
 
         public override PdfIndirectObject Container => this;
 
-        public override PdfFile File => file;
+        public override PdfDocument Document => document;
 
         // NOTE: As indirect objects are root objects, no parent can be associated.
-        public override PdfObject Parent
+        public override PdfObject ParentObject
         {
             get => null;
             internal set { }
@@ -119,7 +117,7 @@ namespace PdfClown.Objects
                     // NOTE: It's expected that DropOriginal() is invoked by IndirectObjects indexer;
                     // such an action is delegated because clients may invoke directly the indexer skipping
                     // this method.
-                    file.IndirectObjects.Update(this);
+                    document.IndirectObjects.Update(this);
                 }
                 base.Updated = value;
             }
@@ -139,7 +137,7 @@ namespace PdfClown.Objects
               && IsInUse()
               && !(DataObject is PdfStream
                 || dataObject is PdfInteger)
-              && Reference.GenerationNumber == 0;
+              && Reference.Generation == 0;
         }
 
         /// <summary>Gets whether this object contains a data object.</summary>
@@ -155,7 +153,7 @@ namespace PdfClown.Objects
         public override PdfObject Swap(PdfObject other)
         {
             PdfIndirectObject otherObject = (PdfIndirectObject)other;
-            PdfDataObject otherDataObject = otherObject.dataObject;
+            PdfDirectObject otherDataObject = otherObject.dataObject;
             // Update the other!
             otherObject.DataObject = dataObject;
             // Update this one!
@@ -170,7 +168,7 @@ namespace PdfClown.Objects
                 return;
 
             // Remove from its object stream!
-            var oldObjectStream = (ObjectStream)file.IndirectObjects[xrefEntry.StreamNumber].DataObject;
+            var oldObjectStream = (ObjectStream)document.IndirectObjects[xrefEntry.StreamNumber].Resolve(PdfName.ObjStm);
             oldObjectStream.Remove(xrefEntry.Number);
             // Update its xref entry!
             xrefEntry.Usage = XRefEntry.UsageEnum.InUse;
@@ -178,10 +176,13 @@ namespace PdfClown.Objects
             xrefEntry.Offset = XRefEntry.UndefinedOffset; // Offset unknown (to set on file serialization -- see CompressedWriter).
         }
 
-        public override void WriteTo(IOutputStream stream, PdfFile context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             // Header.
-            stream.Write(reference.Id); stream.Write(BeginIndirectObjectChunk);
+            stream.WriteAsString(reference.Number);
+            stream.Write(Chunk.Space);
+            stream.WriteAsString(reference.Generation);
+            stream.Write(BeginIndirectObjectChunk);
             // Body.
             DataObject.WriteTo(stream, context);
             // Tail.
@@ -190,36 +191,9 @@ namespace PdfClown.Objects
 
         public XRefEntry XrefEntry => xrefEntry;
 
-        public PdfDataObject DataObject
+        public PdfDirectObject DataObject
         {
-            get
-            {
-                if (dataObject == null)
-                {
-                    switch (xrefEntry.Usage)
-                    {
-                        // Free entry (no data object at all).
-                        case XRefEntry.UsageEnum.Free:
-                            break;
-                        // In-use entry (late-bound data object).
-                        case XRefEntry.UsageEnum.InUse:
-                            {
-                                // Get the indirect data object!
-                                dataObject = Include(file.Reader.Parser.ParsePdfObjectWithLock(xrefEntry));
-                                break;
-                            }
-                        case XRefEntry.UsageEnum.InUseCompressed:
-                            {
-                                // Get the object stream where its data object is stored!
-                                var objectStream = (ObjectStream)file.IndirectObjects[xrefEntry.StreamNumber].DataObject;
-                                // Get the indirect data object!
-                                dataObject = Include(objectStream[xrefEntry.Number]);
-                                break;
-                            }
-                    }
-                }
-                return dataObject;
-            }
+            get => GetDataObject(null);
             set
             {
                 if (xrefEntry.Generation == XRefEntry.GenerationUnreusable)
@@ -232,61 +206,75 @@ namespace PdfClown.Objects
             }
         }
 
+        public PdfDirectObject GetDataObject(PdfName parentKey)
+        {
+            if (dataObject == null)
+            {
+                switch (xrefEntry.Usage)
+                {
+                    // Free entry (no data object at all).
+                    case XRefEntry.UsageEnum.Free:
+                        break;
+                    // In-use entry (late-bound data object).
+                    case XRefEntry.UsageEnum.InUse:
+                        {
+                            // Get the indirect data object!
+                            dataObject = Include(document.Reader.Parser.ParsePdfObjectWithLock(xrefEntry, parentKey));
+                            break;
+                        }
+                    case XRefEntry.UsageEnum.InUseCompressed:
+                        {
+                            // Get the object stream where its data object is stored!
+                            var objectStream = (ObjectStream)document.IndirectObjects[xrefEntry.StreamNumber].GetDataObject(PdfName.ObjStm);
+                            if (objectStream.Entries.TryGetValue(xrefEntry.Number, out var entry))
+                                // Get the indirect data object!
+                                dataObject = Include(entry.GetDataObject(parentKey));
+                            break;
+                        }
+                }
+                dataObject?.AfterParse();
+            }
+            return dataObject;
+        }
+
         public override bool Delete()
         {
-            if (file != null)
-            {
-                // NOTE: It's expected that DropFile() is invoked by IndirectObjects.Remove() method;
-                // such an action is delegated because clients may invoke directly Remove() method,
-                // skipping this method.
-                file.IndirectObjects.RemoveAt(xrefEntry.Number);
-            }
+            // NOTE: It's expected that DropFile() is invoked by IndirectObjects.Remove() method;
+            // such an action is delegated because clients may invoke directly Remove() method,
+            // skipping this method.
+            document?.IndirectObjects.RemoveAt(xrefEntry.Number);
             return true;
         }
 
-        public override PdfIndirectObject IndirectObject => this;
+        public sealed override PdfIndirectObject IndirectObject => this;
 
-        public override PdfReference Reference => reference;
-
-        public override IPdfObjectWrapper Wrapper
-        {
-            get => DataObject?.Wrapper;
-            internal set => DataObject.Wrapper = value;
-        }
-
-        public override IPdfObjectWrapper Wrapper2
-        {
-            get => DataObject?.Wrapper2;
-            internal set => DataObject.Wrapper2 = value;
-        }
-
-        public override IPdfObjectWrapper Wrapper3
-        {
-            get => DataObject?.Wrapper3;
-            internal set => DataObject.Wrapper3 = value;
-        }
+        public sealed override PdfReference Reference => reference;
 
         public override string ToString()
         {
             var buffer = new StringBuilder();
             {
                 // Header.
-                buffer.Append(reference.Id).Append(" obj").Append(Symbol.LineFeed);
+                buffer.Append(reference.Number)
+                    .Append(' ')
+                    .Append(reference.Generation)
+                    .Append(" obj")
+                    .Append(Symbol.LineFeed);
                 // Body.
                 buffer.Append(DataObject);
             }
             return buffer.ToString();
         }
 
-        protected internal override bool Virtual
+        public override bool Virtual
         {
             get => base.Virtual;
-            set
+            protected internal set
             {
                 if (Virtual && !value)
                 {
                     //NOTE: When a virtual indirect object becomes concrete it must be registered.
-                    file.IndirectObjects.AddVirtual(this);
+                    document.IndirectObjects.AddVirtual(this);
                     base.Virtual = false;
                     Reference.Update();
                 }
@@ -299,7 +287,7 @@ namespace PdfClown.Objects
         internal void DropFile()
         {
             Uncompress();
-            file = null;
+            document = null;
         }
     }
 }

@@ -23,16 +23,13 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Contents.ColorSpaces;
-using PdfClown.Objects;
-
-using System;
-using SkiaSharp;
-using System.Collections.Generic;
-using PdfClown.Documents.Interaction.Annotations.ControlPoints;
 using PdfClown.Documents.Contents.XObjects;
+using PdfClown.Documents.Interaction.Annotations.ControlPoints;
+using PdfClown.Objects;
+using SkiaSharp;
+using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Annotations
 {
@@ -49,7 +46,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, PdfName.Popup, box, text)
         { }
 
-        public Popup(PdfDirectObject baseObject)
+        public Popup(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
@@ -69,13 +66,13 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <summary>Gets/Sets whether the annotation should initially be displayed open.</summary>
         public bool IsOpen
         {
-            get => BaseDataObject.GetBool(PdfName.Open, false);
+            get => GetBool(PdfName.Open, false);
             set
             {
                 var oldValue = IsOpen;
                 if (oldValue != value)
                 {
-                    BaseDataObject.Set(PdfName.Open, value);
+                    Set(PdfName.Open, value);
                     OnPropertyChanged(oldValue, value);
                 }
             }
@@ -84,22 +81,20 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <summary>Gets the markup associated with this annotation.</summary>
         public Markup Parent
         {
-            get => parent ??= (Markup)Annotation.Wrap(BaseDataObject[PdfName.Parent]);
+            get => parent ??= Get<Markup>(PdfName.Parent);
             set
             {
 
                 var oldValue = Parent;
                 if (oldValue != value)
                 {
-                    BaseDataObject[PdfName.Parent] = value?.BaseObject;
+                    Set(PdfName.Parent, value);
                     if (value != null)
                     {
-                        /*
-                          NOTE: The markup annotation's properties override those of this pop-up annotation.
-                        */
-                        BaseDataObject.Remove(PdfName.Contents);
-                        BaseDataObject.Remove(PdfName.M);
-                        BaseDataObject.Remove(PdfName.C);
+                        // NOTE: The markup annotation's properties override those of this pop-up annotation.
+                        Remove(PdfName.Contents);
+                        Remove(PdfName.M);
+                        Remove(PdfName.C);
                     }
                     OnPropertyChanged(oldValue, value);
                 }

@@ -34,7 +34,7 @@ namespace PdfClown.Documents.Contents.Objects
         public static readonly string OperatorKeyword = "Tc";
 
         public SetCharSpace(double value)
-            : base(OperatorKeyword, new PdfArray(1) { value })
+            : base(OperatorKeyword, new PdfArrayImpl(1) { value })
         { }
 
         public SetCharSpace(PdfArray operands)

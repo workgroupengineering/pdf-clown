@@ -25,17 +25,14 @@
 
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
-using System.Linq;
 
 namespace PdfClown.Documents.Contents.Objects
 {
     public sealed class SetFillColorBase : SetFillColor
     {
-        
-        /**
-          <summary>'Set the color to use for nonstroking operations in a device, CIE-based (other than ICCBased),
-          or Indexed color space' operator.</summary>
-        */
+
+        /// <summary>'Set the color to use for nonstroking operations in a device, CIE-based (other than ICCBased),
+        /// or Indexed color space' operator.</summary>
         [PDF(VersionEnum.PDF11)]
         public static readonly string OperatorKeyword = "sc";
 
@@ -45,24 +42,20 @@ namespace PdfClown.Documents.Contents.Objects
 
         public SetFillColorBase(PdfArray operands)
             : base(OperatorKeyword, operands)
-        { }       
+        { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-         */
+        /// <param name="operator">Graphics operator.</param>
+        /// <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
         internal SetFillColorBase(PdfName name)
             : this(name, null)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-          <param name="underlyingColor">Color used to colorize the pattern.</param>
-         */
+        /// <param name="operator">Graphics operator.</param>
+        /// <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
+        /// <param name="underlyingColor">Color used to colorize the pattern.</param>
         internal SetFillColorBase(PdfName name, Color underlyingColor)
             : base(OperatorKeyword, name, underlyingColor)
         { }
-        
+
     }
 }

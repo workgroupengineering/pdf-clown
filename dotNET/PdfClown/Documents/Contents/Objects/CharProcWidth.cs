@@ -35,8 +35,7 @@ namespace PdfClown.Documents.Contents.Objects
         public static readonly string OperatorKeyword = "d0";
 
         public CharProcWidth(double wx, double wy)
-            : base(OperatorKeyword,
-                  new PdfArray(2) { wx, wy })
+            : base(OperatorKeyword, new PdfArrayImpl(2) { wx, wy })
         { }
 
         public CharProcWidth(PdfArray operands) : base(OperatorKeyword, operands)

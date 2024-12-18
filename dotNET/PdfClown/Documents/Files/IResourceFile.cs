@@ -29,6 +29,6 @@ namespace PdfClown.Documents.Files
     public interface IFileResource
     {
         /// <summary>Gets/Sets the file containing the object data.</summary>
-        FileSpecification DataFile { get; set; }
+        IFileSpecification DataFile { get; set; }
     }
 }

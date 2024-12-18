@@ -24,6 +24,7 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
@@ -31,19 +32,22 @@ namespace PdfClown.Documents.Multimedia
     [PDF(VersionEnum.PDF15)]
     public sealed class SelectorRendition : Rendition
     {
+        private Renditions renditions;
 
-        public SelectorRendition(PdfDocument context) : base(context, PdfName.SR)
+        public SelectorRendition(PdfDocument context)
+            : base(context, PdfName.SR)
         { }
 
-        internal SelectorRendition(PdfDirectObject baseObject) : base(baseObject)
+        internal SelectorRendition(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets an ordered collection of renditions. The first viable media rendition found
         /// in the array, or nested within a selector rendition in the array, should be used.</summary>
         public Renditions Renditions
         {
-            get => Wrap<Renditions>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.R));
-            set => BaseDataObject[PdfName.R] = value.BaseObject;
+            get => renditions ??= new(GetOrCreate<PdfArrayImpl>(PdfName.R));
+            set => Set(PdfName.R, renditions = value);
         }
     }
 }

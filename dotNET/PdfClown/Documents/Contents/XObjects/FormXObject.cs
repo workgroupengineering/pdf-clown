@@ -23,6 +23,7 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.Objects;
@@ -40,31 +41,6 @@ namespace PdfClown.Documents.Contents.XObjects
     [PDF(VersionEnum.PDF10)]
     public sealed class FormXObject : XObject, IContentContext
     {
-        public static new FormXObject Wrap(PdfDirectObject baseObject)
-        {
-            if (baseObject == null)
-                return null;
-            if (baseObject.Wrapper is FormXObject formObject)
-                return formObject;
-
-            var header = (PdfStream)baseObject.Resolve();
-            var subtype = header.Get<PdfName>(PdfName.Subtype);
-
-            //NOTE: Sometimes the form stream's header misses the mandatory Subtype entry; therefore, here
-            //we force integrity for convenience (otherwise, content resource allocation may fail, for
-            //example in case of Acroform flattening).
-            if (subtype == null && header.ContainsKey(PdfName.BBox))
-            {
-                header[PdfName.Subtype] = PdfName.Form;
-            }
-            else if (!subtype.Equals(PdfName.Form))
-            {
-                return null;
-            }
-
-            return new FormXObject(baseObject);
-        }
-
         private SKPicture picture;
         private SKMatrix? matrix;
         private SKRect? box;
@@ -83,27 +59,31 @@ namespace PdfClown.Documents.Contents.XObjects
         public FormXObject(PdfDocument context, SKRect box)
             : base(context)
         {
-            BaseDataObject[PdfName.Subtype] = PdfName.Form;
+            this[PdfName.Subtype] = PdfName.Form;
             Box = box;
         }
 
-        public FormXObject(PdfDirectObject baseObject)
+        internal FormXObject(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
+        { }
+
+        internal FormXObject(Dictionary<PdfName, PdfDirectObject> baseObject, IInputStream stream)
+            : base(baseObject, stream)
         { }
 
         public override SKMatrix Matrix
         {
             //NOTE: Form-space-to-user-space matrix is identity [1 0 0 1 0 0] by default,
             //but may be adjusted by setting the matrix entry in the form dictionary [PDF:1.6:4.9].
-            get => matrix ??= BaseDataObject.Get<PdfArray>(PdfName.Matrix)?.ToSkMatrix() ?? SKMatrix.Identity;
+            get => matrix ??= Get<PdfArray>(PdfName.Matrix)?.ToSkMatrix() ?? SKMatrix.Identity;
             set
             {
                 matrix = value;
-                BaseDataObject[PdfName.Matrix] = value.ToPdfArray();
+                this[PdfName.Matrix] = value.ToPdfArray();
             }
         }
 
-        public TransparencyXObject Group => Wrap<TransparencyXObject>(BaseDataObject[PdfName.Group]);
+        public TransparencyXObject Group => Get<TransparencyXObject>(PdfName.Group);
 
         public override SKSize Size
         {
@@ -114,19 +94,19 @@ namespace PdfClown.Documents.Contents.XObjects
             }
             set
             {
-                var boxObject = BaseDataObject.Get<PdfArray>(PdfName.BBox);
+                var boxObject = Get<PdfRectangle>(PdfName.BBox);
                 boxObject.Set(2, Math.Abs(value.Width) + boxObject.GetFloat(0));
                 boxObject.Set(3, Math.Abs(value.Height) + boxObject.GetFloat(1));
                 box = null;
             }
         }
 
-        public Rectangle BBox
+        public PdfRectangle BBox
         {
-            get => Wrap<Rectangle>(BaseDataObject.GetOrCreate<PdfArray>(PdfName.BBox));
+            get => GetOrCreate<PdfRectangle>(PdfName.BBox);
             set
             {
-                BaseDataObject[PdfName.BBox] = value?.BaseObject;
+                SetDirect(PdfName.BBox, value);
                 box = null;
             }
         }
@@ -145,12 +125,12 @@ namespace PdfClown.Documents.Contents.XObjects
             }
         }
 
-        public ContentWrapper Contents => contents ??= new ContentWrapper(BaseObject);
+        public ContentWrapper Contents => contents ??= new ContentWrapper(this);
 
         public Resources Resources
         {
-            get => Wrap<Resources>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.Resources));
-            set => BaseDataObject[PdfName.Resources] = PdfObjectWrapper.GetBaseObject(value);
+            get => GetOrCreateInderect<Resources>(PdfName.Resources);
+            set => Set(PdfName.Resources, value);
         }
 
         public RotationEnum Rotation => RotationEnum.Downward;
@@ -159,22 +139,20 @@ namespace PdfClown.Documents.Contents.XObjects
 
         public SKMatrix RotateMatrix => SKMatrix.Identity;
 
-        public SKMatrix TextMatrix => SKMatrix.Identity;
+        //public SKMatrix TextMatrix => SKMatrix.Identity;
 
         public List<ITextBlock> TextBlocks { get; } = new List<ITextBlock>();
 
         public AppDataCollection AppData
         {
-            get => AppDataCollection.Wrap(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.PieceInfo), this);
+            get => GetOrCreate<AppDataCollection>(PdfName.PieceInfo).WithHolder(this);
         }
 
-        public DateTime? ModificationDate => BaseDataObject.GetNDate(PdfName.LastModified);
+        public DateTime? ModificationDate => GetNDate(PdfName.LastModified);
 
         public SKMatrix InitialMatrix { get; internal set; } = SKMatrix.Identity;
 
         IList<ContentObject> ICompositeObject.Contents => Contents;
-
-        public ICompositeObject Parent { get => null; set { } }
 
         public void ReloadContents()
         {
@@ -192,7 +170,11 @@ namespace PdfClown.Documents.Contents.XObjects
 
             var box = Box;
             using var recorder = new SKPictureRecorder();
+#if NET9_0_OR_GREATER
+            using var canvas = recorder.BeginRecording(box, true);
+#else
             using var canvas = recorder.BeginRecording(box);
+#endif
             Render(canvas, box, clearColor, resourceScanner);
             return picture = recorder.EndRecording();
         }
@@ -219,7 +201,7 @@ namespace PdfClown.Documents.Contents.XObjects
         public void Touch(PdfName appName, DateTime modificationDate)
         {
             GetAppData(appName).ModificationDate = modificationDate;
-            BaseDataObject.Set(PdfName.LastModified, modificationDate);
+            Set(PdfName.LastModified, modificationDate);
         }
 
         public ContentObject ToInlineObject(PrimitiveComposer composer)
@@ -227,7 +209,7 @@ namespace PdfClown.Documents.Contents.XObjects
             throw new NotImplementedException();
         }
 
-        public XObject ToXObject(PdfDocument context) => (XObject)Clone(context);
+        public XObject ToXObject(PdfDocument context) => (XObject)RefOrSelf.Clone(context).Resolve(PdfName.XObject);
 
         internal void InvalidatePicture()
         {
@@ -235,7 +217,7 @@ namespace PdfClown.Documents.Contents.XObjects
             picture = null;
         }
 
-        public PdfName GetDefaultFont(out Font defaultFont, FontName fontName = FontName.Helvetica)
+        public PdfName GetDefaultFont(out PdfFont defaultFont, FontName fontName = FontName.Helvetica)
         {
             // Retrieving the font to define the default appearance...
             PdfName defaultFontName = null;
@@ -243,8 +225,8 @@ namespace PdfClown.Documents.Contents.XObjects
             defaultFontName = null;
             {
                 // Field fonts.
-                FontResources normalAppearanceFonts = Resources.Fonts;
-                foreach (KeyValuePair<PdfName, Font> entry in normalAppearanceFonts)
+                var normalAppearanceFonts = Resources.Fonts;
+                foreach (KeyValuePair<PdfName, PdfFont> entry in normalAppearanceFonts)
                 {
                     if (!entry.Value.Symbolic)
                     {
@@ -256,8 +238,8 @@ namespace PdfClown.Documents.Contents.XObjects
                 if (defaultFontName == null)
                 {
                     // Common fonts.
-                    FontResources formFonts = Document.Form.Resources.Fonts;
-                    foreach (KeyValuePair<PdfName, Font> entry in formFonts)
+                    var formFonts = Document.Catalog.Form.Resources.Fonts;
+                    foreach (KeyValuePair<PdfName, PdfFont> entry in formFonts)
                     {
                         if (!entry.Value.Symbolic && !entry.Value.IsStandard14)
                         {
@@ -269,7 +251,7 @@ namespace PdfClown.Documents.Contents.XObjects
                     if (defaultFontName == null)
                     {
                         //TODO:manage name collision!
-                        formFonts[defaultFontName = PdfName.Get("defaultTTF")] = defaultFont = FontType0.Load(Document, fontName);
+                        formFonts[defaultFontName = PdfName.Get("defaultTTF")] = defaultFont = PdfType0Font.Load(Document, fontName);
                     }
                     normalAppearanceFonts[defaultFontName] = defaultFont;
                 }

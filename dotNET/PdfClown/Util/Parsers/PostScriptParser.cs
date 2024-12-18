@@ -25,8 +25,8 @@
 
 using PdfClown.Bytes;
 using PdfClown.Tokens;
-using PdfClown.Util.IO;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -52,7 +52,8 @@ namespace PdfClown.Util.Parsers
             this.stream = stream;
         }
 
-        public PostScriptParser(Memory<byte> data) : this(new ByteStream(data))
+        public PostScriptParser(Memory<byte> data)
+            : this(new ByteStream(data))
         { }
 
         ~PostScriptParser()
@@ -134,26 +135,30 @@ namespace PdfClown.Util.Parsers
                 case '.':
                 case '-':
                 case '+': // Number.
-                    {
-                        if (c == '.')
-                        { tokenType = TokenTypeEnum.Real; }
-                        else // Digit or signum.
-                        { tokenType = TokenTypeEnum.Integer; } // By default (it may be real).
+                    if (c == '.')
+                    { tokenType = TokenTypeEnum.Real; }
+                    else // Digit or signum.
+                    { tokenType = TokenTypeEnum.Integer; } // By default (it may be real).
 
-                        // Building the number...                        
-                        while (true)
-                        {
-                            sBuffer.Append((char)c);
-                            c = stream.ReadByte();
-                            if (c == -1)
-                                break; // NOOP.
-                            else if (c == '.')
-                                tokenType = TokenTypeEnum.Real;
-                            else if (c < '0' || c > '9')
-                                break;
-                        }
-                        if (c > -1)
-                        { stream.Skip(-1); } // Restores the first byte after the current token.
+                    // Building the number...                        
+                    while (true)
+                    {
+                        sBuffer.Append((char)c);
+                        c = stream.ReadByte();
+                        if (c == -1)
+                            break; // NOOP.
+                        else if (c == '.')
+                            tokenType = TokenTypeEnum.Real;
+                        else if (c < '0' || c > '9')
+                            break;
+                    }
+                    if (c > -1)
+                    { stream.Skip(-1); } // Restores the first byte after the current token.
+                    if (sBuffer.Length == 0 && sBuffer.GetArrayBuffer()[0] == '+')
+                    {
+                        // PDFBOX-5906
+                        Debug.WriteLine("warn: isolated '+' is ignored");
+                        return MoveNext();
                     }
                     break;
                 case Symbol.OpenSquareBracket: // Array (begin).

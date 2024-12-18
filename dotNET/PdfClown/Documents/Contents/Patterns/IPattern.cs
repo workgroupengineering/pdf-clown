@@ -23,11 +23,12 @@
   this list of conditions.
 */
 
+using PdfClown.Documents.Contents.ColorSpaces;
 using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Patterns
 {
-    internal interface IPattern
+    internal interface IPattern : IColor
     {
         SKMatrix Matrix { get; set; }
 

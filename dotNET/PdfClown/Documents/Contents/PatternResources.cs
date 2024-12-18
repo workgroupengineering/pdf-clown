@@ -25,25 +25,27 @@
 
 using PdfClown.Documents.Contents.Patterns;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
     ///<summary>Pattern resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class PatternResources : Dictionary<Pattern>
+    public sealed class PatternResources : PdfDictionary<Pattern>
     {
-        public class ValueWrapper : IEntryWrapper<Pattern>
-        {
-            public Pattern Wrap(PdfDirectObject baseObject) => Pattern.Wrap(baseObject);
-        }
-
-        private static readonly ValueWrapper Wrapper = new ValueWrapper();
-
-        public PatternResources(PdfDocument context) : base(context, Wrapper)
+        public PatternResources()
+            : base((PdfDocument)null)
         { }
 
-        public PatternResources(PdfDirectObject baseObject) : base(baseObject, Wrapper)
+        public PatternResources(PdfDocument context)
+            : base(context)
         { }
 
+        internal PatternResources(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+
+        public override PdfName ModifyTypeKey(PdfName key) => PdfName.Pattern;
     }
 }

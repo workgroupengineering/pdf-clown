@@ -27,6 +27,7 @@ using PdfClown.Objects;
 using PdfClown.Util;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
@@ -34,7 +35,7 @@ namespace PdfClown.Documents.Interaction.Navigation
     /// <remarks>It represents a series of consecutive pages' visual identifiers using the same
     /// numbering system.</remarks>
     [PDF(VersionEnum.PDF13)]
-    public sealed class PageLabel : PdfObjectWrapper<PdfDictionary>
+    public sealed class PageLabel : PdfDictionary, IPdfObjectWrapper
     {
         public enum NumberStyleEnum
         {
@@ -53,6 +54,28 @@ namespace PdfClown.Documents.Interaction.Navigation
         };
 
         private static readonly int DefaultNumberBase = 1;
+        private static readonly BiDictionary<NumberStyleEnum, string> styleCodes = new()
+        {
+            [NumberStyleEnum.ArabicNumber] = PdfName.D.StringValue,
+            [NumberStyleEnum.UCaseRomanNumber] = PdfName.R.StringValue,
+            [NumberStyleEnum.LCaseRomanNumber] = PdfName.r.StringValue,
+            [NumberStyleEnum.UCaseLetter] = PdfName.A.StringValue,
+            [NumberStyleEnum.LCaseLetter] = PdfName.a.StringValue
+        };
+
+        public static NumberStyleEnum GetStyle(string name)
+        {
+            if (name == null)
+                throw new ArgumentNullException();
+
+            NumberStyleEnum? numberStyle = styleCodes.GetKey(name);
+            if (!numberStyle.HasValue)
+                throw new NotSupportedException("Page layout unknown: " + name);
+
+            return numberStyle.Value;
+        }
+
+        public static PdfName GetCode(NumberStyleEnum numberStyle) => PdfName.Get(styleCodes[numberStyle], true);
 
         /// <summary>Gets an existing page label range.</summary>
         /// <param name="baseObject">Base object to wrap.</param>
@@ -62,22 +85,25 @@ namespace PdfClown.Documents.Interaction.Navigation
         { }
 
         public PageLabel(PdfDocument context, String prefix, NumberStyleEnum numberStyle, int numberBase)
-            : base(context, new PdfDictionary(1) { { PdfName.Type, PdfName.PageLabel } })
+            : base(context, new Dictionary<PdfName, PdfDirectObject>(1) {
+                { PdfName.Type, PdfName.PageLabel }
+            })
         {
             Prefix = prefix;
             NumberStyle = numberStyle;
             NumberBase = numberBase;
         }
 
-        public PageLabel(PdfDirectObject baseObject) : base(baseObject)
+        internal PageLabel(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the value of the numeric suffix for the first page label in this range.
         /// Subsequent pages are numbered sequentially from this value.</summary>
         public int NumberBase
         {
-            get => BaseDataObject.GetInt(PdfName.St, DefaultNumberBase);
-            set => BaseDataObject.Set(PdfName.St, value <= DefaultNumberBase ? null : value);
+            get => GetInt(PdfName.St, DefaultNumberBase);
+            set => Set(PdfName.St, value <= DefaultNumberBase ? null : value);
         }
 
         /// <summary>Gets/Sets the numbering style to be used for the numeric suffix of each page label in
@@ -85,46 +111,15 @@ namespace PdfClown.Documents.Interaction.Navigation
         /// <remarks>If no style is defined, the numeric suffix isn't displayed at all.</remarks>
         public NumberStyleEnum NumberStyle
         {
-            get => NumberStyleEnumExtension.Get(BaseDataObject.GetString(PdfName.S));
-            set => BaseDataObject[PdfName.S] = value.GetCode();
+            get => GetStyle(GetString(PdfName.S));
+            set => this[PdfName.S] = GetCode(value);
         }
 
         /// <summary>Gets/Sets the label prefix for page labels in this range.</summary>
         public string Prefix
         {
-            get => BaseDataObject.GetString(PdfName.P);
-            set => BaseDataObject.SetText(PdfName.P, value);
+            get => GetString(PdfName.P);
+            set => SetText(PdfName.P, value);
         }
-    }
-
-    internal static class NumberStyleEnumExtension
-    {
-        private static readonly BiDictionary<PageLabel.NumberStyleEnum, string> codes;
-
-        static NumberStyleEnumExtension()
-        {
-            codes = new BiDictionary<PageLabel.NumberStyleEnum, string>
-            {
-                [PageLabel.NumberStyleEnum.ArabicNumber] = PdfName.D.StringValue,
-                [PageLabel.NumberStyleEnum.UCaseRomanNumber] = PdfName.R.StringValue,
-                [PageLabel.NumberStyleEnum.LCaseRomanNumber] = PdfName.r.StringValue,
-                [PageLabel.NumberStyleEnum.UCaseLetter] = PdfName.A.StringValue,
-                [PageLabel.NumberStyleEnum.LCaseLetter] = PdfName.a.StringValue
-            };
-        }
-
-        public static PageLabel.NumberStyleEnum Get(string name)
-        {
-            if (name == null)
-                throw new ArgumentNullException();
-
-            PageLabel.NumberStyleEnum? numberStyle = codes.GetKey(name);
-            if (!numberStyle.HasValue)
-                throw new NotSupportedException("Page layout unknown: " + name);
-
-            return numberStyle.Value;
-        }
-
-        public static PdfName GetCode(this PageLabel.NumberStyleEnum numberStyle) => PdfName.Get(codes[numberStyle], true);
     }
 }

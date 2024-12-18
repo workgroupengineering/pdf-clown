@@ -25,20 +25,18 @@
 
 using PdfClown.Objects;
 
-using System;
-
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>UI collection of related layers [PDF:1.7:4.10.3].</summary>
-    */
+    /// <summary>UI collection of related layers [PDF:1.7:4.10.3].</summary>
     [PDF(VersionEnum.PDF15)]
     public sealed class LayerCollection : UILayers, IUILayerNode
     {
-        public LayerCollection(PdfDocument context, string title) : base(context)
+        public LayerCollection(PdfDocument context, string title) 
+            : base(context)
         { Title = title; }
 
-        internal LayerCollection(PdfDirectObject baseObject) : base(baseObject)
+        internal LayerCollection(PdfDirectObject baseObject) 
+            : base(baseObject)
         { }
 
         public override string ToString()
@@ -50,21 +48,21 @@ namespace PdfClown.Documents.Contents.Layers
         {
             get
             {
-                if (BaseDataObject.Count == 0)
+                if (DataObject.Count == 0)
                     return null;
 
-                PdfDirectObject firstObject = BaseDataObject[0];
+                var firstObject = DataObject.Get(0);
                 return firstObject is PdfString stringObject ? stringObject.StringValue : null;
             }
             set
             {
-                PdfTextString titleObject = PdfTextString.Get(value);
-                PdfArray baseDataObject = BaseDataObject;
-                PdfDirectObject firstObject = (baseDataObject.Count == 0 ? null : baseDataObject[0]);
+                var titleObject = PdfTextString.Get(value);
+                PdfArray baseDataObject = DataObject;
+                PdfDirectObject firstObject = (baseDataObject.Count == 0 ? null : baseDataObject.Get(0));
                 if (firstObject is PdfString)
                 {
                     if (titleObject != null)
-                    { baseDataObject[0] = titleObject; }
+                    { baseDataObject.Set(0, titleObject); }
                     else
                     { baseDataObject.RemoveAt(0); }
                 }

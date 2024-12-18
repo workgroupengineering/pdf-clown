@@ -30,7 +30,6 @@
 using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace PdfClown.Bytes.Filters
 {
@@ -99,8 +98,6 @@ namespace PdfClown.Bytes.Filters
             }
             return bytes;
         }
-
-
 
         /// <summary>
         /// Removes all white spaces from the data. The function assumes that the bytes are characters.

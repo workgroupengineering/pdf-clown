@@ -8,10 +8,7 @@ namespace PdfClown.Samples.CLI
           <summary>Gets the value of the given property.</summary>
           <param name="propertyName">Property name whose value has to be retrieved.</param>
         */
-        public static object Get(
-          this object obj,
-          string propertyName
-          )
+        public static object Get(this object obj, string propertyName)
         { return obj.GetType().GetProperty(propertyName).GetValue(obj, null); }
 
         /**
@@ -20,10 +17,7 @@ namespace PdfClown.Samples.CLI
           You may consider it equivalent to a (forbidden) overloading of the 'is' operator.</remarks>
           <param name="type">Type to verify against the object's definition.</param>
         */
-        public static bool Is(
-          this object obj,
-          Type type
-          )
+        public static bool Is(this object obj, Type type)
         {
             Type objType = obj.GetType();
             Type typeDefinition = GetDefinition(type);

@@ -24,8 +24,7 @@ namespace PdfClown.Bytes.Filters.Jpx
     {
         public JpxError(string msg)
         : base($"JPX error: {msg}")
-        {
-        }
+        { }
     }
 
     public class JpxImage
@@ -33,7 +32,7 @@ namespace PdfClown.Bytes.Filters.Jpx
         private const int DefaultHeadSize = 8;
 
         // Table E.1
-        Dictionary<string, int> SubbandsGainLog2 = new Dictionary<string, int>(StringComparer.Ordinal) { { "LL", 0 }, { "LH", 1 }, { "HL", 1 }, { "HH", 2 } };
+        Dictionary<string, int> SubbandsGainLog2 = new(StringComparer.Ordinal) { { "LL", 0 }, { "LH", 1 }, { "HL", 1 }, { "HH", 2 } };
         bool failOnCorruptedImage;
         internal List<TileResultB> tiles;
         internal int width;
@@ -420,7 +419,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                                 length: (int)data.ReadUInt32(),
                                 partIndex: data.ReadUByte(),
                                 partsCount: data.ReadUByte());
-                            tile.DataEnd = tile.Length + (int)position - 2;
+                            tile.DataEnd = tile.Length + position - 2;
 
 
                             context.MainHeader = false;
@@ -475,8 +474,8 @@ namespace PdfClown.Bytes.Filters.Jpx
                 }
             }
             tiles = TransformComponents(context);
-            width = (int)(context.SIZ.Xsiz - context.SIZ.XOsiz);
-            height = (int)(context.SIZ.Ysiz - context.SIZ.YOsiz);
+            width = context.SIZ.Xsiz - context.SIZ.XOsiz;
+            height = context.SIZ.Ysiz - context.SIZ.YOsiz;
             componentsCount = context.SIZ.Csiz;
         }
 
@@ -504,10 +503,10 @@ namespace PdfClown.Bytes.Filters.Jpx
                 for (var p = 0; p < numXtiles; p++)
                 {
                     tile = new Tile();
-                    tile.Tx0 = (int)Math.Max(siz.XTOsiz + p * siz.XTsiz, siz.XOsiz);
-                    tile.Ty0 = (int)Math.Max(siz.YTOsiz + q * siz.YTsiz, siz.YOsiz);
-                    tile.Tx1 = (int)Math.Min(siz.XTOsiz + (p + 1) * siz.XTsiz, siz.Xsiz);
-                    tile.Ty1 = (int)Math.Min(siz.YTOsiz + (q + 1) * siz.YTsiz, siz.Ysiz);
+                    tile.Tx0 = Math.Max(siz.XTOsiz + p * siz.XTsiz, siz.XOsiz);
+                    tile.Ty0 = Math.Max(siz.YTOsiz + q * siz.YTsiz, siz.YOsiz);
+                    tile.Tx1 = Math.Min(siz.XTOsiz + (p + 1) * siz.XTsiz, siz.Xsiz);
+                    tile.Ty1 = Math.Min(siz.YTOsiz + (q + 1) * siz.YTsiz, siz.Ysiz);
                     tile.Width = tile.Tx1 - tile.Tx0;
                     tile.Height = tile.Ty1 - tile.Ty0;
                     tile.Components = new Dictionary<int, Component>();
@@ -1251,7 +1250,7 @@ namespace PdfClown.Bytes.Filters.Jpx
 
             var reversible = codingStyleParameters.ReversibleTransformation;
             Transform transform = reversible
-            ? (Transform)new ReversibleTransform()
+            ? new ReversibleTransform()
             : new IrreversibleTransform();
 
             var subbandCoefficients = new List<Coefficient>();
@@ -1552,7 +1551,7 @@ namespace PdfClown.Bytes.Filters.Jpx
                 {
                     for (; i < componentsCount; i++)
                     {
-                        var component = (Component)tile.Components[i];
+                        var component = tile.Components[i];
                         if (r > component.CodingStyleParameters.DecompositionLevelsCount)
                         {
                             continue;
@@ -1933,8 +1932,8 @@ namespace PdfClown.Bytes.Filters.Jpx
             {
                 var level = new Level(width, height, items: new byte?[0]);
                 Levels.Add(level);
-                width = (int)Math.Ceiling((double)width / 2D);
-                height = (int)Math.Ceiling((double)height / 2D);
+                width = (int)Math.Ceiling(width / 2D);
+                height = (int)Math.Ceiling(height / 2D);
             }
         }
 

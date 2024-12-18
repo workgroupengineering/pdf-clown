@@ -34,14 +34,21 @@ namespace PdfClown.Documents.Multimedia
     //TODO: this is just a stub.
     /// <summary>Sound object [PDF:1.6:9.2].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class Sound : PdfObjectWrapper<PdfStream>
+    public sealed class Sound : PdfStream
     {
         /// <summary>Creates a new sound within the given document context.</summary>
         public Sound(PdfDocument context, IInputStream stream)
-            : base(context, new PdfStream(new Dictionary<PdfName, PdfDirectObject>() { { PdfName.Type, PdfName.Sound } }))
+            : base(context, new Dictionary<PdfName, PdfDirectObject>() {
+                { PdfName.Type, PdfName.Sound }
+            }, stream)
         { throw new NotImplementedException("Process the sound stream!"); }
 
-        public Sound(PdfDirectObject baseObject) : base(baseObject)
+        internal Sound(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        internal Sound(Dictionary<PdfName, PdfDirectObject> baseObject, IInputStream stream)
+            : base(baseObject, stream)
         { }
 
     }

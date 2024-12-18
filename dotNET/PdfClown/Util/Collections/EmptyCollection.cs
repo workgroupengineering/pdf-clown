@@ -32,7 +32,7 @@ namespace PdfClown.Util.Collections
 {
     public class EmptyCollection<T> : ICollection<T>
     {
-        public static readonly EmptyCollection<T> Default = new EmptyCollection<T>();
+        public static readonly EmptyCollection<T> Default = new();
 
         public int Count => 0;
 

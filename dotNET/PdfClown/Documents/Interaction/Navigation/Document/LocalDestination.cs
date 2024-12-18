@@ -26,6 +26,7 @@
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Navigation
 {
@@ -41,19 +42,20 @@ namespace PdfClown.Documents.Interaction.Navigation
             : base(page.Document, page, mode, location, zoom)
         { }
 
-        internal LocalDestination(PdfDirectObject baseObject) : base(baseObject)
+        internal LocalDestination(List<PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the target page.</summary>
         public override object Page
         {
-            get => Wrap<PdfPage>(BaseDataObject[0]);
+            get => Get<PdfPage>(0, PdfName.Page);
             set
             {
                 if (value is not PdfPage page)
                     throw new ArgumentException("It MUST be a Page object.");
 
-                BaseDataObject[0] = page.BaseObject;
+                Set(0, page);
             }
         }        
     }

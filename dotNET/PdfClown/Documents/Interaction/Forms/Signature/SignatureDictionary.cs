@@ -27,108 +27,109 @@ using PdfClown.Bytes;
 using PdfClown.Objects;
 using PdfClown.Util;
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Forms.Signature
 {
-    public class SignatureDictionary : PdfObjectWrapper<PdfDictionary>
+    public class SignatureDictionary : PdfDictionary
     {
         private int[] byteRange;
+        private PropBuild propBuild;
 
-        public SignatureDictionary() : base(new PdfDictionary
-            {
+        public SignatureDictionary()
+            : base(new Dictionary<PdfName, PdfDirectObject>(){
                 { PdfName.Type, PdfName.Sig },
             })
         { }
 
-        public SignatureDictionary(PdfDirectObject baseObject)
+        public SignatureDictionary(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         {
             if (Type == null)
-                BaseDataObject[PdfName.Type] = PdfName.Sig;
+                this[PdfName.Type] = PdfName.Sig;
         }
 
         public string Type
         {
-            get => BaseDataObject.GetString(PdfName.Type);
-            set => BaseDataObject.SetName(PdfName.Type, value);
+            get => GetString(PdfName.Type);
+            set => SetName(PdfName.Type, value);
         }
 
         public string Filter
         {
-            get => BaseDataObject.GetString(PdfName.Filter);
-            set => BaseDataObject.SetName(PdfName.Filter, value);
+            get => GetString(PdfName.Filter);
+            set => SetName(PdfName.Filter, value);
         }
 
         public string SubFilter
         {
-            get => BaseDataObject.GetString(PdfName.SubFilter);
-            set => BaseDataObject.SetName(PdfName.SubFilter, value);
+            get => GetString(PdfName.SubFilter);
+            set => SetName(PdfName.SubFilter, value);
         }
 
         public int[] ByteRange
         {
-            get => byteRange ??= BaseDataObject.Resolve<PdfArray>(PdfName.ByteRange)?.ToIntArray();
+            get => byteRange ??= GetOrCreate<PdfArrayImpl>(PdfName.ByteRange)?.ToIntArray();
             set
             {
                 byteRange = value;
-                BaseDataObject[PdfName.ByteRange] = value != null ? new PdfArray() : null;
+                SetDirect(PdfName.ByteRange, value != null ? new PdfArrayImpl(value) : null);
             }
         }
 
         public Memory<byte> Contents
         {
-            get => ((PdfString)BaseDataObject.Resolve(PdfName.Contents))?.AsMemory() ?? Memory<byte>.Empty;
-            set => BaseDataObject[PdfName.Contents] = value.IsEmpty ? null : new PdfByteString(value);
+            get => Get<PdfString>(PdfName.Contents)?.AsMemory() ?? Memory<byte>.Empty;
+            set => this[PdfName.Contents] = value.IsEmpty ? null : new PdfByteString(value);
         }
 
         public PdfDirectObject Cert
         {
-            get => BaseDataObject[PdfName.CenterWindow];
-            set => BaseDataObject[PdfName.Cert] = value;
+            get => Get(PdfName.Cert);
+            set => Set(PdfName.Cert, value);
         }
 
         public DateTime? DateM
         {
-            get => BaseDataObject.GetNDate(PdfName.M);
-            set => BaseDataObject.Set(PdfName.M, value);
+            get => GetNDate(PdfName.M);
+            set => Set(PdfName.M, value);
         }
 
         public string Name
         {
-            get => BaseDataObject.GetString(PdfName.Name);
-            set => BaseDataObject.SetText(PdfName.Name, value);
+            get => GetString(PdfName.Name);
+            set => SetText(PdfName.Name, value);
         }
 
         public string Location
         {
-            get => BaseDataObject.GetString(PdfName.Location);
-            set => BaseDataObject.SetText(PdfName.Location, value);
+            get => GetString(PdfName.Location);
+            set => SetText(PdfName.Location, value);
         }
 
         public string Reason
         {
-            get => BaseDataObject.GetString(PdfName.Reason);
-            set => BaseDataObject.SetText(PdfName.Reason, value);
+            get => GetString(PdfName.Reason);
+            set => SetText(PdfName.Reason, value);
         }
 
-        public PdfArray Reference
+        public PdfArray Ref
         {
-            get => BaseDataObject.Resolve<PdfArray>(PdfName.Reference);
-            set => BaseDataObject[PdfName.Reference] = value;
+            get => GetOrCreate<PdfArrayImpl>(PdfName.Reference);
+            set => SetDirect(PdfName.Reference, value);
         }
 
         public PdfArray Changes
         {
-            get => BaseDataObject.Resolve<PdfArray>(PdfName.Changes);
-            set => BaseDataObject[PdfName.Changes] = value;
+            get => GetOrCreate<PdfArrayImpl>(PdfName.Changes);
+            set => SetDirect(PdfName.Changes, value);
         }
 
         public PropBuild PropBuild
         {
-            get => Wrap<PropBuild>(BaseDataObject.Resolve<PdfDictionary>(PdfName.Prop_Build));
-            set => BaseDataObject[PdfName.Prop_Build] = value?.BaseDataObject;
+            get => propBuild ??= new PropBuild(GetOrCreateInderect<PdfDictionary>(PdfName.Prop_Build));
+            set => Set(PdfName.Prop_Build, propBuild = value);
         }
-
 
         /// <summary>
         /// Will return the embedded signature between the byterange gap.

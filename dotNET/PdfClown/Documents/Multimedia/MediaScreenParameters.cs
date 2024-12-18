@@ -25,144 +25,22 @@
 
 using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Objects;
-using SkiaSharp;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
+
     /// <summary>Media screen parameters [PDF:1.7:9.1.5].</summary>
     [PDF(VersionEnum.PDF15)]
-    public sealed class MediaScreenParameters : PdfObjectWrapper<PdfDictionary>
+    public sealed class MediaScreenParameters : PdfDictionary
     {
+        private Viability preferences;
+        private Viability requirements;
+
         /// <summary>Media screen parameters viability.</summary>
-        public class Viability : PdfObjectWrapper2<PdfDictionary>
+        public class Viability : PdfObjectWrapper<PdfDictionary>
         {
-            public class FloatingWindowParametersObject : PdfObjectWrapper<PdfDictionary>
-            {
-                public enum LocationEnum
-                {
-                    ///<summary>Upper-left corner.</summary>
-                    UpperLeft,
-                    ///<summary>Upper center.</summary>
-                    UpperCenter,
-                    ///<summary>Upper-right corner.</summary>
-                    UpperRight,
-                    ///<summary>Center left.</summary>
-                    CenterLeft,
-                    ///<summary>Center.</summary>
-                    Center,
-                    ///<summary>Center right.</summary>
-                    CenterRight,
-                    ///<summary>Lower-left corner.</summary>
-                    LowerLeft,
-                    ///<summary>Lower center.</summary>
-                    LowerCenter,
-                    ///<summary>Lower-right corner.</summary>
-                    LowerRight
-                }
-
-                public enum OffscreenBehaviorEnum
-                {
-                    ///<summary>Take no special action.</summary>
-                    None,
-                    ///<summary>Move and/or resize the window so that it is on-screen.</summary>
-                    Adapt,
-                    ///<summary>Consider the object to be non-viable.</summary>
-                    NonViable
-                }
-
-                public enum RelatedWindowEnum
-                {
-                    ///<summary>The document window.</summary>
-                    Document,
-                    ///<summary>The application window.</summary>
-                    Application,
-                    ///<summary>The full virtual desktop.</summary>
-                    Desktop,
-                    ///<summary>The monitor specified by <see cref="MediaScreenParameters.Viability.MonitorSpecifier"/>.</summary>
-                    Custom
-                }
-
-                public enum ResizeBehaviorEnum
-                {
-                    ///<summary>Not resizable.</summary>
-                    None,
-                    ///<summary>Resizable preserving its aspect ratio.</summary>
-                    AspectRatioLocked,
-                    ///<summary>Resizable without preserving its aspect ratio.</summary>
-                    Free
-                }
-
-                public FloatingWindowParametersObject(SKSize size)
-                    : base(new PdfDictionary(7) { { PdfName.Type, PdfName.FWParams } })
-                { this.Size = size; }
-
-                public FloatingWindowParametersObject(PdfDirectObject baseObject)
-                    : base(baseObject)
-                { }
-
-                /// <summary>Gets/Sets the location where the floating window should be positioned relative to
-                /// the related window.</summary>
-                public LocationEnum? Location
-                {
-                    get => (LocationEnum?)BaseDataObject.GetNInt(PdfName.P);
-                    set => BaseDataObject.Set(PdfName.P, (int?)value);
-                }
-
-                /// <summary>Gets/Sets what should occur if the floating window is positioned totally or
-                /// partially offscreen (that is, not visible on any physical monitor).</summary>
-                public OffscreenBehaviorEnum? OffscreenBehavior
-                {
-                    get => (OffscreenBehaviorEnum?)BaseDataObject.GetNInt(PdfName.O);
-                    set => BaseDataObject.Set(PdfName.O, (int?)value);
-                }
-
-                /// <summary>Gets/Sets the window relative to which the floating window should be positioned.
-                /// </summary>
-                public RelatedWindowEnum? RelatedWindow
-                {
-                    get => (RelatedWindowEnum?)BaseDataObject.GetNInt(PdfName.RT);
-                    set => BaseDataObject.Set(PdfName.RT, (int?)value);
-                }
-
-                /// <summary>Gets/Sets how the floating window may be resized by a user.</summary>
-                public ResizeBehaviorEnum? ResizeBehavior
-                {
-                    get => (ResizeBehaviorEnum?)BaseDataObject.GetNInt(PdfName.R);
-                    set => BaseDataObject.Set(PdfName.R, (int?)value);
-                }
-
-                /// <summary>Gets/Sets the floating window's width and height, in pixels.</summary>
-                /// <remarks>These values correspond to the dimensions of the rectangle in which the media
-                /// will play, not including such items as title bar and resizing handles.</remarks>
-                public SKSize Size
-                {
-                    get
-                    {
-                        var sizeObject = BaseDataObject.Get<PdfArray>(PdfName.D);
-                        return new SKSize(sizeObject.GetInt(0), sizeObject.GetInt(1));
-                    }
-                    set => BaseDataObject[PdfName.D] = new PdfArray(2) { (int)value.Width, (int)value.Height };
-                }
-
-                /// <summary>Gets/Sets whether the floating window should include user interface elements that
-                /// allow a user to close it.</summary>
-                /// <remarks>Meaningful only if <see cref="TitleBarVisible"/> is true.</remarks>
-                public bool Closeable
-                {
-                    get => BaseDataObject.GetBool(PdfName.UC, true);
-                    set => BaseDataObject.Set(PdfName.UC, value);
-                }
-
-                /// <summary>Gets/Sets whether the floating window should have a title bar.</summary>
-                public bool TitleBarVisible
-                {
-                    get => BaseDataObject.GetBool(PdfName.T, true);
-                    set => BaseDataObject.Set(PdfName.T, value);
-                }
-
-                //TODO: TT entry!
-            }
-
+            private RGBColor backgroundColor;
             public enum WindowTypeEnum
             {
                 ///<summary>A floating window.</summary>
@@ -183,10 +61,10 @@ namespace PdfClown.Documents.Multimedia
             /// </summary>
             /// <remarks>This color is used if the media object does not entirely cover the rectangle or if
             /// it has transparent sections.</remarks>
-            public DeviceRGBColor BackgroundColor
+            public RGBColor BackgroundColor
             {
-                get => (DeviceRGBColor)DeviceRGBColorSpace.Default.GetColor(BaseDataObject.Get<PdfArray>(PdfName.B), null);
-                set => BaseDataObject[PdfName.B] = GetBaseObject(value);
+                get => backgroundColor ??= (RGBColor)RGBColorSpace.Default.GetColor(DataObject.Get<PdfArray>(PdfName.B), null);
+                set => DataObject.Set(PdfName.B, backgroundColor = value);
             }
 
             /// <summary>Gets/Sets the opacity of the background color.</summary>
@@ -194,61 +72,70 @@ namespace PdfClown.Documents.Multimedia
             /// </returns>
             public double BackgroundOpacity
             {
-                get => BaseDataObject.GetDouble(PdfName.O, 1d);
+                get => DataObject.GetDouble(PdfName.O, 1d);
                 set
                 {
                     if (value < 0)
                     { value = 0; }
                     else if (value > 1)
                     { value = 1; }
-                    BaseDataObject.Set(PdfName.O, value);
+                    DataObject.Set(PdfName.O, value);
                 }
             }
 
             /// <summary>Gets/Sets the options used in displaying floating windows.</summary>
-            public FloatingWindowParametersObject FloatingWindowParameters
+            public FloatingWindowParameters FloatingWindowParameters
             {
-                get => new FloatingWindowParametersObject(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.F));
-                set => BaseDataObject[PdfName.F] = PdfObjectWrapper.GetBaseObject(value);
+                get => DataObject.GetOrCreate<FloatingWindowParameters>(PdfName.F);
+                set => DataObject.Set(PdfName.F, value);
             }
 
             /// <summary>Gets/Sets which monitor in a multi-monitor system a floating or full-screen window
             /// should appear on.</summary>
             public MonitorSpecifierEnum? MonitorSpecifier
             {
-                get => (MonitorSpecifierEnum?)BaseDataObject.GetNInt(PdfName.M);
-                set => BaseDataObject.Set(PdfName.M, (int?)value);
+                get => (MonitorSpecifierEnum?)DataObject.GetNInt(PdfName.M);
+                set => DataObject.Set(PdfName.M, (int?)value);
             }
 
             /// <summary>Gets/Sets the type of window that the media object should play in.</summary>
             public WindowTypeEnum? WindowType
             {
-                get => (WindowTypeEnum?)BaseDataObject.GetNInt(PdfName.W);
-                set => BaseDataObject.Set(PdfName.W, (int?)value);
+                get => (WindowTypeEnum?)DataObject.GetNInt(PdfName.W);
+                set => DataObject.Set(PdfName.W, (int?)value);
             }
         }
 
-        public MediaScreenParameters(PdfDocument context)
-            : base(context, new PdfDictionary { { PdfName.Type, PdfName.MediaScreenParams } })
+        public MediaScreenParameters()
+           : base(new Dictionary<PdfName, PdfDirectObject> {
+                { PdfName.Type, PdfName.MediaScreenParams }
+            })
         { }
 
-        public MediaScreenParameters(PdfDirectObject baseObject) : base(baseObject)
+        public MediaScreenParameters(PdfDocument context)
+            : base(context, new Dictionary<PdfName, PdfDirectObject> {
+                { PdfName.Type, PdfName.MediaScreenParams }
+            })
+        { }
+
+        internal MediaScreenParameters(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the preferred options the renderer should attempt to honor without affecting
         /// its viability.</summary>
         public Viability Preferences
         {
-            get => Wrap2<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.BE));
-            set => BaseDataObject[PdfName.BE] = PdfObjectWrapper.GetBaseObject(value);
+            get => preferences ??= new(GetOrCreate<PdfDictionary>(PdfName.BE));
+            set => Set(PdfName.BE, preferences = value);
         }
 
         /// <summary>Gets/Sets the minimum requirements the renderer must honor in order to be considered
         /// viable.</summary>
         public Viability Requirements
         {
-            get => Wrap2<Viability>(BaseDataObject.GetOrCreate<PdfDictionary>(PdfName.MH));
-            set => BaseDataObject[PdfName.MH] = PdfObjectWrapper.GetBaseObject(value);
+            get => requirements ??= new(GetOrCreate<PdfDictionary>(PdfName.MH));
+            set => Set(PdfName.MH, requirements = value);
         }
     }
 

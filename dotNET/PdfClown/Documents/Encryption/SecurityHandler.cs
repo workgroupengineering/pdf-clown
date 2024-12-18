@@ -18,6 +18,7 @@
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Security;
 using PdfClown.Bytes;
+using PdfClown.Files;
 using PdfClown.Objects;
 using PdfClown.Tokens;
 using PdfClown.Util.IO;
@@ -30,15 +31,14 @@ using System.Security.Cryptography;
 
 namespace PdfClown.Documents.Encryption
 {
-
-    /**
-     * A security handler as described in the PDF specifications.
-     * A security handler is responsible of documents protection.
-     *
-     * @author Ben Litchfield
-     * @author Benoit Guillon
-     * @author Manuel Kasper
-     */
+    /// <summary>
+    /// A security handler as described in the PDF specifications.
+    /// A security handler is responsible of documents protection.
+    /// @author Ben Litchfield
+    /// @author Benoit Guillon
+    /// @author Manuel Kasper
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class SecurityHandler<T> : ISecurityHandler where T : ProtectionPolicy
     {
         private static readonly int DEFAULT_VERSION = 1;
@@ -46,7 +46,7 @@ namespace PdfClown.Documents.Encryption
         private static readonly short DEFAULT_KEY_LENGTH = 40;
 
         // see 7.6.2, page 58, PDF 32000-1:2008
-        private static readonly byte[] AES_SALT = { (byte)0x73, (byte)0x41, (byte)0x6c, (byte)0x54 };
+        private static readonly byte[] AES_SALT = { 0x73, 0x41, 0x6c, 0x54 };
 
         private T protectionPolicy = null;
 
@@ -70,7 +70,7 @@ namespace PdfClown.Documents.Encryption
         // Because PdfString.equals() checks the contents, decryption was then skipped.
         // This solution keeps all different "equal" objects.
         // IdentityHashMap solves this problem and is also faster than a HashMap
-        private readonly HashSet<PdfObject> objects = new HashSet<PdfObject>();
+        private readonly HashSet<PdfObject> objects = new();
 
         private bool useAES;
 
@@ -127,38 +127,22 @@ namespace PdfClown.Documents.Encryption
             set => customSecureRandom = value;
         }
 
-        /**
-		 * Prepare the document for encryption.
-		 *
-		 * @param doc The document that will be encrypted.
-		 *
-		 * @throws IOException If there is an error with the document.
-		 */
+        /// <summary>Prepare the document for encryption.</summary>
+        /// <param name="doc">The document that will be encrypted.</param>
         public abstract void PrepareDocumentForEncryption(PdfDocument doc);
 
-        /**
-		 * Prepares everything to decrypt the document.
-		 *
-		 * @param encryption  encryption dictionary, can be retrieved via {@link PDDocument#getEncryption()}
-		 * @param documentIDArray  document id which is returned via {@link org.apache.pdfbox.cos.PdfDocument#getDocumentID()}
-		 * @param decryptionMaterial Information used to decrypt the document.
-		 *
-		 * @throws InvalidPasswordException If the password is incorrect.
-		 * @throws IOException If there is an error accessing data.
-		 */
-        public abstract void PrepareForDecryption(PdfEncryption encryption, PdfArray documentIDArray, DecryptionMaterial decryptionMaterial);
+        /// <summary>Prepares everything to decrypt the document.</summary>
+        /// <param name="encryption">encryption dictionary, can be retrieved via <see cref="PdfDocument.Encryption"/> </param>
+        /// <param name="identifier">document id which is returned via <see cref="PdfDocument.ID"/></param>
+        /// <param name="decryptionMaterial">Information used to decrypt the document.</param>
+        public abstract void PrepareForDecryption(PdfEncryption encryption, Identifier identifier, DecryptionMaterial decryptionMaterial);
 
-        /**
-		 * Encrypt or decrypt a set of data.
-		 *
-		 * @param objectNumber The data object number.
-		 * @param genNumber The data generation number.
-		 * @param data The data to encrypt.
-		 * @param output The output to write the encrypted data to.
-		 * @param decrypt true to decrypt the data, false to encrypt it.
-		 *
-		 * @throws IOException If there is an error reading the data.
-		 */
+        /// <summary>Encrypt a set of data.</summary>
+        /// <param name="objectNumber">The data object number.</param>
+        /// <param name="genNumber">The data generation number.</param>
+        /// <param name="data">The data to encrypt.</param>
+        /// <param name="output">The output to write the encrypted data to.</param>
+        /// <returns></returns>
         private bool EncryptData(long objectNumber, long genNumber, Stream data, Stream output)
         {
             // Determine whether we're using Algorithm 1 (for RC4 and AES-128), or 1.A (for AES-256)
@@ -205,13 +189,10 @@ namespace PdfClown.Documents.Encryption
             //output.Flush();
         }
 
-        /**
-		 * Calculate the key to be used for RC4 and AES-128.
-		 *
-		 * @param objectNumber The data object number.
-		 * @param genNumber The data generation number.
-		 * @return the calculated key.
-		 */
+        /// <summary>Calculate the key to be used for RC4 and AES-128.</summary>
+        /// <param name="objectNumber">The data object number.</param>
+        /// <param name="genNumber">The data generation number.</param>
+        /// <returns>the calculated key.</returns>
         private byte[] CalcFinalKey(long objectNumber, long genNumber)
         {
             var newKey = new byte[EncryptionKey.Length + 5];
@@ -244,15 +225,10 @@ namespace PdfClown.Documents.Encryption
             return digestedKey.AsSpan(0, minLength).ToArray();
         }
 
-        /**
-		 * Encrypt or decrypt data with RC4.
-		 *
-		 * @param readonlyKey The readonly key obtained with via {@link #calcFinalKey(long, long)}.
-		 * @param input The data to encrypt.
-		 * @param output The output to write the encrypted data to.
-		 *
-		 * @throws IOException If there is an error reading the data.
-		 */
+        /// <summary>Encrypt or decrypt data with RC4.</summary>
+        /// <param name="readonlyKey">The readonly key obtained with via {@link #calcFinalKey(long, long)}.</param>
+        /// <param name="input">The data to encrypt.</param>
+        /// <param name="output">The output to write the encrypted data to.</param>
         protected bool EncryptDataRC4(ReadOnlySpan<byte> readonlyKey, Stream input, Stream output)
         {
             if (!rc4Bag.TryTake(out var rc4))
@@ -263,15 +239,10 @@ namespace PdfClown.Documents.Encryption
             return true;
         }
 
-        /**
-		 * Encrypt or decrypt data with RC4.
-		 *
-		 * @param readonlyKey The readonly key obtained with via {@link #calcFinalKey(long, long)}.
-		 * @param input The data to encrypt.
-		 * @param output The output to write the encrypted data to.
-		 *
-		 * @throws IOException If there is an error reading the data.
-		 */
+        /// <summary>Encrypt or decrypt data with RC4.</summary>
+        /// <param name="readonlyKey">The readonly key obtained with via {@link #calcFinalKey(long, long)}.</param>
+        /// <param name="input">The data to encrypt.</param>
+        /// <param name="output">The output to write the encrypted data to.</param>
         protected bool EncryptDataRC4(ReadOnlySpan<byte> readonlyKey, ReadOnlySpan<byte> input, Stream output)
         {
             if (!rc4Bag.TryTake(out var rc4))
@@ -283,16 +254,10 @@ namespace PdfClown.Documents.Encryption
         }
 
 
-        /**
-		 * Encrypt or decrypt data with AES with key Length other than 256 bits.
-		 *
-		 * @param readonlyKey The readonly key obtained with via {@link #calcFinalKey(long, long)}.
-		 * @param data The data to encrypt.
-		 * @param output The output to write the encrypted data to.
-		 * @param decrypt true to decrypt the data, false to encrypt it.
-		 *
-		 * @throws IOException If there is an error reading the data.
-		 */
+        /// <summary>Encrypt or decrypt data with AES with key Length other than 256 bits.</summary>
+        /// <param name="readonlyKey">The readonly key obtained with via {@link #calcFinalKey(long, long)}.</param>
+        /// <param name="data">The data to encrypt.</param>
+        /// <param name="output">The output to write the encrypted data to.</param>
         private bool EncryptDataAESother(byte[] readonlyKey, Stream data, Stream output)
         {
             byte[] iv = new byte[16];
@@ -312,7 +277,7 @@ namespace PdfClown.Documents.Encryption
             }
             catch (Exception exception)
             {
-                if (!(exception is CryptographicException))
+                if (exception is not CryptographicException)
                 {
                     throw;
                 }
@@ -321,7 +286,7 @@ namespace PdfClown.Documents.Encryption
             return false;
         }
 
-        private bool DecryptDataAESother(byte[] readonlyKey, Stream data, Stream output)
+        private static bool DecryptDataAESother(byte[] readonlyKey, Stream data, Stream output)
         {
             byte[] iv = new byte[16];
 
@@ -339,7 +304,7 @@ namespace PdfClown.Documents.Encryption
             }
             catch (Exception exception)
             {
-                if (!(exception is CryptographicException))
+                if (exception is not CryptographicException)
                 {
                     throw;
                 }
@@ -348,15 +313,9 @@ namespace PdfClown.Documents.Encryption
             return false;
         }
 
-        /**
-		 * Encrypt or decrypt data with AES256.
-		 *
-		 * @param data The data to encrypt.
-		 * @param output The output to write the encrypted data to.
-		 * @param decrypt true to decrypt the data, false to encrypt it.
-		 *
-		 * @throws IOException If there is an error reading the data.
-		 */
+        /// <summary>Encrypt or decrypt data with AES256.</summary>
+        /// <param name="data">The data to encrypt.</param>
+        /// <param name="output">The output to write the encrypted data to.</param>
         private bool EncryptDataAES256(Stream data, Stream output)
         {
             byte[] iv = new byte[16];
@@ -378,7 +337,7 @@ namespace PdfClown.Documents.Encryption
             {
                 // starting with java 8 the JVM wraps an IOException around a GeneralSecurityException
                 // it should be safe to swallow a GeneralSecurityException
-                if (!(exception is CryptographicException))
+                if (exception is not CryptographicException)
                 {
                     throw;
                 }
@@ -407,7 +366,7 @@ namespace PdfClown.Documents.Encryption
             {
                 // starting with java 8 the JVM wraps an IOException around a GeneralSecurityException
                 // it should be safe to swallow a GeneralSecurityException
-                if (!(exception is CryptographicException))
+                if (exception is not CryptographicException)
                 {
                     throw;
                 }
@@ -416,7 +375,7 @@ namespace PdfClown.Documents.Encryption
             return false;
         }
 
-        private SymmetricAlgorithm CreateCipher(byte[] key, byte[] iv)
+        private static SymmetricAlgorithm CreateCipher(byte[] key, byte[] iv)
         {
             //@SuppressWarnings({ "squid:S4432"}) // PKCS#5 padding is requested by PDF specification
             var cipher = Aes.Create();
@@ -436,17 +395,16 @@ namespace PdfClown.Documents.Encryption
             return true;
         }
 
-        /**
-        * Returns a SecureRandom If customSecureRandom is not defined, instantiate a new SecureRandom
-        * 
-        * @return SecureRandom
-        */
+        /// <summary>
+        /// Returns a SecureRandom If customSecureRandom is not defined, instantiate a new SecureRandom
+        /// </summary>
+        /// <returns>SecureRandom</returns>
         private SecureRandom GetSecureRandom()
         {
             return customSecureRandom ?? new SecureRandom();
         }
 
-        private bool PrepareAESDecryptIV(byte[] iv, Stream data)
+        private static bool PrepareAESDecryptIV(byte[] iv, Stream data)
         {
             // read IV from stream
             int ivSize = data.Read(iv, 0, iv.Length);
@@ -464,15 +422,10 @@ namespace PdfClown.Documents.Encryption
             return true;
         }
 
-        /**
-		 * This will dispatch to the correct method.
-		 *
-		 * @param obj The object to decrypt.
-		 * @param objNum The object number.
-		 * @param genNum The object generation Number.
-		 *
-		 * @throws IOException If there is an error getting the stream data.
-		 */
+        /// <summary>This will dispatch to the correct method.</summary>
+        /// <param name="obj">The object to decrypt.</param>
+        /// <param name="objNum">The object number.</param>
+        /// <param name="genNum">The object generation Number.</param>
         public void Decrypt(PdfObject obj, long objNum, long genNum)
         {
             // PDFBOX-4477: only cache strings and streams, this improves speed and memory footprint
@@ -504,15 +457,10 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        /**
-		 * This will decrypt a stream.
-		 *
-		 * @param stream The stream to decrypt.
-		 * @param objNum The object number.
-		 * @param genNum The object generation number.
-		 *
-		 * @throws IOException If there is an error getting the stream data.
-		 */
+        /// <summary>This will decrypt a stream.</summary>
+        /// <param name="stream">The stream to decrypt.</param>
+        /// <param name="objNum">The object number.</param>
+        /// <param name="genNum">The object generation number.</param>
         public void DecryptStream(PdfStream stream, long objNum, long genNum)
         {
             if (stream.encoded == EncodeState.Decoding)
@@ -566,25 +514,23 @@ namespace PdfClown.Documents.Encryption
 
             DecryptDictionary(stream, objNum, genNum);
             var encryptedStream = (Stream)stream.GetInputStreamNoDecode();
-            var output = new ByteStream();
-            if (DecryptData(objNum, genNum, encryptedStream, output))
+            if (encryptedStream != null)
             {
-                stream.SetStream(output);
-                stream.encoded = EncodeState.Decoded;
+                var output = new ByteStream();
+                if (DecryptData(objNum, genNum, encryptedStream, output))
+                {
+                    stream.SetStream(output);
+                    stream.encoded = EncodeState.Decoded;
+                }
             }
         }
 
-        /**
-		 * This will encrypt a stream, but not the dictionary as the dictionary is
-		 * encrypted by visitFromString() in PdfWriter and we don't want to encrypt
-		 * it twice.
-		 *
-		 * @param stream The stream to decrypt.
-		 * @param objNum The object number.
-		 * @param genNum The object generation number.
-		 *
-		 * @throws IOException If there is an error getting the stream data.
-		 */
+        /// <summary>This will encrypt a stream, but not the dictionary as the dictionary is
+        /// encrypted by visitFromString() in PdfWriter and we don't want to encrypt
+        /// it twice.</summary>
+        /// <param name="stream">The stream to decrypt.</param>
+        /// <param name="objNum">The object number.</param>
+        /// <param name="genNum">The object generation number.</param>
         public void EncryptStream(PdfStream stream, long objNum, int genNum)
         {
             // empty streams don't need to be encrypted
@@ -601,18 +547,13 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        /**
-		 * This will decrypt a dictionary.
-		 *
-		 * @param dictionary The dictionary to decrypt.
-		 * @param objNum The object number.
-		 * @param genNum The object generation number.
-		 *
-		 * @throws IOException If there is an error creating a new string.
-		 */
+        /// <summary>This will decrypt a dictionary.</summary>
+        /// <param name="dictionary">The dictionary to decrypt.</param>
+        /// <param name="objNum">The object number.</param>
+        /// <param name="genNum">The object generation number.</param>
         private void DecryptDictionary(PdfDictionary dictionary, long objNum, long genNum)
         {
-            if (dictionary[PdfName.CF] != null)
+            if (dictionary.Get(PdfName.CF) != null)
             {
                 // PDFBOX-2936: avoid orphan /CF dictionaries found in US govt "I-" files
                 return;
@@ -621,8 +562,8 @@ namespace PdfClown.Documents.Encryption
             bool isSignature = PdfName.Sig.Equals(type) || PdfName.DocTimeStamp.Equals(type) ||
                     // PDFBOX-4466: /Type is optional, see
                     // https://ec.europa.eu/cefdigital/tracker/browse/DSS-1538
-                    (dictionary[PdfName.ByteRange] is PdfArray
-                     && dictionary[PdfName.Contents] is PdfString);
+                    (dictionary.Get(PdfName.ByteRange) is PdfArray
+                     && dictionary.Get(PdfName.Contents) is PdfString);
             foreach (var entry in dictionary)
             {
                 if (isSignature && PdfName.Contents.Equals(entry.Key))
@@ -635,15 +576,10 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        /**
-		 * This will decrypt a string.
-		 *
-		 * @param string the string to decrypt.
-		 * @param objNum The object number.
-		 * @param genNum The object generation number.
-		 *
-		 * @throws IOException If an error occurs writing the new string.
-		 */
+        /// <summary>This will decrypt a string.</summary>
+        /// <param name="pdfString">the string to decrypt.</param>
+        /// <param name="objNum">The object number.</param>
+        /// <param name="genNum">The object generation number.</param>
         private void DecryptString(PdfString pdfString, long objNum, long genNum)
         {
             // String encrypted with identity filter
@@ -667,15 +603,10 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        /**
-		 * This will encrypt a string.
-		 *
-		 * @param string the string to encrypt.
-		 * @param objNum The object number.
-		 * @param genNum The object generation number.
-		 *
-		 * @throws IOException If an error occurs writing the new string.
-		 */
+        /// <summary>This will encrypt a string.</summary>
+        /// <param name="pdfString">the string to encrypt.</param>
+        /// <param name="objNum">The object number.</param>
+        /// <param name="genNum">The object generation number.</param>
         public void EncryptString(PdfString pdfString, long objNum, int genNum)
         {
             using var data = new ByteStream(pdfString.RawValue);
@@ -686,67 +617,35 @@ namespace PdfClown.Documents.Encryption
             }
         }
 
-        /**
-		 * This will decrypt an array.
-		 *
-		 * @param array The array to decrypt.
-		 * @param objNum The object number.
-		 * @param genNum The object generation number.
-		 *
-		 * @throws IOException If there is an error accessing the data.
-		 */
+        /// <summary>This will decrypt an array.</summary>
+        /// <param name="array">The array to decrypt.</param>
+        /// <param name="objNum">The object number.</param>
+        /// <param name="genNum">The object generation number.</param>
         private void DecryptArray(PdfArray array, long objNum, long genNum)
         {
             for (int i = 0; i < array.Count; i++)
             {
-                Decrypt(array[i], objNum, genNum);
+                Decrypt(array.Get(i), objNum, genNum);
             }
         }
 
-        /**
-		 * Getter of the property <tt>keyLength</tt>.
-		 * @return  Returns the keyLength.
-		 */
-        /**
-		 * Setter of the property <tt>keyLength</tt>.
-		 *
-		 * @param keyLen  The keyLength to set.
-		 */
+        /// <summary>Getter of the property keyLength.</summary>
         public short KeyLength
         {
             get => keyLength;
             set => keyLength = value;
         }
 
-        /**
-		 * Returns the access permissions that were computed during document decryption.
-		 * The returned object is in read only mode.
-		 *
-		 * @return the access permissions or null if the document was not decrypted.
-		 */
-        /**
-		 * Sets the access permissions.
-		 *
-		 * @param currentAccessPermission The access permissions to be set.
-		 */
+        /// <summary>Returns the access permissions that were computed during document decryption.
+        /// The returned object is in read only mode.
+        /// the access permissions or null if the document was not decrypted.</summary>
         public AccessPermission CurrentAccessPermission
         {
             get => currentAccessPermission;
             set => currentAccessPermission = value;
         }
 
-
-        /**
-		 * True if AES is used for encryption and decryption.
-		 *
-		 * @return true if AEs is used
-		 */
-        /**
-		* Set to true if AES for encryption and decryption should be used.
-		*
-		* @param aesValue if true AES will be used
-		*
-		*/
+        /// <summary>True if AES is used for encryption and decryption.</summary>
         public bool IsAES
         {
             get => useAES;
@@ -765,23 +664,19 @@ namespace PdfClown.Documents.Encryption
             set => encryptionKey = value;
         }
 
-        /**
-		 * Returns whether a protection policy has been set.
-		 *
-		 * @return true if a protection policy has been set.
-		 */
+        /// <summary>Returns whether a protection policy has been set.</summary>
+        /// <returns>true if a protection policy has been set.</returns>
         public bool HasProtectionPolicy() => protectionPolicy != null;
 
-        /**
-        * Computes the version number of the StandardSecurityHandler based on the encryption key
-        * length. See PDF Spec 1.6 p 93 and
-        * <a href="https://www.adobe.com/content/dam/acom/en/devnet/pdf/adobe_supplement_iso32000.pdf">PDF
-        * 1.7 Supplement ExtensionLevel: 3</a> and
-        * <a href="http://intranet.pdfa.org/wp-content/uploads/2016/08/ISO_DIS_32000-2-DIS4.pdf">PDF
-        * Spec 2.0</a>.
-        *
-        * @return The computed version number.
-        */
+        /// <summary>
+        /// Computes the version number of the StandardSecurityHandler based on the encryption key
+        /// length. See PDF Spec 1.6 p 93 and
+        /// <a href="https://www.adobe.com/content/dam/acom/en/devnet/pdf/adobe_supplement_iso32000.pdf">PDF
+        /// 1.7 Supplement ExtensionLevel: 3</a> and
+        /// <a href="http://intranet.pdfa.org/wp-content/uploads/2016/08/ISO_DIS_32000-2-DIS4.pdf">PDF
+        /// Spec 2.0</a>.
+        /// </summary>
+        /// <returns>The computed version number.</returns>
         public int ComputeVersionNumber()
         {
             if (keyLength == 40)

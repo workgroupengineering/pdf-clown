@@ -24,92 +24,48 @@
 */
 
 using PdfClown.Objects;
-
-using System;
 using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents.Layers
 {
-    /**
-      <summary>Optional content configuration interface [PDF:1.7:4.10.3].</summary>
-    */
+    /// <summary>Optional content configuration interface [PDF:1.7:4.10.3].</summary>
     public interface ILayerConfiguration
-      : IPdfObjectWrapper
+      : IPdfDataObject
     {
-        /**
-          <summary>Gets/Sets the name of the application or feature that created this configuration.
-          </summary>
-        */
-        string Creator
-        {
-            get;
-            set;
-        }
+        /// <summary>Gets/Sets the name of the application or feature that created this configuration.
+        /// </summary>
+        string Creator { get; set; }
 
-        /**
-          <summary>Gets/Sets the intended uses of this configuration.</summary>
-          <remarks>
-            <para>If one or more of a <see cref="Layer.Intents">layer's intents</see> are contained in
-            this configuration's intents, the layer is used in determining visibility; otherwise, the
-            layer has no effect on visibility.</para>
-            <para>If this configuration's intents are empty, no layers are used in determining
-            visibility; therefore, all content is considered visible.</para>
-          </remarks>
-          <returns>Intent collection (it comprises <see cref="IntentEnum"/> names but, for compatibility
-          with future versions, unrecognized names are allowed). To apply any subsequent change, it has
-          to be assigned back.</returns>
-          <seealso cref="IntentEnum"/>
-        */
-        ISet<PdfName> Intents
-        {
-            get;
-            set;
-        }
+        /// <summary>Gets/Sets the intended uses of this configuration.</summary>
+        /// <remarks>
+        ///   <para>If one or more of a <see cref="Layer.Intents"> layer's intents</see> are contained in
+        ///   this configuration's intents, the layer is used in determining visibility; otherwise, the
+        ///   layer has no effect on visibility.</para>
+        ///   <para>If this configuration's intents are empty, no layers are used in determining
+        ///   visibility; therefore, all content is considered visible.</para>
+        /// </remarks>
+        /// <returns>Intent collection (it comprises <see cref="IntentEnum" /> names but, for compatibility
+        /// with future versions, unrecognized names are allowed). To apply any subsequent change, it has
+        /// to be assigned back.</returns>
+        /// <seealso cref="IntentEnum" />
+        ISet<PdfName> Intents { get; set; }
 
-        /**
-          <summary>Gets the groups of layers whose states are intended to follow a radio button paradigm
-          (that is exclusive visibility within the same group).</summary>
-        */
-        Array<OptionGroup> OptionGroups
-        {
-            get;
-        }
+        /// <summary>Gets the groups of layers whose states are intended to follow a radio button paradigm
+        /// (that is exclusive visibility within the same group).</summary>
+        OptionGroups OptionGroups { get; }
 
-        /**
-          <summary>Gets/Sets the configuration name.</summary>
-        */
-        string Title
-        {
-            get;
-            set;
-        }
+        /// <summary>Gets/Sets the configuration name.</summary>
+        string Title { get; set; }
 
-        /**
-          <summary>Gets the layer structure displayed to the user.</summary>
-        */
-        UILayers UILayers
-        {
-            get;
-        }
+        /// <summary>Gets the layer structure displayed to the user.</summary>
+        UILayers UILayers { get; }
 
-        /**
-          <summary>Gets/Sets the list mode specifying which layers should be displayed to the user.
-          </summary>
-        */
-        UIModeEnum UIMode
-        {
-            get;
-            set;
-        }
+        /// <summary>Gets/Sets the list mode specifying which layers should be displayed to the user.
+        /// </summary>
+        UIModeEnum UIMode { get; set; }
 
-        /**
-          <summary>Gets/Sets whether all the layers in the document are initialize to be visible when
-          this configuration is applied.</summary>
-        */
-        bool? Visible
-        {
-            get;
-            set;
-        }
+        /// <summary>Gets/Sets whether all the layers in the document are initialize to be visible when
+        /// this configuration is applied.</summary>
+        bool? Visible { get; set; }
     }
 }

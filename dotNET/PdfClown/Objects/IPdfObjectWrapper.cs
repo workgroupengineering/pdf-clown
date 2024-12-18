@@ -23,8 +23,6 @@
   this list of conditions.
 */
 
-using System;
-
 namespace PdfClown.Objects
 {
     /// <summary>PDF object wrapper interface.</summary>
@@ -32,6 +30,6 @@ namespace PdfClown.Objects
     {
         /// <summary>Gets the underlying reference object, if available; otherwise, gets the underlying 
         /// data object.</summary>
-        PdfDirectObject BaseObject { get; }
+        PdfDirectObject RefOrSelf { get; }
     }
 }

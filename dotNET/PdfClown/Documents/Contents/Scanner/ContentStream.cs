@@ -27,6 +27,7 @@ using PdfClown.Bytes;
 using PdfClown.Objects;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace PdfClown.Documents.Contents
@@ -34,7 +35,7 @@ namespace PdfClown.Documents.Contents
     /// <summary>Content stream wrapper.</summary>
     internal class ContentStream : Stream, IInputStream
     {
-        private readonly PdfDataObject baseDataObject;
+        private readonly PdfDirectObject dataObject;
 
         // Current stream base position (cumulative size of preceding streams).
         private long basePosition;
@@ -45,9 +46,9 @@ namespace PdfClown.Documents.Contents
         private int streamIndex = -1;
         private long mark;
 
-        public ContentStream(PdfDataObject baseDataObject)
+        public ContentStream(PdfDirectObject dataObject)
         {
-            this.baseDataObject = baseDataObject;
+            this.dataObject = dataObject;
             MoveNextStream();
         }
 
@@ -140,14 +141,14 @@ namespace PdfClown.Documents.Contents
 
         private long GetLength()
         {
-            if (baseDataObject is PdfStream pdfStream) // Single stream.
+            if (dataObject is PdfStream pdfStream) // Single stream.
                 return pdfStream.GetInputStream().Length;
             else // Array of streams.
             {
                 long length = 0;
-                foreach (PdfReference reference in (PdfArray)baseDataObject)
+                foreach (var reference in ((PdfArrayImpl)dataObject).OfType<PdfReference>())
                 {
-                    length += ((PdfStream)reference.DataObject).GetInputStream().Length;
+                    length += ((PdfStream)reference.Resolve(PdfName.Contents)).GetInputStream().Length;
                 }
                 return length;
             }
@@ -237,37 +238,21 @@ namespace PdfClown.Documents.Contents
 
         private bool MoveNextStream()
         {
+            streamIndex++;
+            basePosition = streamIndex == 0 ? 0 : basePosition + (stream?.Length ?? 0);
             // Is the content stream just a single stream?
             // NOTE: A content stream may be made up of multiple streams [PDF:1.6:3.6.2].
-            if (baseDataObject is PdfStream pdfStream) // Single stream.
+            if (dataObject is PdfStream pdfStream) // Single stream.
             {
-                if (streamIndex < 1)
-                {
-                    streamIndex++;
-
-                    basePosition = (streamIndex == 0
-                      ? 0
-                      : basePosition + stream.Length);
-
-                    stream = streamIndex < 1
-                      ? pdfStream.GetInputStream()
-                      : null;
-                }
+                stream = streamIndex < 1
+                    ? pdfStream.GetInputStream()
+                    : null;
             }
-            else if (baseDataObject is PdfArray streams) // Multiple streams.
+            else if (dataObject is PdfArray streams) // Multiple streams.
             {
-                if (streamIndex < streams.Count)
-                {
-                    streamIndex++;
-
-                    basePosition = streamIndex == 0
-                      ? 0
-                      : basePosition + stream.Length;
-
-                    stream = streamIndex < streams.Count
-                      ? streams.Get<PdfStream>(streamIndex).GetInputStream()
-                      : null;
-                }
+                stream = streamIndex < streams.Count
+                    ? streams.Get<PdfStream>(streamIndex).GetInputStream()
+                    : null;
             }
             if (stream == null)
                 return false;
@@ -289,14 +274,14 @@ namespace PdfClown.Documents.Contents
             streamIndex--;
             /* NOTE: A content stream may be made up of multiple streams [PDF:1.6:3.6.2]. */
             // Is the content stream just a single stream?
-            if (baseDataObject is PdfStream pdfStream) // Single stream.
+            if (dataObject is PdfStream pdfStream) // Single stream.
             {
                 stream = pdfStream.GetInputStream();
                 basePosition = 0;
             }
             else // Array of streams.
             {
-                PdfArray streams = (PdfArray)baseDataObject;
+                var streams = (PdfArray)dataObject;
 
                 stream = streams.Get<PdfStream>(streamIndex).GetInputStream();
                 basePosition -= stream.Length;

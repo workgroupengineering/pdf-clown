@@ -15,38 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-    /**
-     * A CFF Type 1-equivalent Encoding. An encoding is an array of codes associated with some or all
-     * glyphs in a font
-     *
-     * @author John Hewson
-     */
+    /// <summary>
+    /// A CFF Type 1-equivalent Encoding.An encoding is an array of codes associated with some or all
+    /// glyphs in a font
+    /// @author John Hewson
+    /// </summary>
     public abstract class CFFEncoding : Encoding
     {
-        /**
-		 * Package-private constructor for subclasses.
-		 */
+        /// <summary>Package-private constructor for subclasses.</summary>
         public CFFEncoding()
         { }
 
 
-        /**
-		 * Adds a new code/SID combination to the encoding.
-		 * @param code the given code
-		 * @param sid the given SID
-		 */
+        /// <summary>Adds a new code/SID combination to the encoding.</summary>
+        /// <param name="code">the given code</param>
+        /// <param name="sid">the given SID</param>
+        /// <param name="name"></param>
         public void Add(int code, int sid, string name)
         {
             Put(code, name);
         }
 
-        /**
-		 * For use by subclasses only.
-		 */
+        /// <summary>For use by subclasses only.</summary>
         protected void Add(int code, int sid)
         {
             Put(code, CFFStandardString.GetName(sid));

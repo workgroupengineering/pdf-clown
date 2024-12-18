@@ -39,13 +39,13 @@ namespace PdfClown.Documents.Contents
     /// to call the <see cref="Flush()"/> method in order to serialize back the instructions
     /// into this content stream.</remarks>
     [PDF(VersionEnum.PDF10)]
-    public sealed class ContentWrapper : PdfObjectWrapper<PdfDataObject>, IList<ContentObject>, ICompositeObject
+    public sealed class ContentWrapper : PdfObjectWrapper<PdfDirectObject>, IList<ContentObject>, ICompositeObject
     {
         private List<ContentObject> items;
 
         public ContentWrapper(PdfDirectObject baseObject)
         {
-            BaseObject = baseObject;
+            RefOrSelf = baseObject;
             Load();
         }
 
@@ -57,14 +57,11 @@ namespace PdfClown.Documents.Contents
 
         public ICompositeObject Parent { get => null; set { } } 
 
-        public override object Clone(PdfDocument context)
-        { throw new NotSupportedException(); }
-
         /// <summary>Serializes the contents into the content stream.</summary>
         public void Flush()
         {
             PdfStream stream;
-            PdfDataObject baseDataObject = BaseDataObject;
+            var baseDataObject = DataObject;
             // Are contents just a single stream object?
             if (baseDataObject is PdfStream pdfStream) // Single stream.
             { stream = pdfStream; }
@@ -75,9 +72,9 @@ namespace PdfClown.Documents.Contents
                 if (streams.Count == 0) // No stream.
                 {
                     // Add first stream!
-                    stream = new PdfStream();
-                    streams.Add( // Inserts the new stream into the content stream.
-                      File.Register(stream)); // Inserts the new stream into the file.
+                    stream = new PdfStream(Document);// Inserts the new stream into the file.
+                    streams.Add(stream.Reference); // Inserts the new stream into the content stream.
+
                 }
                 else // Streams exist.
                 {
@@ -86,7 +83,7 @@ namespace PdfClown.Documents.Contents
                     // the existing structure of the Contents array [PDF:1.6:3.6.2].
                     while (streams.Count > 1)
                     {
-                        File.Unregister((PdfReference)streams[1]); // Removes the exceeding stream from the file.
+                        Document.Unregister((PdfReference)streams.Get(1)); // Removes the exceeding stream from the file.
                         streams.RemoveAt(1); // Removes the exceeding stream from the content stream.
                     }
                     stream = streams.Get<PdfStream>(0);
@@ -98,7 +95,7 @@ namespace PdfClown.Documents.Contents
             // Delete old contents from the stream buffer!
             buffer.SetLength(0);
             // Serializing the new contents into the stream buffer...
-            PdfDocument context = Document;
+            var context = Document;
             foreach (ContentObject item in items)
             {
                 item.WriteTo(buffer, context);
@@ -135,7 +132,7 @@ namespace PdfClown.Documents.Contents
 
         internal void Load()
         {
-            using var contentStream = new ContentStream(BaseDataObject);
+            using var contentStream = new ContentStream(DataObject);
             var parser = new ContentParser(contentStream);
             items = parser.ParseContentObjects();
         }

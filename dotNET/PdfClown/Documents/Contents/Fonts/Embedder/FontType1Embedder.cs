@@ -19,29 +19,23 @@ using PdfClown.Documents.Contents.Fonts.Type1;
 using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    /**
-     * Embedded PDType1Font builder. Helper class to populate a PDType1Font from a PFB and AFM.
-     *
-     * @author Michael Niedermair
-     */
+    /// <summary>Embedded PDType1Font builder.Helper class to populate a PDType1Font from a PFB and AFM.
+    /// @author Michael Niedermair
+    /// </summary>
     internal class FontType1Embedder
     {
         private readonly Encoding fontEncoding;
         private readonly Type1Font type1;
 
-        /**
-		 * This will load a PFB to be embedded into a document.
-		 *
-		 * @param doc The PDF document that will hold the embedded font.
-		 * @param dict The Font dictionary to write to.
-		 * @param pfbStream The pfb input.
-		 * @throws IOException If there is an error loading the data.
-		 */
-        public FontType1Embedder(PdfDocument doc, PdfDictionary dict, Bytes.IInputStream pfbStream, Encoding encoding)
+        /// <summary>This will load a PFB to be embedded into a document.</summary>
+        /// <param name="context">The PDF document that will hold the embedded font.</param>
+        /// <param name="dict">The Font dictionary to write to.</param>
+        /// <param name="pfbStream">The pfb input</param>
+        /// <param name="encoding"></param>
+        public FontType1Embedder(PdfDocument context, PdfFont dict, Bytes.IInputStream pfbStream, Encoding encoding)
         {
             dict[PdfName.Subtype] = PdfName.Type1;
 
@@ -60,22 +54,22 @@ namespace PdfClown.Documents.Contents.Fonts
             }
 
             // build font descriptor
-            var fd = BuildFontDescriptor(type1);
+            var fd = BuildFontDescriptor(type1, context);
 
-            var fontStream = new PdfStream(pfbParser.GetInputStream());
+            var fontStream = new FontFile(context, pfbParser.GetInputStream());
             fontStream.Set(PdfName.Length, pfbParser.Size);
             for (int i = 0; i < pfbParser.Lengths.Length; i++)
             {
                 fontStream.Set(PdfName.Get("Length" + (i + 1), true), pfbParser.Lengths[i]);
             }
-            fd.FontFile = new FontFile(doc, fontStream);
+            fd.FontFile = fontStream;
 
             // set the values
-            dict[PdfName.FontDescriptor] = fd.BaseObject;
+            dict[PdfName.FontDescriptor] = fd.Reference;
             dict[PdfName.BaseFont] = PdfName.Get(type1.Name);
 
             // widths
-            List<int> widths = new List<int>(256);
+            var widths = new PdfArrayImpl(256);
             for (int code = 0; code <= 255; code++)
             {
                 string name = fontEncoding.GetName(code);
@@ -85,24 +79,25 @@ namespace PdfClown.Documents.Contents.Fonts
 
             dict.Set(PdfName.FirstChar, 0);
             dict.Set(PdfName.LastChar, 255);
-            dict[PdfName.Widths] = new PdfArray(widths);
+            dict[PdfName.Widths] = widths;
             dict[PdfName.Encoding] = encoding.GetPdfObject();
         }
 
-        /**
-		 * Returns a FontDescriptor for the given PFB.
-		 */
-        public static FontDescriptor BuildFontDescriptor(Type1Font type1)
+        /// <summary>Returns a FontDescriptor for the given PFB.</summary>
+        /// <param name="type1"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static FontDescriptor BuildFontDescriptor(Type1Font type1, PdfDocument context)
         {
             bool isSymbolic = type1.Encoding is BuiltInEncoding;
 
-            FontDescriptor fd = new FontDescriptor
+            var fd = new FontDescriptor(context)
             {
                 FontName = type1.Name,
                 FontFamily = type1.FamilyName,
                 NonSymbolic = !isSymbolic,
                 Symbolic = isSymbolic,
-                FontBBox = new Rectangle(type1.FontBBox),
+                FontBBox = new PdfRectangle(type1.FontBBox),
                 ItalicAngle = type1.ItalicAngle,
                 Ascent = type1.FontBBox.Top,
                 Descent = type1.FontBBox.Bottom,
@@ -112,23 +107,21 @@ namespace PdfClown.Documents.Contents.Fonts
             return fd;
         }
 
-
-        /**
-		 * Returns a FontDescriptor for the given AFM. Used only for Standard 14 fonts.
-		 *
-		 * @param metrics AFM
-		 */
-        public static FontDescriptor BuildFontDescriptor(FontMetrics metrics)
+        /// <summary>Returns a FontDescriptor for the given AFM.Used only for Standard 14 fonts.</summary>
+        /// <param name="metrics">AFM</param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static FontDescriptor BuildFontDescriptor(FontMetrics metrics, PdfDocument context)
         {
             bool isSymbolic = metrics.EncodingScheme.Equals("FontSpecific", StringComparison.Ordinal);
 
-            var fd = new FontDescriptor
+            var fd = new FontDescriptor(context)
             {
                 FontName = metrics.FontName,
                 FontFamily = metrics.FamilyName,
                 NonSymbolic = !isSymbolic,
                 Symbolic = isSymbolic,
-                FontBBox = new Rectangle(metrics.FontBBox),
+                FontBBox = new PdfRectangle(metrics.FontBBox),
                 ItalicAngle = metrics.ItalicAngle,
                 Ascent = metrics.Ascender,
                 Descent = metrics.Descender,
@@ -141,25 +134,19 @@ namespace PdfClown.Documents.Contents.Fonts
             return fd;
         }
 
-        /**
-		 * Returns the font's encoding.
-		 */
+        /// <summary>Returns the font's encoding.</summary>
         public Encoding FontEncoding
         {
             get => fontEncoding;
         }
 
-        /**
-		 * Returns the font's glyph list.
-		 */
+        /// <summary>Returns the font's glyph list.</summary>
         public GlyphMapping GlyphList
         {
             get => GlyphMapping.Default;
         }
 
-        /**
-		 * Returns the Type 1 font.
-		 */
+        /// <summary>Returns the Type 1 font.</summary>
         public Type1Font Type1Font
         {
             get => type1;

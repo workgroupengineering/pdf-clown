@@ -34,7 +34,7 @@ using PdfClown.Tokens;
 namespace PdfClown.Objects
 {
     /// <summary>PDF name object [PDF:1.6:3.2.4].</summary>
-    public sealed class PdfName : PdfSimpleObject<string>, IPdfString, IEquatable<PdfName>
+    public sealed partial class PdfName : PdfSimpleObject<string>, IPdfString, IEquatable<PdfName>
     {
         //NOTE: As name objects are simple symbols uniquely defined by sequences of characters,
         //the bytes making up the name are never treated as text, always keeping them escaped.
@@ -44,8 +44,17 @@ namespace PdfClown.Objects
         //  - delimiters;
         //  - whitespaces;
         //  - '#' (number sign character).
-        private static readonly Regex EscapedPattern = new("#([\\da-fA-F]{2})");
-        private static readonly Regex UnescapedPattern = new("[\\s\\(\\)<>\\[\\]{}/%#]");
+#if NET7_0_OR_GREATER
+        [GeneratedRegex("#([\\da-fA-F]{2})", RegexOptions.CultureInvariant)]
+        private static partial Regex GetEscapedPattern();
+        [GeneratedRegex("[\\s\\(\\)<>\\[\\]{}/%#]", RegexOptions.CultureInvariant)]
+        private static partial Regex GetUnescapedPattern();
+#else
+        private static readonly Regex escapedPattern = new("#([\\da-fA-F]{2})", RegexOptions.Compiled);
+        private static readonly Regex unescapedPattern = new("[\\s\\(\\)<>\\[\\]{}/%#]", RegexOptions.Compiled);
+        private static Regex GetEscapedPattern() => escapedPattern;
+        private static Regex GetUnescapedPattern() => unescapedPattern;
+#endif
         private static readonly byte[] NamePrefixChunk = Tokens.BaseEncoding.Pdf.Encode(Keyword.NamePrefix);
         private static readonly ConcurrentDictionary<string, PdfName> names = new(Environment.ProcessorCount, 800, StringComparer.Ordinal);
 
@@ -78,6 +87,7 @@ namespace PdfClown.Objects
         public static readonly PdfName AntiAlias = Add("AntiAlias");
         public static readonly PdfName AP = Add("AP");
         public static readonly PdfName App = Add("App");
+        public static readonly PdfName AppData = Add("AppData");
         public static readonly PdfName AppDefault = Add("AppDefault");
         public static readonly PdfName Approved = Add("Approved");
         public static readonly PdfName ArtBox = Add("ArtBox");
@@ -157,12 +167,14 @@ namespace PdfClown.Objects
         public static readonly PdfName ColorDodge = Add("ColorDodge");
         public static readonly PdfName Colors = Add("Colors");
         public static readonly PdfName ColorSpace = Add("ColorSpace");
+        public static readonly PdfName ColorSpaces = Add("ColorSpaces");
         public static readonly PdfName ColorTransform = Add("ColorTransform");
         public static readonly PdfName Columns = Add("Columns");
         public static readonly PdfName Compatible = Add("Compatible");
         public static readonly PdfName Completed = Add("Completed");
         public static readonly PdfName Comment = Add("Comment");
         public static readonly PdfName Confidential = Add("Confidential");
+        public static readonly PdfName Config = Add("Config");
         public static readonly PdfName Configs = Add("Configs");
         public static readonly PdfName Contents = Add("Contents");
         public static readonly PdfName Coords = Add("Coords");
@@ -170,12 +182,14 @@ namespace PdfClown.Objects
         public static readonly PdfName Cover = Add("Cover");
         public static readonly PdfName CP = Add("CP");
         public static readonly PdfName Changes = Add("Changes");
+        public static readonly PdfName CharProc = Add("CharProc");
         public static readonly PdfName CharProcs = Add("CharProcs");
         public static readonly PdfName CreationDate = Add("CreationDate");
         public static readonly PdfName Creator = Add("Creator");
         public static readonly PdfName CreatorInfo = Add("CreatorInfo");
         public static readonly PdfName CropBox = Add("CropBox");
         public static readonly PdfName Crypt = Add("Crypt");
+        public static readonly PdfName CryptFilter = Add("CryptFilter");
         public static readonly PdfName CS = Add("CS");
         public static readonly PdfName CT = Add("CT");
         public static readonly PdfName D = Add("D");
@@ -187,6 +201,7 @@ namespace PdfClown.Objects
         public static readonly PdfName DCTDecode = Add("DCTDecode");
         public static readonly PdfName Decode = Add("Decode");
         public static readonly PdfName DecodeParms = Add("DecodeParms");
+        public static readonly PdfName Default = Add("Default");
         public static readonly PdfName DefaultCryptFilter = Add("DefaultCryptFilter");
         public static readonly PdfName Departmental = Add("Departmental");
         public static readonly PdfName Desc = Add("Desc");
@@ -245,6 +260,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Extend = Add("Extend");
         public static readonly PdfName Extends = Add("Extends");
         public static readonly PdfName ExtGState = Add("ExtGState");
+        public static readonly PdfName ExtGStates = Add("ExtGStates");
         public static readonly PdfName F = Add("F");
         public static readonly PdfName Fade = Add("Fade");
         public static readonly PdfName FB = Add("FB");
@@ -275,6 +291,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Fly = Add("Fly");
         public static readonly PdfName Fo = Add("Fo");
         public static readonly PdfName Font = Add("Font");
+        public static readonly PdfName Fonts = Add("Fonts");
         public static readonly PdfName FontBBox = Add("FontBBox");
         public static readonly PdfName FontDescriptor = Add("FontDescriptor");
         public static readonly PdfName FontFile = Add("FontFile");
@@ -286,6 +303,7 @@ namespace PdfClown.Objects
         public static readonly PdfName FontStretch = Add("FontStretch");
         public static readonly PdfName ForComment = Add("ForComment");
         public static readonly PdfName Form = Add("Form");
+        public static readonly PdfName FormType = Add("FormType");
         public static readonly PdfName ForPublicRelease = Add("ForPublicRelease");
         public static readonly PdfName FreeText = Add("FreeText");
         public static readonly PdfName FS = Add("FS");
@@ -470,6 +488,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Ordering = Add("Ordering");
         public static readonly PdfName Org = Add("Org");
         public static readonly PdfName OS = Add("OS");
+        public static readonly PdfName Outline = Add("Outline");
         public static readonly PdfName Outlines = Add("Outlines");
         public static readonly PdfName Overlay = Add("Overlay");
         public static readonly PdfName P = Add("P");
@@ -487,6 +506,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Params = Add("Params");
         public static readonly PdfName Parent = Add("Parent");
         public static readonly PdfName Pattern = Add("Pattern");
+        public static readonly PdfName Patterns = Add("Patterns");
         public static readonly PdfName PatternType = Add("PatternType");
         public static readonly PdfName PC = Add("PC");
         public static readonly PdfName PDFDocEncoding = Add("PdfDocEncoding");
@@ -573,6 +593,7 @@ namespace PdfClown.Objects
         public static readonly PdfName SetOCGState = Add("SetOCGState");
         public static readonly PdfName SHAccepted = Add("SHAccepted");
         public static readonly PdfName Shading = Add("Shading");
+        public static readonly PdfName Shadings = Add("Shadings");
         public static readonly PdfName ShadingType = Add("ShadingType");
         public static readonly PdfName SHInitialHere = Add("SHInitialHere");
         public static readonly PdfName SHSignHere = Add("SHSignHere");
@@ -585,6 +606,7 @@ namespace PdfClown.Objects
         public static readonly PdfName Slash = Add("Slash");
         public static readonly PdfName SMask = Add("SMask");
         public static readonly PdfName SoftLight = Add("SoftLight");
+        public static readonly PdfName SoftwareIdentifier = Add("SoftwareIdentifier");
         public static readonly PdfName Sold = Add("Sold");
         public static readonly PdfName Sound = Add("Sound");
         public static readonly PdfName SP = Add("SP");
@@ -634,6 +656,7 @@ namespace PdfClown.Objects
         public static readonly PdfName TP = Add("TP");
         public static readonly PdfName TR = Add("TR");
         public static readonly PdfName Trans = Add("Trans");
+        public static readonly PdfName Trailer = Add("Trailer");
         public static readonly PdfName TransformMethod = Add("TransformMethod");
         public static readonly PdfName TransformParams = Add("TransformParams");
         public static readonly PdfName Transparency = Add("Transparency");
@@ -694,6 +717,7 @@ namespace PdfClown.Objects
         public static readonly PdfName X = Add("X");
         public static readonly PdfName XML = Add("XML");
         public static readonly PdfName XObject = Add("XObject");
+        public static readonly PdfName XObjects = Add("XObjects");
         public static readonly PdfName XRef = Add("XRef");
         public static readonly PdfName XRefStm = Add("XRefStm");
         public static readonly PdfName XHeight = Add("XHeight");
@@ -736,7 +760,7 @@ namespace PdfClown.Objects
             }
             else
             {
-                if (!UnescapedPattern.IsMatch(value))
+                if (!GetUnescapedPattern().IsMatch(value))
                 {
                     stringValue = value;
                     RawValue = value;
@@ -762,13 +786,13 @@ namespace PdfClown.Objects
                 {
                     string stringValue = (string)value;
                     int index = 0;
-                    Match unescapedMatch = UnescapedPattern.Match(stringValue);
+                    Match unescapedMatch = GetUnescapedPattern().Match(stringValue);
                     while (unescapedMatch.Success)
                     {
                         int start = unescapedMatch.Index;
                         if (start > index)
                         {
-                            buffer.Append(stringValue.Substring(index, start - index));
+                            buffer.Append(stringValue.AsSpan(index, start - index));
                         }
 
                         buffer.Append('#' + String.Format("{0:x}", (int)unescapedMatch.Groups[0].Value[0]));
@@ -785,7 +809,7 @@ namespace PdfClown.Objects
             }
         }
 
-        public override PdfObject Accept(IVisitor visitor, object data) => visitor.Visit(this, data);
+        public override PdfObject Accept(IVisitor visitor, PdfName parentKey, object data) => visitor.Visit(this, parentKey, data);
 
         public override int CompareTo(PdfDirectObject obj)
         {
@@ -823,6 +847,11 @@ namespace PdfClown.Objects
             return string.Equals(StringValue, objString, StringComparison.Ordinal);
         }
 
+        public bool Equals(PdfName other)
+        {
+            return ReferenceEquals(this, other);// string.Equals(RawValue, other?.RawValue, StringComparison.Ordinal);
+        }
+
         public override int GetHashCode() => base.GetHashCode();
 
         public override string ToString()
@@ -830,7 +859,7 @@ namespace PdfClown.Objects
             //NOTE: The textual representation of a name concerns unescaping reserved characters.
             string value = RawValue;
 
-            Match escapedMatch = EscapedPattern.Match(value);
+            Match escapedMatch = GetEscapedPattern().Match(value);
             if (escapedMatch.Success)
             {
                 var buffer = new StringBuilder();
@@ -840,7 +869,7 @@ namespace PdfClown.Objects
                     int start = escapedMatch.Index;
                     if (start > index)
                     {
-                        buffer.Append(value.Substring(index, start - index));
+                        buffer.Append(value.AsSpan(index, start - index));
                     }
 
                     buffer.Append((char)Int32.Parse(escapedMatch.Groups[1].Value, NumberStyles.HexNumber));
@@ -850,7 +879,7 @@ namespace PdfClown.Objects
                 }
                 if (index < value.Length)
                 {
-                    buffer.Append(value.Substring(index));
+                    buffer.Append(value.AsSpan(index));
                 }
 
                 return buffer.ToString();
@@ -858,15 +887,12 @@ namespace PdfClown.Objects
             return value;
         }
 
-        public override void WriteTo(IOutputStream stream, PdfFile context)
+        public override void WriteTo(IOutputStream stream, PdfDocument context)
         {
             stream.Write(NamePrefixChunk);
             stream.Write(RawValue);
         }
 
-        public bool Equals(PdfName other)
-        {
-            return ReferenceEquals(this, other);// string.Equals(RawValue, other?.RawValue, StringComparison.Ordinal);
-        }
+        
     }
 }

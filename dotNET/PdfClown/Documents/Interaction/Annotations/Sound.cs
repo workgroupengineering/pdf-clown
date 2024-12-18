@@ -77,28 +77,28 @@ namespace PdfClown.Documents.Interaction.Annotations
             : base(page, PdfName.Sound, box, text)
         { Content = content; }
 
-        internal Sound(PdfDirectObject baseObject)
+        internal Sound(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the sound to be played.</summary>
         public Multimedia.Sound Content
         {
-            get => Wrap<Multimedia.Sound>(BaseDataObject[PdfName.Sound]);
+            get => Get<Multimedia.Sound>(PdfName.Sound);
             set
             {
                 if (value == null)
                     throw new ArgumentException("Content MUST be defined.");
 
-                BaseDataObject[PdfName.Sound] = value.BaseObject;
+                Set(PdfName.Sound, value);
             }
         }
 
         /// <summary>Gets/Sets the icon to be used in displaying the annotation.</summary>
         public IconTypeEnum IconType
         {
-            get => ToIconTypeEnum(BaseDataObject.GetString(PdfName.Name));
-            set => BaseDataObject[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
+            get => ToIconTypeEnum(this.GetString(PdfName.Name));
+            set => this[PdfName.Name] = value != DefaultIconType ? ToCode(value) : null;
         }
 
         /// <summary>Popups not supported.</summary>

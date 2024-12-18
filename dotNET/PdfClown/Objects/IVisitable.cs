@@ -25,17 +25,13 @@
 
 namespace PdfClown.Objects
 {
-    /**
-      <summary>Visitable interface.</summary>
-    */
+    /// <summary>Visitable interface.</summary>
     public interface IVisitable
     {
-        /**
-          <summary>Accepts a visit.</summary>
-          <param name="visitor">Visiting object.</param>
-          <param name="data">Supplemental data.</param>
-          <returns>Result object.</returns>
-        */
-        PdfObject Accept(IVisitor visitor, object data);
+        /// <summary>Accepts a visit.</summary>
+        /// <param name="visitor">Visiting object.</param>
+        /// <param name="data">Supplemental data.</param>
+        /// <returns>Result object.</returns>
+        PdfObject Accept(IVisitor visitor, PdfName parentKey, object data);
     }
 }

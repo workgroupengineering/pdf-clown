@@ -23,22 +23,17 @@
   this list of conditions.
 */
 
-using PdfClown.Objects;
-
 using System;
 
 namespace PdfClown.Documents.Functions
 {
     public sealed class TypeIdentityFunction : Function
     {
-        public static readonly TypeIdentityFunction Instance = new TypeIdentityFunction();
+        public static readonly TypeIdentityFunction Instance = new();
 
-        public TypeIdentityFunction() : base(null)
+        public TypeIdentityFunction() 
+            : base(new())
         { }
-
-        public TypeIdentityFunction(PdfDocument context, PdfDataObject baseDataObject) : base(context, baseDataObject)
-        {
-        }
 
         public override ReadOnlySpan<float> Calculate(ReadOnlySpan<float> inputs) => inputs;
     }

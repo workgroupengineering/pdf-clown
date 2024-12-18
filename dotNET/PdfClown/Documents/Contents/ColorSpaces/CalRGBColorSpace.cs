@@ -29,21 +29,15 @@
  * The default color is `new Float32Array([0, 0, 0])`.
  */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
-using PdfClown.Documents.Functions;
-using System.Linq;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>CIE-based ABC single-transformation-stage color space, where A, B, and C represent
-      calibrated red, green and blue color values [PDF:1.6:4.5.4].</summary>
-    */
+    /// <summary>CIE-based ABC single-transformation-stage color space, where A, B, and C represent
+    /// calibrated red, green and blue color values[PDF:1.6:4.5.4].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class CalRGBColorSpace : CalColorSpace
     {
@@ -86,7 +80,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             result[2] = (LMS[2] * 1) / sourceWhitePoint[2];
         }
 
-        static void convertToD65(float[] sourceWhitePoint, float[] LMS, float[] result)
+        static void ConvertToD65(float[] sourceWhitePoint, float[] LMS, float[] result)
         {
             const float D65X = 0.95047F;
             const float D65Y = 1F;
@@ -197,7 +191,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             MatrixProduct(BRADFORD_SCALE_MATRIX, XYZ_In, LMS);
 
             var LMS_D65 = new float[3];
-            convertToD65(sourceWhitePoint, LMS, LMS_D65);
+            ConvertToD65(sourceWhitePoint, LMS, LMS_D65);
 
             MatrixProduct(BRADFORD_SCALE_INVERSE_MATRIX, LMS_D65, result);
         }
@@ -220,7 +214,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         //TODO:IMPL new element constructor!
 
-        internal CalRGBColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        internal CalRGBColorSpace(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         {
             var gamma = Gamma;
             var matrix = Matrix;
@@ -240,9 +235,6 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             this.MZC = matrix.Persp2;
         }
 
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
-
         public override int ComponentCount => 3;
 
         public override Color DefaultColor => defaultColor ??= new CalRGBColor(this, 0, 0, 0);
@@ -251,9 +243,9 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             get
             {
-                return gamma ??= (Dictionary.Resolve(PdfName.Gamma) is PdfArray array
+                return gamma ??= Dictionary.Get<PdfArray>(PdfName.Gamma) is PdfArray array
                   ? new float[] { array.GetFloat(0), array.GetFloat(1), array.GetFloat(2) }
-                  : new float[] { 1, 1, 1 });
+                  : new float[] { 1, 1, 1 };
             }
         }
 
@@ -261,7 +253,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             get
             {
-                return matrix ??= Dictionary.Resolve(PdfName.Matrix) is PdfArray array
+                return matrix ??= Dictionary.Get<PdfArray>(PdfName.Matrix) is PdfArray array
                     ? new SKMatrix
                     {
                         ScaleX = array.GetFloat(0),
@@ -277,7 +269,7 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                     : SKMatrix.Identity;
             }
             set => Dictionary[PdfName.Matrix] =
-                 new PdfArray(9)
+                 new PdfArrayImpl(9)
                  {
                     value.ScaleX,
                     value.SkewY,
@@ -291,13 +283,12 @@ namespace PdfClown.Documents.Contents.ColorSpaces
                  };
         }
 
-        public override Color GetColor(PdfArray components, IContentContext context)
-            => components == null ? DefaultColor : components.Wrapper as CalRGBColor ?? new CalRGBColor(this, components);
+        public override IColor GetColor(PdfArray components, IContentContext context)
+            => components == null ? DefaultColor : new CalRGBColor(this, components);
 
-        public override bool IsSpaceColor(Color color)
-        { return color is CalRGBColor; }
+        public override bool IsSpaceColor(IColor color) => color is CalRGBColor;
 
-        public override SKColor GetSKColor(Color color, float? alpha = null)
+        public override SKColor GetSKColor(IColor color, float? alpha = null)
         {
             var calColor = (CalRGBColor)color;
             // FIXME: temporary hack

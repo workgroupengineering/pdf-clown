@@ -26,7 +26,8 @@
 namespace PdfClown.Objects
 {
     ///<summary>Item instancer.</summary>
-    public interface IEntryWrapper<T> where T : IPdfObjectWrapper
+    public interface IEntryWrapper<T> 
+        where T : IPdfObjectWrapper
     {
         T Wrap(PdfDirectObject baseObject);
     }

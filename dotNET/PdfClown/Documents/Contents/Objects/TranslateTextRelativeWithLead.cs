@@ -24,7 +24,6 @@
 */
 
 using PdfClown.Objects;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.Objects
 {

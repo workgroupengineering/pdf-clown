@@ -67,6 +67,20 @@ namespace PdfClown.Tokens
             return stringBytes;
         }
 
+        public override byte[] Encode(char[] value)
+        {
+            byte[] stringBytes = new byte[value.Length];
+            for (int index = 0, length = value.Length; index < length; index++)
+            {
+                int code = chars.GetKey(value[index]);
+                if (code == 0) //TODO: verify whether 0 collides with valid code values.
+                    return null;
+
+                stringBytes[index] = (byte)code;
+            }
+            return stringBytes;
+        }
+
         public override void Encode(ReadOnlySpan<char> value, Span<byte> stringBytes)
         {
             for (int index = 0, length = value.Length; index < length; index++)

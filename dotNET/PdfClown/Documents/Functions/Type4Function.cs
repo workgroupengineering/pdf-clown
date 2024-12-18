@@ -23,7 +23,7 @@
   this list of conditions.
 */
 
-using PdfClown.Documents.Contents.Fonts;
+using PdfClown.Bytes;
 using PdfClown.Documents.Functions.Type4;
 using PdfClown.Objects;
 using PdfClown.Tokens;
@@ -43,11 +43,16 @@ namespace PdfClown.Documents.Functions
 
         //TODO:implement function creation!
 
-        internal Type4Function(PdfDirectObject baseObject) : base(baseObject)
+        internal Type4Function(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        public override void SetStream(IInputStream value)
         {
-            if (BaseDataObject is PdfStream stream)
+            base.SetStream(value);
+            if (value != null)
             {
-                using var data = (Stream)stream.GetExtractedStream();
+                using var data = (Stream)GetExtractedStream();
                 using var input = new StreamReader(data, Charset.ISO88591);
                 this.instructions = InstructionSequenceBuilder.Parse(input);
             }

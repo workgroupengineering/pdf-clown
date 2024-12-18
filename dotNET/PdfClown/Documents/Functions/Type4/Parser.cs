@@ -20,16 +20,12 @@ using System.IO;
 namespace PdfClown.Documents.Functions.Type4
 {
 
-
-    /**
-     * Parser for PDF Type 4 functions. This implements a small subset of the PostScript
-     * language but is no full PostScript interpreter.
-     *
-     */
+    /// <summary>Parser for PDF Type 4 functions.This implements a small subset of the PostScript
+    /// language but is no full PostScript interpreter.</summary>
     public sealed class Parser
     {
 
-        /** Used to indicate the parsers current state. */
+        /// <summary>Used to indicate the parsers current state.</summary>
         private enum State
         {
             NEWLINE, WHITESPACE, COMMENT, TOKEN
@@ -40,81 +36,54 @@ namespace PdfClown.Documents.Functions.Type4
             //nop
         }
 
-        /**
-         * Parses a Type 4 function and sends the syntactic elements to the given
-         * syntax handler.
-         * @param input the text source
-         * @param handler the syntax handler
-         */
+        /// <summary>Parses a Type 4 function and sends the syntactic elements to the given</summary>
+        /// <param name="input">the text source</param>
+        /// <param name="handler">the syntax handler</param>
         public static void Parse(StreamReader input, SyntaxHandler handler)
         {
             var tokenizer = new Tokenizer(input, handler);
             tokenizer.Tokenize();
         }
 
-        /**
-         * This interface defines all possible syntactic elements of a Type 4 function.
-         * It is called by the parser as the function is interpreted.
-         */
+        /// <summary>This interface defines all possible syntactic elements of a Type 4 function.
+        /// It is called by the parser as the function is interpreted.</summary>
         public interface SyntaxHandler
         {
 
-            /**
-             * Indicates that a new line starts.
-             * @param text the new line character (CR, LF, CR/LF or FF)
-             */
+            /// <summary>Indicates that a new line starts.</summary>
+            /// <param name="text">the new line character(CR, LF, CR/LF or FF)</param>
             void NewLine(StringStream text);
 
-            /**
-             * Called when whitespace characters are encountered.
-             * @param text the whitespace text
-             */
+            /// <summary>Called when whitespace characters are encountered.</summary>
+            /// <param name="text">the whitespace text</param>
             void Whitespace(StringStream text);
 
-            /**
-             * Called when a token is encountered. No distinction between operators and values
-             * is done here.
-             * @param text the token text
-             */
+            /// <summary>Called when a token is encountered.No distinction between operators and values
+            /// is done here.</summary>
+            /// <param name="text">the token text</param>
             void Token(StringStream text);
 
-            /**
-             * Called for a comment.
-             * @param text the comment
-             */
+            /// <summary>Called for a comment.</summary>
+            /// <param name="text">the comment</param>
             void Comment(StringStream text);
         }
 
-        /**
-         * Abstract base class for a {@link SyntaxHandler}.
-         */
+        /// <summary>Abstract base class for a {@link SyntaxHandler}.</summary>
         public abstract class AbstractSyntaxHandler : SyntaxHandler
         {
             public abstract void Token(StringStream text);
 
-            /** {@inheritDoc} */
             public virtual void Comment(StringStream text)
-            {
-                //nop
-            }
+            {}
 
-            /** {@inheritDoc} */
             public virtual void NewLine(StringStream text)
-            {
-                //nop
-            }
+            {}
 
-            /** {@inheritDoc} */
             public virtual void Whitespace(StringStream text)
-            {
-                //nop
-            }
-
+            {}
         }
 
-        /**
-         * Tokenizer for Type 4 functions.
-         */
+        /// <summary>Tokenizer for Type 4 functions.</summary>
         internal sealed class Tokenizer
         {
 

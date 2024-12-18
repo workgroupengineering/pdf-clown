@@ -48,8 +48,8 @@ namespace PdfClown.Documents.Contents.Objects
 
         protected override PdfString TextElement
         {
-            get => (PdfString)operands[2];
-            set => operands[2] = value;
+            get => (PdfString)operands.Get(2);
+            set => operands.SetSimple(2, value);
         }
 
         /// <summary>Gets/Sets the character spacing.</summary>

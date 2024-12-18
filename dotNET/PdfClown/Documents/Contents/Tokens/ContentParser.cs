@@ -25,6 +25,7 @@
 */
 
 using PdfClown.Bytes;
+using PdfClown.Documents.Contents.ColorSpaces;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Objects;
 using PdfClown.Tokens;
@@ -110,22 +111,29 @@ namespace PdfClown.Documents.Contents.Tokens
                         @operator = StringBuffer.ToString();
                         break;
                     default:
-                        operands ??= new PdfArray();
-                        operands.AddDirect((PdfDirectObject)ParsePdfObject());
+                        operands ??= new PdfArrayImpl();
+                        operands.AddSimple(ParsePdfObject());
                         break;
                 }
             } while (@operator == null && MoveNext());
             return @operator == null ? null : Operation.Get(@operator, operands);
         }
 
-        public override PdfDataObject ParsePdfObject()
+        public override PdfDirectObject ParsePdfObject(PdfName parentKey = null)
         {
             if (TokenType == TokenTypeEnum.Literal
                 || TokenType == TokenTypeEnum.Hex)
             {
                 return new PdfByteString(BytesToken.ToArray());
             }
-            return base.ParsePdfObject();
+            return base.ParsePdfObject(parentKey);
+        }
+
+        protected override PdfArray CreatePdfArray(List<PdfDirectObject> array, PdfName parentKey, PdfName gPKey)
+        {
+            return ColorSpace.IsMatch(array) 
+                ? ColorSpace.Create(array)
+                : base.CreatePdfArray(array, parentKey, gPKey);
         }
 
         private GraphicsInlineImage ParseInlineImage()
@@ -135,10 +143,12 @@ namespace PdfClown.Documents.Contents.Tokens
             //for objects.
             InlineImageHeader header;
             {
-                var operands = new PdfArray();
+                var operands = new PdfArrayImpl();
                 // Parsing the image entries...
                 while (MoveNext() && TokenType != TokenTypeEnum.Keyword) // Not keyword (i.e. end at image data beginning (ID operator)).
-                { operands.AddDirect((PdfDirectObject)ParsePdfObject()); }
+                {
+                    operands.AddSimple(ParsePdfObject());
+                }
                 header = new InlineImageHeader(operands);
             }
 

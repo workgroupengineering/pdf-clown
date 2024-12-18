@@ -27,44 +27,75 @@ using PdfClown.Documents.Contents.Fonts;
 using PdfClown.Documents.Contents.XObjects;
 using PdfClown.Documents.Functions;
 using PdfClown.Objects;
-
+using PdfClown.Util;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PdfClown.Documents.Contents
 {
     ///<summary>Graphics state parameters [PDF:1.6:4.3.4].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class ExtGState : PdfObjectWrapper<PdfDictionary>
+    public sealed class ExtGState : PdfDictionary
     {
-        private static readonly Dictionary<PdfName, Action<ExtGState, GraphicsState>> cache = new(24)
+        private static readonly Dictionary<PdfName, Action<ExtGState, GraphicsState>> factory = new(24)
         {
-            { PdfName.Font, (eState, gState) => gState.SetFont(eState)},
-            { PdfName.AIS, (eState, gState) => gState.AlphaIsShape = eState.AlphaShape },
-            { PdfName.CA, (eState, gState) => gState.StrokeAlpha = eState.StrokeAlpha },
-            { PdfName.ca, (eState, gState) => gState.FillAlpha = eState.FillAlpha },
-            { PdfName.SA, (eState, gState) => gState.StrokeAdjustment = eState.StrokeAdjustment },
-            { PdfName.OP, (eState, gState) => gState.StrokeOverprint = eState.StrokeOverprint },
-            { PdfName.op, (eState, gState) => gState.FillOverprint = eState.FillOverprint },
-            { PdfName.OPM, (eState, gState) => gState.OverprintMode = eState.OverprintMode },
-            { PdfName.LC, (eState, gState) => gState.LineCap = eState.LineCap ?? LineCapEnum.Butt },
-            { PdfName.LJ, (eState, gState) => gState.LineJoin = eState.LineJoin ?? LineJoinEnum.Miter },
-            { PdfName.LW, (eState, gState) => gState.LineWidth = eState.LineWidth ?? 0 },
-            { PdfName.D, (eState, gState) => gState.LineDash = eState.LineDash },
-            { PdfName.ML, (eState, gState) => gState.MiterLimit = eState.MiterLimit ?? 0 },
-            { PdfName.BM, (eState, gState) => gState.BlendMode = eState.BlendMode },
-            { PdfName.SMask, (eState, gState) => gState.SMask = eState.SMask },
-            { PdfName.TK, (eState, gState) => gState.Knockout = eState.Knockout },
-            { PdfName.BG, (eState, gState) => gState.Function = eState.BG },
-            { PdfName.BG2, (eState, gState) => gState.Function = eState.BG2 },
+            { PdfName.Font, static (eState, gState) => gState.SetFont(eState)},
+            { PdfName.AIS, static (eState, gState) => gState.AlphaIsShape = eState.AlphaShape },
+            { PdfName.CA, static (eState, gState) => gState.StrokeAlpha = eState.StrokeAlpha },
+            { PdfName.ca, static (eState, gState) => gState.FillAlpha = eState.FillAlpha },
+            { PdfName.SA, static (eState, gState) => gState.StrokeAdjustment = eState.StrokeAdjustment },
+            { PdfName.OP, static (eState, gState) => gState.StrokeOverprint = eState.StrokeOverprint },
+            { PdfName.op, static (eState, gState) => gState.FillOverprint = eState.FillOverprint },
+            { PdfName.OPM, static (eState, gState) => gState.OverprintMode = eState.OverprintMode },
+            { PdfName.LC, static (eState, gState) => gState.LineCap = eState.LineCap ?? LineCapEnum.Butt },
+            { PdfName.LJ, static (eState, gState) => gState.LineJoin = eState.LineJoin ?? LineJoinEnum.Miter },
+            { PdfName.LW, static (eState, gState) => gState.LineWidth = eState.LineWidth ?? 0 },
+            { PdfName.D, static (eState, gState) => gState.LineDash = eState.LineDash },
+            { PdfName.ML, static (eState, gState) => gState.MiterLimit = eState.MiterLimit ?? 0 },
+            { PdfName.BM, static (eState, gState) => gState.BlendMode = eState.BlendMode },
+            { PdfName.SMask, static (eState, gState) => gState.SMask = eState.SMask },
+            { PdfName.TK, static (eState, gState) => gState.Knockout = eState.Knockout },
+            { PdfName.BG, static (eState, gState) => gState.Function = eState.BG },
+            { PdfName.BG2, static (eState, gState) => gState.Function = eState.BG2 },
             //TODO:extend supported parameters!!!
         };
-        private LineDash lineDash;
+        private static readonly BiDictionary<BlendModeEnum?, PdfName> blendingCodes = new()
+        {
+            [BlendModeEnum.Normal] = PdfName.Normal,
+            [BlendModeEnum.Multiply] = PdfName.Multiply,
+            [BlendModeEnum.Screen] = PdfName.Screen,
+            [BlendModeEnum.Overlay] = PdfName.Overlay,
+            [BlendModeEnum.Darken] = PdfName.Darken,
+            [BlendModeEnum.Lighten] = PdfName.Lighten,
+            [BlendModeEnum.ColorDodge] = PdfName.ColorDodge,
+            [BlendModeEnum.ColorBurn] = PdfName.ColorBurn,
+            [BlendModeEnum.Compatible] = PdfName.Compatible,
+            [BlendModeEnum.HardLight] = PdfName.HardLight,
+            [BlendModeEnum.SoftLight] = PdfName.SoftLight,
+            [BlendModeEnum.Difference] = PdfName.Difference,
+            [BlendModeEnum.Exclusion] = PdfName.Exclusion,
+            [BlendModeEnum.Hue] = PdfName.Hue,
+            [BlendModeEnum.Saturation] = PdfName.Saturation,
+            [BlendModeEnum.Color] = PdfName.Color,
+            [BlendModeEnum.Luminosity] = PdfName.Luminosity
+        };
 
-        public ExtGState(PdfDocument context) : base(context, new PdfDictionary())
+        public static BlendModeEnum? GetBlendMode(PdfName name) => blendingCodes.GetKey(name);
+
+        public static PdfName GetName(BlendModeEnum blendMode) => blendingCodes[blendMode];
+
+        private LineDash lineDash;
+        private PdfFont font;
+
+        public ExtGState(PdfDocument context)
+            : base(context, new(){
+                { PdfName.Type, PdfName.ExtGState }
+            })
         { }
 
-        public ExtGState(PdfDirectObject baseObject) : base(baseObject)
+        internal ExtGState(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         ///<summary>Gets/Sets whether the current soft mask and alpha constant are to be interpreted as
@@ -72,15 +103,15 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF14)]
         public bool AlphaShape
         {
-            get => BaseDataObject.GetBool(PdfName.AIS, false);
-            set => BaseDataObject.Set(PdfName.AIS, value);
+            get => GetBool(PdfName.AIS, false);
+            set => Set(PdfName.AIS, value);
         }
 
         public void ApplyTo(GraphicsState state)
         {
-            foreach (PdfName parameterName in BaseDataObject.Keys)
+            foreach (PdfName parameterName in Keys)
             {
-                if (cache.TryGetValue(parameterName, out var func))
+                if (factory.TryGetValue(parameterName, out var func))
                     func(this, state);
             }
         }
@@ -88,34 +119,35 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF14)]
         public SoftMask SMask
         {
-            get => SoftMask.WrapSoftMask(BaseDataObject[PdfName.SMask]);
-            set => BaseDataObject[PdfName.SMask] = value.BaseObject;
+            get => SoftMask.WrapSoftMask(Get(PdfName.SMask));
+            set => Set(PdfName.SMask, value);
         }
 
         public bool? Knockout
         {
-            get => BaseDataObject.GetNBool(PdfName.TK);
-            set => BaseDataObject.Set(PdfName.TK, value);
+            get => GetNBool(PdfName.TK);
+            set => Set(PdfName.TK, value);
         }
 
-        ///<summary>Gets/Sets the blend mode to be used in the transparent imaging model [PDF:1.7:7.2.4].
-        ///</summary>
+        /// <summary>Gets/Sets the blend mode to be used in the transparent imaging model [PDF:1.7:7.2.4].
+        /// </summary>
         [PDF(VersionEnum.PDF14)]
         public BlendModeEnum? BlendMode
         {
             get
             {
-                PdfDirectObject blendModeObject = BaseDataObject[PdfName.BM];
+                var blendModeObject = Get<PdfDirectObject>(PdfName.BM);
                 if (blendModeObject == null)
                     return null;
 
                 if (blendModeObject is PdfName name)
-                { return BlendModeEnumExtension.Get(name); }
-                else // MUST be an array.
+                { return GetBlendMode(name); }
+                else if(blendModeObject is PdfArray array)
                 {
-                    foreach (PdfName alternateBlendModeObject in (PdfArray)blendModeObject)
+                    foreach (var item in array.GetItems())
                     {
-                        if (BlendModeEnumExtension.Get(alternateBlendModeObject) is BlendModeEnum blendMode)
+                        if (item?.Resolve() is PdfName blendModeName
+                            && GetBlendMode(blendModeName) is BlendModeEnum blendMode)
                             return blendMode;
                     }
                 }
@@ -123,7 +155,9 @@ namespace PdfClown.Documents.Contents
             }
             set
             {
-                BaseDataObject[PdfName.BM] = value == null ? null : (PdfDirectObject)value.Value.GetName();
+                var items = GetOrCreate<PdfArrayImpl>(PdfName.BM);
+                items.Clear();
+                items.Add(GetName(value.Value));
             }
         }
 
@@ -133,8 +167,8 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF14)]
         public float? FillAlpha
         {
-            get => BaseDataObject.GetNFloat(PdfName.ca);
-            set => BaseDataObject.Set(PdfName.ca, value);
+            get => GetNFloat(PdfName.ca);
+            set => Set(PdfName.ca, value);
         }
 
         ///<summary>Gets/Sets the stroking alpha constant, specifying the constant shape or constant
@@ -143,91 +177,84 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF14)]
         public float? StrokeAlpha
         {
-            get => BaseDataObject.GetNFloat(PdfName.CA);
-            set => BaseDataObject.Set(PdfName.CA, value);
+            get => GetNFloat(PdfName.CA);
+            set => Set(PdfName.CA, value);
         }
 
         public bool FillOverprint
         {
-            get => BaseDataObject.GetBool(PdfName.op);
-            set => BaseDataObject.Set(PdfName.op, value);
+            get => GetBool(PdfName.op);
+            set => Set(PdfName.op, value);
         }
 
         public bool StrokeOverprint
         {
-            get => BaseDataObject.GetBool(PdfName.OP);
-            set => BaseDataObject.Set(PdfName.OP, value);
+            get => GetBool(PdfName.OP);
+            set => Set(PdfName.OP, value);
         }
 
         public int OverprintMode
         {
-            get => BaseDataObject.GetInt(PdfName.OPM);
-            set => BaseDataObject.Set(PdfName.OPM, value);
+            get => GetInt(PdfName.OPM);
+            set => Set(PdfName.OPM, value);
         }
 
         public bool StrokeAdjustment
         {
-            get => BaseDataObject.GetBool(PdfName.SA);
-            set => BaseDataObject.Set(PdfName.SA, value);
+            get => GetBool(PdfName.SA);
+            set => Set(PdfName.SA, value);
         }
 
         [PDF(VersionEnum.PDF13)]
-        public Font Font
+        public PdfFont Font
         {
-            get
-            {
-                var fontObject = BaseDataObject.Get<PdfArray>(PdfName.Font);
-                return Font.Wrap(fontObject?[0]);
-            }
+            get => font ??= Get<PdfArray>(PdfName.Font)?.Get<PdfFont>(0);
             set
             {
-                var fontObject = BaseDataObject.Get<PdfArray>(PdfName.Font);
+                font = value;
+                var fontObject = Get<PdfArray>(PdfName.Font);
                 if (fontObject == null)
-                { fontObject = new PdfArray(2) { PdfObjectWrapper.GetBaseObject(value), PdfInteger.Default }; }
+                { fontObject = new PdfArrayImpl(2) { value?.Reference, PdfInteger.Default }; }
                 else
-                { fontObject[0] = PdfObjectWrapper.GetBaseObject(value); }
-                BaseDataObject[PdfName.Font] = fontObject;
+                { fontObject.Set(0, value); }
+                SetDirect(PdfName.Font, fontObject);
             }
         }
 
         [PDF(VersionEnum.PDF13)]
         public float? FontSize
         {
-            get
-            {
-                var fontObject = BaseDataObject.Get<PdfArray>(PdfName.Font);
-                return fontObject?.GetFloat(1);
-            }
+            get => Get<PdfArray>(PdfName.Font)?.GetFloat(1);
             set
             {
-                var fontObject = BaseDataObject.Get<PdfArray>(PdfName.Font);
+                var fontObject = Get<PdfArray>(PdfName.Font);
                 if (fontObject == null)
-                { fontObject = new PdfArray(2) { (string)null, value }; }
+                { fontObject = new PdfArrayImpl(2) { (string)null, value }; }
                 else
                 { fontObject.Set(1, value); }
-                BaseDataObject[PdfName.Font] = fontObject;
+                SetDirect(PdfName.Font, fontObject);
             }
         }
 
         [PDF(VersionEnum.PDF13)]
         public LineCapEnum? LineCap
         {
-            get => (LineCapEnum?)BaseDataObject.GetNInt(PdfName.LC);
-            set => BaseDataObject.Set(PdfName.LC, value.HasValue ? (int)value.Value : null);
+            get => (LineCapEnum?)GetNInt(PdfName.LC);
+            set => Set(PdfName.LC, value.HasValue ? (int)value.Value : null);
         }
 
         [PDF(VersionEnum.PDF13)]
         public LineDash LineDash
         {
-            get => lineDash ??= BaseDataObject.Resolve(PdfName.D) is PdfArray lineDashObject
+            get => lineDash ??= Get<PdfArray>(PdfName.D) is PdfArray lineDashObject
                 ? LineDash.Get(lineDashObject.Get<PdfArray>(0), lineDashObject.GetNumber(1))
                 : null;
             set
             {
                 lineDash = value;
-                BaseDataObject[PdfName.D] = new PdfArray
+                this[PdfName.D] = new PdfArrayImpl
                 {
-                    new PdfArray(value.DashArray),
+                    new PdfArrayImpl(value.DashArray),
                     value.DashPhase
                 };
             }
@@ -236,34 +263,34 @@ namespace PdfClown.Documents.Contents
         [PDF(VersionEnum.PDF13)]
         public LineJoinEnum? LineJoin
         {
-            get => (LineJoinEnum?)BaseDataObject.GetNInt(PdfName.LJ);
-            set => BaseDataObject.Set(PdfName.LJ, value.HasValue ? (int)value.Value : null);
+            get => (LineJoinEnum?)GetNInt(PdfName.LJ);
+            set => Set(PdfName.LJ, value.HasValue ? (int)value.Value : null);
         }
 
         [PDF(VersionEnum.PDF13)]
         public float? LineWidth
         {
-            get => BaseDataObject.GetNFloat(PdfName.LW);
-            set => BaseDataObject.Set(PdfName.LW, value);
+            get => GetNFloat(PdfName.LW);
+            set => Set(PdfName.LW, value);
         }
 
         [PDF(VersionEnum.PDF13)]
         public float? MiterLimit
         {
-            get => BaseDataObject.GetNFloat(PdfName.ML);
-            set => BaseDataObject.Set(PdfName.ML, value);
+            get => GetNFloat(PdfName.ML);
+            set => Set(PdfName.ML, value);
         }
 
         public Function BG
         {
-            get => BaseDataObject[PdfName.BG] is PdfName ? null : Function.Wrap(BaseDataObject[PdfName.BG]);
-            set => BaseDataObject[PdfName.BG] = value.BaseObject;
+            get => Function.Wrap(Get(PdfName.BG));
+            set => Set(PdfName.BG, value);
         }
 
         public Function BG2
         {
-            get => BaseDataObject[PdfName.BG2] is PdfName ? null : Function.Wrap(BaseDataObject[PdfName.BG2]);
-            set => BaseDataObject[PdfName.BG2] = value.BaseObject;
+            get => Function.Wrap(Get(PdfName.BG2));
+            set => Set(PdfName.BG2, value);
         }
     }
 }

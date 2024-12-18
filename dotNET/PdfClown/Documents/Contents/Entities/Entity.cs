@@ -23,33 +23,17 @@
   this list of conditions.
 */
 
-using PdfClown;
-using PdfClown.Documents;
-using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Composition;
 using PdfClown.Documents.Contents.Objects;
-using xObjects = PdfClown.Documents.Contents.XObjects;
-
-using System;
+using PdfClown.Documents.Contents.XObjects;
 
 namespace PdfClown.Documents.Contents.Entities
 {
-    /**
-      <summary>Abstract specialized graphic object.</summary>
-    */
-    public abstract class Entity
-      : IContentEntity
+    /// <summary>Abstract specialized graphic object.</summary>
+    public abstract class Entity : IContentEntity
     {
-        #region dynamic
-        #region interface
-        #region public
-        #region IContentEntity
         public abstract ContentObject ToInlineObject(PrimitiveComposer composer);
 
-        public abstract xObjects::XObject ToXObject(PdfDocument context);
-        #endregion
-        #endregion
-        #endregion
-        #endregion
+        public abstract XObject ToXObject(PdfDocument context);
     }
 }

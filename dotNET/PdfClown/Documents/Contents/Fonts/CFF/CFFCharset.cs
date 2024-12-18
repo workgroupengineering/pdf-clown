@@ -15,85 +15,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
-    /**
-     * A CFF charset. A charset is an array of SIDs/CIDs for all glyphs in the font.
-     *
-     * todo: split this into two? CFFCharsetType1 and CFFCharsetCID ?
-     *
-     * @author John Hewson
-     */
+    /// <summary>
+    /// A CFF charset.A charset is an array of SIDs/CIDs for all glyphs in the font.
+    /// todo: split this into two? CFFCharsetType1 and CFFCharsetCID?
+    /// @author John Hewson
+    /// </summary>
     public abstract class CFFCharset
     {
         public abstract bool IsCIDFont { get; }
 
-        /**
-         * Adds a new GID/SID/name combination to the charset.
-         *
-         * @param gid GID
-         * @param sid SID
-         */
+        /// <summary>Adds a new GID/SID/name combination to the charset.</summary>
+        /// <param name="gid">GID</param>
+        /// <param name="sid">SID</param>
+        /// <param name="name"></param>
         public abstract void AddSID(int gid, int sid, string name);
 
-        /**
-         * Adds a new GID/CID combination to the charset.
-         *
-         * @param gid GID
-         * @param cid CID
-         */
+        /// <summary>Adds a new GID/CID combination to the charset.</summary>
+        /// <param name="gid">GID</param>
+        /// <param name="cid">CID</param>
         public abstract void AddCID(int gid, int cid);
 
-        /**
-         * Returns the SID for a given GID. SIDs are internal to the font and are not public.
-         *
-         * @param sid GID
-         * @return SID
-         */
+        /// <summary>Returns the SID for a given GID.SIDs are internal to the font and are not public.</summary>
+        /// <param name="gid">GID</param>
+        /// <returns>SID</returns>
         public abstract int GetSIDForGID(int gid);
 
-        /**
-         * Returns the GID for the given SID. SIDs are internal to the font and are not public.
-         *
-         * @param sid SID
-         * @return GID
-         */
+        /// <summary>Returns the GID for the given SID.SIDs are internal to the font and are not public.</summary>
+        /// <param name="sid">SID</param>
+        /// <returns>GID</returns>
         public abstract int GetGIDForSID(int sid);
 
-        /**
-         * Returns the GID for a given CID. Returns 0 if the CID is missing.
-         *
-         * @param cid CID
-         * @return GID
-         */
+        /// <summary>Returns the GID for a given CID.Returns 0 if the CID is missing.</summary>
+        /// <param name="cid">CID</param>
+        /// <returns>GID</returns>
         public abstract int GetGIDForCID(int cid);
 
-        /**
-         * Returns the SID for a given PostScript name, you would think this is not needed,
-         * but some fonts have glyphs beyond their encoding with charset SID names.
-         *
-         * @param name PostScript glyph name
-         * @return SID
-         */
+        /// <summary>Returns the SID for a given PostScript name, you would think this is not needed,
+        /// but some fonts have glyphs beyond their encoding with charset SID names.</summary>
+        /// <param name="name">PostScript glyph name</param>
+        /// <returns>SID</returns>
         public abstract int GetSID(string name);
 
-        /**
-         * Returns the PostScript glyph name for the given GID.
-         *
-         * @param gid GID
-         * @return PostScript glyph name
-         */
+        /// <summary>Returns the PostScript glyph name for the given GID.</summary>
+        /// <param name="gid">GID</param>
+        /// <returns>PostScript glyph name</returns>
         public abstract string GetNameForGID(int gid);
 
-        /**
-         * Returns the CID for the given GID.
-         *
-         * @param gid GID
-         * @return CID
-         */
+        /// <summary>Returns the CID for the given GID.</summary>
+        /// <param name="gid"GID></param>
+        /// <returns>CID</returns>
         public abstract int GetCIDForGID(int gid);
     }
 }

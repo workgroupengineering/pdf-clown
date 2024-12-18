@@ -94,8 +94,7 @@ namespace PdfClown.Tools
         /// <summary>Converts text information into plain text.</summary>
         /// <param name="textStrings">Text information to convert.</param>
         /// <returns>Plain text.</returns>
-        public static string ToString(IDictionary<SKRect?, IList<ITextString>> textStrings)
-        { return ToString(textStrings, "", ""); }
+        public static string ToString(IDictionary<SKRect?, IList<ITextString>> textStrings) => ToString(textStrings, "", "");
 
         /// <summary>Converts text information into plain text.</summary>
         /// <param name="textStrings">Text information to convert.</param>
@@ -104,14 +103,18 @@ namespace PdfClown.Tools
         /// <returns>Plain text.</returns>
         public static string ToString(IDictionary<SKRect?, IList<ITextString>> textStrings, string lineSeparator, string areaSeparator)
         {
-            StringBuilder textBuilder = new StringBuilder();
-            foreach (IList<ITextString> areaTextStrings in textStrings.Values)
+            var textBuilder = new StringBuilder();
+            foreach (var areaTextStrings in textStrings.Values)
             {
                 if (textBuilder.Length > 0)
-                { textBuilder.Append(areaSeparator); }
+                {
+                    textBuilder.Append(areaSeparator);
+                }
 
                 foreach (ITextString textString in areaTextStrings)
-                { textBuilder.Append(textString.Text).Append(lineSeparator); }
+                {
+                    textBuilder.Append(textString.Text).Append(lineSeparator);
+                }
             }
             return textBuilder.ToString();
         }
@@ -122,10 +125,12 @@ namespace PdfClown.Tools
         private bool dehyphenated;
         private bool sorted;
 
-        public TextExtractor() : this(true, false)
+        public TextExtractor()
+            : this(true, false)
         { }
 
-        public TextExtractor(bool sorted, bool dehyphenated) : this(null, sorted, dehyphenated)
+        public TextExtractor(bool sorted, bool dehyphenated)
+            : this(null, sorted, dehyphenated)
         { }
 
         public TextExtractor(IList<SKRect> areas, bool sorted, bool dehyphenated)
@@ -172,9 +177,9 @@ namespace PdfClown.Tools
 
         /// <summary>Extracts text strings from the specified content context.</summary>
         /// <param name="contentContext">Source content context.</param>
-        public IDictionary<SKRect?, IList<ITextString>> Extract(IContentContext contentContext)
+        public Dictionary<SKRect?, IList<ITextString>> Extract(IContentContext contentContext)
         {
-            IDictionary<SKRect?, IList<ITextString>> extractedTextStrings;
+            Dictionary<SKRect?, IList<ITextString>> extractedTextStrings;
             {
                 var textStrings = new List<ITextString>();
                 {
@@ -210,7 +215,7 @@ namespace PdfClown.Tools
         /// <returns>A list of text strings corresponding to the specified intervals.</returns>
         public IList<ITextString> Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, IList<Interval<int>> intervals)
         {
-            IntervalFilter filter = new IntervalFilter(intervals);
+            var filter = new IntervalFilter(intervals);
             Filter(textStrings, filter);
             return filter.TextStrings;
         }
@@ -220,11 +225,11 @@ namespace PdfClown.Tools
         /// <param name="filter">Matching processor.</param>
         public void Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, IIntervalFilter filter)
         {
-            IEnumerator<IList<ITextString>> textStringsIterator = textStrings.Values.GetEnumerator();
+            var textStringsIterator = textStrings.Values.GetEnumerator();
             if (!textStringsIterator.MoveNext())
                 return;
 
-            IEnumerator<ITextString> areaTextStringsIterator = textStringsIterator.Current.GetEnumerator();
+            var areaTextStringsIterator = textStringsIterator.Current.GetEnumerator();
             if (!areaTextStringsIterator.MoveNext())
                 return;
 
@@ -242,7 +247,10 @@ namespace PdfClown.Tools
                     {
                         baseTextCharIndex += textChars.Count;
                         if (!areaTextStringsIterator.MoveNext())
-                        { areaTextStringsIterator = textStringsIterator.Current.GetEnumerator(); areaTextStringsIterator.MoveNext(); }
+                        {
+                            areaTextStringsIterator = textStringsIterator.Current.GetEnumerator();
+                            areaTextStringsIterator.MoveNext();
+                        }
                         textChars = areaTextStringsIterator.Current.Chars;
                     }
                     textCharIndex = matchStartIndex - baseTextCharIndex;
@@ -253,7 +261,10 @@ namespace PdfClown.Tools
                         {
                             baseTextCharIndex += textChars.Count;
                             if (!areaTextStringsIterator.MoveNext())
-                            { areaTextStringsIterator = textStringsIterator.Current.GetEnumerator(); areaTextStringsIterator.MoveNext(); }
+                            {
+                                areaTextStringsIterator = textStringsIterator.Current.GetEnumerator();
+                                areaTextStringsIterator.MoveNext();
+                            }
                             textChars = areaTextStringsIterator.Current.Chars;
                             textCharIndex = 0;
                         }
@@ -267,27 +278,30 @@ namespace PdfClown.Tools
         /// <summary>Gets the text strings matching the specified area.</summary>
         /// <param name="textStrings">Text strings to filter, grouped by source area.</param>
         /// <param name="area">Graphic area which text strings have to be matched to.</param>
-        public IList<ITextString> Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, SKRect area)
-        { return Filter(textStrings, new SKRect[] { area })[area]; }
+        public IList<ITextString> Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, SKRect area) => Filter(textStrings, new SKRect[] { area })[area];
 
         /// <summary>Gets the text strings matching the specified areas.</summary>
         /// <param name="textStrings">Text strings to filter, grouped by source area.</param>
         /// <param name="areas">Graphic areas which text strings have to be matched to.</param>
-        public IDictionary<SKRect?, IList<ITextString>> Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, params SKRect[] areas)
+        public Dictionary<SKRect?, IList<ITextString>> Filter(IDictionary<SKRect?, IList<ITextString>> textStrings, params SKRect[] areas)
         {
-            IDictionary<SKRect?, IList<ITextString>> filteredTextStrings = null;
+            Dictionary<SKRect?, IList<ITextString>> filteredTextStrings = null;
             foreach (IList<ITextString> areaTextStrings in textStrings.Values)
             {
-                IDictionary<SKRect?, IList<ITextString>> filteredAreasTextStrings = Filter(areaTextStrings, areas);
+                var filteredAreasTextStrings = Filter(areaTextStrings, areas);
                 if (filteredTextStrings == null)
-                { filteredTextStrings = filteredAreasTextStrings; }
+                {
+                    filteredTextStrings = filteredAreasTextStrings;
+                }
                 else
                 {
                     foreach (KeyValuePair<SKRect?, IList<ITextString>> filteredAreaTextStringsEntry in filteredAreasTextStrings)
                     {
-                        IList<ITextString> filteredTextStringsList = filteredTextStrings[filteredAreaTextStringsEntry.Key];
+                        var filteredTextStringsList = filteredTextStrings[filteredAreaTextStringsEntry.Key];
                         foreach (ITextString filteredAreaTextString in filteredAreaTextStringsEntry.Value)
-                        { filteredTextStringsList.Add(filteredAreaTextString); }
+                        {
+                            filteredTextStringsList.Add(filteredAreaTextString);
+                        }
                     }
                 }
             }
@@ -297,26 +311,25 @@ namespace PdfClown.Tools
         /// <summary>Gets the text strings matching the specified area.</summary>
         /// <param name="textStrings">Text strings to filter.</param>
         /// <param name="area">Graphic area which text strings have to be matched to.</param>
-        public IList<ITextString> Filter(IList<ITextString> textStrings, SKRect area)
-        { return Filter(textStrings, new SKRect[] { area })[area]; }
+        public IList<ITextString> Filter(IList<ITextString> textStrings, SKRect area) => Filter(textStrings, new SKRect[] { area })[area];
 
         /// <summary>Gets the text strings matching the specified areas.</summary>
         /// <param name="textStrings">Text strings to filter.</param>
         /// <param name="areas">Graphic areas which text strings have to be matched to.</param>
-        public IDictionary<SKRect?, IList<ITextString>> Filter(IList<ITextString> textStrings, params SKRect[] areas)
+        public Dictionary<SKRect?, IList<ITextString>> Filter(IList<ITextString> textStrings, params SKRect[] areas)
         {
-            IDictionary<SKRect?, IList<ITextString>> filteredAreasTextStrings = new Dictionary<SKRect?, IList<ITextString>>();
+            var filteredAreasTextStrings = new Dictionary<SKRect?, IList<ITextString>>();
             foreach (SKRect area in areas)
             {
                 IList<ITextString> filteredAreaTextStrings = new List<ITextString>();
                 filteredAreasTextStrings[area] = filteredAreaTextStrings;
-                var toleratedArea = (areaTolerance != 0
+                var toleratedArea = areaTolerance != 0
                   ? new Quad(SKRect.Create(
                     area.Left - areaTolerance,
                     area.Top - areaTolerance,
                     area.Width + areaTolerance * 2,
                     area.Height + areaTolerance * 2))
-                  : new Quad(area));
+                  : new Quad(area);
                 foreach (ITextString textString in textStrings)
                 {
                     var textStringQuad = textString.Quad;
@@ -329,10 +342,14 @@ namespace PdfClown.Tools
                             var textCharQuad = textChar.Quad;
                             if ((areaMode == AreaModeEnum.Containment && toleratedArea.Contains(textCharQuad))
                               || (areaMode == AreaModeEnum.Intersection && toleratedArea.IntersectsWith(textCharQuad)))
-                            { filteredTextStringChars.Add(textChar); }
+                            {
+                                filteredTextStringChars.Add(textChar);
+                            }
                         }
                         if (filteredTextStringChars.Count > 0)
-                        { filteredAreaTextStrings.Add(filteredTextString); }
+                        {
+                            filteredAreaTextStrings.Add(filteredTextString);
+                        }
                     }
                 }
             }
@@ -376,7 +393,7 @@ namespace PdfClown.Tools
                     Extract(
                       paintXObject.GetScanner(level),
                       extractedTextStrings);
-                }                
+                }
             }
         }
 

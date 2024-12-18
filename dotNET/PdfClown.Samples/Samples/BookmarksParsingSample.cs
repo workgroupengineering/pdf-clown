@@ -1,32 +1,29 @@
 using PdfClown.Documents;
 using PdfClown.Documents.Files;
-using actions = PdfClown.Documents.Interaction.Actions;
+using PdfClown.Documents.Interaction.Actions;
 using PdfClown.Documents.Interaction.Navigation;
-using PdfClown.Files;
 using PdfClown.Objects;
-
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Samples.CLI
 {
-    /**
-      <summary>This sample demonstrates how to inspect the bookmarks of a PDF document.</summary>
-    */
-    public class BookmarksParsingSample
-      : Sample
+    /// <summary>This sample demonstrates how to inspect the bookmarks of a PDF document.</summary>
+    public class BookmarksParsingSample : Sample
     {
         public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                PdfDocument document = file.Document;
-
+                PdfCatalog catalog = document.Catalog;
                 // 2. Get the bookmarks collection!
-                Bookmarks bookmarks = document.Bookmarks;
-                if (!bookmarks.Exists())
-                { Console.WriteLine("\nNo bookmark available (Outline dictionary not found)."); }
+                Bookmarks bookmarks = catalog.Bookmarks;
+                if ((bookmarks.Status & PdfObjectStatus.Virtual) == PdfObjectStatus.Virtual)
+                {
+                    Console.WriteLine("\nNo bookmark available (Outline dictionary not found).");
+                }
                 else
                 {
                     Console.WriteLine("\nIterating through the bookmarks collection (please wait)...\n");
@@ -36,7 +33,7 @@ namespace PdfClown.Samples.CLI
             }
         }
 
-        private void PrintBookmarks(Bookmarks bookmarks)
+        private void PrintBookmarks(IEnumerable<Bookmark> bookmarks)
         {
             if (bookmarks == null)
                 return;
@@ -46,59 +43,57 @@ namespace PdfClown.Samples.CLI
                 // Show current bookmark!
                 Console.WriteLine("Bookmark '" + bookmark.Title + "'");
                 Console.Write("    Target: ");
-                PdfObjectWrapper target = bookmark.Target;
+                var target = bookmark.Target;
                 if (target is Destination)
                 { PrintDestination((Destination)target); }
-                else if (target is actions::Action)
-                { PrintAction((actions::Action)target); }
+                else if (target is PdfAction)
+                { PrintAction((PdfAction)target); }
                 else if (target == null)
                 { Console.WriteLine("[not available]"); }
                 else
                 { Console.WriteLine("[unknown type: " + target.GetType().Name + "]"); }
 
                 // Show child bookmarks!
-                PrintBookmarks(bookmark.Bookmarks);
+                PrintBookmarks(bookmark);
             }
         }
 
-        private void PrintAction(
-          actions::Action action
-          )
+        private void PrintAction(PdfAction action)
         {
             /*
               NOTE: Here we have to deal with reflection as a workaround
               to the lack of type covariance support in C# (so bad -- any better solution?).
             */
-            Console.WriteLine("Action [" + action.GetType().Name + "] " + action.BaseObject);
-            if (action.Is(typeof(actions::GoToDestination<>)))
+            Console.WriteLine("Action [" + action.GetType().Name + "] " + action.Reference);
+            if (action.Is(typeof(GoToDestination<>)))
             {
-                if (action.Is(typeof(actions::GotoNonLocal<>)))
+                if (action.Is(typeof(GotoNonLocal<>)))
                 {
                     FileSpecification destinationFile = (FileSpecification)action.Get("DestinationFile");
                     if (destinationFile != null)
-                    { Console.WriteLine("      Filename: " + destinationFile.Path); }
+                    { Console.WriteLine("      Filename: " + destinationFile.FilePath); }
 
-                    if (action is actions::GoToEmbedded)
+                    if (action is GoToEmbedded)
                     {
-                        actions::GoToEmbedded.PathElement target = ((actions::GoToEmbedded)action).DestinationPath;
+                        GoToEmbedded.PathElement target = ((GoToEmbedded)action).DestinationPath;
                         Console.WriteLine("      EmbeddedFilename: " + target.EmbeddedFileName + " Relation: " + target.Relation);
                     }
                 }
                 Console.Write("      ");
                 PrintDestination((Destination)action.Get("Destination"));
             }
-            else if (action is actions::GoToURI)
-            { Console.WriteLine("      URI: " + ((actions::GoToURI)action).URI); }
+            else if (action is GoToURI)
+            { Console.WriteLine("      URI: " + ((GoToURI)action).URI); }
         }
 
         private void PrintDestination(Destination destination)
         {
-            Console.WriteLine(destination.GetType().Name + " " + destination.BaseObject);
+            Console.WriteLine(destination.GetType().Name + " " + destination.RefOrSelf);
             Console.Write("        Page ");
             object pageRef = destination.Page;
             if (pageRef is PdfPage page)
             {
-                Console.WriteLine(page.Number + " [ID: " + page.BaseObject + "]");
+                Console.WriteLine(page.Number + " [ID: " + page.Reference + "]");
             }
             else
             { Console.WriteLine((int)pageRef + 1); }

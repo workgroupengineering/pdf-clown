@@ -17,7 +17,6 @@ using PdfClown.Util.Collections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 
 namespace PdfClown.Bytes.Filters.Jpeg
@@ -43,23 +42,21 @@ namespace PdfClown.Bytes.Filters.Jpeg
         { }
     }
 
-    /**
-     * This code was forked from https://github.com/notmasteryet/jpgjs.
-     * The original version was created by GitHub user notmasteryet.
-     *
-     * - The JPEG specification can be found in the ITU CCITT Recommendation T.81
-     *   (www.w3.org/Graphics/JPEG/itu-t81.pdf)
-     * - The JFIF specification can be found in the JPEG File Interchange Format
-     *   (www.w3.org/Graphics/JPEG/jfif3.pdf)
-     * - The Adobe Application-Specific JPEG markers in the
-     *   Supporting the DCT Filters in PostScript Level 2, Technical Note #5116
-     *   (partners.adobe.com/public/developer/en/ps/sdk/5116.DCT_Filter.pdf)
-     */
-
+    /// <summary>
+    /// This code was forked from https://github.com/notmasteryet/jpgjs.
+    /// The original version was created by GitHub user notmasteryet.
+    /// - The JPEG specification can be found in the ITU CCITT Recommendation T.81
+    ///   (www.w3.org/Graphics/JPEG/itu-t81.pdf)
+    /// - The JFIF specification can be found in the JPEG File Interchange Format
+    ///   (www.w3.org/Graphics/JPEG/jfif3.pdf)
+    /// - The Adobe Application-Specific JPEG markers in the
+    ///   Supporting the DCT Filters in PostScript Level 2, Technical Note #5116
+    ///   (partners.adobe.com/public/developer/en/ps/sdk/5116.DCT_Filter.pdf)
+    /// </summary>
     internal class JpegImage
     {
         // prettier-ignore
-        static readonly byte[] DctZigZag = new byte[]{
+        static readonly byte[] DctZigZag = [
             0,
             1,  8,
             16,  9,  2,
@@ -75,7 +72,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
             61, 54, 47,
             55, 62,
             63
-        };
+        ];
 
         static readonly int DctCos1 = 4017; // cos(pi/16)
         static readonly int DctSin1 = 799; // sin(pi/16)
@@ -1179,7 +1176,7 @@ namespace PdfClown.Bytes.Filters.Jpeg
                         var successiveApproximation = data.ReadUByte();
                         try
                         {
-                            var processed = (int)DecodeScan(
+                            var processed = DecodeScan(
                               data,
                               frame,
                               components,

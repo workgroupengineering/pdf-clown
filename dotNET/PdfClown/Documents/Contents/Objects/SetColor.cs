@@ -41,25 +41,19 @@ namespace PdfClown.Documents.Contents.Objects
             : base(@operator, value.Components)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-         */
+        /// <param name="operator">Graphics operator.</param>
+        /// <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
         protected SetColor(string @operator, PdfName name)
             : this(@operator, name, null)
         { }
 
-        /**
-          <param name="operator">Graphics operator.</param>
-          <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
-          <param name="underlyingColor">Color used to colorize the pattern.</param>
-         */
+        /// <param name="operator">Graphics operator.</param>
+        /// <param name="name">Name of the color resource entry (see <see cref="Patterns"/>).</param>
+        /// <param name="underlyingColor">Color used to colorize the pattern.</param>
         protected SetColor(string @operator, PdfName name, Color underlyingColor)
-            : base(@operator, new PdfArray(underlyingColor?.Components ?? Enumerable.Empty<PdfDirectObject>()))
+            : base(@operator, underlyingColor?.Components ?? PdfArray.Empty)
         {
-            operands.AddDirect(name);
+            operands.AddSimple(name);
         }
-
-        public IList<PdfDirectObject> Components => operands;
     }
 }

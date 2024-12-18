@@ -17,7 +17,6 @@
 using PdfClown.Bytes;
 using PdfClown.Documents.Contents.Fonts.CCF;
 using System;
-using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -40,7 +39,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             var bytes = data.ReadMemory((int)Length);
 
             var parser = new CFFParser();
-            cffFont = parser.Parse(bytes, new CFFBytesource(ttf))[0];
+            cffFont = parser.Parse(bytes, new CFFByteSource(ttf))[0];
 
             initialized = true;
         }
@@ -52,11 +51,11 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         }
 
         /// <summary>Allows bytes to be re-read later by CFFParser.</summary>
-        internal class CFFBytesource : CFFParser.IByteSource
+        internal class CFFByteSource : CFFParser.IByteSource
         {
             private readonly TrueTypeFont ttf;
 
-            public CFFBytesource(TrueTypeFont ttf)
+            public CFFByteSource(TrueTypeFont ttf)
             {
                 this.ttf = ttf;
             }

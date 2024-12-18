@@ -37,7 +37,7 @@ namespace PdfClown.Documents.Contents.Objects
 
         public CharProcBBox(double wx, double wy, double x, double y, double width, double height)
             : base(OperatorKeyword,
-                  new PdfArray(6) { wx, wy, x, y, width, height })
+                  new PdfArrayImpl(6) { wx, wy, x, y, width, height })
         { }
 
         public CharProcBBox(PdfArray operands) : base(OperatorKeyword, operands)

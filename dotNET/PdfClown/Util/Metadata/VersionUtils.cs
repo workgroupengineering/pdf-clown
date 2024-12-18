@@ -23,26 +23,19 @@
   this list of conditions.
 */
 
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace PdfClown.Util.Metadata
 {
-    /**
-      <summary>Version utility.</summary>
-    */
+    /// <summary>Version utility.</summary>
     public static class VersionUtils
     {
-        #region static
-        #region interface
-        #region public
         public static int CompareTo(IVersion version1, IVersion version2)
         {
             int comparison = 0;
             {
-                IList<int> version1Numbers = version1.Numbers;
-                IList<int> version2Numbers = version2.Numbers;
+                var version1Numbers = version1.Numbers;
+                var version2Numbers = version2.Numbers;
                 var length = System.Math.Min(version1Numbers.Count, version2Numbers.Count);
                 for (int index = 0; index < length; index++)
                 {
@@ -67,8 +60,5 @@ namespace PdfClown.Util.Metadata
             }
             return versionStringBuilder.ToString();
         }
-        #endregion
-        #endregion
-        #endregion
     }
 }

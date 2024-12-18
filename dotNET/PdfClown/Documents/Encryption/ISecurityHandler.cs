@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using PdfClown.Files;
 using PdfClown.Objects;
 
 namespace PdfClown.Documents.Encryption
@@ -32,6 +33,6 @@ namespace PdfClown.Documents.Encryption
         void EncryptString(PdfString pdfString, long objNum, int genNum);
         bool HasProtectionPolicy();
         void PrepareDocumentForEncryption(PdfDocument doc);
-        void PrepareForDecryption(PdfEncryption encryption, PdfArray documentIDArray, DecryptionMaterial decryptionMaterial);
+        void PrepareForDecryption(PdfEncryption encryption, Identifier identifier, DecryptionMaterial decryptionMaterial);
     }
 }

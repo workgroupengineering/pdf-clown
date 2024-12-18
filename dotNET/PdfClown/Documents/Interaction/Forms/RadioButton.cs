@@ -34,9 +34,9 @@ namespace PdfClown.Documents.Interaction.Forms
     public sealed class RadioButton : ButtonField
     {
         /// <summary>Creates a new radiobutton within the given document context.</summary>
-        /// <param name = "name" ></param>
-        /// <param name = "widgets" > Dual - state widgets representing the available options.</param>
-        /// <param name = "value" ></param>
+        /// <param name="name"></param>
+        /// <param name="widgets"> Dual - state widgets representing the available options.</param>
+        /// <param name="value"></param>
         public RadioButton(string name, Widget[] widgets, string value)
             : base(name, widgets[0])
         {
@@ -81,10 +81,10 @@ namespace PdfClown.Documents.Interaction.Forms
                     else // Unselected state.
                     { currentState = PdfName.Off; }
 
-                    widget.BaseDataObject[PdfName.AS] = currentState;
+                    widget[PdfName.AS] = currentState;
                 }
                 // Select the current widget!
-                BaseDataObject[PdfName.V] = (selected ? selectedValue : null);
+                DataObject[PdfName.V] = (selected ? selectedValue : null);
             }
         }
     }

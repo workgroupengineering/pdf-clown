@@ -34,7 +34,7 @@ using System.Collections.Generic;
 namespace PdfClown.Documents.Contents
 {
     /// <summary>Content stream context.</summary>
-    public interface IContentContext : IAppDataHolder, IContentEntity, ICompositeObject
+    public interface IContentContext : IAppDataHolder, IContentEntity, ICompositeObject, IResourceProvider
     {
         ///<summary>Gets the bounding box associated with this content context either explicitly
         ///(directly associated to the object) or (if not explicitly available) implicitly (inherited
@@ -53,13 +53,6 @@ namespace PdfClown.Documents.Contents
         /// <param name="clearColor"></param>
         /// <remarks> @since 0.1.0</remarks> 
         void Render(SKCanvas context, SKRect box, SKColor? clearColor = null);
-
-        /// <summary>Gets the resources associated with this content context either explicitly (directly
-        /// associated to the object) or (if not explicitly available) implicitly (inherited from a
-        /// higher-level object).</summary>
-        /// <remarks>The implementing class MUST ensure that the returned object isn't
-        /// <code>null</code>.</remarks>
-        Resources Resources { get; }
 
         /// <summary>Gets the rendering rotation of this content context.</summary>
         RotationEnum Rotation { get; }

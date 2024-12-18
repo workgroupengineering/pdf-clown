@@ -1,75 +1,78 @@
-﻿export class SKHtmlScroll {
-    static elements: Map<string, HTMLElement>;
-    static observer: ResizeObserver;
-    htmlElement: HTMLElement;
-    htmlElementId: string;
-    moveAction: any;
-    sizeAction: any;
-    SKHtmlScroll: SKHtmlScroll;
+﻿// alias for a potential skia html canvas
+type SKHtmlScrollElement = {
+    SKHtmlScroll: SKHtmlScroll
+} & HTMLCanvasElement;
+type MoveActionFunction = (a: number[]) => void;
+type SizeActionFunction = (w: number, h: number) => void;
 
-    public static init(element: HTMLElement, elementId: string, moveAction: any, sizeAction: any) {
+export class SKHtmlScroll {
+    static elements: Map<string, SKHtmlScrollElement>;
+    static observer: ResizeObserver;
+    moveAction: MoveActionFunction;
+    sizeAction: SizeActionFunction;
+
+    public static init(elementId: string, moveAction: MoveActionFunction, sizeAction: SizeActionFunction) {
         if (!SKHtmlScroll.elements) {
-            SKHtmlScroll.elements = new Map<string, HTMLElement>();
+            SKHtmlScroll.elements = new Map<string, SKHtmlScrollElement>();
             SKHtmlScroll.observer = new ResizeObserver((entries) => {
                 for (let entry of entries) {
-                    SKHtmlScroll.sizeAllocated(entry.target);
+                    SKHtmlScroll.sizeAllocated(entry.target as SKHtmlScrollElement);
                 }
             });
         }
-        SKHtmlScroll.elements[elementId] = element;
-        const view = new SKHtmlScroll(element, elementId, moveAction, sizeAction);
-        element.SKHtmlScroll = view;
-    }
-
-    public static initById(elementId: string, moveAction: any, sizeAction: any) {
         const element = document.getElementById(elementId);
-        SKHtmlScroll.init(element, elementId, moveAction, sizeAction);
+        var scrollElement = element as SKHtmlScrollElement;
+        if (!scrollElement) {
+            console.error(`No canvas element was provided.`);
+            return;
+        }
+        SKHtmlScroll.elements.set(elementId, scrollElement);
+        const view = new SKHtmlScroll(scrollElement, moveAction, sizeAction);
+        scrollElement.SKHtmlScroll = view;
     }
 
-    public static requestLock(element: HTMLElement) {
+    public static getDPR(): number {
+        return window.devicePixelRatio;
+    }
+
+    public static deinit(elementId: string) {
+        const element = SKHtmlScroll.elements.get(elementId);
+        SKHtmlScroll.elements.delete(elementId);
+        element.SKHtmlScroll.deconstruct(element);
+    }
+
+    public static requestLock(elementId: string) {
+        const element = SKHtmlScroll.elements.get(elementId);
         element.requestPointerLock();
     }
 
-    public static requestLockById(elementId: string) {
-        const element = document.getElementById(elementId);
-        SKHtmlScroll.requestLock(element);
-    }
-
-    public static setCapture(element: HTMLElement, pointerId: number) {
+    public static setCapture(elementId: string, pointerId: number) {
+        const element = SKHtmlScroll.elements.get(elementId);
         element.setPointerCapture(pointerId);
     }
 
-    public static setCaptureById(elementId: string, pointerId: number) {
-        const element = document.getElementById(elementId);
-        SKHtmlScroll.setCapture(element, pointerId);
-    }
-
-    public static releaseCapture(element: HTMLElement, pointerId: number) {
+    public static releaseCapture(elementId: string, pointerId: number) {
+        const element = SKHtmlScroll.elements.get(elementId);
         element.releasePointerCapture(pointerId);
     }
 
-    public static releaseCaptureById(elementId: string, pointerId: number) {
-        const element = document.getElementById(elementId);
-        SKHtmlScroll.releaseCapture(element, pointerId);
-    }
-
-    static changeCursor(element: HTMLElement, cursorName: string) {
+    public static changeCursor(elementId: string, cursorName: string) {
+        const element = SKHtmlScroll.elements.get(elementId);
         element.style.cursor = cursorName;
     }
 
-    static changeCursorById(elementId: string, cursorName: string) {
-        const element = document.getElementById(elementId);
-        SKHtmlScroll.changeCursor(element, cursorName);
+    static sizeAllocated(element: SKHtmlScrollElement) {
+        element.SKHtmlScroll.sizeAction(element.clientWidth, element.clientHeight);
     }
 
-    static sizeAllocated(element: Element) {
-        element.SKHtmlScroll.sizeAction.invokeMethod("Invoke", element.clientWidth, element.clientHeight);
+    public static unwrapp(jsObject: any): number[] {
+        return jsObject as number[];
     }
 
-    static eventArgsCreator(e: PointerEvent): object {
+    static eventArgsCreator(e: PointerEvent): any {
         return {
             "pointerId": e.pointerId,
-            "button": e.buttons == 1 ? 0 : e.buttons == 2 ? 2 : e.buttons == 4 ? 1 : -1,
+            "button": SKHtmlScroll.getButton(e),
             "offsetX": e.offsetX,
             "offsetY": e.offsetY,
             "altKey": e.altKey,
@@ -79,24 +82,39 @@
         };
     }
 
-    public constructor(element: HTMLElement, elementId: string, moveAction: any, sizeAction: any) {
-        this.htmlElement = element;
-        this.htmlElementId = elementId;
+    private static getButton(e: PointerEvent): number {
+        return e.buttons == 1 ? 0 : e.buttons == 2 ? 2 : e.buttons == 4 ? 1 : -1;
+    }
+
+    static getKeyModifiers(e: PointerEvent): number {
+        var result = 0;
+        if (e.altKey)
+            result |= 1;
+        if (e.ctrlKey)
+            result |= 2;
+        if (e.shiftKey)
+            result |= 4;
+        if (e.metaKey)
+            result |= 8;
+        return result;
+    }
+
+    public constructor(element: SKHtmlScrollElement, moveAction: any, sizeAction: any) {
         this.moveAction = moveAction;
         this.sizeAction = sizeAction;
-        this.htmlElement.addEventListener('pointermove', this.OnPointerMove);
-        SKHtmlScroll.observer.observe(this.htmlElement);
-    }    
+        element.addEventListener('pointermove', this.OnPointerMove);
+        SKHtmlScroll.observer.observe(element);
+    }
 
-    deinit() {
-        this.htmlElement.removeEventListener('pointermove', this.OnPointerMove);
-        SKHtmlScroll.observer.unobserve(this.htmlElement);
+    deconstruct(element: SKHtmlScrollElement) {
+        element.removeEventListener('pointermove', this.OnPointerMove);
+        SKHtmlScroll.observer.unobserve(element);
     }
 
     OnPointerMove = (e: PointerEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        this.moveAction.invokeMethod("Invoke", SKHtmlScroll.eventArgsCreator(e));
+        this.moveAction([e.pointerId, SKHtmlScroll.getButton(e), e.offsetX, e.offsetY, SKHtmlScroll.getKeyModifiers(e)]);
     }
 
 }

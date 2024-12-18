@@ -23,13 +23,9 @@
   this list of conditions.
 */
 
-using System;
-
 namespace PdfClown.Util.Math
 {
-    /**
-      <summary>Mathematic utilities.</summary>
-    */
+    /// <summary>Mathematic utilities.</summary>
     public static class MathUtils
     {
         private static readonly double DegPI = 180D / System.Math.PI;

@@ -26,22 +26,18 @@
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
     /// <summary>Media clip object [PDF:1.7:9.1.3].</summary>
     [PDF(VersionEnum.PDF15)]
-    public abstract class MediaClip : PdfObjectWrapper<PdfDictionary>
+    public abstract class MediaClip : PdfDictionary
     {
         /// <summary>Wraps a clip base object into a clip object.</summary>
-        public static MediaClip Wrap(PdfDirectObject baseObject)
+        internal static MediaClip Create(Dictionary<PdfName, PdfDirectObject> baseObject)
         {
-            if (baseObject == null)
-                return null;
-            if (baseObject.Wrapper is MediaClip clip)
-                return clip;
-
-            var subtype = ((PdfDictionary)baseObject.Resolve()).Get<PdfName>(PdfName.S);
+            var subtype = baseObject.Get<PdfName>(PdfName.S);
             if (PdfName.MCD.Equals(subtype))
                 return new MediaClipData(baseObject);
             else if (PdfName.MCS.Equals(subtype))
@@ -51,18 +47,19 @@ namespace PdfClown.Documents.Multimedia
         }
 
         protected MediaClip(PdfDocument context, PdfName subtype)
-            : base(context, new PdfDictionary(2)
+            : base(context, new Dictionary<PdfName, PdfDirectObject>(2)
             {
                 { PdfName.Type, PdfName.MediaClip},
                 { PdfName.S, subtype},
             })
         { }
 
-        public MediaClip(PdfDirectObject baseObject) : base(baseObject)
+        protected MediaClip(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         /// <summary>Gets/Sets the actual media data.</summary>
         /// <returns>Either a <see cref="FullFileSpecification"/> or a <see cref="FormXObject"/>.</returns>
-        public abstract PdfObjectWrapper Data { get; set; }
+        public abstract IPdfDataObject Data { get; set; }
     }
 }

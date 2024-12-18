@@ -16,44 +16,52 @@
   this list of conditions.
 */
 
+using PdfClown.Bytes;
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 
 namespace PdfClown.Documents.Contents.Fonts
 {
-    public class FontFile : PdfObjectWrapper<PdfStream>
+    public class FontFile : PdfStream
     {
-        public FontFile(PdfDirectObject baseObject) : base(baseObject)
+        public FontFile(PdfDocument context, IInputStream stream)
+            : base(context, stream)
+        {
+            Length1 = (int)stream.Length;
+        }
+
+        internal FontFile(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
-        public FontFile(PdfDocument document, PdfStream stream) : base(document, stream)
+        internal FontFile(Dictionary<PdfName, PdfDirectObject> baseObject, IInputStream stream)
+            : base(baseObject, stream)
         { }
-
 
         public string Subtype
         {
-            get => Dictionary.GetString(PdfName.Subtype);
-            set => Dictionary.SetName(PdfName.Subtype, value);
+            get => GetString(PdfName.Subtype);
+            set => SetName(PdfName.Subtype, value);
         }
 
         public int Length1
         {
-            get => Dictionary.GetInt(PdfName.Length1);
-            set => Dictionary.Set(PdfName.Length1, value);
+            get => GetInt(PdfName.Length1);
+            set => Set(PdfName.Length1, value);
         }
 
         public int Length2
         {
-            get => Dictionary.GetInt(PdfName.Length2);
-            set => Dictionary.Set(PdfName.Length2, value);
+            get => GetInt(PdfName.Length2);
+            set => Set(PdfName.Length2, value);
         }
 
         public int Length3
         {
-            get => Dictionary.GetInt(PdfName.Length3);
-            set => Dictionary.Set(PdfName.Length3, value);
+            get => GetInt(PdfName.Length3);
+            set => Set(PdfName.Length3, value);
         }
-
 
     }
 }

@@ -24,17 +24,26 @@
 */
 
 using PdfClown.Objects;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Contents
 {
     ///<summary>Graphics state parameter resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class ExtGStateResources : Dictionary<ExtGState>
+    public sealed class ExtGStateResources : PdfDictionary<ExtGState>
     {
-        public ExtGStateResources(PdfDocument context) : base(context)
+        public ExtGStateResources()
+            : this((PdfDocument)null)
         { }
 
-        public ExtGStateResources(PdfDirectObject baseObject) : base(baseObject)
+        public ExtGStateResources(PdfDocument context)
+            : base(context)
         { }
+
+        internal ExtGStateResources(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        public override PdfName ModifyTypeKey(PdfName key) => PdfName.ExtGState;
     }
 }

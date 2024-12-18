@@ -23,29 +23,19 @@
   this list of conditions.
 */
 
-using System;
-
 namespace PdfClown.Documents
 {
-    /**
-      <summary>Version compatibility mode.</summary>
-    */
+    /// <summary>Version compatibility mode.</summary>
     public enum CompatibilityModeEnum
     {
-        /**
-          <summary>Document's conformance version is ignored; any feature is accepted without checking
-          its compatibility.</summary>
-        */
+        /// <summary>Document's conformance version is ignored; any feature is accepted without checking
+        /// its compatibility.</summary>
         Passthrough,
-        /**
-          <summary>Document's conformance version is automatically updated to support used features.
-          </summary>
-        */
+        /// <summary>Document's conformance version is automatically updated to support used features.
+        /// </summary>
         Loose,
-        /**
-          <summary>Document's conformance version is mandatory; any unsupported feature is forbidden
-          and causes an exception to be thrown in case of attempted use.</summary>
-        */
+        /// <summary>Document's conformance version is mandatory; any unsupported feature is forbidden
+        /// and causes an exception to be thrown in case of attempted use.</summary>
         Strict
     }
 }

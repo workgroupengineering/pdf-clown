@@ -23,46 +23,32 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Files;
 using PdfClown.Objects;
-
-using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Multimedia
 {
     //TODO: this is just a stub.
-    /**
-      <summary>Movie object [PDF:1.6:9.3].</summary>
-    */
+    /// <summary>Movie object [PDF:1.6:9.3].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class Movie : PdfObjectWrapper<PdfDictionary>, IFileResource
+    public sealed class Movie : PdfDictionary, IFileResource
     {
-        #region dynamic
-        #region constructors
-        /**
-          <summary>Creates a new movie within the given document context.</summary>
-        */
-        public Movie(PdfDocument context, FileSpecification dataFile) : base(context, new PdfDictionary())
+        private IFileSpecification file;
+
+        /// <summary>Creates a new movie within the given document context.</summary>
+        public Movie(PdfDocument context, FileSpecification dataFile)
+            : base(context, new ())
         { DataFile = dataFile; }
 
-        public Movie(PdfDirectObject baseObject) : base(baseObject)
+        internal Movie(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
-        #endregion
 
-        #region interface
-        #region public
-        #region IFileResource
-        public FileSpecification DataFile
+        public IFileSpecification DataFile
         {
-            get => FileSpecification.Wrap(BaseDataObject[PdfName.F]);
-            set => BaseDataObject[PdfName.F] = value.BaseObject;
+            get => file ??= IFileSpecification.Wrap(Get(PdfName.F));
+            set => Set(PdfName.F, (file = value).RefOrSelf);
         }
-
-        #endregion
-        #endregion
-        #endregion
-        #endregion
     }
 }

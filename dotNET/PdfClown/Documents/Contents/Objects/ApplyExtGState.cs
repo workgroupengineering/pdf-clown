@@ -41,13 +41,13 @@ namespace PdfClown.Documents.Contents.Objects
 
         public PdfName Name
         {
-            get => (PdfName)operands[0];
-            set => operands[0] = value;
+            get => (PdfName)operands.Get(0);
+            set => operands.SetSimple(0, value);
         }
 
         /// <summary>Gets the<see cref="ExtGState">graphics state parameters</see> resource to be set.
         /// </summary>
-        /// <param name = "context" > Content context.</param>
+        /// <param name="context"> Content context.</param>
         public ExtGState GetResource(ContentScanner context)
         {
             var pcontext = context;

@@ -71,17 +71,23 @@ namespace PdfClown.Documents.Contents.Objects
         /// <summary>Gets/Sets the private information meaningful to the program (application or plugin
         /// extension) creating the marked content. It can be either an inline <see cref="PropertyList"/>
         /// or the <see cref="PdfName">name</see> of an external PropertyList resource.</summary>
-        public object Properties
+        public PdfDirectObject Properties
         {
             get
             {
-                var propertiesObject = operands.Count > 1 ? operands[1] : null;
+                var propertiesObject = operands.Count > 1 ? operands.Get(1) : null;
                 if (propertiesObject == null)
                     return null;
                 else if (propertiesObject is PdfName)
                     return propertiesObject;
-                else if (propertiesObject is PdfDictionary)
-                    return PropertyList.Wrap(propertiesObject);
+                else if (propertiesObject is PropertyList pList)
+                    return pList;
+                else if (propertiesObject is PdfDictionary dictionary)
+                {
+                    var lst = new PropertyList(dictionary.entries);
+                    operands.Set(1, lst);
+                    return lst;
+                }
                 else
                     throw new NotSupportedException("Property list type unknown: " + propertiesObject.GetType().Name);
             }
@@ -98,12 +104,12 @@ namespace PdfClown.Documents.Contents.Objects
                     if (value is PdfName pdfName)
                     { operand = pdfName; }
                     else if (value is PropertyList propertyList)
-                    { operand = propertyList.BaseDataObject; }
+                    { operand = propertyList; }
                     else
                         throw new ArgumentException("value MUST be a PdfName or a PropertyList.");
 
                     if (operands.Count > 1)
-                    { operands[1] = operand; }
+                    { operands.Set(1, operand); }
                     else
                     { operands.Add(operand); }
                 }
@@ -113,8 +119,8 @@ namespace PdfClown.Documents.Contents.Objects
         /// <summary>Gets/Sets the marker indicating the role or significance of the marked content.</summary>
         public PdfName Tag
         {
-            get => (PdfName)operands[0];
-            set => operands[0] = value;
+            get => (PdfName)operands.Get(0);
+            set => operands.SetSimple(0, value);
         }
 
         public PdfName Name

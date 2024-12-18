@@ -1,11 +1,3 @@
-using PdfClown;
-using bytes = PdfClown.Bytes;
-using PdfClown.Documents;
-using PdfClown.Documents.Interaction;
-using PdfClown.Documents.Interchange.Metadata;
-using PdfClown.Documents.Interaction.Viewer;
-using files = PdfClown.Files;
-
 using System;
 using System.Collections.Generic;
 using System.Configuration;

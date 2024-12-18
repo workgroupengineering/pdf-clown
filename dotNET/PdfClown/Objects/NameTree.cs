@@ -23,19 +23,19 @@
   this list of conditions.
 */
 
-using PdfClown.Documents;
-
 namespace PdfClown.Objects
 {
     /// <summary>Name tree [PDF:1.7:3.8.5].</summary>
     [PDF(VersionEnum.PDF10)]
     public abstract class NameTree<TValue> : Tree<PdfString, TValue>
-        where TValue : PdfObjectWrapper
+        where TValue : IPdfDataObject
     {
-        protected NameTree(PdfDocument context) : base(context)
+        protected NameTree(PdfDocument context)
+            : base(context)
         { }
 
-        protected NameTree(PdfDirectObject baseObject) : base(baseObject)
+        protected NameTree(PdfDirectObject baseObject)
+            : base(baseObject)
         { }
 
         protected override PdfName PairsKey => PdfName.Names;

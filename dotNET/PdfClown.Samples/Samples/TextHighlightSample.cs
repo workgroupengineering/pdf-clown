@@ -35,22 +35,18 @@ namespace PdfClown.Samples.CLI
                 }
             }
 
-            object IEnumerator.Current
-            {
-                get { return this.Current; }
-            }
+            object IEnumerator.Current => Current;
 
             public void Dispose()
             {/* NOOP */}
 
-            public bool MoveNext()
-            { return matchEnumerator.MoveNext(); }
+            public bool MoveNext() => matchEnumerator.MoveNext();
 
             public void Process(Interval<int> interval, ITextString match)
             {
                 //var matrix = page.RotateMatrix;
                 // Defining the highlight box of the text pattern match...
-                IList<Quad> highlightQuads = new List<Quad>();
+                var highlightQuads = new List<Quad>();
                 {
                     // NOTE: A text pattern match may be split across multiple contiguous lines,
                     // so we have to define a distinct highlight box for each text chunk.
@@ -77,15 +73,14 @@ namespace PdfClown.Samples.CLI
                 page.Annotations.Add(new TextMarkup(page, highlightQuads, null, TextMarkupType.Highlight));
             }
 
-            public void Reset()
-            { throw new NotSupportedException(); }
+            public void Reset() => throw new NotSupportedException();
         }
 
         public override void Run()
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
                 // Define the text pattern to look for!
                 var textRegEx = PromptChoice("Please enter the pattern to look for: ");
@@ -93,15 +88,15 @@ namespace PdfClown.Samples.CLI
 
                 // 2. Iterating through the document pages...
                 var textExtractor = new TextExtractor(true, true);
-                foreach (var page in file.Document.Pages)
+                foreach (var page in document.Pages)
                 {
                     Console.WriteLine("\nScanning page " + page.Number + "...\n");
 
                     // 2.1. Extract the page text!
-                    IDictionary<SKRect?, IList<ITextString>> textStrings = textExtractor.Extract(page);
+                    var textStrings = textExtractor.Extract(page);
 
                     // 2.2. Find the text pattern matches!
-                    MatchCollection matches = pattern.Matches(TextExtractor.ToString(textStrings));
+                    var matches = pattern.Matches(TextExtractor.ToString(textStrings));
 
                     // 2.3. Highlight the text pattern matches!
                     textExtractor.Filter(
@@ -110,7 +105,7 @@ namespace PdfClown.Samples.CLI
                 }
 
                 // 3. Highlighted file serialization.
-                Serialize(file);
+                Serialize(document);
             }
         }
     }

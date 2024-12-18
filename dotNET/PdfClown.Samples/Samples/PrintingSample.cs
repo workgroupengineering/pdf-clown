@@ -1,9 +1,6 @@
-using PdfClown.Files;
 using PdfClown.Tools;
 
 using System;
-using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Samples.CLI
 {
@@ -18,12 +15,12 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
                 // 2. Printing the document...
                 Renderer renderer = new Renderer();
                 bool silent = false;
-                if (renderer.Print(file.Document, silent))
+                if (renderer.Print(document, silent))
                 { Console.WriteLine("Print fulfilled."); }
                 else
                 { Console.WriteLine("Print discarded."); }

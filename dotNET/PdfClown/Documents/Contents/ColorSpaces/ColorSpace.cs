@@ -31,25 +31,36 @@ using System.Collections.Generic;
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
     /// <summary>Color space [PDF:1.6:4.5].</summary>
-    public abstract class ColorSpace : PdfObjectWrapper<PdfDirectObject>
+    public abstract class ColorSpace : PdfArray
     {
-        private static readonly Dictionary<PdfName, Func<PdfDirectObject, ColorSpace>> wrappers = new()
+        private static readonly Dictionary<PdfName, Func<List<PdfDirectObject>, ColorSpace>> factory = new()
         {
-            { PdfName.DeviceRGB, (pdfObject) => DeviceRGBColorSpace.Default },
-            { PdfName.RGB, (pdfObject) => DeviceRGBColorSpace.DefaultShort },
-            { PdfName.DeviceCMYK, (pdfObject) => DeviceCMYKColorSpace.Default },
-            { PdfName.CMYK, (pdfObject) => DeviceCMYKColorSpace.DefaultShort },
-            { PdfName.DeviceGray, (pdfObject) => DeviceGrayColorSpace.Default },
-            { PdfName.G, (pdfObject) => DeviceGrayColorSpace.DefaultShort },
-            { PdfName.CalRGB, (pdfObject) => new CalRGBColorSpace(pdfObject) },
-            { PdfName.CalGray, (pdfObject) => new CalGrayColorSpace(pdfObject) },
-            { PdfName.ICCBased, (pdfObject) => new ICCBasedColorSpace(pdfObject) },
-            { PdfName.Lab, (pdfObject) => new LabColorSpace(pdfObject) },
-            { PdfName.DeviceN, (pdfObject) => new DeviceNColorSpace(pdfObject) },
-            { PdfName.Indexed, (pdfObject) => new IndexedColorSpace(pdfObject) },
-            { PdfName.I, (pdfObject) => new IndexedColorSpace(pdfObject) },
-            { PdfName.Pattern, (pdfObject) => new PatternColorSpace(pdfObject) },
-            { PdfName.Separation, (pdfObject) => new SeparationColorSpace(pdfObject) },
+            { PdfName.DeviceRGB, static (dict) => RGBColorSpace.Default },
+            { PdfName.RGB, static (dict) => RGBColorSpace.DefaultShort },
+            { PdfName.DeviceCMYK, static (dict) => CMYKColorSpace.Default },
+            { PdfName.CMYK, static (dict) => CMYKColorSpace.DefaultShort },
+            { PdfName.DeviceGray, static (dict) => GrayColorSpace.Default },
+            { PdfName.G, static (dict) => GrayColorSpace.DefaultShort },
+            { PdfName.CalRGB, static (dict) => new CalRGBColorSpace(dict) },
+            { PdfName.CalGray, static (dict) => new CalGrayColorSpace(dict) },
+            { PdfName.ICCBased, static (dict) => new ICCBasedColorSpace(dict) },
+            { PdfName.Lab, static (dict) => new LabColorSpace(dict) },
+            { PdfName.DeviceN, static (dict) => new NColorSpace(dict) },
+            { PdfName.Indexed, static (dict) => new IndexedColorSpace(dict) },
+            { PdfName.I, static (dict) => new IndexedColorSpace(dict) },
+            { PdfName.Pattern, static (dict) => new PatternColorSpace(dict) },
+            { PdfName.Separation, static (dict) => new SeparationColorSpace(dict) },
+        };
+
+        private static readonly Dictionary<PdfName, ColorSpace> defaultSpaces = new()
+        {
+            { PdfName.DeviceRGB, RGBColorSpace.Default },
+            { PdfName.RGB, RGBColorSpace.DefaultShort },
+            { PdfName.DeviceCMYK, CMYKColorSpace.Default },
+            { PdfName.CMYK, CMYKColorSpace.DefaultShort },
+            { PdfName.DeviceGray, GrayColorSpace.Default },
+            { PdfName.G, GrayColorSpace.DefaultShort },
+            { PdfName.Pattern, PatternColorSpace.Default },
         };
 
         /// <summary>Wraps the specified color space base object into a color space object.</summary>
@@ -59,28 +70,44 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         {
             if (baseObject == null)
                 return null;
-            if (baseObject.Wrapper is ColorSpace colorSpace)
-                return colorSpace;
             // Get the data object corresponding to the color space!
-            PdfDataObject baseDataObject = baseObject.Resolve();
+            return baseObject.Resolve(PdfName.ColorSpace) is PdfDirectObject resolved
+                    ? resolved is PdfName relovedName 
+                        ? GetDefault(relovedName)
+                        : resolved as ColorSpace
+                    : null;
+        }
+
+        public static ColorSpace GetDefault(PdfName name)
+        {
+            return defaultSpaces.TryGetValue(name, out var deviceSpace) ? deviceSpace : null;
+        }
+
+        internal static bool IsMatch(List<PdfDirectObject> list)
+        {
+            return list.Count > 0
+                && list[0] is PdfName name
+                && factory.ContainsKey(name);
+        }
+
+        internal static ColorSpace Create(List<PdfDirectObject> array)
+        {
             // NOTE: A color space is defined by an array object whose first element
             // is a name object identifying the color space family [PDF:1.6:4.5.2].
             // For families that do not require parameters, the color space CAN be
             // specified simply by the family name itself instead of an array.
-            var name = baseDataObject is PdfArray array
-              ? array.Get<PdfName>(0)
-              : (PdfName)baseDataObject;
-            if (wrappers.TryGetValue(name, out var func))
-                return func(baseObject);
+            var name = array.Get<PdfName>(0);
+            if (factory.TryGetValue(name, out var func))
+                return func(array);
             return null;
-            //throw new NotSupportedException("Color space " + name + " unknown.");
         }
 
-        protected ColorSpace(PdfDocument context, PdfDirectObject baseDataObject)
+        protected ColorSpace(PdfDocument context, List<PdfDirectObject> baseDataObject)
             : base(context, baseDataObject)
         { }
 
-        public ColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        public ColorSpace(List<PdfDirectObject> dictionary)
+            : base(dictionary)
         { }
 
         /// <summary>Gets the number of components used to represent a color value.</summary>
@@ -90,15 +117,15 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         }
 
         /// <summary>Gets the initial color value within this color space.</summary>
-        public abstract Color DefaultColor
+        public abstract IColor DefaultColor
         {
             get;
         }
 
         /// <summary>Gets the rendering representation of the specified color value.</summary>
         /// <param name="color">Color value to convert into an equivalent rendering representation.</param>
-        public virtual SKPaint GetPaint(Color color, SKPaintStyle paintStyle, float? alpha = null, GraphicsState graphicsState = null)
-        {            
+        public virtual SKPaint GetPaint(IColor color, SKPaintStyle paintStyle, float? alpha = null, GraphicsState graphicsState = null)
+        {
             var skColor = GetSKColor(color, alpha);
             return new SKPaint
             {
@@ -113,17 +140,17 @@ namespace PdfClown.Documents.Contents.ColorSpaces
         /// interpreted according to this color space [PDF:1.6:4.5.1].</summary>
         /// <param name="components">Color components.</param>
         /// <param name="context">Content context.</param>
-        public abstract Color GetColor(PdfArray components, IContentContext context);
+        public abstract IColor GetColor(PdfArray components, IContentContext context);
 
         public SKColor GetSKColor(PdfArray components, IContentContext context, float? alpha = null) => GetSKColor(GetColor(components, context), alpha);
 
-        public abstract SKColor GetSKColor(Color color, float? alpha = null);
+        public abstract SKColor GetSKColor(IColor color, float? alpha = null);
 
         public abstract SKColor GetSKColor(ReadOnlySpan<float> components, float? alpha = null);
 
-        public abstract bool IsSpaceColor(Color value);
+        public abstract bool IsSpaceColor(IColor value);
 
-        protected byte ToByte(double v)
+        protected static byte ToByte(double v)
         {
             return v > 255 ? (byte)255 : v < 0 ? (byte)0 : (byte)v;
         }

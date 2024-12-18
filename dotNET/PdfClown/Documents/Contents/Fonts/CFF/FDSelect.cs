@@ -16,19 +16,13 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.Fonts.CCF
 {
 
-	public abstract class FDSelect
-	{	
+    public abstract class FDSelect
+    {
 
-		/**
-         * Returns the Font DICT index for the given GID.
-         * 
-         * @param gid GID
-         */
-		public abstract int GetFDIndex(int gid);
-	}
+        /// <summary>Returns the Font DICT index for the given GID.</summary>
+        public abstract int GetFDIndex(int gid);
+    }
 }

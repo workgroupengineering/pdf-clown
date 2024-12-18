@@ -506,7 +506,7 @@ namespace PdfClown.Bytes.Filters.CCITT
             codingLine = new uint[columns + 1];
             refLine = new uint[columns + 2];
 
-            codingLine[0] = (uint)columns;
+            codingLine[0] = columns;
             codingPos = 0;
 
             row = 0;
@@ -898,7 +898,7 @@ namespace PdfClown.Bytes.Filters.CCITT
             uint c;
             if (outputBits >= 8)
             {
-                c = (codingPos & 1) != 0 ? (uint)0 : (uint)0xff;
+                c = (codingPos & 1) != 0 ? 0 : (uint)0xff;
                 outputBits -= 8;
                 if (outputBits == 0 && codingLine[codingPos] < columns)
                 {

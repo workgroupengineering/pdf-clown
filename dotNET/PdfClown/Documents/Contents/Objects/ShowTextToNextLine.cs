@@ -23,7 +23,6 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
 using PdfClown.Objects;
 using SkiaSharp;
 using System;
@@ -45,7 +44,7 @@ namespace PdfClown.Documents.Contents.Objects
         /// <param name="wordSpace">Word spacing.</param>
         /// <param name="charSpace">Character spacing.</param>
         public ShowTextToNextLine(string @operator, byte[] text, double wordSpace, double charSpace)
-            : base(@operator, new PdfArray(3) { wordSpace, charSpace, new PdfByteString(text) })
+            : base(@operator, new PdfArrayImpl(3) { wordSpace, charSpace, new PdfByteString(text) })
         { }
 
         public ShowTextToNextLine(string @operator, PdfArray operands)

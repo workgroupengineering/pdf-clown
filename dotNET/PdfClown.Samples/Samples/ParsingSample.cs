@@ -1,12 +1,11 @@
 using PdfClown.Documents;
-using PdfClown.Documents.Contents;
 using PdfClown.Documents.Contents.Objects;
 using PdfClown.Documents.Interchange.Metadata;
 using PdfClown.Objects;
 using System;
 using System.Collections.Generic;
 using System.Xml;
-using io = System.IO;
+using System.IO;
 
 namespace PdfClown.Samples.CLI
 {
@@ -21,18 +20,16 @@ namespace PdfClown.Samples.CLI
         {
             // 1. Opening the PDF file...
             string filePath = PromptFileChoice("Please select a PDF file");
-            using (var file = new PdfFile(filePath))
+            using (var document = new PdfDocument(filePath))
             {
-                var document = file.Document;
-
                 // 2. Parsing the document...
                 // 2.1. Metadata.
                 // 2.1.1. Basic metadata.
                 Console.WriteLine("\nDocument information:");
                 var info = document.Information;
-                if (info.Exists())
+                if (!info.Virtual)
                 {
-                    foreach (KeyValuePair<PdfName, object> infoEntry in info)
+                    foreach (var infoEntry in (IDictionary<PdfName, object>)info)
                     { Console.WriteLine(infoEntry.Key + ": " + infoEntry.Value); }
                 }
                 else
@@ -40,8 +37,8 @@ namespace PdfClown.Samples.CLI
 
                 // 2.1.2. Advanced metadata.
                 Console.WriteLine("\nDocument metadata (XMP):");
-                Metadata metadata = document.Metadata;
-                if (metadata.Exists())
+                PdfMetadata metadata = document.Catalog.Get<PdfMetadata>(PdfName.Metadata);
+                if (metadata != null)
                 {
                     try
                     {
@@ -59,16 +56,20 @@ namespace PdfClown.Samples.CLI
                 // 2.2. Counting the indirect objects, grouping them by type...
                 var objCounters = new SortedDictionary<string, int>();
                 objCounters["xref free entry"] = 0;
-                foreach (var obj in file.IndirectObjects)
+                foreach (var obj in document.IndirectObjects)
                 {
                     if (obj.IsInUse()) // In-use entry.
                     {
-                        PdfDataObject dataObject = obj.DataObject;
+                        var dataObject = obj.DataObject;
                         string typeName = (dataObject != null ? dataObject.GetType().Name : "empty entry");
-                        if (objCounters.ContainsKey(typeName))
-                        { objCounters[typeName]++; }
+                        if (objCounters.TryGetValue(typeName, out var c))
+                        {
+                            objCounters[typeName] = c + 1;
+                        }
                         else
-                        { objCounters[typeName] = 1; }
+                        {
+                            objCounters[typeName] = 1;
+                        }
                     }
                     else // Free entry.
                     { objCounters["xref free entry"]++; }
@@ -76,10 +77,10 @@ namespace PdfClown.Samples.CLI
                 Console.WriteLine("\nIndirect objects partial counts (grouped by PDF object type):");
                 foreach (KeyValuePair<string, int> keyValuePair in objCounters)
                 { Console.WriteLine(" " + keyValuePair.Key + ": " + keyValuePair.Value); }
-                Console.WriteLine("Indirect objects total count: " + file.IndirectObjects.Count);
+                Console.WriteLine("Indirect objects total count: " + document.IndirectObjects.Count);
 
                 // 2.3. Showing some page information...
-                Pages pages = document.Pages;
+                PdfPages pages = document.Pages;
                 int pageCount = pages.Count;
                 Console.WriteLine("\nPage count: " + pageCount);
 
@@ -99,11 +100,10 @@ namespace PdfClown.Samples.CLI
         private void PrintPageInfo(PdfPage page, int index)
         {
             // 1. Showing basic page information...
-            Console.WriteLine(" Index (calculated): " + page.Index + " (should be " + index + ")");
-            Console.WriteLine(" ID: " + ((PdfReference)page.BaseObject).Id);
-            var pageDictionary = page.BaseDataObject;
+            Console.WriteLine($" Index (calculated): {page.Index} (should be {index})");
+            Console.WriteLine($" ID: {page.Reference.Number} {page.Reference.Generation}");
             Console.WriteLine(" Dictionary entries:");
-            foreach (KeyValuePair<PdfName, PdfDirectObject> entry in pageDictionary)
+            foreach (KeyValuePair<PdfName, PdfDirectObject> entry in page)
             { Console.WriteLine("  " + entry.Key.Value + " = " + entry.Value); }
 
             // 2. Showing page contents information...
@@ -145,9 +145,9 @@ namespace PdfClown.Samples.CLI
             return index;
         }
 
-        private string ToString(XmlDocument document)
+        private static string ToString(XmlDocument document)
         {
-            var stringWriter = new io::StringWriter();
+            var stringWriter = new StringWriter();
             var xmlTextWriter = new XmlTextWriter(stringWriter);
             document.WriteTo(xmlTextWriter);
             return stringWriter.ToString();

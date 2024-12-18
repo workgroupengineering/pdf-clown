@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 using PdfClown.Bytes;
-using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
@@ -50,41 +49,27 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             set => length = value;
         }
 
-        /**
-         * @return Returns the offset.
-         */
         public long Offset
         {
             get => offset;
             set => offset = value;
         }
 
-        /**
-         * @return Returns the tag.
-         */
         public string Tag
         {
             get => tag;
             set => tag = value;
         }
 
-        /**
-         * Indicates if the table is already initialized.
-         * 
-         * @return true if the table is initialized
-         */
+        /// <summary>Indicates if the table is already initialized.</summary>
         public bool Initialized
         {
             get => initialized;
         }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public virtual void Read(TrueTypeFont ttf, IInputStream data)
         {
         }

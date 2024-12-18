@@ -16,36 +16,23 @@
    limitations under the License.
 
  */
+using PdfClown.Bytes;
+
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-
-    using System.IO;
-    using System.Diagnostics;
-    using PdfClown.Bytes;
-
-
-    /**
-     * This class is based on code from Apache Batik a subproject of Apache XMLGraphics. see
-     * http://xmlgraphics.apache.org/batik/ for further details.
-     */
+    /// <summary>
+    /// This class is based on code from Apache Batik a subproject of Apache XMLGraphics.see
+    /// http://xmlgraphics.apache.org/batik/ for further details.
+    /// </summary>
     public class GlyfSimpleDescript : GlyfDescript
     {
 
-        /**
-         * Constructor for an empty description.
-         * 
-         * @throws IOException is thrown if something went wrong
-         */
+        /// <summary>Constructor for an empty description.</summary>
         public GlyfSimpleDescript()
             : base(0)
         {
             pointCount = 0;
         }
-
-        /**
-         * Log instance.
-         */
-        //private static readonly Log LOG = LogFactory.getLog(GlyfSimpleDescript.class);
 
         private ushort[] endPtsOfContours;
         private byte[] flags;
@@ -53,14 +40,10 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         private short[] yCoordinates;
         private readonly int pointCount;
 
-        /**
-         * Constructor.
-         * 
-         * @param numberOfContours number of contours
-         * @param bais the stream to be read
-         * @param x0 the initial X-position
-         * @ is thrown if something went wrong
-         */
+        /// <summary>Constructor.</summary>
+        /// <param name="numberOfContours">number of contours</param>
+        /// <param name="bais">the stream to be read</param>
+        /// <param name="x0">the initial X-position</param>
         public GlyfSimpleDescript(short numberOfContours, IInputStream bais, short x0)
             : base(numberOfContours)
         {
@@ -99,57 +82,37 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             ReadCoords(pointCount, bais, x0);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override int GetEndPtOfContours(int i)
         {
             return endPtsOfContours[i];
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override byte GetFlags(int i)
         {
             return flags[i];
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override short GetXCoordinate(int i)
         {
             return xCoordinates[i];
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override short GetYCoordinate(int i)
         {
             return yCoordinates[i];
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override bool IsComposite
         {
             get => false;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         public override int PointCount
         {
             get => pointCount;
         }
 
-        /**
-         * The table is stored as relative values, but we'll store them as absolutes.
-         */
+        /// <summary>The table is stored as relative values, but we'll store them as absolutes.</summary>
         private void ReadCoords(int count, IInputStream bais, short x0)
         {
             short x = x0;
@@ -190,7 +153,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
                 {
                     if ((flags[i] & Y_SHORT_VECTOR) != 0)
                     {
-                        y -= (short)bais.ReadUByte();
+                        y -= bais.ReadUByte();
                     }
                     else
                     {
@@ -201,9 +164,7 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             }
         }
 
-        /**
-         * The flags are run-length encoded.
-         */
+        /// <summary>The flags are run-length encoded.</summary>
         private void ReadFlags(int flagCount, IInputStream bais)
         {
             for (int index = 0; index < flagCount; index++)

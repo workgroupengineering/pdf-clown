@@ -63,8 +63,8 @@ namespace PdfClown.Documents.Interaction.Forms
         /// <summary>Gets/Sets the justification to be used in displaying this field's text.</summary>
         public JustificationEnum Justification
         {
-            get => (JustificationEnum)BaseDataObject.GetInt(PdfName.Q);
-            set => BaseDataObject.Set(PdfName.Q, (int)value);
+            get => (JustificationEnum)DataObject.GetInt(PdfName.Q);
+            set => DataObject.Set(PdfName.Q, (int)value);
         }
 
         /// <summary>Gets/Sets the maximum length of the field's text, in characters.</summary>
@@ -73,10 +73,10 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                PdfInteger maxLengthObject = (PdfInteger)PdfObject.Resolve(GetInheritableAttribute(PdfName.MaxLen));
+                var maxLengthObject = (PdfInteger)DataObject.GetInheritableAttribute(PdfName.MaxLen)?.Resolve(PdfName.MaxLen);
                 return maxLengthObject != null ? maxLengthObject.IntValue : Int32.MaxValue;
             }
-            set => BaseDataObject.Set(PdfName.MaxLen, value != Int32.MaxValue ? value : null);
+            set => DataObject.Set(PdfName.MaxLen, value != Int32.MaxValue ? value : null);
         }
 
         /// <summary>Gets/Sets whether text entered in the field is spell-checked.</summary>
@@ -91,7 +91,7 @@ namespace PdfClown.Documents.Interaction.Forms
         {
             get
             {
-                PdfDataObject valueObject = PdfObject.Resolve(GetInheritableAttribute(PdfName.V));
+                var valueObject = DataObject.GetInheritableAttribute(PdfName.V)?.Resolve(PdfName.V);
                 if (valueObject is PdfString pdfString)
                     return pdfString.Value;
                 else if (valueObject is PdfStream pdfStream)
@@ -104,11 +104,11 @@ namespace PdfClown.Documents.Interaction.Forms
                 if (!(value == null
                     || value is string
                     || value is IByteStream))
-                    throw new ArgumentException("Value MUST be either a String or an IBuffer");
+                    throw new ArgumentException("Value MUST be either a String or an IByteStream");
 
                 if (value != null)
                 {
-                    PdfDataObject oldValueObject = BaseDataObject.Resolve(PdfName.V);
+                    var oldValueObject = DataObject.Get(PdfName.V);
                     IByteStream valueObjectBuffer = null;
                     if (oldValueObject is PdfStream stream)
                     {
@@ -120,18 +120,18 @@ namespace PdfClown.Documents.Interaction.Forms
                         if (valueObjectBuffer != null)
                         { valueObjectBuffer.Write(stringValue); }
                         else
-                        { BaseDataObject[PdfName.V] = new PdfTextString(stringValue); }
+                        { DataObject[PdfName.V] = new PdfTextString(stringValue); }
                     }
                     else if (value is IByteStream inputStream) // IBuffer.
                     {
                         if (valueObjectBuffer != null)
                         { valueObjectBuffer.Write(inputStream); }
                         else
-                        { BaseDataObject[PdfName.V] = File.Register(new PdfStream(inputStream)); }
+                        { DataObject[PdfName.V] = Document.Register(new PdfStream(inputStream)); }
                     }
                 }
                 else
-                { BaseDataObject[PdfName.V] = null; }
+                { DataObject[PdfName.V] = null; }
 
                 RefreshAppearance();
             }
@@ -148,21 +148,24 @@ namespace PdfClown.Documents.Interaction.Forms
                 if (defaultAppearanceState == null)
                 {
                     var defaultFontName = normalAppearance.GetDefaultFont(out _);
-                    DAOperation = new SetFont(defaultFontName, IsMultiline ? 10 : 0);
+                    DAOperation = new SetFont(defaultFontName, IsMultiline ? 9 : 10);
                 }
 
                 // Retrieving the font to use...
                 var setFont = DAOperation;
                 fontName = setFont.Name;
                 fontSize = setFont.Size;
-                normalAppearance.Resources.Fonts[fontName] = Document.Form.Resources.Fonts[fontName];
+                if (!Catalog.Form.Resources.Fonts.ContainsKey(fontName))
+                {
+                    
+                }
+                normalAppearance.Resources.Fonts[fontName] = Catalog.Form.Resources.Fonts[fontName];
             }
 
             // Refreshing the field appearance...
-            /*
-             * TODO: resources MUST be resolved both through the apperance stream resource dictionary and
-             * from the DR-entry acroform resource dictionary
-             */
+
+            // TODO: resources MUST be resolved both through the apperance stream resource dictionary and
+            // from the DR-entry acroform resource dictionary
             var baseComposer = new PrimitiveComposer(normalAppearance);
             var composer = new BlockComposer(baseComposer);
             var scanner = composer.Scanner;
@@ -183,7 +186,7 @@ namespace PdfClown.Documents.Interaction.Forms
                         textShown = true;
                     }
                 }
-                else if (content is GraphicsText)
+                else if (content is GraphicsText && !textShown)
                 {
                     container.Contents.RemoveAt(index);
                     return false;
@@ -209,8 +212,8 @@ namespace PdfClown.Documents.Interaction.Forms
             {
                 // NOTE: A zero value for size means that the font is to be auto-sized: its size is computed as
                 // a function of the height of the annotation rectangle.
-                if (fontSize == 0)
-                { fontSize = textBox.Height * 0.65; }
+                if (fontSize == 10)
+                { fontSize = textBox.Height * 0.6; }
                 baseComposer.SetFont(fontName, fontSize);
             }
 

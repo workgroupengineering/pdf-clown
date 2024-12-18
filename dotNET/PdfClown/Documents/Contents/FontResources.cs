@@ -31,22 +31,23 @@ namespace PdfClown.Documents.Contents
 {
     ///<summary>Font resources collection [PDF:1.6:3.7.2].</summary>
     [PDF(VersionEnum.PDF10)]
-    public sealed class FontResources : Dictionary<Font>
+    public sealed class FontResources : PdfDictionary<PdfFont>
     {
-        public class ValueWrapper : IEntryWrapper<Font>
-        {
-            public Font Wrap(PdfDirectObject baseObject) => Font.Wrap(baseObject);
-        }
-
-        private static readonly ValueWrapper Wrapper = new ValueWrapper();
-
-        public FontResources(PdfDocument context) : base(context, Wrapper)
+        public FontResources()
+            : base((PdfDocument)null)
         { }
 
-        public FontResources(PdfDirectObject baseObject) : base(baseObject, Wrapper)
+        public FontResources(PdfDocument context)
+            : base(context)
         { }
 
-        public bool TryGetByName(string fontName, out KeyValuePair<PdfName, Font> result)
+        public FontResources(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        public override PdfName ModifyTypeKey(PdfName key) => PdfName.Font;
+
+        public bool TryGetByName(string fontName, out KeyValuePair<PdfName, PdfFont> result)
         {
             foreach (var entry in this)
             {

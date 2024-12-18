@@ -29,19 +29,15 @@
  * The default color is `new Float32Array([0])`.
  */
 
-using PdfClown.Documents;
 using PdfClown.Objects;
-
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using SkiaSharp;
 
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>CIE-based A single-transformation-stage color space, where A represents a calibrated
-      achromatic single-component color value [PDF:1.6:4.5.4].</summary>
-    */
+    /// <summary>CIE-based A single-transformation-stage color space, where A represents a calibrated
+    /// achromatic single-component color value[PDF:1.6:4.5.4].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class CalGrayColorSpace : CalColorSpace
     {
@@ -57,7 +53,8 @@ namespace PdfClown.Documents.Contents.ColorSpaces
 
         // TODO:IMPL new element constructor!
 
-        internal CalGrayColorSpace(PdfDirectObject baseObject) : base(baseObject)
+        internal CalGrayColorSpace(List<PdfDirectObject> baseObject)
+            : base(baseObject)
         {
             var gamma = Gamma[0];
 
@@ -75,22 +72,18 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             this.G = gamma;
         }
 
-        public override object Clone(PdfDocument context)
-        { throw new NotImplementedException(); }
-
         public override int ComponentCount => 1;
 
         public override Color DefaultColor => defaultColor ??= new CalGrayColor(this, 0);
 
         public override float[] Gamma => gamma ??= new float[] { Dictionary.GetFloat(PdfName.Gamma, 1) };
 
-        public override Color GetColor(PdfArray components, IContentContext context)
-            => components == null ? DefaultColor : components?.Wrapper as CalGrayColor ?? new CalGrayColor(this, components);
+        public override IColor GetColor(PdfArray components, IContentContext context)
+            => components == null ? DefaultColor : new CalGrayColor(this, components);
 
-        public override bool IsSpaceColor(Color color)
-        { return color is CalGrayColor; }
+        public override bool IsSpaceColor(IColor color) => color is CalGrayColor;
 
-        public override SKColor GetSKColor(Color color, float? alpha = null)
+        public override SKColor GetSKColor(IColor color, float? alpha = null)
         {
             var grayColor = color as CalGrayColor;
             return Calculate(grayColor.G, alpha);

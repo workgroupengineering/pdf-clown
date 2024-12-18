@@ -31,8 +31,7 @@ namespace PdfClown.Documents.Contents.Objects
     {
         public PaintPathFillStroke() 
             : base(FillStrokeOperatorKeyword)
-        {
-        }
+        { }
 
         public override void Scan(GraphicsState state)
         {
@@ -40,14 +39,14 @@ namespace PdfClown.Documents.Contents.Objects
             if (scanner.Canvas is SKCanvas canvas)
             {
                 var pathObject = scanner.Path;
-                using (var paint = state.CreateFillPaint())
+                using (var fillPaint = state.CreateFillPaint())
                 {
-                    canvas.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, fillPaint);
                 }
 
-                using (var paint = state.CreateStrokePaint())
+                using (var strokPaint = state.CreateStrokePaint())
                 {
-                    canvas.DrawPath(pathObject, paint);
+                    canvas.DrawPath(pathObject, strokPaint);
                 }
             }
         }

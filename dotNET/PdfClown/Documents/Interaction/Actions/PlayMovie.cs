@@ -23,55 +23,48 @@
   this list of conditions.
 */
 
-using PdfClown.Bytes;
-using PdfClown.Documents;
 using PdfClown.Documents.Interaction.Annotations;
 using PdfClown.Objects;
 
 using System;
+using System.Collections.Generic;
 
 namespace PdfClown.Documents.Interaction.Actions
 {
-    /**
-      <summary>'Play a movie' action [PDF:1.6:8.5.3].</summary>
-    */
+    /// <summary>'Play a movie' action [PDF:1.6:8.5.3].</summary>
     [PDF(VersionEnum.PDF12)]
-    public sealed class PlayMovie : Action
+    public sealed class PlayMovie : PdfAction
     {
-        /**
-          <summary>Creates a new action within the given document context.</summary>
-        */
+        /// <summary>Creates a new action within the given document context.</summary>
         public PlayMovie(PdfDocument context, Movie movie)
             : base(context, PdfName.Movie)
         {
             Movie = movie;
         }
 
-        internal PlayMovie(PdfDirectObject baseObject)
+        internal PlayMovie(Dictionary<PdfName, PdfDirectObject> baseObject)
             : base(baseObject)
         { }
 
-        /**
-          <summary>Gets/Sets the movie to be played.</summary>
-        */
+        /// <summary>Gets/Sets the movie to be played.</summary>
         public Movie Movie
         {
             get
             {
-                PdfDirectObject annotationObject = BaseDataObject[PdfName.Annotation];
+                var annotationObject = Get(PdfName.Annotation);
                 if (annotationObject == null)
                 {
-                    annotationObject = BaseDataObject[PdfName.T];
+                    annotationObject = Get(PdfName.T);
                     throw new NotImplementedException("No by-title movie annotation support currently: we have to implement a hook to the page of the referenced movie to get it from its annotations collection.");
                 }
-                return (Movie)Annotation.Wrap(annotationObject);
+                return (Movie)annotationObject.Resolve(PdfName.Movie);
             }
             set
             {
                 if (value == null)
                     throw new ArgumentException("Movie MUST be defined.");
 
-                BaseDataObject[PdfName.Annotation] = value.BaseObject;
+                Set(PdfName.Annotation, value);
             }
         }
 

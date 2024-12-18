@@ -25,19 +25,14 @@
 
 using PdfClown.Objects;
 
-using System;
-using System.Collections.Generic;
-
 namespace PdfClown.Documents.Contents.ColorSpaces
 {
-    /**
-      <summary>CIE-based red-green-blue color value [PDF:1.6:4.5.4].</summary>
-    */
+    /// <summary>CIE-based red-green-blue color value [PDF:1.6:4.5.4].</summary>
     [PDF(VersionEnum.PDF11)]
     public sealed class CalRGBColor : LeveledColor
     {
         public CalRGBColor(CalRGBColorSpace colorSpace, double r, double g, double b)
-            : this(colorSpace, new PdfArray(3)
+            : this(colorSpace, new PdfArrayImpl(3)
             {
                 NormalizeComponent(r),
                 NormalizeComponent(g),
@@ -49,38 +44,25 @@ namespace PdfClown.Documents.Contents.ColorSpaces
             : base(colorSpace, components)
         { }
 
-        /**
-          <summary>Gets the red component.</summary>
-        */
+        /// <summary>Gets the red component.</summary>
         public float R
         {
             get => this[0];
             set => this[0] = value;
         }
 
-        /**
-          <summary>Gets/Sets the green component.</summary>
-        */
+        /// <summary>Gets/Sets the green component.</summary>
         public float G
         {
             get => this[1];
             set => this[1] = value;
         }
 
-        /**
-          <summary>Gets/Sets the blue component.</summary>
-        */
+        /// <summary>Gets/Sets the blue component.</summary>
         public float B
         {
             get => this[2];
             set => this[2] = value;
         }
-
-        public override object Clone(PdfDocument context)
-        {
-            throw new NotImplementedException();
-        }
-
-
     }
 }

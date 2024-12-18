@@ -33,16 +33,17 @@ namespace PdfClown.Documents
     public sealed class PageLabels : NumberTree<PageLabel>
     {
         public static PageLabels Wrap(PdfDirectObject baseObject) => baseObject != null
-                ? baseObject.Wrapper as PageLabels ?? new PageLabels(baseObject)
+                ? new PageLabels(baseObject)
                 : null;
 
-        public PageLabels(PdfDocument context) : base(context)
+        public PageLabels(PdfDocument context) 
+            : base(context)
         { }
 
-        internal PageLabels(PdfDirectObject baseObject) : base(baseObject)
+        internal PageLabels(PdfDirectObject baseObject) 
+            : base(baseObject)
         { }
 
-        protected override PageLabel WrapValue(PdfDirectObject baseObject)
-        { return Wrap<PageLabel>(baseObject); }
+        protected override PageLabel WrapValue(PdfDirectObject baseObject) => (PageLabel)baseObject.Resolve(PdfName.PageLabel);
     }
 }

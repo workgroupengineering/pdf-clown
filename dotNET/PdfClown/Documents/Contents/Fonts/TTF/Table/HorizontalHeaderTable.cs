@@ -15,20 +15,16 @@
  * limitations under the License.
  */
 using PdfClown.Bytes;
-using System.IO;
 
 namespace PdfClown.Documents.Contents.Fonts.TTF
 {
-    /**
-     * A table in a true type font.
-     * 
-     * @author Ben Litchfield
-     */
+    /// <summary>
+    /// A table in a true type font.
+    /// @author Ben Litchfield
+    /// </summary>
     public class HorizontalHeaderTable : TTFTable
     {
-        /**
-         * A tag that identifies this table type.
-         */
+        /// <summary>A tag that identifies this table type.</summary>
         public const string TAG = "hhea";
 
         private float version;
@@ -52,13 +48,9 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
         public HorizontalHeaderTable()
         { }
 
-        /**
-         * This will read the required data from the stream.
-         * 
-         * @param ttf The font that is being read.
-         * @param data The stream to read the data from.
-         * @ If there is an error reading the data.
-         */
+        /// <summary>This will read the required data from the stream.</summary>
+        /// <param name="ttf">The font that is being read.</param>
+        /// <param name="data">The stream to read the data from.</param>
         public override void Read(TrueTypeFont ttf, IInputStream data)
         {
             version = data.Read32Fixed();
@@ -81,153 +73,102 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             initialized = true;
         }
 
-        /**
-         * @return Returns the advanceWidthMax.
-         */
         public ushort AdvanceWidthMax
         {
             get => advanceWidthMax;
             set => advanceWidthMax = value;
         }
 
-        /**
-         * @return Returns the ascender.
-         */
         public short Ascender
         {
             get => ascender;
             set => ascender = value;
         }
 
-        /**
-         * @return Returns the caretSlopeRise.
-         */
         public short CaretSlopeRise
         {
             get => caretSlopeRise;
             set => caretSlopeRise = value;
         }
 
-        /**
-         * @return Returns the caretSlopeRun.
-         */
         public short CaretSlopeRun
         {
             get => caretSlopeRun;
             set => caretSlopeRun = value;
         }
 
-        /**
-         * @return Returns the descender.
-         */
         public short Descender
         {
             get => descender;
             set => descender = value;
         }
 
-        /**
-         * @return Returns the lineGap.
-         */
         public short LineGap
         {
             get => lineGap;
             set => lineGap = value;
         }
 
-        /**
-         * @return Returns the metricDataFormat.
-         */
         public short MetricDataFormat
         {
             get => metricDataFormat;
             set => metricDataFormat = value;
         }
 
-        /**
-         * @return Returns the minLeftSideBearing.
-         */
         public short MinLeftSideBearing
         {
             get => minLeftSideBearing;
             set => minLeftSideBearing = value;
         }
 
-        /**
-         * @return Returns the minRightSideBearing.
-         */
         public short MinRightSideBearing
         {
             get => minRightSideBearing;
             set => minRightSideBearing = value;
         }
 
-        /**
-         * @return Returns the numberOfHMetrics.
-         */
         public int NumberOfHMetrics
         {
             get => numberOfHMetrics;
             set => numberOfHMetrics = value;
         }
 
-        /**
-         * @return Returns the reserved1.
-         */
         public short Reserved1
         {
             get => reserved1;
             set => reserved1 = value;
         }
 
-        /**
-         * @return Returns the reserved2.
-         */
         public short Reserved2
         {
             get => reserved2;
             set => reserved2 = value;
         }
 
-        /**
-         * @return Returns the reserved3.
-         */
         public short Reserved3
         {
             get => reserved3;
             set => reserved3 = value;
         }
 
-        /**
-         * @return Returns the reserved4.
-         */
         public short Reserved4
         {
             get => reserved4;
             set => reserved4 = value;
         }
 
-        /**
-         * @return Returns the reserved5.
-         */
         public short Reserved5
         {
             get => reserved5;
             set => reserved5 = value;
         }
 
-        /**
-         * @return Returns the version.
-         */
         public float Version
         {
             get => version;
             set => version = value;
         }
 
-        /**
-         * @return Returns the xMaxExtent.
-         */
         public short XMaxExtent
         {
             get => xMaxExtent;

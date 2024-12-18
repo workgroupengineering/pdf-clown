@@ -33,7 +33,7 @@ namespace PdfClown.Documents.Contents.Objects
     {
         /// <summary>Applies this object to the specified graphics context, updating the specified
         /// graphics state.</summary>
-        /// <param name = "state" > Graphics state.</param>
+        /// <param name="state"> Graphics state.</param>
         public virtual void Scan(GraphicsState state)
         {/* Do nothing by default. */}
 

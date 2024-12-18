@@ -110,7 +110,8 @@ namespace PdfClown.Documents.Interaction.Annotations
             Printable = true;
         }
 
-        public TextMarkup(PdfDirectObject baseObject) : base(baseObject)
+        public TextMarkup(Dictionary<PdfName, PdfDirectObject> baseObject) 
+            : base(baseObject)
         { }
 
         public override PdfPage Page
@@ -131,13 +132,13 @@ namespace PdfClown.Documents.Interaction.Annotations
 
         public PdfArray QuadPoints
         {
-            get => BaseDataObject.Get<PdfArray>(PdfName.QuadPoints);
+            get => Get<PdfArray>(PdfName.QuadPoints);
             set
             {
                 var oldValue = QuadPoints;
                 if (!PdfArray.SequenceEquals(oldValue, value))
                 {
-                    BaseDataObject[PdfName.QuadPoints] = value;
+                    this[PdfName.QuadPoints] = value;
                     markupBoxes = null;
                     pageMarkupBoxes = null;
                     OnPropertyChanged(oldValue, value);
@@ -153,7 +154,7 @@ namespace PdfClown.Documents.Interaction.Annotations
             get => pageMarkupBoxes ??= GetMarkupBoxes();
             set
             {
-                var quadPoints = new PdfArray();
+                var quadPoints = new PdfArrayImpl();
                 foreach (var quad in value)
                 {
                     // NOTE: Despite the spec prescription, point 3 and point 4 MUST be inverted.
@@ -186,22 +187,16 @@ namespace PdfClown.Documents.Interaction.Annotations
         /// <summary>Gets/Sets the markup type.</summary>
         public TextMarkupType MarkupType
         {
-            get => ToMarkupTypeEnum(BaseDataObject.GetString(PdfName.Subtype));
+            get => ToMarkupTypeEnum(GetString(PdfName.Subtype));
             set
             {
-                BaseDataObject[PdfName.Subtype] = ToCode(value);
-                switch (value)
+                this[PdfName.Subtype] = ToCode(value);
+                Color = value switch
                 {
-                    case TextMarkupType.Highlight:
-                        Color = new DeviceRGBColor(1, 1, 0);
-                        break;
-                    case TextMarkupType.Squiggly:
-                        Color = new DeviceRGBColor(1, 0, 0);
-                        break;
-                    default:
-                        Color = new DeviceRGBColor(0, 0, 0);
-                        break;
-                }
+                    TextMarkupType.Highlight => new RGBColor(1, 1, 0),
+                    TextMarkupType.Squiggly => new RGBColor(1, 0, 0),
+                    _ => new RGBColor(0, 0, 0),
+                };
             }
         }
 
@@ -232,7 +227,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                 return null;
             }
             var normalAppearance = ResetAppearance(out var matrix);
-            SKRect box = Box;
+            //SKRect box = Box;
             var composer = new PrimitiveComposer(normalAppearance);
             {
                 var first = PageMarkupBoxes.FirstOrDefault();
@@ -244,7 +239,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         {
                             ExtGState defaultExtGState;
                             {
-                                ExtGStateResources extGStates = normalAppearance.Resources.ExtGStates;
+                                var extGStates = normalAppearance.Resources.ExtGStates;
                                 defaultExtGState = extGStates[HighlightExtGStateName];
                                 if (defaultExtGState == null)
                                 {
@@ -258,7 +253,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                             }
 
                             composer.ApplyState(defaultExtGState);
-                            composer.SetFillColor(Color ?? DeviceRGBColor.OrangeRed);
+                            composer.SetFillColor(Color ?? RGBColor.OrangeRed);
                             {
                                 foreach (Quad markup in PageMarkupBoxes)
                                 {
@@ -287,7 +282,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                         break;
                     case TextMarkupType.Squiggly:
                         {
-                            composer.SetStrokeColor(Color ?? DeviceRGBColor.OrangeRed);
+                            composer.SetStrokeColor(Color ?? RGBColor.OrangeRed);
                             composer.SetLineCap(LineCapEnum.Round);
                             composer.SetLineJoin(LineJoinEnum.Round);
                             {
@@ -330,7 +325,7 @@ namespace PdfClown.Documents.Interaction.Annotations
                     case TextMarkupType.StrikeOut:
                     case TextMarkupType.Underline:
                         {
-                            composer.SetStrokeColor(Color ?? DeviceRGBColor.OrangeRed);
+                            composer.SetStrokeColor(Color ?? RGBColor.OrangeRed);
                             {
                                 float lineYRatio = 0;
                                 switch (markupType)

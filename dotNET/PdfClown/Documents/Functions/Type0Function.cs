@@ -31,12 +31,10 @@ using System.Collections.Generic;
 
 namespace PdfClown.Documents.Functions
 {
-    /**
-      <summary>Sampled function using a sequence of sample values to provide an approximation for
-      functions whose domains and ranges are bounded [PDF:1.6:3.9.1].</summary>
-      <remarks>The samples are organized as an m-dimensional table in which each entry has n components.
-      </remarks>
-    */
+    /// <summary>Sampled function using a sequence of sample values to provide an approximation for
+    /// functions whose domains and ranges are bounded[PDF:1.6:3.9.1].</summary>
+    /// <remarks>The samples are organized as an m-dimensional table in which each entry has n components.
+    /// </remarks>
     [PDF(VersionEnum.PDF12)]
     public sealed class Type0Function : Function
     {
@@ -46,19 +44,16 @@ namespace PdfClown.Documents.Functions
         private int[,] samples;
         public enum InterpolationOrderEnum
         {
-            /**
-              Linear spline interpolation.
-            */
+            /// Linear spline interpolation.
             Linear = 1,
-            /**
-              Cubic spline interpolation.
-            */
+            /// Cubic spline interpolation.
             Cubic = 3
         }
 
         //TODO:implement function creation!
 
-        internal Type0Function(PdfDirectObject baseObject) : base(baseObject)
+        internal Type0Function(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
         { }
 
         public override ReadOnlySpan<float> Calculate(ReadOnlySpan<float> inputs)
@@ -104,9 +99,7 @@ namespace PdfClown.Documents.Functions
             return result;
         }
 
-        /**
-          <summary>Gets the linear mapping of input values into the domain of the function's sample table.</summary>
-        */
+        /// <summary>Gets the linear mapping of input values into the domain of the function's sample table.</summary>
         public IList<Interval<int>> Encodes => encodes ??= GetIntervals<int>(
                   PdfName.Encode,
                   delegate (IList<Interval<int>> intervals)
@@ -116,27 +109,19 @@ namespace PdfClown.Documents.Functions
                       return intervals;
                   });
 
-        /**
-          <summary>Gets the order of interpolation between samples.</summary>
-        */
-        public InterpolationOrderEnum Order => (InterpolationOrderEnum)Dictionary.GetInt(PdfName.Order, 1);
+        /// <summary>Gets the order of interpolation between samples.</summary>
+        public InterpolationOrderEnum Order => (InterpolationOrderEnum)GetInt(PdfName.Order, 1);
 
-        /**
-          <summary>Gets the linear mapping of sample values into the ranges of the function's output values.</summary>
-        */
+        /// <summary>Gets the linear mapping of sample values into the ranges of the function's output values.</summary>
         public IList<Interval<float>> Decodes => decodes ??= GetIntervals<float>(PdfName.Decode, (n) => Ranges);
 
-        /**
-          <summary>Gets the number of bits used to represent each sample.</summary>
-        */
-        public int BitsPerSample => Dictionary.GetInt(PdfName.BitsPerSample);
+        /// <summary>Gets the number of bits used to represent each sample.</summary>
+        public int BitsPerSample => GetInt(PdfName.BitsPerSample);
 
-        /**
-          <summary>Gets the number of samples in each input dimension of the sample table.</summary>
-        */
+        /// <summary>Gets the number of samples in each input dimension of the sample table.</summary>
         public int[] Sizes
         {
-            get => sizes ??= Dictionary.Get<PdfArray>(PdfName.Size).ToIntArray();
+            get => sizes ??= Get<PdfArray>(PdfName.Size).ToIntArray();
         }
 
         public int[,] GetSamples()
@@ -154,7 +139,7 @@ namespace PdfClown.Documents.Functions
                 samples = new int[arraySize, outputCount];
                 var bps = BitsPerSample;
                 int index = 0;
-                var stream = BaseDataObject as PdfStream;
+                var stream = this;
                 var buffer = stream.GetInputStream();
                 for (int i = 0; i < arraySize; i++)
                 {
@@ -170,26 +155,21 @@ namespace PdfClown.Documents.Functions
 
 
 
-        /**
-         * Calculate the interpolation.
-         *
-         * @return interpolated result sample
-         */
+        /// <summary>calculate the interpolation.</summary>
+        /// <param name="rinterpol"></param>
+        /// <returns>interpolated result sample</returns>
         float[] Rinterpolate(Rinterpol rinterpol)
         {
             return Rinterpolate(rinterpol, 0);
         }
 
-        /**
-         * Do a linear interpolation if the two coordinates can be known, or
-         * call itself recursively twice.
-         *
-         * @param coord coord partially set coordinate (not set from step
-         * upwards); gets fully filled in the last call ("leaf"), where it is
-         * used to get the correct sample
-         * @param step between 0 (first call) and dimension - 1
-         * @return interpolated result sample
-         */
+        /// <summary>Do a linear interpolation if the two coordinates can be known, or
+        /// call itself recursively twice.</summary>
+        /// <param name="rinterpol">coord partially set coordinate (not set from step
+        /// upwards); gets fully filled in the last call("leaf"), where it is
+        /// used to get the correct sample</param>
+        /// <param name="step">between 0 (first call) and dimension - 1</param>
+        /// <returns>interpolated result sample</returns>
         private float[] Rinterpolate(Rinterpol rinterpol, int step)
         {
             var coord = rinterpol.Coord;
@@ -240,12 +220,11 @@ namespace PdfClown.Documents.Functions
             }
         }
 
-        /**
-         * calculate array index (structure described in p.171 PDF spec 1.7) in multiple dimensions.
-         *
-         * @param vector with coordinates
-         * @return index in flat array
-         */
+        /// <summary>
+        /// calculate array index(structure described in p.171 PDF spec 1.7) in multiple dimensions.
+        /// </summary>
+        /// <param name="vector">with coordinates</param>
+        /// <returns>index in flat array</returns>
         private int CalcSampleIndex(Span<int> vector)
         {
             // inspiration: http://stackoverflow.com/a/12113479/535646

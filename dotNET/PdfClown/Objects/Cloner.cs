@@ -25,7 +25,6 @@
 
 using PdfClown.Bytes;
 using PdfClown.Documents;
-using PdfClown.Documents.Interaction.Forms;
 using PdfClown.Documents.Interaction.Navigation;
 using PdfClown.Tokens;
 
@@ -105,16 +104,16 @@ namespace PdfClown.Objects
 
             public string Name => name;
 
-            protected void CloneNamedObject<T>(Cloner cloner, PdfDirectObject source, PdfString name)
-                where T : PdfObjectWrapper
+            protected static void CloneNamedObject<T>(Cloner cloner, PdfDirectObject source, PdfString name)
+                where T : PdfObject
             {
                 // Resolve the named object source!
-                T namedObjectSource = source.File.Document.ResolveName<T>(name);
+                T namedObjectSource = source.Document.Catalog.ResolveName<T>(name);
                 if (namedObjectSource == null)
                     return;
 
                 // Clone the named object source into the target document!
-                cloner.context.Document.Register(name, (T)namedObjectSource.Clone(cloner));
+                cloner.context.Catalog.Register(name, (T)namedObjectSource.Clone(cloner));
             }
         }
 
@@ -127,17 +126,18 @@ namespace PdfClown.Objects
             {
                 if (PdfName.D.Equals(key))
                 {
-                    PdfDirectObject destObject = clone[PdfName.D];
-                    if (destObject is PdfString) // Named destination.
-                    { CloneNamedObject<Destination>(cloner, source, (PdfString)destObject); }
+                    PdfDirectObject destObject = clone.Get(PdfName.D);
+                    if (destObject is PdfString dstr) // Named destination.
+                    {
+                        CloneNamedObject<Destination>(cloner, source, dstr);
+                    }
                 }
             }
 
             public override bool Matches(Cloner cloner, PdfObject source)
             {
-                if (source is PdfDictionary)
+                if (source is PdfDictionary dictionary)
                 {
-                    PdfDictionary dictionary = (PdfDictionary)source;
                     return dictionary.ContainsKey(PdfName.S)
                       && (!dictionary.ContainsKey(PdfName.Type)
                       || PdfName.Action.Equals(dictionary.Get<PdfName>(PdfName.Type)));
@@ -153,12 +153,14 @@ namespace PdfClown.Objects
 
             public override void AfterClone(Cloner cloner, PdfArray source, PdfArray clone, int index, PdfDirectObject item)
             {
-                PdfDictionary annotation = (PdfDictionary)item.Resolve();
+                var annotation = (PdfDictionary)item.Resolve(PdfName.Annot);
                 if (annotation.ContainsKey(PdfName.FT))
-                { cloner.context.Document.Form.Fields.Add(Field.Wrap(annotation.Reference)); }
+                {
+                    cloner.context.Catalog.Form.Fields.Add(cloner.context.Catalog.Form.Fields.Wrap(annotation.Reference));
+                }
                 else if (annotation.ContainsKey(PdfName.Dest))
                 {
-                    PdfDirectObject destObject = annotation[PdfName.Dest];
+                    var destObject = annotation.Get(PdfName.Dest);
                     if (destObject is PdfString destString) // Named destination.
                     { CloneNamedObject<Destination>(cloner, source, destString); }
                 }
@@ -168,7 +170,7 @@ namespace PdfClown.Objects
             {
                 if (source is PdfArray array
                     && array.Count > 0
-                    && array.Resolve(0) is PdfDictionary arrayItemDictionary)
+                    && array.Get<PdfDictionary>(0) is PdfDictionary arrayItemDictionary)
                 {
                     return arrayItemDictionary.ContainsKey(PdfName.Subtype)
                       && arrayItemDictionary.ContainsKey(PdfName.Rect);
@@ -215,16 +217,17 @@ namespace PdfClown.Objects
                 {
                     if (!sourceDictionary.ContainsKey(key))
                     {
-                        PdfDirectObject sourceValue = PdfPage.GetInheritableAttribute(sourceDictionary, key);
+                        var sourceValue = sourceDictionary.GetInheritableAttribute(key);
                         if (sourceValue != null)
-                        { cloneDictionary[key] = (PdfDirectObject)sourceValue.Accept(cloner, null); }
+                        { cloneDictionary[key] = (PdfDirectObject)sourceValue.Accept(cloner, key, null); }
                     }
                 }
             }
 
             public override bool BeforeClone(Cloner cloner, PdfDictionary source, PdfDictionary clone, PdfName key, PdfDirectObject value)
             {
-                return !PdfName.Parent.Equals(key);
+                return base.BeforeClone(cloner, source, clone, key, value)
+                    && !PdfName.Parent.Equals(key);
             }
 
             public override bool Matches(Cloner cloner, PdfObject source)
@@ -234,63 +237,52 @@ namespace PdfClown.Objects
             }
         }
 
-        private static readonly Filter NullFilter = new Filter("Default");
+        private static readonly Filter NullFilter = new("Default");
 
-        private static IList<Filter> commonFilters = new List<Filter>();
-
-        static Cloner()
+        private static readonly List<Filter> commonFilters = new()
         {
-            // Page object.
-            commonFilters.Add(new PageFilter());
-            // Actions.
-            commonFilters.Add(new ActionFilter());
-            // Annotation.
-            commonFilters.Add(new AnnotationFilter());
-            // Annotations.
-            commonFilters.Add(new AnnotationsFilter());
-        }
+            new PageFilter(),
+            new ActionFilter(),
+            new AnnotationFilter(),
+            new AnnotationsFilter(),
+        };
 
-        private PdfFile context;
-        private readonly IList<Filter> filters = new List<Filter>(commonFilters);
+        private PdfDocument context;
 
-        public Cloner(PdfFile context)
+        private readonly List<Filter> filters = new(commonFilters);
+
+        public Cloner(PdfDocument context)
         {
             Context = context;
         }
 
-        public PdfFile Context
+        public PdfDocument Context
         {
             get => context;
-            set
-            {
-                if (value == null)
-                    throw new ArgumentException("value required");
-
-                context = value;
-            }
+            set => context = value ?? throw new ArgumentException("value required");
         }
 
-        public IList<Filter> Filters => filters;
+        public List<Filter> Filters => filters;
 
-        public override PdfObject Visit(ObjectStream obj, object data)
+        public override PdfObject Visit(ObjectStream obj, PdfName parentKey, object data)
         {
             throw new NotSupportedException();
         }
 
-        public override PdfObject Visit(PdfArray obj, object data)
+        public override PdfObject Visit(PdfArray obj, PdfName parentKey, object data)
         {
-            Filter cloneFilter = MatchFilter(obj);
-            PdfArray clone = (PdfArray)obj.Clone();
+            var cloneFilter = MatchFilter(obj);
+            var clone = (PdfArray)obj.Clone();
             {
                 clone.items = new List<PdfDirectObject>();
-                IList<PdfDirectObject> sourceItems = obj.items;
+                var sourceItems = obj.items;
                 for (int index = 0, length = sourceItems.Count; index < length; index++)
                 {
-                    PdfDirectObject sourceItem = sourceItems[index];
+                    var sourceItem = sourceItems[index];
                     if (cloneFilter.BeforeClone(this, obj, clone, index, sourceItem))
                     {
                         PdfDirectObject cloneItem;
-                        clone.Add(cloneItem = (PdfDirectObject)(sourceItem != null ? sourceItem.Accept(this, null) : null));
+                        clone.Add(cloneItem = (PdfDirectObject)(sourceItem?.Accept(this, obj.TypeKey ?? parentKey, null)));
                         cloneFilter.AfterClone(this, obj, clone, index, cloneItem);
                     }
                 }
@@ -299,7 +291,7 @@ namespace PdfClown.Objects
             return clone;
         }
 
-        public override PdfObject Visit(PdfDictionary obj, object data)
+        public override PdfObject Visit(PdfDictionary obj, PdfName parentKey, object data)
         {
             var cloneFilter = MatchFilter(obj);
             var clone = (PdfDictionary)obj.Clone();
@@ -307,11 +299,12 @@ namespace PdfClown.Objects
                 clone.entries = new Dictionary<PdfName, PdfDirectObject>();
                 foreach (KeyValuePair<PdfName, PdfDirectObject> entry in obj.entries)
                 {
-                    PdfDirectObject sourceValue = entry.Value;
+
+                    var sourceValue = entry.Value;
                     if (cloneFilter.BeforeClone(this, obj, clone, entry.Key, sourceValue))
                     {
                         PdfDirectObject cloneValue;
-                        clone[entry.Key] = cloneValue = (PdfDirectObject)(sourceValue != null ? sourceValue.Accept(this, null) : null);
+                        clone[entry.Key] = cloneValue = (PdfDirectObject)(sourceValue?.Accept(this, obj.ModifyTypeKey(entry.Key), null));
                         cloneFilter.AfterClone(this, obj, clone, entry.Key, cloneValue);
                     }
                 }
@@ -320,26 +313,27 @@ namespace PdfClown.Objects
             return clone;
         }
 
-        public override PdfObject Visit(PdfIndirectObject obj, object data)
+        public override PdfObject Visit(PdfIndirectObject obj, PdfName parentKey, object data)
         {
-            return context.IndirectObjects.AddExternal(obj, this);
+            return context.IndirectObjects.AddExternal(obj, this, parentKey);
         }
 
-        public override PdfObject Visit(PdfReference obj, object data)
+        public override PdfObject Visit(PdfReference obj, PdfName parentKey, object data)
         {
-            return context == obj.File
+            return context == obj.Document
               ? (PdfReference)obj.Clone() // Local clone.
-              : Visit(obj.IndirectObject, data).Reference; // Alien clone.
+              : Visit(obj.IndirectObject, parentKey, data).Reference; // Alien clone.
         }
 
-        public override PdfObject Visit(PdfStream obj, object data)
+        public override PdfObject Visit(PdfStream obj, PdfName parentKey, object data)
         {
-            PdfStream clone = (PdfStream)Visit((PdfDictionary)obj, data);
-            clone.SetStream(new ByteStream(obj.GetInputStreamNoDecode()));
+            var clone = (PdfStream)Visit((PdfDictionary)obj, parentKey, data);
+            if (obj.GetInputStreamNoDecode() is IInputStream stream)
+                clone.SetStream(new ByteStream(stream));
             return clone;
         }
 
-        public override PdfObject Visit(XRefStream obj, object data)
+        public override PdfObject Visit(XRefStream obj, PdfName parentKey, object data)
         {
             throw new NotSupportedException();
         }

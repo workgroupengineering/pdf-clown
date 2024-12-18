@@ -2,7 +2,7 @@ using PdfClown.Documents;
 using PdfClown.Documents.Contents.Composition;
 using SkiaSharp;
 using System.IO;
-using fonts = PdfClown.Documents.Contents.Fonts;
+using PdfClown.Documents.Contents.Fonts;
 
 namespace PdfClown.Samples.CLI
 {
@@ -16,14 +16,13 @@ namespace PdfClown.Samples.CLI
         public override void Run()
         {
             // 1. PDF file instantiation.
-            var file = new PdfFile();
-            var document = file.Document;
+            var document = new PdfDocument();
 
             // 2. Content creation.
             Build(document);
 
             // 3. Serialize the PDF file!
-            Serialize(file, "Typesetting", "demonstrating how to add style to contents", "typesetting");
+            Serialize(document, "Typesetting", "demonstrating how to add style to contents", "typesetting");
         }
 
         private void Build(PdfDocument document)
@@ -64,11 +63,10 @@ namespace PdfClown.Samples.CLI
               Margin_X,
               Margin_Y,
               (float)pageSize.Width - Margin_X * 2,
-              (float)pageSize.Height - Margin_Y * 2
-              );
+              (float)pageSize.Height - Margin_Y * 2);
             // Begin the title block!
             blockComposer.Begin(frame, XAlignmentEnum.Left, YAlignmentEnum.Top);
-            fonts::Font decorativeFont = fonts::Font.Get(document, GetResourcePath(Path.Combine("fonts", "Ruritania-Outline.ttf")));
+            var decorativeFont = PdfFont.Get(document, GetResourcePath(Path.Combine("fonts", "Ruritania-Outline.ttf")));
             composer.SetFont(decorativeFont, 56);
             blockComposer.ShowText("Chapter 1");
             blockComposer.ShowBreak();
@@ -81,11 +79,10 @@ namespace PdfClown.Samples.CLI
               (float)blockComposer.BoundBox.Left,
               (float)blockComposer.BoundBox.Top + blockComposer.BoundBox.Height,
               (float)blockComposer.BoundBox.Width,
-              (float)pageSize.Height - Margin_Y - (blockComposer.BoundBox.Top + blockComposer.BoundBox.Height)
-              );
+              (float)pageSize.Height - Margin_Y - (blockComposer.BoundBox.Top + blockComposer.BoundBox.Height));
             // Begin the body block!
             blockComposer.Begin(frame, XAlignmentEnum.Justify, YAlignmentEnum.Bottom);
-            fonts::Font bodyFont = fonts::Font.Get(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
+            var bodyFont = PdfFont.Get(document, GetResourcePath("fonts" + Path.DirectorySeparatorChar + "TravelingTypewriter.otf"));
             composer.SetFont(bodyFont, 14);
             composer.BeginLocalState();
             composer.SetFont(decorativeFont, 28);

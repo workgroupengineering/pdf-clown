@@ -45,6 +45,8 @@ namespace PdfClown.Tokens
 
         public override byte[] Encode(string value) => Charset.ISO88591.GetBytes(value);
 
+        public override byte[] Encode(char[] value) => Charset.ISO88591.GetBytes(value, 0, value.Length);
+
         public override void Encode(ReadOnlySpan<char> value, Span<byte> bytes) => Charset.ISO88591.GetBytes(value, bytes);
     }
 }

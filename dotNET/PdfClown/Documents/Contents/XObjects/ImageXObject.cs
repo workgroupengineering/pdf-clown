@@ -39,11 +39,11 @@ namespace PdfClown.Documents.Contents.XObjects
     {
         private ColorSpace colorSpace;
         private int? bitsPerComponent;
-        private ImageXObject smask;
         private SKSize? size;
         private float[] decode;
 
-        public ImageXObject(PdfDocument context, PdfStream baseDataObject) : base(context, baseDataObject)
+        public ImageXObject(PdfDocument context, Dictionary<PdfName, PdfDirectObject> baseDataObject, IInputStream stream)
+            : base(context, baseDataObject, stream)
         {
             //NOTE: It's caller responsability to adequately populate the stream
             //header and body in order to instantiate a valid object; header entries like
@@ -52,18 +52,21 @@ namespace PdfClown.Documents.Contents.XObjects
             baseDataObject[PdfName.Subtype] = PdfName.Image;
         }
 
-        public ImageXObject(PdfDirectObject baseObject) : base(baseObject)
+        internal ImageXObject(Dictionary<PdfName, PdfDirectObject> baseObject)
+            : base(baseObject)
+        { }
+
+        internal ImageXObject(Dictionary<PdfName, PdfDirectObject> baseObject, IInputStream inputStream)
+            : base(baseObject, inputStream)
         { }
 
         /// <summary>Gets the number of bits per color component.</summary>
-        public int BitsPerComponent => bitsPerComponent ??= BaseDataObject.GetInt(PdfName.BitsPerComponent, 8);
+        public int BitsPerComponent => bitsPerComponent ??= GetInt(PdfName.BitsPerComponent, 8);
 
         /// <summary>Gets the color space in which samples are specified.</summary>
-        public ColorSpace ColorSpace => colorSpace ??= ColorSpace.Wrap(BaseDataObject[PdfName.ColorSpace]);
+        public ColorSpace ColorSpace => colorSpace ??= ColorSpace.Wrap(Get(PdfName.ColorSpace));
 
-        public IInputStream Data => Stream.GetInputStreamNoDecode();
-
-        public PdfDirectObject Filter => Stream.Filter;
+        public IInputStream Data => GetInputStreamNoDecode();
 
         public override SKMatrix Matrix
         {
@@ -81,56 +84,54 @@ namespace PdfClown.Documents.Contents.XObjects
             {/* NOOP. */}
         }
 
-        public PdfDirectObject Parameters => Stream.Parameters;
-
-        public PdfDictionary Header => Stream;
-
-        IDictionary<PdfName, PdfDirectObject> IImageObject.Header => Header;
+        IDictionary<PdfName, PdfDirectObject> IImageObject.Header => this;
 
         /// <summary>Gets the size of the image (in samples).</summary>
         public override SKSize Size
         {
             get => size ??= new SKSize(
-                  BaseDataObject.GetInt(PdfName.Width),
-                  BaseDataObject.GetInt(PdfName.Height));
+                  GetInt(PdfName.Width),
+                  GetInt(PdfName.Height));
             set => throw new NotSupportedException();
         }
 
-        public SKBitmap Load(GraphicsState state)
+        public SKImage Load(GraphicsState state)
         {
-            if (Document.Cache.TryGetValue((PdfReference)BaseObject, out var existingBitmap))
+            if (Document.Cache.TryGetValue(Reference, out var existingBitmap))
             {
-                return (SKBitmap)existingBitmap;
+                return (SKImage)existingBitmap;
             }
 
-            SKBitmap image = BitmapLoader.Load(this, state);
-            Document.Cache[(PdfReference)BaseObject] = image;
+            var image = BitmapLoader.Load(this, state);
+            Document.Cache[Reference] = image;
             return image;
         }
 
         public IImageObject SMask
         {
-            get => smask ??= Wrap<ImageXObject>(BaseDataObject[PdfName.SMask]);
-            set => BaseDataObject[PdfName.SMask] = ((ImageXObject)value).BaseObject;
+            get => Get<ImageXObject>(PdfName.SMask);
+            set => Set(PdfName.SMask, (PdfDictionary)value);
         }
 
         public PdfDirectObject Mask
         {
-            get => BaseDataObject[PdfName.Mask];
-            set => BaseDataObject[PdfName.Mask] = value;
+            get => Get(PdfName.Mask);
+            set => Set(PdfName.Mask, value);
         }
 
-        public PdfStream Stream => BaseDataObject;
-
-        public PdfArray Matte => BaseDataObject.Get<PdfArray>(PdfName.Matte);
+        public PdfArray Matte => Get<PdfArray>(PdfName.Matte);
 
         public float[] Decode
         {
-            get => decode ??= BaseDataObject.Get<PdfArray>(PdfName.Decode)?.ToFloatArray();
-            set => BaseDataObject[PdfName.Decode] = new PdfArray(value.Select(p => PdfInteger.Get((int)p)));
+            get => decode ??= Get<PdfArray>(PdfName.Decode)?.ToFloatArray();
+            set => Set(PdfName.Decode, new PdfArrayImpl(value));
         }
 
-        public bool ImageMask => BaseDataObject.GetBool(PdfName.ImageMask);
+        public bool ImageMask
+        {
+            get => GetBool(PdfName.ImageMask);
+            set => Set(PdfName.ImageMask, value);
+        }
 
     }
 }
