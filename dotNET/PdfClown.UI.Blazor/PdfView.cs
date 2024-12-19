@@ -46,7 +46,7 @@ namespace PdfClown.UI.Blazor
         public EventCallback<float> ScaleContentChanged { get; set; }
 
         [Parameter]
-        public bool ShowMarkup { get; set; }
+        public bool ShowMarkup { get; set; } = true;
 
         [Parameter]
         public EventCallback<bool> ShowMarkupChanged { get; set; }
@@ -114,11 +114,11 @@ namespace PdfClown.UI.Blazor
 
         public void NextPage() => NewPageNumber += 1;
 
-        private bool CanNextPage() => PageNumber < PagesCount;
+        public bool CanNextPage() => PageNumber < PagesCount;
 
         public void PrevPage() => NewPageNumber -= 1;
 
-        private bool CanPrevPage() => PageNumber > 1;
+        public bool CanPrevPage() => PageNumber > 1;
 
         protected override void OnParametersSet()
         {
