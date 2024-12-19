@@ -4,7 +4,9 @@
     {
         Unknown,
         Left,
+        Right,
         Middle,
-        Right
+        XButton1,
+        XButton2
     }
 }

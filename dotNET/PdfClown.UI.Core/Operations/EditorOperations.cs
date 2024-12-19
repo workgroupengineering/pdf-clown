@@ -192,7 +192,7 @@ namespace PdfClown.UI.Operations
                         document.BoundsChanged -= OnDocumentBoundsChanged;
                     }
                     document = value;
-                    
+
                     SelectedAnnotation = null;
                     SelectedPoint = null;
                     HoverAnnotation = null;
@@ -541,7 +541,7 @@ namespace PdfClown.UI.Operations
             SetScale(newScale, pointerLocation);
         }
 
-        public void SetScale(float newScale) => SetScale(newScale, new SKPoint(state.WindowArea.MidX, state.WindowArea.MidY));
+        public void SetScale(float newScale) => SetScale(newScale, new SKPoint(state.WindowArea.Width / 2F, state.WindowArea.Height / 2));
 
         public void SetScale(float newScale, SKPoint pointerLocation)
         {
@@ -602,9 +602,9 @@ namespace PdfClown.UI.Operations
             }
 
             var bound = state.ScaleMatrix.MapRect(page.Bounds);
-            return new SKPoint(bound.Left - (windowArea.MidX - bound.Width / 2),
+            return new SKPoint(bound.Left - (windowArea.Width / 2 - bound.Width / 2),
                                bound.Height <= windowArea.Height
-                                ? bound.Top - (windowArea.MidY - bound.Height / 2)
+                                ? bound.Top - (windowArea.Height / 2 - bound.Height / 2)
                                 : bound.Top - 3);
         }
 
@@ -621,8 +621,8 @@ namespace PdfClown.UI.Operations
                 .PreConcat(pageView.Matrix)
                 .PreConcat(pageView.Document.Matrix);
             var bound = annotation.GetViewBounds(matrix);
-            return new SKPoint(bound.Left - (state.WindowArea.MidX - bound.Width / 2),
-                               bound.Top - (state.WindowArea.MidY - bound.Height / 2));
+            return new SKPoint(bound.Left - (state.WindowArea.Width / 2 - bound.Width / 2),
+                               bound.Top - (state.WindowArea.Height / 2 - bound.Height / 2));
         }
 
         public void UpdateMaximums()
@@ -640,8 +640,8 @@ namespace PdfClown.UI.Operations
             {
                 state.SetWindowMatrix(scale, scale, bound.Left, bound.Top);
                 state.WindowArea = bound;
+                UpdateNavigationMatrix();
             }
-            UpdateNavigationMatrix();
         }
 
         public void UpdateNavigationMatrix()
@@ -1093,6 +1093,6 @@ namespace PdfClown.UI.Operations
         IEnumerator<EditOperation> IEnumerable<EditOperation>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        
+
     }
 }

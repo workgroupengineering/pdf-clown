@@ -201,8 +201,6 @@ namespace PdfClown.UI.Blazor
         protected override void OnPaintContent(SKPaintSurfaceEventArgs e)
 #endif
         {
-            if (Document == null)
-                return;
             Operations.Draw(e.Surface.Canvas);
         }
 
