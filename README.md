@@ -5,9 +5,9 @@ https://sourceforge.net/projects/clown/ mirror.
 
 - Pdf rendering by [SkiaSharp](https://github.com/mono/SkiaSharp).
 - UI integrations 
-  - [Blazor](https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/webassembly?view=aspnetcore-8.0) (alfa)
+  - [Blazor](https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/webassembly?view=aspnetcore-8.0) (betta)
   - [Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms) (expired)
-  - [Avalonia UI](https://avaloniaui.net/) (todo 1)
+  - [Avalonia UI](https://avaloniaui.net/) (alfa)
   - [Uno Platform](https://platform.uno/) (todo)
   - [MAUI](https://learn.microsoft.com/ru-ru/dotnet/maui/what-is-maui?view=net-maui-8.0) (todo)
 - Competitive performance
