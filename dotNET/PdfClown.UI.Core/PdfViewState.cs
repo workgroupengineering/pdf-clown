@@ -57,12 +57,12 @@ namespace PdfClown.UI
                 if (windowMatrix != value)
                 {
                     windowMatrix = value;
-                    windowMatrix.TryInvert(out InvertWindowScaleMatrix);
+                    windowMatrix.TryInvert(out InvertWindowMatrix);
                 }
             }
         }
 
-        public SKMatrix InvertWindowScaleMatrix;
+        public SKMatrix InvertWindowMatrix;
 
         public SKMatrix NavigationMatrix
         {
@@ -77,7 +77,7 @@ namespace PdfClown.UI
                     ViewMatrix = NavigationMatrix.PostConcat(windowMatrix);
                     ViewMatrix.TryInvert(out InvertViewMatrix);
 
-                    NavigationArea = InvertNavigationMatrix.MapRect(WindowArea);
+                    NavigationArea = InvertNavigationMatrix.MapRect(SKRect.Create(WindowArea.Size));
                 }
             }
         }

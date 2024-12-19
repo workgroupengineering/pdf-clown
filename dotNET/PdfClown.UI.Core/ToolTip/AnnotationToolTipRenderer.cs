@@ -15,7 +15,7 @@ namespace PdfClown.UI.ToolTip
         public override SKRect GetWindowBound(PdfViewState state)
         {
             SKRect windowArea = state.WindowArea;
-            SKRect annotation = state.InvertWindowScaleMatrix.MapRect(Annotation.GetViewBounds(state.PageViewMatrix));
+            SKRect annotation = state.InvertWindowMatrix.MapRect(Annotation.GetViewBounds(state.PageViewMatrix));
             SKRect toolTip = Measure();
             var left = annotation.MidX - toolTip.Width / 2;
             var right = left + toolTip.Width;
