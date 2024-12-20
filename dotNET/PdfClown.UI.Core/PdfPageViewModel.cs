@@ -285,7 +285,7 @@ namespace PdfClown.UI
                 var rect = SKRect.Create(Size);
                 using var recorder = new SKPictureRecorder();
 #if NET9_0_OR_GREATER
-                using var canvas = recorder.BeginRecording(rect, true);
+                using var canvas = recorder.BeginRecording(rect, false);
 #else
                 using var canvas = recorder.BeginRecording(rect);
 #endif
