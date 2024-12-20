@@ -61,7 +61,7 @@ namespace PdfClown.Documents.Contents.Shadings
             var box = spaceMatrix.MapRect(Box.Value);
             using var recorder = new SKPictureRecorder();
 #if NET9_0_OR_GREATER
-            using var canvas = recorder.BeginRecording(box, true);
+            using var canvas = recorder.BeginRecording(box);
 #else
             using var canvas = recorder.BeginRecording(box);
 #endif

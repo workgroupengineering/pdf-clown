@@ -150,7 +150,7 @@ namespace PdfClown.Documents.Contents.Patterns
             var box = Matrix.MapRect(Box);
             using var recorder = new SKPictureRecorder();// SKBitmap((int)box.Width, (int)box.Height);
 #if NET9_0_OR_GREATER
-            using var canvas = recorder.BeginRecording(box, true);
+            using var canvas = recorder.BeginRecording(box);
 #else
             using var canvas = recorder.BeginRecording(box);
 #endif

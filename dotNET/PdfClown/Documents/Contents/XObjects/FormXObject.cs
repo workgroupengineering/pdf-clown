@@ -171,7 +171,7 @@ namespace PdfClown.Documents.Contents.XObjects
             var box = Box;
             using var recorder = new SKPictureRecorder();
 #if NET9_0_OR_GREATER
-            using var canvas = recorder.BeginRecording(box, true);
+            using var canvas = recorder.BeginRecording(box);
 #else
             using var canvas = recorder.BeginRecording(box);
 #endif
