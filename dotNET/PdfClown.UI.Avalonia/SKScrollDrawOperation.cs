@@ -3,7 +3,6 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
-using System;
 
 namespace PdfClown.UI.Aval;
 
@@ -40,6 +39,7 @@ internal class SKScrollDrawOperation : ICustomDrawOperation
             //lease.SkCanvas.ClipRect(Bounds.ToSKRect());
             var args = new SKPaintSurfaceEventArgs(lease.SkSurface, lease.SkCanvas);
             scrollView.OnPaintSurface(args);
+            lease.GrContext?.PurgeResources();
         }
     }
 }

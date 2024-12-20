@@ -136,19 +136,31 @@ namespace PdfClown.UI
             if (picture != null)
             {
                 canvas.DrawPicture(picture, Document.PageForegroundPaint);
-
                 DrawTextSelection(canvas, state);
-
                 if (state.Viewer.ShowMarkup && Annotations.Any())
                 {
                     DrawAnnotations(canvas, state);
                 }
-
                 if (state.Viewer.ShowCharBound)
                 {
                     DrawCharBounds(canvas, state);
                 }
             }
+
+            //var picture = GetImage(state.Viewer, state.Scale, state.Scale);
+            //if (picture != null)
+            //{
+            //    canvas.DrawImage(picture, 0, 0, Document.PageForegroundPaint);
+            //    DrawTextSelection(canvas, state);
+            //    if (state.Viewer.ShowMarkup && Annotations.Any())
+            //    {
+            //        DrawAnnotations(canvas, state);
+            //    }
+            //    if (state.Viewer.ShowCharBound)
+            //    {
+            //        DrawCharBounds(canvas, state);
+            //    }
+            //}
 
             canvas.Restore();
             return picture != null;
@@ -273,7 +285,7 @@ namespace PdfClown.UI
                 {
                     //matrix = SKMatrix.CreateScale(scaleX, scaleY);
                 }
-                image = SKImage.FromPicture(picture, imageSize, matrix);//, Matrix, 
+                image = SKImage.FromPicture(picture, imageSize);//, Matrix, 
             }
             return image;
         }
