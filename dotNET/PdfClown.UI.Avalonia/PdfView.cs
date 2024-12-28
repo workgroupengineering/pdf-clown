@@ -175,8 +175,7 @@ public partial class PdfView : SKScrollView, IPdfView
                 base.Cursor = new Cursor((StandardCursorType)value);
             }
         }
-    }
-    
+    }    
 
     protected override void OnPaintContent(SKPaintSurfaceEventArgs e)
     {

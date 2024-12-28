@@ -14,5 +14,4 @@ public class SKPaintSurfaceEventArgs : EventArgs
     public SKCanvas Canvas { get; set; }
     public SKSurface? Surface { get; set; }
 
-
 }
