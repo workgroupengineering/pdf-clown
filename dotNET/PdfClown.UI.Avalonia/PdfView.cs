@@ -136,15 +136,7 @@ public partial class PdfView : SKScrollView, IPdfView
     public int NewPageNumber
     {
         get => Operations.NewPageNumber;
-        set
-        {
-            if (Operations.NewPageNumber != value)
-            {
-                var oldValue = Operations.NewPageNumber;
-                Operations.NewPageNumber = value;
-                RaisePropertyChanged(NewPageNumberProperty, oldValue, Operations.NewPageNumber);
-            }
-        }
+        set => Operations.NewPageNumber = value;
     }
 
     public TextSelection TextSelection => textSelection;
@@ -184,14 +176,7 @@ public partial class PdfView : SKScrollView, IPdfView
             }
         }
     }
-
-    public void NextPage() => NewPageNumber += 1;
-
-    public bool CanNextPage() => PageNumber < PagesCount;
-
-    public void PrevPage() => NewPageNumber -= 1;
-
-    public bool CanPrevPage() => PageNumber > 1;
+    
 
     protected override void OnPaintContent(SKPaintSurfaceEventArgs e)
     {

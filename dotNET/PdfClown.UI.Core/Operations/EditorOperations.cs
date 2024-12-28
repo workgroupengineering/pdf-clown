@@ -363,6 +363,13 @@ namespace PdfClown.UI.Operations
 
         public event FloatEventHandler? ScaleChanged;
 
+        public void NextPage() => NewPageNumber += 1;
+
+        public bool CanNextPage() => CurrentPageNumber < PagesCount;
+
+        public void PrevPage() => NewPageNumber -= 1;
+
+        public bool CanPrevPage() => CurrentPageNumber > 1;
 
         public int GetDisplayPageIndex() => GetDisplayPageIndex(state);
 

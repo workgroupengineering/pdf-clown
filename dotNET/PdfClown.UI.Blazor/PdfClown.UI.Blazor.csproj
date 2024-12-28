@@ -4,7 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-	<!--<DefineConstants>__FORCE_GL__</DefineConstants>-->
+	<DefineConstants>__FORCE_GL__</DefineConstants>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>

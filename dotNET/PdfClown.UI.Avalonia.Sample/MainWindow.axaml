@@ -31,8 +31,8 @@
                 <Run BaselineAlignment="Center" Text="{Binding #viewer.PagesCount}" />
             </TextBlock>
 
-            <Button Command="{Binding #viewer.PrevPage}">Prev</Button>
-            <Button Command="{Binding #viewer.NextPage}">Next</Button>
+            <Button Command="{Binding #viewer.Operations.PrevPage}">Prev</Button>
+            <Button Command="{Binding #viewer.Operations.NextPage}">Next</Button>
             <TextBlock VerticalAlignment="Center">
                 <Run BaselineAlignment="Center" Text="Scale" />
                 <InlineUIContainer BaselineAlignment="Baseline">

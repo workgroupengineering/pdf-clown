@@ -112,14 +112,6 @@ namespace PdfClown.UI.Blazor
         public EventCallback<int> PageNumberChanged { get; set; }
 
 
-        public void NextPage() => NewPageNumber += 1;
-
-        public bool CanNextPage() => PageNumber < PagesCount;
-
-        public void PrevPage() => NewPageNumber -= 1;
-
-        public bool CanPrevPage() => PageNumber > 1;
-
         protected override void OnParametersSet()
         {
             base.OnParametersSet();

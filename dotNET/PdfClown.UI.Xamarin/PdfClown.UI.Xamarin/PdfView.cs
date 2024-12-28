@@ -43,8 +43,8 @@ namespace PdfClown.UI
 
             UndoCommand = new Command(() => Operations.Undo(), () => Operations.CanUndo);
             RedoCommand = new Command(() => Operations.Redo(), () => Operations.CanRedo);
-            PrevPageCommand = new Command(() => PrevPage(), CanPrevPage);
-            NextPageCommand = new Command(() => NextPage(), CanNextPage);
+            PrevPageCommand = new Command(() => Operations.PrevPage(), Operations.CanPrevPage);
+            NextPageCommand = new Command(() => Operations.NextPage(), Operations.CanNextPage);
 
             scroll.VScrolled += OnVScrolled;
             scroll.HScrolled += OnHScrolled;
@@ -136,14 +136,6 @@ namespace PdfClown.UI
         public ICommand RedoCommand { get; set; }
 
         public ICommand UndoCommand { get; set; }
-
-        public void NextPage() => NewPageNumber += 1;
-
-        private bool CanNextPage() => PageNumber < PagesCount;
-
-        public void PrevPage() => NewPageNumber -= 1;
-
-        private bool CanPrevPage() => PageNumber > 1;
 
         private void OnFitModeChanged(PdfViewFitMode oldValue, PdfViewFitMode newValue)
         {
