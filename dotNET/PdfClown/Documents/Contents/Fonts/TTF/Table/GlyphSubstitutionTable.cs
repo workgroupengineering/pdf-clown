@@ -372,11 +372,8 @@ namespace PdfClown.Documents.Contents.Fonts.TTF
             {
                 data.Seek(offset + sequenceOffsets[i]);
                 var glyphCount = data.ReadUInt16();
-                for (int j = 0; j < glyphCount; ++j)
-                {
-                    var substituteGlyphIDs = data.ReadUShortArray(glyphCount);
-                    sequenceTables[i] = new SequenceTable(glyphCount, substituteGlyphIDs);
-                }
+                var substituteGlyphIDs = data.ReadUShortArray(glyphCount);
+                sequenceTables[i] = new SequenceTable(glyphCount, substituteGlyphIDs);
             }
 
             return new LookupTypeMultipleSubstitutionFormat1(substFormat, coverageTable, sequenceTables);

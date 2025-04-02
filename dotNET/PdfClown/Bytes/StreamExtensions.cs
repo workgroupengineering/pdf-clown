@@ -394,7 +394,7 @@ namespace PdfClown.Bytes
 
         public static ushort[] ReadUShortArray(this IInputStream input, int length)
         {
-            ushort[] array = new ushort[length];
+            var array = new ushort[length];
             for (int i = 0; i < length; i++)
             {
                 array[i] = input.ReadUInt16();
@@ -404,7 +404,7 @@ namespace PdfClown.Bytes
 
         public static short[] ReadSShortArray(this IInputStream input, int length)
         {
-            short[] array = new short[length];
+            var array = new short[length];
             for (int i = 0; i < length; i++)
             {
                 array[i] = input.ReadInt16();
