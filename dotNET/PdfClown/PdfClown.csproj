@@ -516,12 +516,12 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.5.0" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.5.1" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <PackageReference Include="SkiaSharp" Version="2.88.9" Condition="$(TargetFramework.StartsWith('net8.0'))" />
-	<PackageReference Include="SkiaSharp" Version="3.118.0-preview.2.3" Condition="$(TargetFramework.StartsWith('net9.0'))" />
+	<PackageReference Include="SkiaSharp" Version="3.119.0-preview.1.2" Condition="$(TargetFramework.StartsWith('net9.0'))" />
     <PackageReference Include="System.DirectoryServices.Protocols" Version="9.0.0" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.3" />
   </ItemGroup>
  
 </Project>
